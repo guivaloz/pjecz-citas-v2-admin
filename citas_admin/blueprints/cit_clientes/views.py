@@ -7,7 +7,7 @@ from flask import Blueprint, request, render_template, url_for
 from flask_login import login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_string
+from lib.safe_string import safe_string, safe_email
 
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_clientes.forms import CitClienteSearchForm
@@ -47,7 +47,7 @@ def datatable_json():
     if "curp" in request.form:
         consulta = consulta.filter(CitCliente.curp.contains(safe_string(request.form["curp"])))
     if "email" in request.form:
-        consulta = consulta.filter(CitCliente.email.contains(request.form["email"]))
+        consulta = consulta.filter(CitCliente.email.contains(safe_email(request.form["email"], search_fragment=True)))
     registros = consulta.order_by(CitCliente.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -56,11 +56,12 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "id": cliente.id,
+                    "email": cliente.email,
                     "url": url_for("cit_clientes.detail", cliente_id=cliente.id),
                 },
                 "nombre": cliente.nombre,
-                "email": cliente.email,
+                "curp": cliente.curp,
+                "telefono": cliente.telefono,
             }
         )
     # Entregar JSON
