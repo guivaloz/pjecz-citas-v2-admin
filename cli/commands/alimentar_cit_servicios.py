@@ -8,7 +8,7 @@ import click
 
 from lib.safe_string import safe_string
 
-from citas_admin.blueprints.cit_servicios.models import CitServicio
+from citas_admin.blueprints.cit_categorias_servicios.models import CitServicio
 
 ARCHIVO_CSV = "seed/cit_servicios.csv"
 

@@ -13,7 +13,7 @@ from citas_admin.blueprints.cit_citas_expedientes.views import cit_citas_expedie
 from citas_admin.blueprints.cit_clientes.views import cit_clientes
 from citas_admin.blueprints.cit_dias_inhabiles.views import cit_dias_inhabiles
 from citas_admin.blueprints.cit_horas_bloqueadas.views import cit_horas_bloqueadas
-from citas_admin.blueprints.cit_servicios.views import cit_servicios
+from citas_admin.blueprints.cit_categorias_servicios.views import cit_servicios
 from citas_admin.blueprints.distritos.views import distritos
 from citas_admin.blueprints.domicilios.views import domicilios
 from citas_admin.blueprints.entradas_salidas.views import entradas_salidas

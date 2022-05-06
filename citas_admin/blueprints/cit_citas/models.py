@@ -31,10 +31,11 @@ class CitCita(db.Model, UniversalMixin):
     oficina = db.relationship("Oficina", back_populates="cit_citas")
 
     # Columnas
-    inicio_tiempo = db.Column(db.DateTime(), nullable=False)
-    termino_tiempo = db.Column(db.DateTime(), nullable=False)
+    inicio = db.Column(db.DateTime(), nullable=False)
+    termino = db.Column(db.DateTime(), nullable=False)
     notas = db.Column(db.Text())
     estado = db.Column(db.Enum(*ESTADOS, name="tipos_estados", native_enum=False))
+    # asistencia
 
     # Hijos
     cit_citas_expedientes = db.relationship("CitCitaExpediente", back_populates="cit_cita")
