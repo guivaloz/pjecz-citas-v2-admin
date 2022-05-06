@@ -1,0 +1,96 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Domicilio{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Domicilio') %}
+        {{ topbar.button_previous('Domicilios', url_for('domicilios.list_active')) }}
+        {% if current_user.can_edit('DOMICILIOS') %}
+            {{ topbar.button_edit('Editar', url_for('domicilios.edit', domicilio_id=domicilio.id)) }}
+            {% if domicilio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('domicilios.delete', domicilio_id=domicilio.id)) }}{% endif %}
+            {% if domicilio.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('domicilios.recover', domicilio_id=domicilio.id)) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=domicilio.estatus) %}
+        {{ detail.label_value('Calle', domicilio.calle) }}
+        {{ detail.label_value('No. Exterior', domicilio.num_ext) }}
+        {{ detail.label_value('No. Interior', domicilio.num_int) }}
+        {{ detail.label_value('Colonia', domicilio.colonia) }}
+        {{ detail.label_value('Municipio', domicilio.municipio) }}
+        {{ detail.label_value('Estado', domicilio.estado) }}
+        {{ detail.label_value('C.P.', domicilio.cp) }}
+    {% endcall %}
+    {% if current_user.can_view('OFICINAS') %}
+        {% call detail.card('Oficinas') %}
+            <table id="oficinas_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Claves</th>
+                        <th>Descripciones</th>
+                        <th>Distritos</th>
+                        <th>Aperturas</th>
+                        <th>Cierres</th>
+                        <th>L. P.</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {% if current_user.can_edit('DOMICILIOS') %}
+        {% if domicilio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar el domicilio en la calle: ' + domicilio.calle + '?') }}{% endif %}
+        {% if domicilio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar el domicilio en la calle: ' + domicilio.calle + '?') }}{% endif %}
+    {% endif %}
+    {{ detail.config_datatable() }}
+    {% if current_user.can_view('OFICINAS') %}
+        <script>
+            configDataTable['ajax']['url'] = '/oficinas/datatable_json';
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'domicilio_id': {{ domicilio.id}} };
+            configDataTable['columns'] = [
+                { data: "detalle" },
+                { data: "descripcion_corta" },
+                { data: "distrito" },
+                { data: "apertura" },
+                { data: "cierre" },
+                { data: "limite_personas" }
+            ];
+            configDataTable['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.clave + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // descripcion_corta
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return (data.length > 48 ? data.substr(0, 48) + '…' : data);
+                    }
+                },
+                {
+                    targets: 2, // distrito
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url == '') {
+                            return data.nombre_corto;
+                        } else {
+                            return '<a href="' + data.url + '">' + data.nombre_corto + '</a>';
+                        }
+                    }
+                }
+            ];
+            $('#oficinas_datatable').DataTable(configDataTable);
+        </script>
+    {% endif %}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

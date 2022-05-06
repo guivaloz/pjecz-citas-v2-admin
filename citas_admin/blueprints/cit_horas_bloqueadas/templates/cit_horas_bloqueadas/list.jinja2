@@ -1,0 +1,48 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/list.jinja2' as list %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Horas Bloqueadas{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(titulo) %}
+        {{ topbar.button_previous('Citas', url_for('cit_citas.list_active')) }}
+        {% if current_user.can_edit('CIT HORAS BLOQUEADAS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_horas_bloqueadas.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_horas_bloqueadas.list_active')) }}{% endif %}
+        {% endif %}
+            {{ topbar.button_new('Nueva Hora Bloqueada', url_for('cit_horas_bloqueadas.new')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call list.card() %}
+        <table id="cit_horas_bloqueadas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Oficina</th>
+                    <th>Fecha</th>
+                    <th>Horario</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hora_bloqueada in horas_bloqueadas %}
+                <tr>
+                    {% set str_id = hora_bloqueada.id | string() %}
+                    <td><a href="{{ url_for('cit_horas_bloqueadas.detail', hora_bloqueada_id=hora_bloqueada.id) }}">{{ str_id.zfill(4) }}</a></td>
+                    <td><a href="{{ url_for('oficinas.detail', oficina_id=hora_bloqueada.oficina_id) }}"><span title="{{hora_bloqueada.oficina.descripcion}}">{{ hora_bloqueada.oficina.clave }}</span></a></td>
+                    <td>{{ hora_bloqueada.fecha }}</td>
+                    <td>{{ hora_bloqueada.inicio_tiempo.strftime("%H:%M") }} — {{ hora_bloqueada.termino_tiempo.strftime("%H:%M") }}</td>
+                    <td>{{ hora_bloqueada.descripcion }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {{ list.datatable('cit_horas_bloqueadas_datatable') }}
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Distrito{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Distrito ' + distrito.nombre_corto) %}
+        {{ topbar.button_previous('Distritos', url_for('distritos.list_active')) }}
+        {% if current_user.can_edit('DISTRITOS') %}
+            {{ topbar.button_edit('Editar', url_for('distritos.edit', distrito_id=distrito.id)) }}
+            {% if distrito.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('distritos.delete', distrito_id=distrito.id)) }}{% endif %}
+            {% if distrito.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('distritos.recover', distrito_id=distrito.id)) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=distrito.estatus) %}
+        {{ detail.label_value('Nombre', distrito.nombre) }}
+        {{ detail.label_value('Nombre corto', distrito.nombre_corto) }}
+        {{ detail.label_value_boolean('Es Distrito Judicial', distrito.es_distrito_judicial) }}
+        {{ detail.label_value('Creado', moment(distrito.creado).format('llll')) }}
+    {% endcall %}
+    {% if current_user.can_view('AUTORIDADES') %}
+        {% call detail.card('Autoridades') %}
+            <table id="autoridades_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Claves</th>
+                        <th>Descripciones cortas</th>
+                        <th>Órganos Jurisdiccionales</th>
+                        <th>Materias</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
+    {% if current_user.can_view('OFICINAS') %}
+        {% call detail.card('Oficinas') %}
+            <table id="oficinas_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Claves</th>
+                        <th>Descripciones</th>
+                        <th>Domicilios</th>
+                        <th>Aperturas</th>
+                        <th>Cierres</th>
+                        <th>L. P.</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {% if current_user.can_edit('DISTRITOS') %}
+        {% if distrito.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + distrito.nombre + '?') }}{% endif %}
+        {% if distrito.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + distrito.nombre + '?') }}{% endif %}
+    {% endif %}
+    {{ detail.config_datatable() }}
+    {% if current_user.can_view('AUTORIDADES') %}
+        <script>
+            configDataTable['ajax']['url'] = '/autoridades/datatable_json';
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'distrito_id': {{ distrito.id}} };
+            configDataTable['columns'] = [
+                { data: "detalle" },
+                { data: "descripcion_corta" },
+                { data: "organo_jurisdiccional" },
+                { data: "materia" }
+            ];
+            configDataTable['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.clave + '</a>';
+                    }
+                },
+            {
+                targets: 3, // materia
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.url == '') {
+                        return data.nombre;
+                    } else {
+                        return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                    }
+                }
+            }
+            ];
+            $('#autoridades_datatable').DataTable(configDataTable);
+        </script>
+    {% endif %}
+    {% if current_user.can_view('OFICINAS') %}
+        <script>
+            configDataTable['ajax']['url'] = '/oficinas/datatable_json';
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'distrito_id': {{ distrito.id}} };
+            configDataTable['columns'] = [
+                { data: "detalle" },
+                { data: "descripcion_corta" },
+                { data: "domicilio" },
+                { data: "apertura" },
+                { data: "cierre" },
+                { data: "limite_personas" }
+            ];
+            configDataTable['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.clave + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // descripcion_corta
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return (data.length > 48 ? data.substr(0, 48) + '…' : data);
+                    }
+                },
+                {
+                    targets: 2, // domicilio
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.completo.length > 32) {
+                            texto = data.completo.substr(0, 32) + '…';
+                        } else {
+                            texto = data.completo;
+                        }
+                        if (data.url == '') {
+                            return texto;
+                        } else {
+                            return '<a href="' + data.url + '">' + texto + '</a>';
+                        }
+                    }
+                }
+            ];
+            $('#oficinas_datatable').DataTable(configDataTable);
+        </script>
+    {% endif %}
+    {{ detail.moment_js(moment) }}
+{% endblock %}
