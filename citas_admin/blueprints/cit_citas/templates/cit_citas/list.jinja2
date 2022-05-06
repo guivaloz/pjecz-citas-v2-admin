@@ -1,0 +1,61 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/list.jinja2' as list %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Citas{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(titulo) %}
+        {% if current_user.can_view('CIT CLIENTES') %}
+            {{ topbar.button_primary('Clientes', url_for('cit_clientes.list_active'), 'mdi:account-tie') }}
+        {% endif %}
+        {% if current_user.can_view('CIT SERVICIOS') %}
+            {{ topbar.button_primary('Servicios', url_for('cit_servicios.list_active'), 'mdi:account-wrench') }}
+        {% endif %}
+        {% if current_user.can_view('CIT DIAS INHABILES') %}
+            {{ topbar.button_primary('Días Inhábiles', url_for('cit_dias_inhabiles.list_active'), 'mdi:calendar-remove') }}
+        {% endif %}
+        {% if current_user.can_view('CIT HORAS BLOQUEADAS') %}
+            {{ topbar.button_primary('Horas Bloqueadas', url_for('cit_horas_bloqueadas.list_active'), 'mdi:calendar-clock') }}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call list.card() %}
+        <table id="cit_citas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Horario</th>
+                    <th>Servicio</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {{ list.config_datatable() }}
+    <script>
+        configDataTable['ajax']['url'] = '/cit_citas/datatable_json';
+        configDataTable['ajax']['data'] = {{ filtros }};
+        configDataTable['columns'] = [
+            { data: "detalle" },
+            { data: "horario" },
+            { data: "servicio" },
+            { data: "estado" },
+        ];
+        configDataTable['columnDefs'] = [
+            {
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.id + '</a>';
+                }
+            }
+        ];
+        $('#cit_citas_datatable').DataTable(configDataTable);
+    </script>
+{% endblock %}

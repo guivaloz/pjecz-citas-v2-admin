@@ -1,0 +1,29 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/start.jinja2' as start %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block topbar_actions %}
+    {{ topbar.page('Inicio') }}
+{% endblock %}
+
+{% block content %}
+    {% call start.card() %}
+        <h1 class="text-center">Citas v2 admin</h1>
+    {% endcall %}
+    {# Versiones #}
+    {% call start.card('Versiones') %}
+        <div id="versiones_container">
+            <span id="versiones_spinner" class="spinner-border" role="status"></span>
+        </div>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    <!-- Versiones -->
+    <script type="text/javascript">
+        const versiones_json = "{{ url_for('static', filename='json/versions.json') }}";
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/versions.js') }}"></script>
+{% endblock %}

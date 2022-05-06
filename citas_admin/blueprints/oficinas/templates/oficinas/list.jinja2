@@ -1,0 +1,100 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/list.jinja2' as list %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Oficinas{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(titulo) %}
+        {% if current_user.can_view('DOMICILIOS') %}
+            {{ topbar.button('Domicilios', url_for('domicilios.list_active'), 'mdi:map-marker') }}
+        {% endif %}
+        {% if current_user.can_edit('OFICINAS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('oficinas.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('oficinas.list_active')) }}{% endif %}
+        {% endif %}
+        {% if current_user.can_insert('OFICINAS') %}
+            {{ topbar.button_new('Nueva Oficina', url_for('oficinas.new')) }}
+        {% endif %}
+        {{ topbar.button_search('Buscar', url_for('oficinas.search')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call list.card() %}
+        <table id="oficinas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Clave</th>
+                    <th>Descripción corta</th>
+                    <th>Domicilio</th>
+                    <th>Distrito</th>
+                    <th>Apertura</th>
+                    <th>Cierre</th>
+                    <th>L. P.</th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {{ list.config_datatable() }}
+    <script>
+        configDataTable['ajax']['url'] = '/oficinas/datatable_json';
+        configDataTable['ajax']['data'] = {{ filtros }};
+        configDataTable['columns'] = [
+            { data: "detalle" },
+            { data: "descripcion_corta" },
+            { data: "domicilio" },
+            { data: "distrito" },
+            { data: "apertura" },
+            { data: "cierre" },
+            { data: "limite_personas" }
+        ];
+        configDataTable['columnDefs'] = [
+            {
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: 1, // descripcion_corta
+                data: null,
+                render: function(data, type, row, meta) {
+                    return (data.length > 32 ? data.substr(0, 32) + '…' : data);
+                }
+            },
+            {
+                targets: 2, // domicilio
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.completo.length > 32) {
+                        texto = data.completo.substr(0, 32) + '…';
+                    } else {
+                        texto = data.completo;
+                    }
+                    if (data.url == '') {
+                        return texto;
+                    } else {
+                        return '<a href="' + data.url + '">' + texto + '</a>';
+                    }
+                }
+            },
+            {
+                targets: 3, // distrito
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.url == '') {
+                        return data.nombre_corto;
+                    } else {
+                        return '<a href="' + data.url + '">' + data.nombre_corto + '</a>';
+                    }
+                }
+            }
+        ];
+        $('#oficinas_datatable').DataTable(configDataTable);
+    </script>
+{% endblock %}

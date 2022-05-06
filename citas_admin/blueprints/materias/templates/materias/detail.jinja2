@@ -1,0 +1,74 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Materia{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Materia ' + materia.nombre) %}
+        {{ topbar.button_previous('Materias', url_for('materias.list_active')) }}
+        {% if current_user.can_edit('MATERIAS') %}
+            {{ topbar.button_edit('Editar', url_for('materias.edit', materia_id=materia.id)) }}
+            {% if materia.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('materias.delete', materia_id=materia.id)) }}{% endif %}
+            {% if materia.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('materias.recover', materia_id=materia.id)) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% if current_user.can_view('AUTORIDADES') %}
+        {% call detail.card(title='Autoridades') %}
+            <table id="autoridades_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Claves</th>
+                        <th>Descripciones cortas</th>
+                        <th>Órganos Jurisdiccionales</th>
+                        <th>Distritos</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {% if current_user.can_edit('MATERIAS') %}
+        {% if materia.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + materia.nombre + '?') }}{% endif %}
+        {% if materia.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + materia.nombre + '?') }}{% endif %}
+    {% endif %}
+    {{ detail.config_datatable() }}
+    {% if current_user.can_view('AUTORIDADES') %}
+        <script>
+            configDataTable['ajax']['url'] = '/autoridades/datatable_json';
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'materia_id': {{ materia.id}} };
+            configDataTable['columns'] = [
+                { data: "detalle" },
+                { data: "descripcion_corta" },
+                { data: "organo_jurisdiccional" },
+                { data: "distrito" }
+            ];
+            configDataTable['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.clave + '</a>';
+                    }
+                },
+                {
+                    targets: 3, // distrito
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url == '') {
+                            return data.nombre_corto;
+                        }
+                        return '<a href="' + data.url + '">' + data.nombre_corto + '</a>';
+                    }
+                }
+            ];
+            $('#autoridades_datatable').DataTable(configDataTable);
+        </script>
+    {% endif %}
+{% endblock %}
