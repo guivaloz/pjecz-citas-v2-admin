@@ -28,8 +28,10 @@ def alimentar_cit_categorias():
         categorias_listado = []
         for row in rows:
             nombre = safe_string(row["categoria_nombre"])
-            if nombre not in categorias_listado:
-                CitCategoria(nombre=safe_string(nombre)).save()
+            if nombre in categorias_listado:
+                continue
+            CitCategoria(nombre=safe_string(nombre)).save()
+            categorias_listado.append(nombre)
             contador += 1
             if contador % 100 == 0:
                 click.echo(f"  Van {contador}...")
