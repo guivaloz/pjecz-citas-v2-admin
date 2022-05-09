@@ -2,16 +2,15 @@
 Cit Horas Bloqueadas, formularios
 """
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, DateField, TimeField, SelectField
-from wtforms.validators import DataRequired, Length, Optional
+from wtforms import StringField, SubmitField, DateField, TimeField
+from wtforms.validators import DataRequired
 
 
 class CitHoraBloqueadaForm(FlaskForm):
     """Formulario CitDíasInhabiles"""
 
-    oficina_id = SelectField(label="Oficina", coerce=int, validate_choice=False, validators=[DataRequired()])
+    oficina = StringField("Oficina")  # Read only
     fecha = DateField("Fecha", validators=[DataRequired()])
-    inicio_tiempo = TimeField("Tiempo de Inicio", validators=[DataRequired()])
-    termino_tiempo = TimeField("Teimpo de Termino", validators=[DataRequired()])
-    descripcion = StringField("Descripción", validators=[Optional(), Length(max=512)])
+    inicio = TimeField("Tiempo de inicio", validators=[DataRequired()])
+    termino = TimeField("Tiempo de termino", validators=[DataRequired()])
     guardar = SubmitField("Guardar")

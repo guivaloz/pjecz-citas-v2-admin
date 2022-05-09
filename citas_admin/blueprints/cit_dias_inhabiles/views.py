@@ -1,9 +1,7 @@
 """
 Cit Dias Inhabiles, vistas
 """
-from datetime import date, timedelta
 import json
-
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
@@ -14,11 +12,10 @@ from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.cit_dias_inhabiles.forms import CitDiaInhabilForm
 from citas_admin.blueprints.cit_dias_inhabiles.models import CitDiaInhabil
+from citas_admin.blueprints.cit_dias_inhabiles.forms import CitDiaInhabilForm
 
 MODULO = "CIT DIAS INHABILES"
-LIMITE_FUTURO_DIAS = 365  # Las fechas pueden ser hasta un año en el futuro
 
 cit_dias_inhabiles = Blueprint("cit_dias_inhabiles", __name__, template_folder="templates")
 
@@ -41,7 +38,7 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    registros = consulta.order_by(CitDiaInhabil.fecha.desc()).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(CitDiaInhabil.id).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -49,7 +46,7 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "fecha": resultado.fecha.strftime("%Y-%m-%d 00:00:00"),
+                    "fecha": resultado.fecha,
                     "url": url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=resultado.id),
                 },
                 "descripcion": resultado.descripcion,
@@ -65,7 +62,7 @@ def list_active():
     return render_template(
         "cit_dias_inhabiles/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Días Inhábiles",
+        titulo="Dias Inhabiles",
         estatus="A",
     )
 
@@ -77,14 +74,14 @@ def list_inactive():
     return render_template(
         "cit_dias_inhabiles/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
-        titulo="Días Inhábiles inactivos",
+        titulo="Dias Inhabiles inactivos",
         estatus="B",
     )
 
 
 @cit_dias_inhabiles.route("/cit_dias_inhabiles/<int:cit_dia_inhabil_id>")
 def detail(cit_dia_inhabil_id):
-    """Detalle de un Dia inhabil"""
+    """Detalle de un Dia Inhabil"""
     cit_dia_inhabil = CitDiaInhabil.query.get_or_404(cit_dia_inhabil_id)
     return render_template("cit_dias_inhabiles/detail.jinja2", cit_dia_inhabil=cit_dia_inhabil)
 
@@ -95,34 +92,17 @@ def new():
     """Nuevo Dia Inhabil"""
     form = CitDiaInhabilForm()
     if form.validate_on_submit():
-        es_valido = True
-        # Validar fecha
-        fecha = form.fecha.data
-        if fecha < date.today():
-            flash("La fecha no puede estar en el pasado.", "warning")
-            es_valido = False
-        if fecha > date.today() + timedelta(days=LIMITE_FUTURO_DIAS):
-            flash("La fecha sobrepasa el limite permitido.", "warning")
-            es_valido = False
-        if CitDiaInhabil.query.filter_by(fecha=fecha).first() is not None:
-            flash("Esa fecha ya esta registrada.", "warning")
-            es_valido = False
-        # Si es valido, guardar
-        if es_valido:
-            cit_dia_inhabil = CitDiaInhabil(
-                descripcion=safe_string(form.descripcion.data),
-                fecha=fecha,
-            )
-            cit_dia_inhabil.save()
-            bitacora = Bitacora(
-                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-                usuario=current_user,
-                descripcion=safe_message(f"Nuevo Dia Inhabil {cit_dia_inhabil.fecha}"),
-                url=url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id),
-            )
-            bitacora.save()
-            flash(bitacora.descripcion, "success")
-            return redirect(url_for("cit_dias_inhabiles.list_active"))
+        cit_dia_inhabil = CitDiaInhabil(descripcion=safe_string(form.descripcion.data))
+        cit_dia_inhabil.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Nuevo Dia In {cit_dia_inhabil.descripcion}"),
+            url=url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+        return redirect(bitacora.url)
     return render_template("cit_dias_inhabiles/new.jinja2", form=form)
 
 
@@ -133,33 +113,17 @@ def edit(cit_dia_inhabil_id):
     cit_dia_inhabil = CitDiaInhabil.query.get_or_404(cit_dia_inhabil_id)
     form = CitDiaInhabilForm()
     if form.validate_on_submit():
-        es_valido = True
-        # Validar fecha
-        fecha = form.fecha.data
-        if fecha < date.today():
-            flash("La fecha no puede estar en el pasado.", "warning")
-            es_valido = False
-        if fecha > date.today() + timedelta(days=LIMITE_FUTURO_DIAS):
-            flash("La fecha sobrepasa el limite permitido.", "warning")
-            es_valido = False
-        cit_dia_inhabil_posible = CitDiaInhabil.query.filter_by(fecha=fecha).first()
-        if cit_dia_inhabil_posible is not None and cit_dia_inhabil.id != cit_dia_inhabil_posible.id:
-            flash("Esa fecha ya esta usada en otro registro. ", "warning")
-            es_valido = False
-        # Si es valido, actualizar
-        if es_valido:
-            cit_dia_inhabil.descripcion = safe_string(form.descripcion.data)
-            cit_dia_inhabil.fecha = fecha
-            cit_dia_inhabil.save()
-            bitacora = Bitacora(
-                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-                usuario=current_user,
-                descripcion=safe_message(f"Editado Dia Inhabil {cit_dia_inhabil.fecha}"),
-                url=url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id),
-            )
-            bitacora.save()
-            flash(bitacora.descripcion, "success")
-            return redirect(url_for("cit_dias_inhabiles.list_active"))
+        cit_dia_inhabil.descripcion = safe_string(form.descripcion.data)
+        cit_dia_inhabil.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Editado Dia Inhabil {cit_dia_inhabil.descripcion}"),
+            url=url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+        return redirect(bitacora.url)
     form.descripcion.data = cit_dia_inhabil.descripcion
     return render_template("cit_dias_inhabiles/edit.jinja2", form=form, cit_dia_inhabil=cit_dia_inhabil)
 
@@ -174,7 +138,7 @@ def delete(cit_dia_inhabil_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Eliminado Dia In {cit_dia_inhabil.fecha}"),
+            descripcion=safe_message(f"Eliminado Dia  {cit_dia_inhabil.descripcion}"),
             url=url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id),
         )
         bitacora.save()
@@ -192,7 +156,7 @@ def recover(cit_dia_inhabil_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Recuperado Dia Inhabil {cit_dia_inhabil.fecha}"),
+            descripcion=safe_message(f"Recuperado Dia In {cit_dia_inhabil.descripcion}"),
             url=url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id),
         )
         bitacora.save()

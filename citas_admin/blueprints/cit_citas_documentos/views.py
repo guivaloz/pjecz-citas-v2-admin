@@ -1,5 +1,5 @@
 """
-Cit Citas, vistas
+Cit Citas Documentos, vistas
 """
 import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -10,78 +10,75 @@ from lib.safe_string import safe_string, safe_message
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
-from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
+from citas_admin.blueprints.cit_citas_documentos.models import CitCitaDocumento
 
-MODULO = "CIT CITAS"
+MODULO = "CIT CITAS DOCUMENTOS"
 
-cit_citas = Blueprint("cit_citas", __name__, template_folder="templates")
+cit_citas_documentos = Blueprint("cit_citas_documentos", __name__, template_folder="templates")
 
 
-@cit_citas.before_request
+@cit_citas_documentos.before_request
 @login_required
 @permission_required(MODULO, Permiso.VER)
 def before_request():
     """Permiso por defecto"""
 
 
-@cit_citas.route("/cit_citas/datatable_json", methods=["GET", "POST"])
+@cit_citas_documentos.route("/cit_citas_documentos/datatable_json", methods=["GET", "POST"])
 def datatable_json():
-    """DataTable JSON para listado de citas"""
+    """DataTable JSON para listado de Citas Documentos"""
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
-    consulta = CitCita.query
+    consulta = CitCitaDocumento.query
     if "estatus" in request.form:
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(CitCitaDocumento.id).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
-    for cita in registros:
+    for resultado in registros:
         data.append(
             {
                 "detalle": {
-                    "id": cita.id,
-                    "url": url_for("cit_citas.detail", cita_id=cita.id),
+                    "nombre": resultado.nombre,
+                    "url": url_for("cit_citas_documentos.detail", cit_cita_documento_id=resultado.id),
                 },
-                "horario": cita.inicio.strftime("%Y-%m-%d %H:%M") + " - " + cita.termino.strftime("%Y-%m-%d %H:%M"),
-                "estado": cita.estado,
-                "servicio": cita.servicio.descripcion,
             }
         )
     # Entregar JSON
     return output_datatable_json(draw, total, data)
 
 
-@cit_citas.route("/cit_citas")
+@cit_citas_documentos.route("/cit_citas_documentos")
 def list_active():
-    """Listado de Citas activas"""
+    """Listado de Citas Documentos activos"""
     return render_template(
-        "cit_citas/list.jinja2",
+        "cit_citas_documentos/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Citas",
+        titulo="Citas Documentos",
         estatus="A",
     )
 
 
-@cit_citas.route("/cit_citas/inactivos")
+@cit_citas_documentos.route("/cit_citas_documentos/inactivos")
 @permission_required(MODULO, Permiso.MODIFICAR)
 def list_inactive():
-    """Listado de Citas inactivas"""
+    """Listado de Citas Documentos inactivos"""
     return render_template(
-        "cit_citas/list.jinja2",
+        "cit_citas_documentos/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
-        titulo="Citas inactivas",
+        titulo="Citas Documentos inactivos",
         estatus="B",
     )
 
 
-@cit_citas.route("/cit_citas/<int:cit_cita_id>")
-def detail(cit_cita_id):
-    """Detalle de una Cita"""
-    cit_cita = CitCita.query.get_or_404(cit_cita_id)
-    return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita)
+@cit_citas_documentos.route("/cit_citas_documentos/<int:cit_citas_documentos_id>")
+def detail(cit_citas_documentos_id):
+    """Detalle de un Cita Documento"""
+    cit_cita_documento = CitCitaDocumento.query.get_or_404(cit_citas_documentos_id)
+    return render_template("cit_citas_documentos/detail.jinja2", cit_cita_documento=cit_cita_documento)

@@ -14,46 +14,15 @@
 {% block content %}
     {% call detail.card(estatus=cita.estatus) %}
         {{ detail.label_value_big('Id', cita.id) }}
-        {{ detail.label_value('Inicia', moment(cita.inicio_tiempo).format('llll')) }}
-        {{ detail.label_value('Finaliza', moment(cita.termino_tiempo).format('llll')) }}
+        {{ detail.label_value('Inicia', moment(cita.inicio).format('llll')) }}
+        {{ detail.label_value('Termina', moment(cita.termino).format('llll')) }}
+        {{ detail.label_value('Cliente', cita.cliente.nombre, url_for('cit_clientes.detail', cliente_id=cita.cliente.id)) }}
+        {{ detail.label_value('Servicio', cita.servicio.nombre, url_for('cit_servicios.detail', servicio_id=cita.servicio.id)) }}
         {{ detail.label_value('Notas', cita.notas) }}
         {{ detail.label_value('Estado', cita.estado) }}
-        {{ detail.label_value('Servicio', cita.servicio.nombre, url_for('cit_servicios.detail', servicio_id=cita.servicio.id)) }}
-        {{ detail.label_value('Cliente', cita.cliente.nombre, url_for('cit_clientes.detail', cliente_id=cita.cliente.id)) }}
     {% endcall %}
-    {% if current_user.can_view('CIT EXPEDIENTES') %}
-        {% call detail.card('Expedientes') %}
-            <table id="cit_expedientes_datatable" class="table display nowrap" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>Expediente</th>
-                    </tr>
-                </thead>
-            </table>
-        {% endcall %}
-    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
-    {{ detail.config_datatable() }}
-    {% if current_user.can_view('CIT EXPEDIENTES') %}
-        <script>
-            configDataTable['ajax']['url'] = '/cit_expedientes/datatable_json';
-            configDataTable['ajax']['data'] = { 'estatus': "A", 'cit_cita_id': {{ cit_cita.id}} };
-            configDataTable['columns'] = [
-                { data: 'detalle' }
-            ];
-            configDataTable['columnDefs'] = [
-                {
-                    targets: 0, // detalle
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        return '<a href="' + data.url + '">' + data.clave + '</a>';
-                    }
-                }
-            ];
-            $('#cit_expedientes_datatable').DataTable(configDataTable);
-        </script>
-    {% endif %}
     {{ detail.moment_js(moment) }}
 {% endblock %}

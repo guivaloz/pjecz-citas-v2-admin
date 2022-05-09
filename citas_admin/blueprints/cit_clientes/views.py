@@ -2,20 +2,19 @@
 Cit Clientes, vistas
 """
 import json
-
-from flask import Blueprint, request, render_template, url_for
-from flask_login import login_required
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_string, safe_email
+from lib.safe_string import safe_string, safe_message
 
-from citas_admin.blueprints.cit_clientes.models import CitCliente
-from citas_admin.blueprints.cit_clientes.forms import CitClienteSearchForm
+from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
+from citas_admin.blueprints.cit_clientes.models import CitCliente
 
 MODULO = "CIT CLIENTES"
-RENOVACION_CONTRASENA_DIAS = 360
 
 cit_clientes = Blueprint("cit_clientes", __name__, template_folder="templates")
 
@@ -29,7 +28,7 @@ def before_request():
 
 @cit_clientes.route("/cit_clientes/datatable_json", methods=["GET", "POST"])
 def datatable_json():
-    """DataTable JSON para listado de clientes"""
+    """DataTable JSON para listado de Clientes"""
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
@@ -38,30 +37,17 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    if "nombres" in request.form:
-        consulta = consulta.filter(CitCliente.nombres.contains(safe_string(request.form["nombres"])))
-    if "apellido_paterno" in request.form:
-        consulta = consulta.filter(CitCliente.apellido_paterno.contains(safe_string(request.form["apellido_paterno"])))
-    if "apellido_materno" in request.form:
-        consulta = consulta.filter(CitCliente.apellido_materno.contains(safe_string(request.form["apellido_materno"])))
-    if "curp" in request.form:
-        consulta = consulta.filter(CitCliente.curp.contains(safe_string(request.form["curp"])))
-    if "email" in request.form:
-        consulta = consulta.filter(CitCliente.email.contains(safe_email(request.form["email"], search_fragment=True)))
-    registros = consulta.order_by(CitCliente.id.desc()).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(CitCliente.id).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
-    for cliente in registros:
+    for resultado in registros:
         data.append(
             {
                 "detalle": {
-                    "email": cliente.email,
-                    "url": url_for("cit_clientes.detail", cliente_id=cliente.id),
+                    "nombre": resultado.nombre,
+                    "url": url_for("cit_clientes.detail", cit_cliente_id=resultado.id),
                 },
-                "nombre": cliente.nombre,
-                "curp": cliente.curp,
-                "telefono": cliente.telefono,
             }
         )
     # Entregar JSON
@@ -69,8 +55,6 @@ def datatable_json():
 
 
 @cit_clientes.route("/cit_clientes")
-@login_required
-@permission_required(MODULO, Permiso.VER)
 def list_active():
     """Listado de Clientes activos"""
     return render_template(
@@ -82,7 +66,6 @@ def list_active():
 
 
 @cit_clientes.route("/cit_clientes/inactivos")
-@login_required
 @permission_required(MODULO, Permiso.MODIFICAR)
 def list_inactive():
     """Listado de Clientes inactivos"""
@@ -94,44 +77,8 @@ def list_inactive():
     )
 
 
-@cit_clientes.route("/cit_clientes/<int:cliente_id>")
-@login_required
-@permission_required(MODULO, Permiso.VER)
-def detail(cliente_id):
+@cit_clientes.route("/cit_clientes/<int:cit_cliente_id>")
+def detail(cit_cliente_id):
     """Detalle de un Cliente"""
-    cliente = CitCliente.query.get_or_404(cliente_id)
-    return render_template("cit_clientes/detail.jinja2", cliente=cliente)
-
-
-@cit_clientes.route("/cit_clientes/buscar", methods=["GET", "POST"])
-def search():
-    """Buscar un Cliente"""
-    form_search = CitClienteSearchForm()
-    if form_search.validate_on_submit():
-        busqueda = {"estatus": "A"}
-        titulos = []
-        # Nombres
-        if form_search.nombres.data:
-            busqueda["nombres"] = form_search.nombres.data
-            titulos.append("nombre " + busqueda["nombres"])
-        if form_search.apellido_paterno.data:
-            busqueda["apellido_paterno"] = form_search.apellido_paterno.data
-            titulos.append("apellido " + busqueda["apellido_paterno"])
-        if form_search.apellido_materno.data:
-            busqueda["apellido_materno"] = form_search.apellido_materno.data
-            titulos.append("apellido " + busqueda["apellido_materno"])
-        # CURP
-        if form_search.curp.data:
-            busqueda["curp"] = safe_string(form_search.curp.data)
-            titulos.append("CURP: " + busqueda["curp"])
-        # email
-        if form_search.email.data:
-            busqueda["email"] = form_search.email.data
-            titulos.append("e-mail " + busqueda["email"])
-        # Mostrar resultados
-        return render_template(
-            "cit_clientes/list.jinja2",
-            filtros=json.dumps(busqueda),
-            titulo="Clientes con " + ", ".join(titulos),
-        )
-    return render_template("cit_clientes/search.jinja2", form=form_search)
+    cit_cliente = CitCliente.query.get_or_404(cit_cliente_id)
+    return render_template("cit_clientes/detail.jinja2", cit_cliente=cit_cliente)

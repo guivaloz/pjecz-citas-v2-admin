@@ -16,7 +16,7 @@ class CitDiaInhabil(db.Model, UniversalMixin):
 
     # Columnas
     fecha = db.Column(db.Date(), unique=True, nullable=False)
-    descripcion = db.Column(db.String(512), nullable=True)
+    descripcion = db.Column(db.String(256), nullable=False)
 
     def __repr__(self):
         """Representación"""
