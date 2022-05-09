@@ -19,10 +19,10 @@ class CitHoraBloqueada(db.Model, UniversalMixin):
     oficina = db.relationship("Oficina", back_populates="cit_horas_bloqueadas")
 
     # Columnas
-    fecha = db.Column(db.Date(), nullable=False)
+    descripcion = db.Column(db.String(512), nullable=True)
+    fecha = db.Column(db.Date(), nullable=False, index=True)
     inicio_tiempo = db.Column(db.Time(), nullable=False)
     termino_tiempo = db.Column(db.Time(), nullable=False)
-    descripcion = db.Column(db.String(512), nullable=True)
 
     def __repr__(self):
         """Representación"""

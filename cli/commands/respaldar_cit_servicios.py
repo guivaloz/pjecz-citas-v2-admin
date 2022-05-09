@@ -5,7 +5,7 @@ from pathlib import Path
 import csv
 import click
 
-from citas_admin.blueprints.cit_servicios.models import CitServicio
+from citas_admin.blueprints.cit_categorias_servicios.models import CitServicio
 
 
 def respaldar_cit_servicios(salida: str = "cit_servicios.csv"):
