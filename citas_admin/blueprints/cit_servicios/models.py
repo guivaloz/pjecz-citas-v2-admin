@@ -1,12 +1,12 @@
 """
-Cit Categorias Servicios, modelos
+Cit Servicios, modelos
 """
 from citas_admin.extensions import db
 from lib.universal_mixin import UniversalMixin
 
 
-class CitCategoriaServicio(db.Model, UniversalMixin):
-    """Cit Categoria Servicio"""
+class CitServicio(db.Model, UniversalMixin):
+    """Cit Servicio"""
 
     # Nombre de la tabla
     __tablename__ = "cit_servicios"
@@ -16,16 +16,17 @@ class CitCategoriaServicio(db.Model, UniversalMixin):
 
     # Clave foránea
     cit_categoria_id = db.Column(db.Integer, db.ForeignKey("cit_categorias.id"), index=True, nullable=False)
-    cit_categoria = db.relationship("CitCategoria", back_populates="cit_categorias_servicios")
+    cit_categoria = db.relationship("CitCategoria", back_populates="cit_servicios")
 
     # Columnas
     clave = db.Column(db.String(32), unique=True, nullable=False)
+    descripcion = db.Column(db.String(128), nullable=False)
     duracion = db.Column(db.Time(), nullable=False)
-    nombre = db.Column(db.String(128), nullable=False)
-    solicitar_expedientes = db.Column(db.Boolean, nullable=False)
+    documentos_limite = db.Column(db.Integer, nullable=False)
 
     # Hijos
+    cit_citas = db.relationship("CitCita", back_populates="cit_servicio", lazy="noload")
 
     def __repr__(self):
         """Representación"""
-        return f"<CitCategoriaServicio {self.id}>"
+        return f"<CitServicio {self.clave}>"

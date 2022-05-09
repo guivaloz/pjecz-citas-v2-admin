@@ -16,14 +16,13 @@ class CitCliente(db.Model, UniversalMixin):
 
     # Columnas
     nombres = db.Column(db.String(256), nullable=False)
-    apellido_paterno = db.Column(db.String(256), nullable=False)
-    apellido_materno = db.Column(db.String(256), default="", server_default="")
+    apellido_primero = db.Column(db.String(256), nullable=False)
+    apellido_segundo = db.Column(db.String(256), nullable=False, default="", server_default="")
     curp = db.Column(db.String(18), unique=True, nullable=False)
-    telefono = db.Column(db.String(64), default="", server_default="")
+    telefono = db.Column(db.String(64), nullable=False, default="", server_default="")
     email = db.Column(db.String(256), unique=True, nullable=False)
     contrasena = db.Column(db.String(256), nullable=False)
-    hash = db.Column(db.String(256), default="", server_default="")
-    renovacion_fecha = db.Column(db.Date(), nullable=False)
+    renovacion = db.Column(db.Date(), nullable=False)
 
     # Hijos
     cit_citas = db.relationship("CitCita", back_populates="cit_cliente", lazy="noload")
@@ -31,8 +30,8 @@ class CitCliente(db.Model, UniversalMixin):
 
     @property
     def nombre(self):
-        """Junta nombres, apellido_paterno y apellido materno"""
-        return self.nombres + " " + self.apellido_paterno + " " + self.apellido_materno
+        """Junta nombres, apellido_primero y apellido segundo"""
+        return self.nombres + " " + self.apellido_primero + " " + self.apellido_segundo
 
     def __repr__(self):
         """Representación"""

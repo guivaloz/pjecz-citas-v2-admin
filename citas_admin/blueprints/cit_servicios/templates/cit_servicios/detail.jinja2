@@ -19,9 +19,10 @@
 {% block content %}
     {% call detail.card(estatus=servicio.estatus) %}
         {{ detail.label_value_big('Clave', servicio.clave) }}
-        {{ detail.label_value('Nombre', servicio.nombre) }}
-        {{ detail.label_value_boolean('Solicitar Expedientes', servicio.solicitar_expedientes) }}
+        {{ detail.label_value('Categoria', servicio.categoria.nombre) }}
+        {{ detail.label_value('Descripcion', servicio.descripcion) }}
         {{ detail.label_value('Duración', servicio.duracion.strftime("%H:%M")) }}
+        {{ detail.label_value('Documentos Limite', servicio.documentos_limite) }}
     {% endcall %}
 {% endblock %}
 

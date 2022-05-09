@@ -1,5 +1,5 @@
 """
-Alimentar Citas Servicios
+Alimentar Cit Servicios
 """
 from datetime import datetime
 from pathlib import Path
@@ -8,7 +8,8 @@ import click
 
 from lib.safe_string import safe_string
 
-from citas_admin.blueprints.cit_categorias_servicios.models import CitServicio
+from citas_admin.blueprints.cit_categorias.models import CitCategoria
+from citas_admin.blueprints.cit_servicios.models import CitServicio
 
 ARCHIVO_CSV = "seed/cit_servicios.csv"
 
@@ -32,10 +33,11 @@ def alimentar_cit_servicios():
                 click.echo(f"  AVISO: servicio_id {servicio_id} no es consecutivo")
                 continue
             CitServicio(
+                cit_categoria=CitCategoria.query.filter_by(nombre=safe_string(row["categoria_nombre"])).first(),
                 clave=safe_string(row["clave"]),
-                nombre=safe_string(row["nombre"]),
-                solicitar_expedientes=bool(row["solicitar_expedientes"]),
+                descripcion=safe_string(row["descripcion"]),
                 duracion=datetime.strptime(row["duracion"], "%H:%M:%S"),
+                documentos_limite=int(row["documentos_limite"]),
                 estatus=row["estatus"],
             ).save()
             contador += 1

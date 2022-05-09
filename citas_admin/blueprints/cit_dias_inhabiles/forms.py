@@ -10,5 +10,5 @@ class CitDiaInhabilForm(FlaskForm):
     """Formulario CitDíasInhabiles"""
 
     fecha = DateField("Fecha", validators=[DataRequired()])
-    descripcion = StringField("Descripción", validators=[Optional(), Length(max=512)])
+    descripcion = StringField("Descripción", validators=[Optional(), Length(max=256)])
     guardar = SubmitField("Guardar")
