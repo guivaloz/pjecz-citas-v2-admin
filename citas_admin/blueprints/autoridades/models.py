@@ -44,7 +44,8 @@ class Autoridad(db.Model, UniversalMixin):
     )
 
     # Hijos
-    usuarios = db.relationship("Usuario", back_populates="autoridad")
+    usuarios = db.relationship("Usuario", back_populates="autoridad", lazy="noload")
+    cit_autoridades_servicios = db.relationship("CitAutoridadServicio", back_populates="autoridad", lazy="noload")
 
     def __repr__(self):
         """Representación"""
