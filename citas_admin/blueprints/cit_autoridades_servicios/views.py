@@ -6,11 +6,13 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_message
+from lib.safe_string import safe_message, safe_string
 
+from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.cit_autoridades_servicios.models import CitAutoridadServicio
 from citas_admin.blueprints.cit_autoridades_servicios.forms import CitAutoridadServicioFormWithAutoridad, CitAutoridadServicioFormWithCitServicio
+from citas_admin.blueprints.cit_servicios.models import CitServicio
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
@@ -100,13 +102,61 @@ def detail(cid_autoridad_servicio_id):
 @cit_autoridades_servicios.route("/cit_autoridades_servicios/nuevo_con_autoridad/<int:autoridad_id>", methods=["GET", "POST"])
 @permission_required(MODULO, Permiso.CREAR)
 def new_with_autoridad(autoridad_id):
-    """Nuevo Autoridad-Servicio"""
+    """Nuevo Autoridad-Servicio con Autoridad"""
+    autoridad = Autoridad.query.get_or_404(autoridad_id)
+    form = CitAutoridadServicioFormWithAutoridad()
+    if form.validate_on_submit():
+        cit_servicio = form.cit_servicio.data
+        descripcion = safe_string(f"{autoridad.clave} con {cit_servicio.clave}")
+        cit_autoridad_servicio_existente = CitAutoridadServicio.query.filter(CitAutoridadServicio.autoridad == autoridad).filter(CitAutoridadServicio.cit_servicio == cit_servicio).first()
+        if cit_autoridad_servicio_existente is not None:
+            flash(f"CONFLICTO: Ya existe {descripcion}. Si esta eliminado, recupere.", "warning")
+            return redirect(url_for("cit_autoridades_servicios.detail", cit_autoridad_servicio_id=cit_autoridad_servicio_existente.id))
+        cit_autoridad_servicio = CitAutoridadServicio(
+            autoridad=autoridad,
+            cit_servicio=cit_servicio,
+        )
+        cit_autoridad_servicio.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Nuevo Autoridad-Servicio {descripcion}"),
+            url=url_for("cit_autoridades_servicios.detail", cit_autoridad_servicio_id=cit_autoridad_servicio.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+        return redirect(bitacora.url)
+    return render_template("cit_autoridades_servicios/new_with_autoridad.jinja2", form=form)
 
 
 @cit_autoridades_servicios.route("/cit_autoridades_servicios/nuevo_con_cit_servicio/<int:cit_servicio_id>", methods=["GET", "POST"])
 @permission_required(MODULO, Permiso.CREAR)
 def new_with_cit_servicio(cit_servicio_id):
-    """Nuevo Autoridad-Servicio"""
+    """Nuevo Autoridad-Servicio con Servicio"""
+    cit_servicio = CitServicio.query.get_or_404(cit_servicio_id)
+    form = CitAutoridadServicioFormWithCitServicio()
+    if form.validate_on_submit():
+        autoridad = form.autoridad.data
+        descripcion = safe_string(f"{autoridad.clave} con {cit_servicio.clave}")
+        cit_autoridad_servicio_existente = CitAutoridadServicio.query.filter(CitAutoridadServicio.autoridad == autoridad).filter(CitAutoridadServicio.cit_servicio == cit_servicio).first()
+        if cit_autoridad_servicio_existente is not None:
+            flash(f"CONFLICTO: Ya existe {descripcion}. Si esta eliminado, recupere.", "warning")
+            return redirect(url_for("cit_autoridades_servicios.detail", cit_autoridad_servicio_id=cit_autoridad_servicio_existente.id))
+        cit_autoridad_servicio = CitAutoridadServicio(
+            autoridad=autoridad,
+            cit_servicio=cit_servicio,
+        )
+        cit_autoridad_servicio.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Nuevo Autoridad-Servicio {descripcion}"),
+            url=url_for("cit_autoridades_servicios.detail", cit_autoridad_servicio_id=cit_autoridad_servicio.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+        return redirect(bitacora.url)
+    return render_template("cit_autoridades_servicios/new_with_cit_servicio.jinja2", form=form)
 
 
 @cit_autoridades_servicios.route("/cit_autoridades_servicios/eliminar/<int:cit_autoridad_servicio_id>")

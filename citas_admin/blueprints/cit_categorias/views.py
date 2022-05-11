@@ -92,7 +92,7 @@ def new():
     form = CitCategoriaForm()
     if form.validate_on_submit():
         # Validar que el nombre no se repita
-        nombre = safe_string(form.nombre.data)
+        nombre = safe_string(form.nombre.data, max_len=64)
         if CitCategoria.query.filter_by(nombre=nombre).first():
             flash("La nombre ya está en uso. Debe de ser único.", "warning")
         else:
@@ -101,7 +101,7 @@ def new():
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
                 usuario=current_user,
-                descripcion=safe_message(f"Nuevo Categoria {cit_categoria.nombre}"),
+                descripcion=safe_message(f"Nueva Categoria {cit_categoria.nombre}"),
                 url=url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id),
             )
             bitacora.save()
@@ -119,7 +119,7 @@ def edit(cit_categoria_id):
     if form.validate_on_submit():
         es_valido = True
         # Si cambia el nombre verificar que no este en uso
-        nombre = safe_string(form.nombre.data)
+        nombre = safe_string(form.nombre.data, max_len=64)
         if cit_categoria.nombre != nombre:
             cit_categoria_existente = CitCategoria.query.filter_by(nombre=nombre).first()
             if cit_categoria_existente and cit_categoria_existente.id != cit_categoria.id:

@@ -114,7 +114,7 @@ def new(cit_categoria_id):
             cit_servicio = CitServicio(
                 cit_categoria=cit_categoria,
                 clave=clave,
-                descripcion=safe_string(form.descripcion.data),
+                descripcion=safe_string(form.descripcion.data, max_len=64),
                 duracion=form.duracion.data,
                 documentos_limite=documentos_limite,
             )
@@ -154,7 +154,7 @@ def edit(cit_servicio_id):
         # Si es valido actualizar
         if es_valido:
             cit_servicio.clave = clave
-            cit_servicio.descripcion = safe_string(form.descripcion.data)
+            cit_servicio.descripcion = safe_string(form.descripcion.data, max_len=64)
             cit_servicio.duracion = form.duracion.data
             if form.documentos_limite.data:
                 cit_servicio.documentos_limite = int(form.documentos_limite.data)

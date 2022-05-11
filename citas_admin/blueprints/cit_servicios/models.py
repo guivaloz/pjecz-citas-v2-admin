@@ -20,7 +20,7 @@ class CitServicio(db.Model, UniversalMixin):
 
     # Columnas
     clave = db.Column(db.String(32), unique=True, nullable=False)
-    descripcion = db.Column(db.String(128), nullable=False)
+    descripcion = db.Column(db.String(64), nullable=False)
     duracion = db.Column(db.Time(), nullable=False)
     documentos_limite = db.Column(db.Integer, nullable=False)
 

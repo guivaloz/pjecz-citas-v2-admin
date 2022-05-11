@@ -20,6 +20,9 @@ class CitAutoridadServicio(db.Model, UniversalMixin):
     cit_servicio_id = db.Column(db.Integer, db.ForeignKey("cit_servicios.id"), index=True, nullable=False)
     cit_servicio = db.relationship("CitServicio", back_populates="cit_autoridades_servicios")
 
+    # Columnas
+    descripcion = db.Column(db.String(256), nullable=False)
+
     def __repr__(self):
         """Representación"""
         return f"<CitAutoridadServicio {self.id}>"
