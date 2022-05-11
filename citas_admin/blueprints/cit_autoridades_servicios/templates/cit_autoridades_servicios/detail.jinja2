@@ -6,7 +6,7 @@
 {% block title %}Autoridad-Servicio{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons(cit_autoridad_servicio.descripcion) %}
+    {% call topbar.page_buttons('Autoridad-Servicio ' + cit_autoridad_servicio.descripcion) %}
         {{ topbar.button_previous('Autoridades-Servicios', url_for('cit_autoridades_servicios.list_active')) }}
         {% if current_user.can_edit('CIT AUTORIDADES SERVICIOS') %}
             {% if cit_autoridad_servicio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_autoridades_servicios.delete', cit_autoridad_servicio_id=cit_autoridad_servicio.id)) }}{% endif %}
