@@ -32,7 +32,7 @@
         {{ detail.label_value('Materia (si es de Primera Instancia)', autoridad.materia.nombre) }}
         {{ detail.label_value('Creado', moment(autoridad.creado).format('llll')) }}
     {% endcall %}
-    {# Servicios de la autoridad #}
+    {# Autoridades-Servicios de la autoridad #}
     {% if current_user.can_view('CIT AUTORIDADES SERVICIOS') %}
         {% call detail.card('Servicios') %}
             <table id="cit_autoridades_servicios_datatable" class="table display nowrap" style="width:100%">

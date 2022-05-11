@@ -5,6 +5,8 @@ from pathlib import Path
 import csv
 import click
 
+from lib.safe_string import safe_clave, safe_string
+
 from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.materias.models import Materia
@@ -24,6 +26,7 @@ def alimentar_autoridades():
     click.echo("Alimentando autoridades...")
     contador = 0
     notarias_contador = 0
+    organo_jurisdiccional_no_definido_contador = 0
     with open(ruta, encoding="utf8") as puntero:
         rows = csv.DictReader(puntero)
         for row in rows:
@@ -41,23 +44,27 @@ def alimentar_autoridades():
             if autoridad_id != contador + 1:
                 click.echo(f"  AVISO: autoridad_id {autoridad_id} no es consecutivo")
                 continue
-            es_notaria = row["es_notaria"] == "1"
             estatus = row["estatus"]
-            if es_notaria:
+            es_notaria = row["es_notaria"] == "1"
+            if estatus == "A" and es_notaria:
                 notarias_contador += 1
+                estatus = "B"
+            organo_jurisdiccional = row["organo_jurisdiccional"]
+            if estatus == "A" and organo_jurisdiccional == "NO DEFINIDO":
+                organo_jurisdiccional_no_definido_contador += 1
                 estatus = "B"
             Autoridad(
                 distrito=distrito,
                 materia=materia,
-                clave=row["clave"],
-                descripcion=row["descripcion"],
-                descripcion_corta=row["descripcion_corta"],
+                clave=safe_clave(row["clave"]),
+                descripcion=safe_string(row["descripcion"], do_unidecode=False),
+                descripcion_corta=safe_string(row["descripcion_corta"], do_unidecode=False),
                 es_jurisdiccional=(row["es_jurisdiccional"] == "1"),
                 es_notaria=es_notaria,
-                organo_jurisdiccional=row["organo_jurisdiccional"],
+                organo_jurisdiccional=organo_jurisdiccional,
                 estatus=estatus,
             ).save()
             contador += 1
             if contador % 100 == 0:
                 click.echo(f"  Van {contador}...")
-    click.echo(f"  {contador} autoridades alimentadas. A {notarias_contador} notarias se les puso estatus eliminado.")
+    click.echo(f"  {contador} autoridades alimentadas. Con estatus eliminado {notarias_contador} notarias, {organo_jurisdiccional_no_definido_contador} OJ no definido.")

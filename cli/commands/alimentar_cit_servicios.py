@@ -35,7 +35,7 @@ def alimentar_cit_servicios():
             CitServicio(
                 cit_categoria=CitCategoria.query.filter_by(nombre=safe_string(row["categoria_nombre"])).first(),
                 clave=safe_string(row["clave"]),
-                descripcion=safe_string(row["descripcion"]),
+                descripcion=safe_string(row["descripcion"], max_len=64, do_unidecode=False),
                 duracion=datetime.strptime(row["duracion"], "%H:%M:%S"),
                 documentos_limite=int(row["documentos_limite"]),
                 estatus=row["estatus"],

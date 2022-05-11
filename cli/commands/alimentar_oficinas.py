@@ -36,7 +36,7 @@ def alimentar_oficinas():
                 distrito_id=int(row["distrito_id"]),
                 clave=safe_clave(row["clave"]),
                 descripcion=safe_string(row["descripcion"], max_len=512, do_unidecode=False),
-                descripcion_corta=safe_string(row["descripcion_corta"], max_len=64),
+                descripcion_corta=safe_string(row["descripcion_corta"], max_len=64, do_unidecode=False),
                 es_jurisdiccional=bool(row["es_jurisdiccional"]),
                 apertura=datetime.strptime(row["apertura"], "%H:%M:%S"),
                 cierre=datetime.strptime(row["cierre"], "%H:%M:%S"),
