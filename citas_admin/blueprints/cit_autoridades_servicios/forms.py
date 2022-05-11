@@ -24,13 +24,13 @@ class CitAutoridadServicioFormWithAutoridad(FlaskForm):
     """Formulario Autoridad-Servicio"""
 
     autoridad = StringField("Autoridad")  # Solo lectura
-    cit_servicio = QuerySelectField(query_factory=cit_servicios_opciones, get_label="clave", validators=[DataRequired()])
+    cit_servicio = QuerySelectField(query_factory=cit_servicios_opciones, get_label="compuesto", validators=[DataRequired()])
     guardar = SubmitField("Guardar")
 
 
 class CitAutoridadServicioFormWithCitServicio(FlaskForm):
     """Formulario Autoridad-Servicio"""
 
-    autoridad = QuerySelectField(query_factory=autoridades_opciones, get_label="clave", validators=[DataRequired()])
+    autoridad = QuerySelectField(query_factory=autoridades_opciones, get_label="compuesto", validators=[DataRequired()])
     cit_servicio = StringField("Cit Servicio")  # Solo lectura
     guardar = SubmitField("Guardar")

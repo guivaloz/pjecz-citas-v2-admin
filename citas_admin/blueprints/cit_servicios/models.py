@@ -28,6 +28,11 @@ class CitServicio(db.Model, UniversalMixin):
     cit_citas = db.relationship("CitCita", back_populates="cit_servicio", lazy="noload")
     cit_autoridades_servicios = db.relationship("CitAutoridadServicio", back_populates="cit_servicio", lazy="noload")
 
+    @property
+    def compuesto(self):
+        """Compuesto"""
+        return f"{self.clave} - {self.descripcion}"
+
     def __repr__(self):
         """Representación"""
         return f"<CitServicio {self.clave}>"

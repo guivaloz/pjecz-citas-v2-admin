@@ -56,11 +56,11 @@ def datatable_json():
                     "url": url_for("cit_autoridades_servicios.detail", cit_autoridad_servicio_id=resultado.id),
                 },
                 "autoridad": {
-                    "autoridad_clave": resultado.autoridad.clave,
+                    "clave": resultado.autoridad.clave,
                     "url": url_for("autoridades.detail", autoridad_id=resultado.autoridad_id),
                 },
                 "cit_servicio": {
-                    "cit_servicio_clave": resultado.cit_servicio.clave,
+                    "clave": resultado.cit_servicio.clave,
                     "url": url_for("cit_servicios.detail", cit_servicio_id=resultado.cit_servicio_id),
                 },
             }
@@ -92,11 +92,11 @@ def list_inactive():
     )
 
 
-@cit_autoridades_servicios.route("/cit_autoridades_servicios/<int:cid_autoridad_servicio_id>")
-def detail(cid_autoridad_servicio_id):
+@cit_autoridades_servicios.route("/cit_autoridades_servicios/<int:cit_autoridad_servicio_id>")
+def detail(cit_autoridad_servicio_id):
     """Detalle de un Autoridad-Servicio"""
-    cit_autoridad_servicio = CitAutoridadServicio.query.get_or_404(cid_autoridad_servicio_id)
-    return render_template("cit_autoridades_servicios/detail.jinja2", cid_autoridad_servicio=cit_autoridad_servicio)
+    cit_autoridad_servicio = CitAutoridadServicio.query.get_or_404(cit_autoridad_servicio_id)
+    return render_template("cit_autoridades_servicios/detail.jinja2", cit_autoridad_servicio=cit_autoridad_servicio)
 
 
 @cit_autoridades_servicios.route("/cit_autoridades_servicios/nuevo_con_autoridad/<int:autoridad_id>", methods=["GET", "POST"])
@@ -115,6 +115,7 @@ def new_with_autoridad(autoridad_id):
         cit_autoridad_servicio = CitAutoridadServicio(
             autoridad=autoridad,
             cit_servicio=cit_servicio,
+            descripcion=descripcion,
         )
         cit_autoridad_servicio.save()
         bitacora = Bitacora(
@@ -126,7 +127,12 @@ def new_with_autoridad(autoridad_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
         return redirect(bitacora.url)
-    return render_template("cit_autoridades_servicios/new_with_autoridad.jinja2", form=form)
+    form.autoridad.data = f"{autoridad.clave} - {autoridad.descripcion_corta}"  # Read only
+    return render_template(
+        "cit_autoridades_servicios/new_with_autoridad.jinja2",
+        form=form,
+        autoridad=autoridad,
+    )
 
 
 @cit_autoridades_servicios.route("/cit_autoridades_servicios/nuevo_con_cit_servicio/<int:cit_servicio_id>", methods=["GET", "POST"])
@@ -145,6 +151,7 @@ def new_with_cit_servicio(cit_servicio_id):
         cit_autoridad_servicio = CitAutoridadServicio(
             autoridad=autoridad,
             cit_servicio=cit_servicio,
+            descripcion=descripcion,
         )
         cit_autoridad_servicio.save()
         bitacora = Bitacora(
@@ -156,7 +163,12 @@ def new_with_cit_servicio(cit_servicio_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
         return redirect(bitacora.url)
-    return render_template("cit_autoridades_servicios/new_with_cit_servicio.jinja2", form=form)
+    form.cit_servicio.data = f"{cit_servicio.clave} - {cit_servicio.descripcion}"  # Read only
+    return render_template(
+        "cit_autoridades_servicios/new_with_cit_servicio.jinja2",
+        form=form,
+        cit_servicio=cit_servicio,
+    )
 
 
 @cit_autoridades_servicios.route("/cit_autoridades_servicios/eliminar/<int:cit_autoridad_servicio_id>")
