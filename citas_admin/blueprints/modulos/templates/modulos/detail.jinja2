@@ -28,9 +28,9 @@
         <table id="permisos_datatable" class="table display nowrap" style="width:100%">
             <thead>
                 <tr>
-                    <th>Nombres</th>
-                    <th>Niveles</th>
-                    <th>Roles</th>
+                    <th>Nombre</th>
+                    <th>Nivel</th>
+                    <th>Rol</th>
                 </tr>
             </thead>
         </table>
@@ -45,7 +45,6 @@
         {% if modulo.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + modulo.nombre + '?') }}{% endif %}
         {% if modulo.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', 'Recuperar a ' + modulo.nombre + '?') }}{% endif %}
     {% endif %}
-    {{ modals.custom_javascript('Eliminar', '¿Eliminar ese permiso del rol?', 'DeletePermiso') }}
     {{ detail.config_datatable() }}
     {% if current_user.can_view('PERMISOS') %}
         <script>
@@ -53,7 +52,8 @@
             configDataTable['ajax']['data'] = { 'estatus': "A", 'modulo_id': {{ modulo.id}} };
             configDataTable['columns'] = [
                 { data: "detalle" },
-                { data: "rol" }
+                { data: "nivel" },
+                { data: "rol" },
             ];
             configDataTable['columnDefs'] = [
                 {
@@ -64,7 +64,7 @@
                     }
                 },
                 {
-                    targets: 1, // rol
+                    targets: 2, // rol
                     data: null,
                     render: function(data, type, row, meta) {
                         if (data.url == '') {
