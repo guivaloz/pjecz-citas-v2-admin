@@ -6,14 +6,15 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_string, safe_message
+from lib.safe_string import safe_clave, safe_string, safe_message
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_categorias.models import CitCategoria
+from citas_admin.blueprints.cit_servicios.models import CitServicio
+from citas_admin.blueprints.cit_servicios.forms import CitServicioForm
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.cit_servicios.models import CitServicio
-from citas_admin.blueprints.cit_servicios.forms import CitServicioForm
 
 MODULO = "CIT SERVICIOS"
 
@@ -38,7 +39,9 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    registros = consulta.order_by(CitServicio.id).offset(start).limit(rows_per_page).all()
+    if "cit_categoria_id" in request.form:
+        consulta = consulta.filter_by(cit_categoria_id=request.form["cit_categoria_id"])
+    registros = consulta.order_by(CitServicio.clave).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -50,9 +53,12 @@ def datatable_json():
                     "url": url_for("cit_servicios.detail", cit_servicio_id=resultado.id),
                 },
                 "descripcion": resultado.descripcion,
-                "duracion": resultado.duracion,
+                "duracion": resultado.duracion.strftime("%H:%M"),
                 "documentos_limite": resultado.documentos_limite,
-                "categoria": resultado.categoria.nombre,
+                "cit_categoria": {
+                    "nombre": resultado.cit_categoria.nombre,
+                    "url": url_for("cit_categorias.detail", cit_categoria_id=resultado.cit_categoria.id),
+                },
             }
         )
     # Entregar JSON
@@ -89,24 +95,45 @@ def detail(cit_servicio_id):
     return render_template("cit_servicios/detail.jinja2", cit_servicio=cit_servicio)
 
 
-@cit_servicios.route("/cit_servicios/nuevo", methods=["GET", "POST"])
+@cit_servicios.route("/cit_servicios/nuevo/<int:cit_categoria_id>", methods=["GET", "POST"])
 @permission_required(MODULO, Permiso.CREAR)
-def new():
+def new(cit_categoria_id):
     """Nuevo Servicio"""
+    cit_categoria = CitCategoria.query.get_or_404(cit_categoria_id)
     form = CitServicioForm()
     if form.validate_on_submit():
-        cit_servicio = CitServicio(descripcion=safe_string(form.descripcion.data))
-        cit_servicio.save()
-        bitacora = Bitacora(
-            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-            usuario=current_user,
-            descripcion=safe_message(f"Nuevo Servicio {cit_servicio.descripcion}"),
-            url=url_for("cit_servicios.detail", cit_servicio_id=cit_servicio.id),
-        )
-        bitacora.save()
-        flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
-    return render_template("cit_servicios/new.jinja2", form=form)
+        # Validar que la clave no se repita
+        clave = safe_clave(form.clave.data)
+        if CitServicio.query.filter_by(clave=clave).first():
+            flash("La clave ya está en uso. Debe de ser única.", "warning")
+        else:
+            if form.documentos_limite.data:
+                documentos_limite = int(form.documentos_limite.data)
+            else:
+                documentos_limite = 0
+            cit_servicio = CitServicio(
+                cit_categoria=cit_categoria,
+                clave=clave,
+                descripcion=safe_string(form.descripcion.data),
+                duracion=form.duracion.data,
+                documentos_limite=documentos_limite,
+            )
+            cit_servicio.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Nuevo Servicio {cit_servicio.descripcion}"),
+                url=url_for("cit_servicios.detail", cit_servicio_id=cit_servicio.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
+    form.cit_categoria_nombre.data = cit_categoria.nombre
+    return render_template(
+        "cit_servicios/new.jinja2",
+        form=form,
+        cit_categoria=cit_categoria,
+    )
 
 
 @cit_servicios.route("/cit_servicios/edicion/<int:cit_servicio_id>", methods=["GET", "POST"])
@@ -116,19 +143,43 @@ def edit(cit_servicio_id):
     cit_servicio = CitServicio.query.get_or_404(cit_servicio_id)
     form = CitServicioForm()
     if form.validate_on_submit():
-        cit_servicio.descripcion = safe_string(form.descripcion.data)
-        cit_servicio.save()
-        bitacora = Bitacora(
-            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-            usuario=current_user,
-            descripcion=safe_message(f"Editado Ser {cit_servicio.descripcion}"),
-            url=url_for("cit_servicios.detail", cit_servicio_id=cit_servicio.id),
-        )
-        bitacora.save()
-        flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
+        es_valido = True
+        # Si cambia la clave verificar que no este en uso
+        clave = safe_clave(form.clave.data)
+        if cit_servicio.clave != clave:
+            cit_servicio_existente = CitServicio.query.filter_by(clave=clave).first()
+            if cit_servicio_existente and cit_servicio_existente.id != cit_servicio.id:
+                es_valido = False
+                flash("La clave ya está en uso. Debe de ser única.", "warning")
+        # Si es valido actualizar
+        if es_valido:
+            cit_servicio.clave = clave
+            cit_servicio.descripcion = safe_string(form.descripcion.data)
+            cit_servicio.duracion = form.duracion.data
+            if form.documentos_limite.data:
+                cit_servicio.documentos_limite = int(form.documentos_limite.data)
+            else:
+                cit_servicio.documentos_limite = 0
+            cit_servicio.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Editado Ser {cit_servicio.descripcion}"),
+                url=url_for("cit_servicios.detail", cit_servicio_id=cit_servicio.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
+    form.cit_categoria_nombre.data = cit_servicio.cit_categoria.nombre
+    form.clave.data = cit_servicio.clave
     form.descripcion.data = cit_servicio.descripcion
-    return render_template("cit_servicios/edit.jinja2", form=form, cit_servicio=cit_servicio)
+    form.duracion.data = cit_servicio.duracion
+    form.documentos_limite.data = cit_servicio.documentos_limite
+    return render_template(
+        "cit_servicios/edit.jinja2",
+        form=form,
+        cit_servicio=cit_servicio,
+    )
 
 
 @cit_servicios.route("/cit_servicios/eliminar/<int:cit_servicio_id>")
