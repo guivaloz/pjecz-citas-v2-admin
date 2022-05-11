@@ -20,13 +20,18 @@ class CitServicio(db.Model, UniversalMixin):
 
     # Columnas
     clave = db.Column(db.String(32), unique=True, nullable=False)
-    descripcion = db.Column(db.String(128), nullable=False)
+    descripcion = db.Column(db.String(64), nullable=False)
     duracion = db.Column(db.Time(), nullable=False)
     documentos_limite = db.Column(db.Integer, nullable=False)
 
     # Hijos
     cit_citas = db.relationship("CitCita", back_populates="cit_servicio", lazy="noload")
     cit_autoridades_servicios = db.relationship("CitAutoridadServicio", back_populates="cit_servicio", lazy="noload")
+
+    @property
+    def compuesto(self):
+        """Compuesto"""
+        return f"{self.clave} - {self.descripcion}"
 
     def __repr__(self):
         """Representación"""

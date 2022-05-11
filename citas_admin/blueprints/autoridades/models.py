@@ -47,6 +47,11 @@ class Autoridad(db.Model, UniversalMixin):
     usuarios = db.relationship("Usuario", back_populates="autoridad", lazy="noload")
     cit_autoridades_servicios = db.relationship("CitAutoridadServicio", back_populates="autoridad", lazy="noload")
 
+    @property
+    def compuesto(self):
+        """Compuesto"""
+        return f"{self.clave} - {self.descripcion_corta}"
+
     def __repr__(self):
         """Representación"""
         return f"<Autoridad {self.clave}>"

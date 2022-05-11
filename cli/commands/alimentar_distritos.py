@@ -5,6 +5,8 @@ from pathlib import Path
 import csv
 import click
 
+from lib.safe_string import safe_string
+
 from citas_admin.blueprints.distritos.models import Distrito
 
 DISTRITOS_CSV = "seed/distritos.csv"
@@ -29,8 +31,8 @@ def alimentar_distritos():
                 click.echo(f"  AVISO: distrito_id {distrito_id} no es consecutivo")
                 continue
             Distrito(
-                nombre=row["nombre"],
-                nombre_corto=row["nombre_corto"],
+                nombre=safe_string(row["nombre"], do_unidecode=False),
+                nombre_corto=safe_string(row["nombre_corto"], do_unidecode=False),
                 es_distrito_judicial=(row["es_distrito_judicial"] == "1"),
                 estatus=row["estatus"],
             ).save()

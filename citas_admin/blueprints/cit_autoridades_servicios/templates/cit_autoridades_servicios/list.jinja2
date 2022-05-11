@@ -35,16 +35,18 @@
         configDataTable['columns'] = [
             { data: 'detalle' },
             { data: 'autoridad' },
-            { data: 'servicio' },
+            { data: 'cit_servicio' },
         ];
         configDataTable['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
                 render: function(data, type, row, meta) {
-                    return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                    return '<a href="' + data.url + '">' + data.id + '</a>';
                 }
-                targets: [1, 2], // autoridad, servicio
+            },
+            {
+                targets: [1, 2], // autoridad, cit_servicio
                 data: null,
                 render: function(data, type, row, meta) {
                     return '<a href="' + data.url + '">' + data.clave + '</a>';

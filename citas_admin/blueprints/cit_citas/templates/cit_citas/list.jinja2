@@ -6,17 +6,9 @@
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
-        {% if current_user.can_view('CIT CLIENTES') %}
-            {{ topbar.button_primary('Clientes', url_for('cit_clientes.list_active'), 'mdi:account-tie') }}
-        {% endif %}
-        {% if current_user.can_view('CIT SERVICIOS') %}
-            {{ topbar.button_primary('Servicios', url_for('cit_servicios.list_active'), 'mdi:account-wrench') }}
-        {% endif %}
-        {% if current_user.can_view('CIT DIAS INHABILES') %}
-            {{ topbar.button_primary('Días Inhábiles', url_for('cit_dias_inhabiles.list_active'), 'mdi:calendar-remove') }}
-        {% endif %}
-        {% if current_user.can_view('CIT HORAS BLOQUEADAS') %}
-            {{ topbar.button_primary('Horas Bloqueadas', url_for('cit_horas_bloqueadas.list_active'), 'mdi:calendar-clock') }}
+        {% if current_user.can_edit('CIT CITAS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_citas.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_citas.list_active')) }}{% endif %}
         {% endif %}
     {% endcall %}
 {% endblock %}

@@ -15,7 +15,7 @@ class CitCategoria(db.Model, UniversalMixin):
     id = db.Column(db.Integer, primary_key=True)
 
     # Columnas
-    nombre = db.Column(db.String(256), unique=True, nullable=False)
+    nombre = db.Column(db.String(64), unique=True, nullable=False)
 
     # Hijos
     cit_servicios = db.relationship("CitServicio", back_populates="cit_categoria", lazy="noload")

@@ -30,7 +30,7 @@ def alimentar_cit_categorias():
             nombre = safe_string(row["categoria_nombre"])
             if nombre in categorias_listado:
                 continue
-            CitCategoria(nombre=safe_string(nombre)).save()
+            CitCategoria(nombre=safe_string(nombre, max_len=64, do_unidecode=False)).save()
             categorias_listado.append(nombre)
             contador += 1
             if contador % 100 == 0:
