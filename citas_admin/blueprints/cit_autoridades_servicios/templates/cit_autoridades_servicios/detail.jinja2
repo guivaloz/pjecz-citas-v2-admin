@@ -1,0 +1,32 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Autoridad-Servicio{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(cit_autoridad_servicio.id) %}
+        {{ topbar.button_previous('Autoridades-Servicios', url_for('cit_autoridades_servicios.list_active')) }}
+        {% if current_user.can_edit('CIT AUTORIDADES SERVICIOS') %}
+            {% if cit_autoridad_servicio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_autoridades_servicios.delete', cit_autoridad_servicio_id=cit_autoridad_servicio.id)) }}{% endif %}
+            {% if cit_autoridad_servicio.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_autoridades_servicios.recover', cit_autoridad_servicio_id=cit_autoridad_servicio.id)) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=cit_autoridad_servicio.estatus) %}
+        {{ detail.label_value_big('ID', cit_autoridad_servicio.id) }}
+        {{ detail.label_value('Autoridad', cit_autoridad_servicio.autoridad.clave) }}
+        {{ detail.label_value('Servicio', cit_autoridad_servicio.servicio.clave) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {% if current_user.can_edit('CIT AUTORIDADES SERVICIOS') %}
+        {% if cit_autoridad_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_autoridad_servicio.id + '?') }}{% endif %}
+        {% if cit_autoridad_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_autoridad_servicio.id + '?') }}{% endif %}
+    {% endif %}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

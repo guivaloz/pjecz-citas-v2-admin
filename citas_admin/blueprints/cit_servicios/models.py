@@ -26,6 +26,7 @@ class CitServicio(db.Model, UniversalMixin):
 
     # Hijos
     cit_citas = db.relationship("CitCita", back_populates="cit_servicio", lazy="noload")
+    cit_autoridades_servicios = db.relationship("CitAutoridadServicio", back_populates="cit_servicio", lazy="noload")
 
     def __repr__(self):
         """Representación"""
