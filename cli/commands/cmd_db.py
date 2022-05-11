@@ -13,6 +13,7 @@ from citas_admin.app import create_app
 from citas_admin.extensions import db
 
 from cli.commands.alimentar_autoridades import alimentar_autoridades
+from cli.commands.alimentar_cit_dias_inhabiles import alimentar_cit_dias_inhabiles
 from cli.commands.alimentar_distritos import alimentar_distritos
 from cli.commands.alimentar_domicilios import alimentar_domicilios
 from cli.commands.alimentar_cit_categorias import alimentar_cit_categorias
@@ -77,6 +78,7 @@ def alimentar():
     alimentar_usuarios_roles()
     alimentar_cit_categorias()
     alimentar_cit_servicios()
+    alimentar_cit_dias_inhabiles()
     click.echo("Termina alimentar.")
 
 
