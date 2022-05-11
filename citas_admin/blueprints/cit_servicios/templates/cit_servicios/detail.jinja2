@@ -24,6 +24,21 @@
         {{ detail.label_value('Duración', cit_servicio.duracion.strftime("%H:%M")) }}
         {{ detail.label_value('Documentos Limite', cit_servicio.documentos_limite) }}
     {% endcall %}
+    {% if current_user.can_view('AUTORIDADES') %}
+        {% call detail.card('Autoridades') %}
+            <table id="autoridades_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Clave</th>
+                        <th>Descripcion corta</th>
+                        <th>Órgano Jurisdiccional</th>
+                        <th>Distrito</th>
+                        <th>Materia</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
