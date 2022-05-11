@@ -6,29 +6,29 @@
 {% block title %}Servicio{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons('Servicio: ' + servicio.clave) %}
+    {% call topbar.page_buttons('Servicio: ' + cit_servicio.clave) %}
         {{ topbar.button_previous('Servicios', url_for('cit_servicios.list_active')) }}
         {% if current_user.can_edit('CIT SERVICIOS') %}
-            {{ topbar.button_edit('Editar', url_for('cit_servicios.edit', servicio_id=servicio.id)) }}
-            {% if servicio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_servicios.delete', servicio_id=servicio.id)) }}{% endif %}
-            {% if servicio.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_servicios.recover', servicio_id=servicio.id)) }}{% endif %}
+            {{ topbar.button_edit('Editar', url_for('cit_servicios.edit', cit_servicio_id=cit_servicio.id)) }}
+            {% if cit_servicio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_servicios.delete', cit_servicio_id=cit_servicio.id)) }}{% endif %}
+            {% if cit_servicio.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_servicios.recover', cit_servicio_id=cit_servicio.id)) }}{% endif %}
         {% endif %}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
-    {% call detail.card(estatus=servicio.estatus) %}
-        {{ detail.label_value_big('Clave', servicio.clave) }}
-        {{ detail.label_value('Categoria', servicio.categoria.nombre) }}
-        {{ detail.label_value('Descripcion', servicio.descripcion) }}
-        {{ detail.label_value('Duración', servicio.duracion.strftime("%H:%M")) }}
-        {{ detail.label_value('Documentos Limite', servicio.documentos_limite) }}
+    {% call detail.card(estatus=cit_servicio.estatus) %}
+        {{ detail.label_value_big('Clave', cit_servicio.clave) }}
+        {{ detail.label_value('Categoria', cit_servicio.cit_categoria.nombre, url_for('cit_categorias.detail', cit_categoria_id=cit_servicio.cit_categoria_id)) }}
+        {{ detail.label_value('Descripcion', cit_servicio.descripcion) }}
+        {{ detail.label_value('Duración', cit_servicio.duracion.strftime("%H:%M")) }}
+        {{ detail.label_value('Documentos Limite', cit_servicio.documentos_limite) }}
     {% endcall %}
 {% endblock %}
 
 {% block custom_javascript %}
     {% if current_user.can_edit('CIT SERVICIOS') %}
-        {% if servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar ' + servicio.clave + '?') }}{% endif %}
-        {% if servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar ' + servicio.clave + '?') }}{% endif %}
+        {% if cit_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar ' + cit_servicio.clave + '?') }}{% endif %}
+        {% if cit_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar ' + cit_servicio.clave + '?') }}{% endif %}
     {% endif %}
 {% endblock %}

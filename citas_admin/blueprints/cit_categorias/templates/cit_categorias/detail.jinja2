@@ -20,6 +20,23 @@
     {% call detail.card(estatus=cit_categoria.estatus) %}
         {{ detail.label_value_big('Nombre', cit_categoria.nombre) }}
     {% endcall %}
+    {% if current_user.can_view('CIT SERVICIOS') %}
+        {% call detail.card('Servicios') %}
+            <table id="cit_servicios_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Clave</th>
+                        <th>Descripcion</th>
+                        <th>Duración</th>
+                        <th>Documentos Limite</th>
+                    </tr>
+                </thead>
+            </table>
+            {% if current_user.can_insert('CIT SERVICIOS') %}
+            <a href="{{ url_for('cit_servicios.new', cit_categoria_id=cit_categoria.id) }}" class="btn btn-primary">Agregar</a>
+            {% endif %}
+        {% endcall %}
+    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
@@ -28,4 +45,27 @@
         {% if cit_categoria.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_categoria.nombre + '?') }}{% endif %}
     {% endif %}
     {{ detail.moment_js(moment) }}
+    {{ detail.config_datatable() }}
+    {% if current_user.can_view('CIT SERVICIOS') %}
+        <script>
+            configDataTable['ajax']['url'] = '/cit_servicios/datatable_json';
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'cit_categoria_id': {{ cit_categoria.id }} };
+            configDataTable['columns'] = [
+                { data: "detalle" },
+                { data: "descripcion" },
+                { data: "duracion" },
+                { data: "documentos_limite" },
+            ];
+            configDataTable['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.clave + '</a>';
+                    }
+                }
+            ];
+            $('#cit_servicios_datatable').DataTable(configDataTable);
+        </script>
+    {% endif %}
 {% endblock %}

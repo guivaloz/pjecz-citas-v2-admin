@@ -1,0 +1,23 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/form.jinja2' as f with context %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Nuevo Servicio{% endblock %}
+
+{% block topbar_actions %}
+    {{ topbar.page('Nuevo Servicio') }}
+{% endblock %}
+
+{% block content %}
+    {% call f.card() %}
+        {% set form_kwargs = {'cit_categoria_id': cit_categoria.id} %}
+        {% call f.form_tag('cit_servicios.new', fid='cit_servicio_form', **form_kwargs) %}
+            {% call f.form_group(form.cit_categoria_nombre, readonly=true) %}{% endcall %}
+            {% call f.form_group(form.clave) %}{% endcall %}
+            {% call f.form_group(form.descripcion) %}{% endcall %}
+            {% call f.form_group(form.duracion) %}{% endcall %}
+            {% call f.form_group(form.documentos_limite) %}{% endcall %}
+            {% call f.form_group(form.guardar) %}{% endcall %}
+        {% endcall %}
+    {% endcall %}
+{% endblock %}
