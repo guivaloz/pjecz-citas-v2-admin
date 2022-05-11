@@ -9,10 +9,11 @@ from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_autoridades_servicios.models import CitAutoridadServicio
+from citas_admin.blueprints.cit_autoridades_servicios.forms import CitAutoridadServicioFormWithAutoridad, CitAutoridadServicioFormWithCitServicio
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.cit_autoridades_servicios.models import CitAutoridadServicio
 
 MODULO = "CIT AUTORIDADES SERVICIOS"
 
@@ -37,6 +38,10 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
+    if "autoridad_id" in request.form:
+        consulta = consulta.filter_by(autoridad_id=request.form["autoridad_id"])
+    if "cit_servicio_id" in request.form:
+        consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
     registros = consulta.order_by(CitAutoridadServicio.id).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -90,6 +95,18 @@ def detail(cid_autoridad_servicio_id):
     """Detalle de un Autoridad-Servicio"""
     cit_autoridad_servicio = CitAutoridadServicio.query.get_or_404(cid_autoridad_servicio_id)
     return render_template("cit_autoridades_servicios/detail.jinja2", cid_autoridad_servicio=cit_autoridad_servicio)
+
+
+@cit_autoridades_servicios.route("/cit_autoridades_servicios/nuevo_con_autoridad/<int:autoridad_id>", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.CREAR)
+def new_with_autoridad(autoridad_id):
+    """Nuevo Autoridad-Servicio"""
+
+
+@cit_autoridades_servicios.route("/cit_autoridades_servicios/nuevo_con_cit_servicio/<int:cit_servicio_id>", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.CREAR)
+def new_with_cit_servicio(cit_servicio_id):
+    """Nuevo Autoridad-Servicio"""
 
 
 @cit_autoridades_servicios.route("/cit_autoridades_servicios/eliminar/<int:cit_autoridad_servicio_id>")
