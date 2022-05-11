@@ -6,7 +6,7 @@
 {% block title %}Categoria{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons(cit_categoria.nombre) %}
+    {% call topbar.page_buttons('Categoria ' + cit_categoria.nombre) %}
         {{ topbar.button_previous('Categorias', url_for('cit_categorias.list_active')) }}
         {% if current_user.can_edit('CIT CATEGORIAS') %}
             {{ topbar.button_edit('Editar', url_for('cit_categorias.edit', cit_categoria_id=cit_categoria.id)) }}
