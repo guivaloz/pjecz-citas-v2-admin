@@ -13,6 +13,7 @@ from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.cit_categorias.models import CitCategoria
+from citas_admin.blueprints.cit_categorias.forms import CitCategoriaForm
 
 MODULO = "CIT CATEGORIAS"
 
@@ -88,12 +89,57 @@ def detail(cit_categoria_id):
 @permission_required(MODULO, Permiso.CREAR)
 def new():
     """Nuevo Categoria"""
+    form = CitCategoriaForm()
+    if form.validate_on_submit():
+        # Validar que el nombre no se repita
+        nombre = safe_string(form.nombre.data)
+        if CitCategoria.query.filter_by(nombre=nombre).first():
+            flash("La nombre ya está en uso. Debe de ser único.", "warning")
+        else:
+            cit_categoria = CitCategoria(nombre=nombre)
+            cit_categoria.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Nuevo Categoria {cit_categoria.nombre}"),
+                url=url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
+    return render_template("cit_categorias/new.jinja2", form=form)
 
 
 @cit_categorias.route("/cit_categorias/edicion/<int:cit_categoria_id>", methods=["GET", "POST"])
 @permission_required(MODULO, Permiso.MODIFICAR)
 def edit(cit_categoria_id):
     """Editar Categoria"""
+    cit_categoria = CitCategoria.query.get_or_404(cit_categoria_id)
+    form = CitCategoriaForm()
+    if form.validate_on_submit():
+        es_valido = True
+        # Si cambia el nombre verificar que no este en uso
+        nombre = safe_string(form.nombre.data)
+        if cit_categoria.nombre != nombre:
+            cit_categoria_existente = CitCategoria.query.filter_by(nombre=nombre).first()
+            if cit_categoria_existente and cit_categoria_existente.id != cit_categoria.id:
+                es_valido = False
+                flash("El nombre ya está en uso. Debe de ser único.", "warning")
+        # Si es valido actualizar
+        if es_valido:
+            cit_categoria.nombre = nombre
+            cit_categoria.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Editado Categoria {cit_categoria.nombre}"),
+                url=url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
+    form.nombre.data = cit_categoria.nombre
+    return render_template("cit_categorias/edit.jinja2", form=form, cit_categoria=cit_categoria)
 
 
 @cit_categorias.route("/cit_categorias/eliminar/<int:cit_categoria_id>")
