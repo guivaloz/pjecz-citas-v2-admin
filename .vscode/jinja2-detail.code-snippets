@@ -141,7 +141,7 @@
             "{% if current_user.can_view('${1:MODULO}') %}",
             "\t<script>",
             "\t\tconfigDataTable['ajax']['url'] = '/${2:blueprint}/datatable_json';",
-            "\t\tconfigDataTable['ajax']['data'] = { 'estatus': \"A\", '${3:instancia}_id': {{ ${3:instancia}.id}} };",
+            "\t\tconfigDataTable['ajax']['data'] = { 'estatus': \"A\", '${3:instancia}_id': {{ ${3:instancia}.id }} };",
             "\t\tconfigDataTable['columns'] = [",
             "\t\t\t{ data: 'detalle' }",
             "\t\t];",
