@@ -43,7 +43,7 @@
             $('#oficina').addClass('js-example-placeholder-single js-states form-control');
             $("#oficina").prop("selectedIndex", -1);
             $('#oficina option').each(function() {
-                if($(this).text() == '{{usuario.oficina.clave_nombre}}') {
+                if($(this).text() == '{{ usuario.oficina.compuesto }}') {
                     $("#oficina").val( $(this).val() );
                 }
             });

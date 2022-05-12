@@ -19,10 +19,10 @@
             <thead>
                 <tr>
                     <th>Clave</th>
-                    <th>Descripcion</th>
-                    <th>Duracion</th>
-                    <th>Documentos limite</th>
-                    <th>Categoria</th>
+                    <th>Descripción</th>
+                    <th>Duración</th>
+                    <th>L. de D.</th>
+                    <th>Categoría</th>
                 </tr>
             </thead>
         </table>
@@ -53,7 +53,11 @@
                 targets: 4, // cit_categoria
                 data: null,
                 render: function(data, type, row, meta) {
-                    return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                    if (data.url == '') {
+                        return data.clave;
+                    } else {
+                        return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                    }
                 }
             },
         ];

@@ -24,19 +24,23 @@
         {{ detail.label_value('Duración', cit_servicio.duracion.strftime("%H:%M")) }}
         {{ detail.label_value('Documentos Limite', cit_servicio.documentos_limite) }}
     {% endcall %}
-    {# Autoridades-Servicios del servicio #}
-    {% if current_user.can_view('CIT AUTORIDADES SERVICIOS') %}
-        {% call detail.card('Autoridades') %}
-            <table id="cit_autoridades_servicios_datatable" class="table display nowrap" style="width:100%">
+    {# Oficinas que ofrecen este servicio #}
+    {% if current_user.can_view('CIT OFICINAS SERVICIOS') %}
+        {% call detail.card('Oficinas que ofrecen este servicio') %}
+            <table id="cit_oficinas_servicios_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Clave</th>
+                        <th>Descripción corta</th>
+                        <th>Es J.</th>
+                        <th>P.A.C.</th>
+                        <th>Distrito</th>
                     </tr>
                 </thead>
             </table>
-            {% if current_user.can_insert('CIT AUTORIDADES SERVICIOS') %}
-            <a href="{{ url_for('cit_autoridades_servicios.new_with_cit_servicio', cit_servicio_id=cit_servicio.id) }}" class="btn btn-primary">Agregar</a>
+            {% if current_user.can_insert('CIT OFICINAS SERVICIOS') %}
+            <a href="{{ url_for('cit_oficinas_servicios.new_with_cit_servicio', cit_servicio_id=cit_servicio.id) }}" class="btn btn-primary">Agregar</a>
             {% endif %}
         {% endcall %}
     {% endif %}
@@ -48,13 +52,17 @@
         {% if cit_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar ' + cit_servicio.clave + '?') }}{% endif %}
     {% endif %}
     {{ detail.config_datatable() }}
-    {% if current_user.can_view('CIT AUTORIDADES SERVICIOS') %}
+    {% if current_user.can_view('CIT OFICINAS SERVICIOS') %}
         <script>
-            configDataTable['ajax']['url'] = '/cit_autoridades_servicios/datatable_json';
+            configDataTable['ajax']['url'] = '/cit_oficinas_servicios/datatable_json';
             configDataTable['ajax']['data'] = { 'estatus': "A", 'cit_servicio_id': {{ cit_servicio.id }} };
             configDataTable['columns'] = [
                 { data: 'detalle' },
-                { data: 'autoridad' },
+                { data: 'oficina' },
+                { data: 'oficina_descripcion_corta' },
+                { data: 'oficina_es_jurisdiccional' },
+                { data: 'oficina_puede_agendar_citas' },
+                { data: 'oficina_distrito_nombre_corto' }
             ];
             configDataTable['columnDefs'] = [
                 {
@@ -65,14 +73,31 @@
                     }
                 },
                 {
-                    targets: 1, // autoridad
+                    targets: 1, // oficina
                     data: null,
                     render: function(data, type, row, meta) {
                         return '<a href="' + data.url + '">' + data.clave + '</a>';
                     }
                 },
+                {
+                    targets: 2, // oficina_descripcion_corta
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return (data.length > 32 ? data.substr(0, 32) + '…' : data);
+                    }
+                },
+                {
+                    targets: [3, 4], // es_jurisdiccional, puede_agendar_citas
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data) {
+                            return 'SI';
+                        }
+                        return '';
+                    }
+                }
             ];
-            $('#cit_autoridades_servicios_datatable').DataTable(configDataTable);
+            $('#cit_oficinas_servicios_datatable').DataTable(configDataTable);
         </script>
     {% endif %}
 {% endblock %}

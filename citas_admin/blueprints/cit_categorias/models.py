@@ -18,7 +18,7 @@ class CitCategoria(db.Model, UniversalMixin):
     nombre = db.Column(db.String(64), unique=True, nullable=False)
 
     # Hijos
-    cit_servicios = db.relationship("CitServicio", back_populates="cit_categoria", lazy="noload")
+    cit_servicios = db.relationship("CitServicio", back_populates="cit_categoria")
 
     def __repr__(self):
         """Representación"""

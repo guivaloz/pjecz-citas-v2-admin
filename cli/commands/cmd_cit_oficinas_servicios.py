@@ -1,7 +1,7 @@
 """
-Cit Autoridades-Servicios
+Cit Oficinas-Servicios
 
-- asignar: Asignar Autoridades-Servicios a todos los Distritos una Categoria
+- asignar: Asignar servicios de una categoria a todas las oficinas de un distrito
 """
 import click
 
@@ -17,14 +17,14 @@ db.app = app
 
 @click.group()
 def cli():
-    """Cit Autoridades-Servicios"""
+    """Cit Oficinas-Servicios"""
 
 
 @click.command()
 @click.argument("categoria_nombre", type=str)
 @click.argument("distrito_nombre", type=str)
 def asignar(categoria_nombre, distrito_nombre):
-    """Asignar Autoridades-Servicios a todos los Distritos una Categoria"""
+    """Asignar servicios de una categoria a todas las oficinas de un distrito"""
     cit_categoria = CitCategoria.query.filter_by(nombre=categoria_nombre).first()
     if cit_categoria is None:
         click.echo("ERROR: No se encuentra la categoria")
@@ -34,7 +34,7 @@ def asignar(categoria_nombre, distrito_nombre):
         click.echo("ERROR: No se encuentra al distrito")
         return
     app.task_queue.enqueue(
-        "citas_admin.blueprints.cit_autoridades_servicios.tasks.asignar_a_cit_categoria_con_distrito",
+        "citas_admin.blueprints.cit_oficinas_servicios.tasks.asignar_a_cit_categoria_con_distrito",
         cit_categoria_id=cit_categoria.id,
         distrito_id=distrito.id,
     )

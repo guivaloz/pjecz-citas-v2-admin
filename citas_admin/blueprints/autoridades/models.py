@@ -45,11 +45,10 @@ class Autoridad(db.Model, UniversalMixin):
 
     # Hijos
     usuarios = db.relationship("Usuario", back_populates="autoridad", lazy="noload")
-    cit_autoridades_servicios = db.relationship("CitAutoridadServicio", back_populates="autoridad", lazy="noload")
 
     @property
     def compuesto(self):
-        """Compuesto"""
+        """Entregar clave - descripcion_corta para selects"""
         return f"{self.clave} - {self.descripcion_corta}"
 
     def __repr__(self):
