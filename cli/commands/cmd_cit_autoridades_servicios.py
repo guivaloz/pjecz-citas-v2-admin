@@ -34,7 +34,7 @@ def asignar(categoria_nombre, distrito_nombre):
         click.echo("ERROR: No se encuentra al distrito")
         return
     app.task_queue.enqueue(
-        "plataforma_web.blueprints.cit_autoridades_servicios.tasks.asignar_a_cit_categoria_con_distrito",
+        "citas_admin.blueprints.cit_autoridades_servicios.tasks.asignar_a_cit_categoria_con_distrito",
         cit_categoria_id=cit_categoria.id,
         distrito_id=distrito.id,
     )

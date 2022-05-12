@@ -17,9 +17,6 @@
 {% endblock %}
 
 {% block content %}
-    {% call detail.card(estatus=cit_categoria.estatus) %}
-        {{ detail.label_value_big('Nombre', cit_categoria.nombre) }}
-    {% endcall %}
     {% if current_user.can_view('CIT SERVICIOS') %}
         {% call detail.card('Servicios') %}
             <table id="cit_servicios_datatable" class="table display nowrap" style="width:100%">
