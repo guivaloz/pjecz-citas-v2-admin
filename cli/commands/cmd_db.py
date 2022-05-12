@@ -14,7 +14,7 @@ from citas_admin.extensions import db
 
 from cli.commands.alimentar_autoridades import alimentar_autoridades
 from cli.commands.alimentar_cit_dias_inhabiles import alimentar_cit_dias_inhabiles
-from cli.commands.alimentar_distritos import alimentar_distritos
+from cli.commands.alimentar_distritos import alimentar_distritos, eliminar_distritos_sin_autoridades
 from cli.commands.alimentar_domicilios import alimentar_domicilios
 from cli.commands.alimentar_cit_categorias import alimentar_cit_categorias
 from cli.commands.alimentar_cit_servicios import alimentar_cit_servicios
@@ -72,6 +72,7 @@ def alimentar():
     alimentar_permisos()
     alimentar_distritos()
     alimentar_autoridades()
+    eliminar_distritos_sin_autoridades()
     alimentar_domicilios()
     alimentar_oficinas()
     alimentar_usuarios()

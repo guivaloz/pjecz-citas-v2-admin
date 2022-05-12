@@ -18,7 +18,7 @@
 
 {% block content %}
     {% if current_user.can_view('AUTORIDADES') %}
-        {% call detail.card(title='Autoridades') %}
+        {% call detail.card(title='Autoridades con esta materia') %}
             <table id="autoridades_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>

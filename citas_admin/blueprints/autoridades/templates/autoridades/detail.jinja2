@@ -32,9 +32,9 @@
         {{ detail.label_value('Materia (si es de Primera Instancia)', autoridad.materia.nombre) }}
         {{ detail.label_value('Creado', moment(autoridad.creado).format('llll')) }}
     {% endcall %}
-    {# Autoridades-Servicios de la autoridad #}
+    {# Servicios que ofrece esta autoridad #}
     {% if current_user.can_view('CIT AUTORIDADES SERVICIOS') %}
-        {% call detail.card('Servicios') %}
+        {% call detail.card('Servicios que ofrece esta autoridad') %}
             <table id="cit_autoridades_servicios_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
@@ -48,9 +48,9 @@
             {% endif %}
         {% endcall %}
     {% endif %}
-    {# Usuarios de la autoridad #}
+    {# Usuarios de esta autoridad #}
     {% if current_user.can_view('USUARIOS') %}
-        {% call detail.card('Usuarios') %}
+        {% call detail.card('Usuarios de esta autoridad') %}
             <table id="usuarios_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>

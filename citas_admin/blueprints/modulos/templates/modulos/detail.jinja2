@@ -24,7 +24,8 @@
         {{ detail.label_value('Ruta', modulo.ruta) }}
         {{ detail.label_value_boolean('En menú de navegación', modulo.en_navegacion) }}
     {% endcall %}
-    {% call detail.card('Permisos') %}
+    {# Permisos de este módulo #}
+    {% call detail.card('Permisos de este módulo') %}
         <table id="permisos_datatable" class="table display nowrap" style="width:100%">
             <thead>
                 <tr>

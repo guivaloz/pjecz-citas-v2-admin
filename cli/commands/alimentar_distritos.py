@@ -40,3 +40,19 @@ def alimentar_distritos():
             if contador % 100 == 0:
                 click.echo(f"  Van {contador}...")
     click.echo(f"  {contador} distritos alimentados.")
+
+
+def eliminar_distritos_sin_autoridades():
+    """Eliminar distritos sin autoridades (que se hayan eliminado)"""
+    click.echo("Eliminado distritos sin autoridades...")
+    contador = 0
+    for distrito in Distrito.query.filter_by(estatus="A").all():
+        autoridades_activas_contador = 0
+        for autoridad in distrito.autoridades:
+            if autoridad.estatus == "A":
+                autoridades_activas_contador += 1
+        if autoridades_activas_contador == 0:
+            distrito.estatus = "B"
+            distrito.save()
+            contador += 1
+    click.echo(f"  {contador} distritos eliminados.")

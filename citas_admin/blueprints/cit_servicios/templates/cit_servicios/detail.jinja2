@@ -18,7 +18,7 @@
 
 {% block content %}
     {% call detail.card(estatus=cit_servicio.estatus) %}
-        {{ detail.label_value_big('Clave', cit_servicio.clave) }}
+        {# detail.label_value_big('Clave', cit_servicio.clave) #}
         {{ detail.label_value('Categoria', cit_servicio.cit_categoria.nombre, url_for('cit_categorias.detail', cit_categoria_id=cit_servicio.cit_categoria_id)) }}
         {{ detail.label_value('Descripcion', cit_servicio.descripcion) }}
         {{ detail.label_value('Duración', cit_servicio.duracion.strftime("%H:%M")) }}

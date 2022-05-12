@@ -21,10 +21,10 @@
         {{ detail.label_value('Nombre', distrito.nombre) }}
         {{ detail.label_value('Nombre corto', distrito.nombre_corto) }}
         {{ detail.label_value_boolean('Es Distrito Judicial', distrito.es_distrito_judicial) }}
-        {{ detail.label_value('Creado', moment(distrito.creado).format('llll')) }}
     {% endcall %}
+    {# Autoridades en este distrito #}
     {% if current_user.can_view('AUTORIDADES') %}
-        {% call detail.card('Autoridades') %}
+        {% call detail.card('Autoridades en este distrito') %}
             <table id="autoridades_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
@@ -37,8 +37,9 @@
             </table>
         {% endcall %}
     {% endif %}
+    {# Oficinas en este distrito #}
     {% if current_user.can_view('OFICINAS') %}
-        {% call detail.card('Oficinas') %}
+        {% call detail.card('Oficinas en este distrito') %}
             <table id="oficinas_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>

@@ -150,7 +150,7 @@ def new():
                 clave=clave,
                 descripcion_corta=safe_string(form.descripcion_corta.data),
                 descripcion=safe_string(form.descripcion.data),
-                es_jurisdiccional=form.es_jurisdiccional.data == 1,
+                es_jurisdiccional=form.es_jurisdiccional.data,
                 apertura=form.apertura.data,
                 cierre=form.cierre.data,
                 limite_personas=form.limite_personas.data,
@@ -193,7 +193,7 @@ def edit(oficina_id):
             oficina.clave = clave
             oficina.descripcion_corta = safe_string(form.descripcion_corta.data)
             oficina.descripcion = safe_string(form.descripcion.data)
-            oficina.es_jurisdiccional = form.es_jurisdiccional.data == 1
+            oficina.es_jurisdiccional = form.es_jurisdiccional.data
             oficina.apertura = form.apertura.data
             oficina.cierre = form.cierre.data
             oficina.limite_personas = form.limite_personas.data
