@@ -46,9 +46,11 @@
                         <th>Claves</th>
                         <th>Descripciones</th>
                         <th>Domicilios</th>
+                        <th>Es J.</th>
                         <th>Aperturas</th>
                         <th>Cierres</th>
-                        <th>L. P.</th>
+                        <th>L.P.</th>
+                        <th>P.A.C.</th>
                     </tr>
                 </thead>
             </table>
@@ -103,9 +105,11 @@
                 { data: "detalle" },
                 { data: "descripcion_corta" },
                 { data: "domicilio" },
+                { data: "es_jurisdiccional" },
                 { data: "apertura" },
                 { data: "cierre" },
-                { data: "limite_personas" }
+                { data: "limite_personas" },
+                { data: "puede_agendar_citas" },
             ];
             configDataTable['columnDefs'] = [
                 {
@@ -136,6 +140,16 @@
                         } else {
                             return '<a href="' + data.url + '">' + texto + '</a>';
                         }
+                    }
+                },
+                {
+                    targets: [3, 7], // es_jurisdiccional, puede_agendar_citas
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data) {
+                            return 'SI';
+                        }
+                        return '';
                     }
                 }
             ];

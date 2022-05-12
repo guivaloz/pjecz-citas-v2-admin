@@ -8,7 +8,6 @@ from citas_admin.extensions import csrf, db, login_manager, moment
 
 from citas_admin.blueprints.autoridades.views import autoridades
 from citas_admin.blueprints.bitacoras.views import bitacoras
-from citas_admin.blueprints.cit_autoridades_servicios.views import cit_autoridades_servicios
 from citas_admin.blueprints.cit_categorias.views import cit_categorias
 from citas_admin.blueprints.cit_citas.views import cit_citas
 from citas_admin.blueprints.cit_citas_documentos.views import cit_citas_documentos
@@ -17,6 +16,7 @@ from citas_admin.blueprints.cit_clientes_recuperaciones.views import cit_cliente
 from citas_admin.blueprints.cit_clientes_registros.views import cit_clientes_registros
 from citas_admin.blueprints.cit_dias_inhabiles.views import cit_dias_inhabiles
 from citas_admin.blueprints.cit_horas_bloqueadas.views import cit_horas_bloqueadas
+from citas_admin.blueprints.cit_oficinas_servicios.views import cit_oficinas_servicios
 from citas_admin.blueprints.cit_servicios.views import cit_servicios
 from citas_admin.blueprints.distritos.views import distritos
 from citas_admin.blueprints.domicilios.views import domicilios
@@ -48,7 +48,6 @@ def create_app():
     # Cargar los blueprints
     app.register_blueprint(autoridades)
     app.register_blueprint(bitacoras)
-    app.register_blueprint(cit_autoridades_servicios)
     app.register_blueprint(cit_categorias)
     app.register_blueprint(cit_citas)
     app.register_blueprint(cit_citas_documentos)
@@ -57,6 +56,7 @@ def create_app():
     app.register_blueprint(cit_clientes_registros)
     app.register_blueprint(cit_dias_inhabiles)
     app.register_blueprint(cit_horas_bloqueadas)
+    app.register_blueprint(cit_oficinas_servicios)
     app.register_blueprint(cit_servicios)
     app.register_blueprint(distritos)
     app.register_blueprint(domicilios)

@@ -70,6 +70,8 @@ def datatable_json():
                 "apertura": resultado.apertura.strftime("%H:%M"),
                 "cierre": resultado.cierre.strftime("%H:%M"),
                 "limite_personas": resultado.limite_personas,
+                "es_jurisdiccional": resultado.es_jurisdiccional,
+                "puede_agendar_citas": resultado.puede_agendar_citas,
             }
         )
     # Entregar JSON
@@ -151,6 +153,7 @@ def new():
                 descripcion_corta=safe_string(form.descripcion_corta.data),
                 descripcion=safe_string(form.descripcion.data),
                 es_jurisdiccional=form.es_jurisdiccional.data,
+                puede_agendar_citas=form.puede_agendar_citas.data,
                 apertura=form.apertura.data,
                 cierre=form.cierre.data,
                 limite_personas=form.limite_personas.data,
@@ -194,6 +197,7 @@ def edit(oficina_id):
             oficina.descripcion_corta = safe_string(form.descripcion_corta.data)
             oficina.descripcion = safe_string(form.descripcion.data)
             oficina.es_jurisdiccional = form.es_jurisdiccional.data
+            oficina.puede_agendar_citas = form.puede_agendar_citas.data
             oficina.apertura = form.apertura.data
             oficina.cierre = form.cierre.data
             oficina.limite_personas = form.limite_personas.data
@@ -213,6 +217,7 @@ def edit(oficina_id):
     form.descripcion_corta.data = oficina.descripcion_corta
     form.descripcion.data = oficina.descripcion
     form.es_jurisdiccional.data = oficina.es_jurisdiccional
+    form.puede_agendar_citas.data = oficina.puede_agendar_citas
     form.apertura.data = oficina.apertura
     form.cierre.data = oficina.cierre
     form.limite_personas.data = oficina.limite_personas

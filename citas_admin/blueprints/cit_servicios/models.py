@@ -26,11 +26,11 @@ class CitServicio(db.Model, UniversalMixin):
 
     # Hijos
     cit_citas = db.relationship("CitCita", back_populates="cit_servicio", lazy="noload")
-    cit_autoridades_servicios = db.relationship("CitAutoridadServicio", back_populates="cit_servicio", lazy="noload")
+    cit_oficinas_servicios = db.relationship("CitOficinaServicio", back_populates="cit_servicio", lazy="noload")
 
     @property
     def compuesto(self):
-        """Compuesto"""
+        """Entregar clave - descripcion para selects"""
         return f"{self.clave} - {self.descripcion}"
 
     def __repr__(self):

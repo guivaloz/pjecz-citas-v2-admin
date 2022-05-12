@@ -25,6 +25,7 @@ class Oficina(db.Model, UniversalMixin):
     descripcion = db.Column(db.String(512), nullable=False)
     descripcion_corta = db.Column(db.String(64), nullable=False)
     es_jurisdiccional = db.Column(db.Boolean, nullable=False, default=False)
+    puede_agendar_citas = db.Column(db.Boolean, nullable=False, default=False)
     apertura = db.Column(db.Time(), nullable=False)
     cierre = db.Column(db.Time(), nullable=False)
     limite_personas = db.Column(db.Integer(), nullable=False)
@@ -33,11 +34,12 @@ class Oficina(db.Model, UniversalMixin):
     usuarios = db.relationship("Usuario", back_populates="oficina", lazy="noload")
     cit_citas = db.relationship("CitCita", back_populates="oficina", lazy="noload")
     cit_horas_bloqueadas = db.relationship("CitHoraBloqueada", back_populates="oficina", lazy="noload")
+    cit_oficinas_servicios = db.relationship("CitOficinaServicio", back_populates="oficina", lazy="noload")
 
     @property
-    def clave_nombre(self):
-        """Entrega clave - descripcion corta para usar en select"""
-        return f"{self.clave} — {self.descripcion_corta}"
+    def compuesto(self):
+        """Entregar clave - descripcion_corta para selects"""
+        return f"{self.clave} - {self.descripcion_corta}"
 
     def __repr__(self):
         """Representación"""

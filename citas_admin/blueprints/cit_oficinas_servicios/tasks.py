@@ -1,5 +1,5 @@
 """
-Cit Autoridades-Servicios, tareas para ejecutar en el fondo
+Cit Oficinas-Servicios, tareas para ejecutar en el fondo
 """
 import logging
 
@@ -14,7 +14,7 @@ from citas_admin.blueprints.distritos.models import Distrito
 bitacora = logging.getLogger(__name__)
 bitacora.setLevel(logging.INFO)
 formato = logging.Formatter("%(asctime)s:%(levelname)s:%(message)s")
-empunadura = logging.FileHandler("cit_autoridades_servicios.log")
+empunadura = logging.FileHandler("cit_oficinas_servicios.log")
 empunadura.setFormatter(formato)
 bitacora.addHandler(empunadura)
 
@@ -24,10 +24,10 @@ db.app = app
 
 
 def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
-    """Asignar Autoridades-Servicios a todos los servicios de una categoria"""
+    """Asignar servicios de una categoria a todas las oficinas de un distrito"""
 
     # Iniciar
-    bitacora.info("Inicia asignar Autoridades-Servicios a todos los servicios de una categoria")
+    bitacora.info("Inicia asignar servicios de una categoria a todas las oficinas de un distrito")
 
     # Validar Categoria
     cit_categoria = CitCategoria.query.get(cit_categoria_id)

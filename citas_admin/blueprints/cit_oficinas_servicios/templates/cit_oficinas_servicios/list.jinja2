@@ -2,24 +2,24 @@
 {% import 'macros/list.jinja2' as list %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Autoridades-Servicios{% endblock %}
+{% block title %}Oficinas-Servicios{% endblock %}
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
-        {% if current_user.can_edit('CIT AUTORIDADES SERVICIOS') %}
-            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_autoridades_servicios.list_inactive')) }}{% endif %}
-            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_autoridades_servicios.list_active')) }}{% endif %}
+        {% if current_user.can_edit('CIT OFICINAS SERVICIOS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_oficinas_servicios.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_oficinas_servicios.list_active')) }}{% endif %}
         {% endif %}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
     {% call list.card() %}
-        <table id="cit_autoridades_servicios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+        <table id="cit_oficinas_servicios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Autoridad</th>
+                    <th>Oficina</th>
                     <th>Servicio</th>
                 </tr>
             </thead>
@@ -30,11 +30,11 @@
 {% block custom_javascript %}
     {{ list.config_datatable() }}
     <script>
-        configDataTable['ajax']['url'] = '/cit_autoridades_servicios/datatable_json';
+        configDataTable['ajax']['url'] = '/cit_oficinas_servicios/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
             { data: 'detalle' },
-            { data: 'autoridad' },
+            { data: 'ofcina' },
             { data: 'cit_servicio' },
         ];
         configDataTable['columnDefs'] = [
@@ -46,13 +46,13 @@
                 }
             },
             {
-                targets: [1, 2], // autoridad, cit_servicio
+                targets: [1, 2], // oficina, cit_servicio
                 data: null,
                 render: function(data, type, row, meta) {
                     return '<a href="' + data.url + '">' + data.clave + '</a>';
                 }
             }
         ];
-        $('#cit_autoridades_servicios_datatable').DataTable(configDataTable);
+        $('#cit_oficinas_servicios_datatable').DataTable(configDataTable);
     </script>
 {% endblock %}
