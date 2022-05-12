@@ -26,8 +26,9 @@
         {{ detail.label_value('Estado', domicilio.estado) }}
         {{ detail.label_value('C.P.', domicilio.cp) }}
     {% endcall %}
+    {# Oficinas en este domicilio #}
     {% if current_user.can_view('OFICINAS') %}
-        {% call detail.card('Oficinas') %}
+        {% call detail.card('Oficinas en este domicilio') %}
             <table id="oficinas_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>

@@ -43,8 +43,9 @@
         {{ detail.label_value('Teléfono celular', usuario.telefono_celular) }}
         {{ detail.label_value('Creado', moment(usuario.creado).format('llll')) }}
     {% endcall %}
+    {# Roles del usuario #}
     {% if current_user.can_view('USUARIOS ROLES') %}
-        {% call detail.card() %}
+        {% call detail.card('Roles') %}
             <table id="usuarios_roles_datatable" class="table display nowrap init_tabs" style="width:100%;">
                 <thead>
                     <tr>

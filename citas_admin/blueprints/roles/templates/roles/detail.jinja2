@@ -18,8 +18,9 @@
 {% endblock %}
 
 {% block content %}
+    {# Permisos del rol #}
     {% if current_user.can_view('PERMISOS') %}
-        {% call detail.card('Permisos') %}
+        {% call detail.card('Permisos del rol') %}
             <table id="permisos_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
@@ -34,6 +35,7 @@
             {% endif %}
         {% endcall %}
     {% endif %}
+    {# Usuarios en este rol #}
     {% if current_user.can_view('USUARIOS ROLES') %}
         {% call detail.card('Usuarios en este rol') %}
             <table id="usuarios_roles_datatable" class="table display nowrap" style="width:100%">
