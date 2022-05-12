@@ -17,17 +17,19 @@
 
 {% block content %}
     {% call detail.card(estatus=cit_oficina_servicio.estatus) %}
-        {{ detail.label_value('Oficina clave', cit_oficina_servicio.autoridad.clave, url_for('oficina.detail', autoridad_id=cit_oficina_servicio.autoridad_id)) }}
-        {{ detail.label_value('Oficina descripcion', cit_oficina_servicio.autoridad.descripcion_corta) }}
-        {{ detail.label_value('Servicio clave', cit_oficina_servicio.cit_servicio.clave, url_for('cit_servicios.detail', cit_servicio_id=cit_oficina_servicio.cit_servicio_id)) }}
-        {{ detail.label_value('Servicio descripcion', cit_oficina_servicio.cit_servicio.descripcion) }}
+        {{ detail.label_value_big('Oficina', cit_oficina_servicio.oficina.clave, url_for('oficinas.detail', oficina_id=cit_oficina_servicio.oficina_id)) }}
+        {{ detail.label_value('Descripción', cit_oficina_servicio.oficina.descripcion_corta) }}
+        {{ detail.label_value('Distrito', cit_oficina_servicio.oficina.distrito.nombre) }}
+        {{ detail.label_value_big('Servicio', cit_oficina_servicio.cit_servicio.clave, url_for('cit_servicios.detail', cit_servicio_id=cit_oficina_servicio.cit_servicio_id)) }}
+        {{ detail.label_value('Descripción', cit_oficina_servicio.cit_servicio.descripcion) }}
+        {{ detail.label_value('Categoría', cit_oficina_servicio.cit_servicio.cit_categoria.nombre) }}
     {% endcall %}
 {% endblock %}
 
 {% block custom_javascript %}
     {% if current_user.can_edit('CIT OFICINAS SERVICIOS') %}
-        {% if cit_oficina_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar ' + cit_oficina_servicio.descripcion '?') }}{% endif %}
-        {% if cit_oficina_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar ' + cit_oficina_servicio.descripcion '?') }}{% endif %}
+        {% if cit_oficina_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar ' + cit_oficina_servicio.descripcion + '?') }}{% endif %}
+        {% if cit_oficina_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar ' + cit_oficina_servicio.descripcion + '?') }}{% endif %}
     {% endif %}
     {{ detail.moment_js(moment) }}
 {% endblock %}

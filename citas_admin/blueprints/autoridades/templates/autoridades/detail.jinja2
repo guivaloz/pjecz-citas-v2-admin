@@ -32,22 +32,6 @@
         {{ detail.label_value('Materia (si es de Primera Instancia)', autoridad.materia.nombre) }}
         {{ detail.label_value('Creado', moment(autoridad.creado).format('llll')) }}
     {% endcall %}
-    {# Servicios que ofrece esta autoridad #}
-    {% if current_user.can_view('CIT AUTORIDADES SERVICIOS') %}
-        {% call detail.card('Servicios que ofrece esta autoridad') %}
-            <table id="cit_autoridades_servicios_datatable" class="table display nowrap" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Clave</th>
-                    </tr>
-                </thead>
-            </table>
-            {% if current_user.can_insert('CIT AUTORIDADES SERVICIOS') %}
-            <a href="{{ url_for('cit_autoridades_servicios.new_with_autoridad', autoridad_id=autoridad.id) }}" class="btn btn-primary">Agregar</a>
-            {% endif %}
-        {% endcall %}
-    {% endif %}
     {# Usuarios de esta autoridad #}
     {% if current_user.can_view('USUARIOS') %}
         {% call detail.card('Usuarios de esta autoridad') %}
@@ -96,33 +80,6 @@
                 }
             ];
             $('#usuarios_datatable').DataTable(configDataTable);
-        </script>
-    {% endif %}
-    {% if current_user.can_view('CIT AUTORIDADES SERVICIOS') %}
-        <script>
-            configDataTable['ajax']['url'] = '/cit_autoridades_servicios/datatable_json';
-            configDataTable['ajax']['data'] = { 'estatus': "A", 'autoridad_id': {{ autoridad.id }} };
-            configDataTable['columns'] = [
-                { data: 'detalle' },
-                { data: 'cit_servicio' },
-            ];
-            configDataTable['columnDefs'] = [
-                {
-                    targets: 0, // detalle
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        return '<a href="' + data.url + '">' + data.id + '</a>';
-                    }
-                },
-                {
-                    targets: 1, // cit_servicio
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        return '<a href="' + data.url + '">' + data.clave + '</a>';
-                    }
-                },
-            ];
-            $('#cit_autoridades_servicios_datatable').DataTable(configDataTable);
         </script>
     {% endif %}
     {{ detail.moment_js(moment) }}
