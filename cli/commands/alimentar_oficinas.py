@@ -38,6 +38,7 @@ def alimentar_oficinas():
                 descripcion=safe_string(row["descripcion"], max_len=512, do_unidecode=False),
                 descripcion_corta=safe_string(row["descripcion_corta"], max_len=64, do_unidecode=False),
                 es_jurisdiccional=(row["es_jurisdiccional"] == "1"),
+                puede_agendar_citas=(row["puede_agendar_citas"] == "1"),
                 apertura=datetime.strptime(row["apertura"], "%H:%M:%S"),
                 cierre=datetime.strptime(row["cierre"], "%H:%M:%S"),
                 limite_personas=int(row["limite_personas"]),
