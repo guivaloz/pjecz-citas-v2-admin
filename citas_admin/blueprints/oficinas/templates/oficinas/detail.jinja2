@@ -33,7 +33,7 @@
         {% endif %}
         {{ detail.label_value('Horario', oficina.apertura.strftime("%H:%M") + ' — ' + oficina.cierre.strftime("%H:%M")) }}
         {{ detail.label_value('Límite de Personas', oficina.limite_personas) }}
-        {{ detail.label_value_boolean('Juridiccional', oficina.es_juridiccional) }}
+        {{ detail.label_value_boolean('Es Juridiccional', oficina.es_juridiccional) }}
     {% endcall %}
     {# Usuarios en esta oficina #}
     {% if current_user.can_view('USUARIOS') %}
