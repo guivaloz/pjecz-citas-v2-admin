@@ -62,6 +62,7 @@ def datatable_json():
                 "oficina_descripcion_corta": resultado.oficina.descripcion_corta,
                 "oficina_es_jurisdiccional": resultado.oficina.es_jurisdiccional,
                 "oficina_puede_agendar_citas": resultado.oficina.puede_agendar_citas,
+                "oficina_distrito_nombre_corto": resultado.oficina.distrito.nombre_corto,
                 "cit_servicio": {
                     "clave": resultado.cit_servicio.clave,
                     "url": url_for("cit_servicios.detail", cit_servicio_id=resultado.cit_servicio_id),
@@ -69,6 +70,7 @@ def datatable_json():
                 "cit_servicio_descripcion": resultado.cit_servicio.descripcion,
                 "cit_servicio_duracion": resultado.cit_servicio.duracion.strftime("%H:%M"),
                 "cit_servicio_documentos_limite": resultado.cit_servicio.documentos_limite,
+                "cit_servicio_categoria_nombre": resultado.cit_servicio.cit_categoria.nombre,
             }
         )
     # Entregar JSON

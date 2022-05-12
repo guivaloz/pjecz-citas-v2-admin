@@ -9,6 +9,7 @@ from citas_admin.app import create_app
 from citas_admin.extensions import db
 
 from citas_admin.blueprints.cit_categorias.models import CitCategoria
+from citas_admin.blueprints.cit_oficinas_servicios.models import CitOficinaServicio
 from citas_admin.blueprints.distritos.models import Distrito
 
 bitacora = logging.getLogger(__name__)
@@ -51,8 +52,43 @@ def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
         bitacora.error(mensaje_error)
         return mensaje_error
 
+    # Juntar los servicios activos de la categoria
+    cit_servicios = []
+    for cit_servicio in cit_categoria.cit_servicios:
+        if cit_servicio.estatus == "A":
+            cit_servicios.append(cit_servicio)
+    bitacora.info("Hay %d servicios activos en la categoria %s", len(cit_servicios), cit_categoria.nombre)
+
+    # Juntar las oficinas activas del distrito
+    oficinas = []
+    for oficina in distrito.oficinas:
+        if oficina.estatus == "A" and oficina.puede_agendar_citas:
+            oficinas.append(oficina)
+    bitacora.info("Hay %d oficinas activas en el distrito %s", len(oficinas), distrito.nombre)
+
+    # Procedimiento 2
+    actualizaciones_contador = 0
+    inserciones_contador = 0
+    for oficina in oficinas:
+        for cit_servicio in cit_servicios:
+            posible_cit_oficina_servicio = CitOficinaServicio.query.filter_by(cit_servicio_id=cit_servicio.id).filter_by(oficina_id=oficina.id).first()
+            if posible_cit_oficina_servicio:
+                # Actualizar Oficina-Servicio si esta eliminado
+                if posible_cit_oficina_servicio.estatus != "A":
+                    posible_cit_oficina_servicio.estatus = "A"
+                    posible_cit_oficina_servicio.save()
+                    actualizaciones_contador += 1
+            else:
+                # Insertar Oficina-Servicio
+                CitOficinaServicio(
+                    cit_servicio=cit_servicio,
+                    oficina=oficina,
+                    descripcion=f"{cit_servicio.clave} CON {oficina.clave}",
+                ).save()
+                inserciones_contador += 1
+
     # Terminar
     set_task_progress(100)
-    mensaje_final = "Terminado"
+    mensaje_final = f"Terminado con {actualizaciones_contador} actualizaciones y {inserciones_contador} inserciones."
     bitacora.info(mensaje_final)
     return mensaje_final

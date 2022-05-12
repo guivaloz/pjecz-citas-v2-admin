@@ -47,6 +47,7 @@
                         <th>Descripción</th>
                         <th>Duración</th>
                         <th>L. de D.</th>
+                        <th>Categoría</th>
                     </tr>
                 </thead>
             </table>
@@ -87,7 +88,8 @@
                 { data: 'cit_servicio' },
                 { data: 'cit_servicio_descripcion' },
                 { data: 'cit_servicio_duracion' },
-                { data: 'cit_servicio_documentos_limite' }
+                { data: 'cit_servicio_documentos_limite' },
+                { data: 'cit_servicio_categoria_nombre' }
             ];
             configDataTable['columnDefs'] = [
                 {
@@ -104,6 +106,13 @@
                         return '<a href="' + data.url + '">' + data.clave + '</a>';
                     }
                 },
+                {
+                    targets: 2, // cit_servicio_descripcion
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return (data.length > 32 ? data.substr(0, 32) + '…' : data);
+                    }
+                }
             ];
             $('#cit_oficinas_servicios_datatable').DataTable(configDataTable);
         </script>

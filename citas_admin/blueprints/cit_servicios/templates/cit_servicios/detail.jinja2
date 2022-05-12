@@ -32,9 +32,10 @@
                     <tr>
                         <th>ID</th>
                         <th>Clave</th>
-                        <th>Descripcion corta</th>
+                        <th>Descripción corta</th>
                         <th>Es J.</th>
                         <th>P.A.C.</th>
+                        <th>Distrito</th>
                     </tr>
                 </thead>
             </table>
@@ -60,7 +61,8 @@
                 { data: 'oficina' },
                 { data: 'oficina_descripcion_corta' },
                 { data: 'oficina_es_jurisdiccional' },
-                { data: 'oficina_puede_agendar_citas' }
+                { data: 'oficina_puede_agendar_citas' },
+                { data: 'oficina_distrito_nombre_corto' }
             ];
             configDataTable['columnDefs'] = [
                 {
@@ -75,6 +77,13 @@
                     data: null,
                     render: function(data, type, row, meta) {
                         return '<a href="' + data.url + '">' + data.clave + '</a>';
+                    }
+                },
+                {
+                    targets: 2, // oficina_descripcion_corta
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return (data.length > 32 ? data.substr(0, 32) + '…' : data);
                     }
                 },
                 {

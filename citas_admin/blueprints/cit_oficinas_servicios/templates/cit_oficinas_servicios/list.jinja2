@@ -20,7 +20,11 @@
                 <tr>
                     <th>ID</th>
                     <th>Oficina</th>
+                    <th>Descripción corta</th>
+                    <th>Es J.</th>
+                    <th>P.A.C.</th>
                     <th>Servicio</th>
+                    <th>Descripción</th>
                 </tr>
             </thead>
         </table>
@@ -34,8 +38,12 @@
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
             { data: 'detalle' },
-            { data: 'ofcina' },
+            { data: 'oficina' },
+            { data: 'oficina_descripcion_corta' },
+            { data: 'oficina_es_jurisdiccional' },
+            { data: 'oficina_puede_agendar_citas' },
             { data: 'cit_servicio' },
+            { data: 'cit_servicio_descripcion' }
         ];
         configDataTable['columnDefs'] = [
             {
@@ -46,10 +54,27 @@
                 }
             },
             {
-                targets: [1, 2], // oficina, cit_servicio
+                targets: [1, 5], // oficina, cit_servicio
                 data: null,
                 render: function(data, type, row, meta) {
                     return '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: [2, 6], // oficina_descripcion_corta, cit_servicio_descripcion
+                data: null,
+                render: function(data, type, row, meta) {
+                    return (data.length > 32 ? data.substr(0, 32) + '…' : data);
+                }
+            },
+            {
+                targets: [3, 4], // oficina_es_jurisdiccional, ofcina_puede_agendar_citas
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data) {
+                        return 'SI';
+                    }
+                    return '';
                 }
             }
         ];
