@@ -1,5 +1,7 @@
 """
 Cit Autoridades-Servicios
+
+- asignar: Asignar Autoridades-Servicios a todos los Distritos una Categoria
 """
 import click
 
@@ -21,8 +23,8 @@ def cli():
 @click.command()
 @click.argument("categoria_nombre", type=str)
 @click.argument("distrito_nombre", type=str)
-def asignar_a_cit_categoria_con_distrito(categoria_nombre, distrito_nombre):
-    """Asignar Autoridades-Servicios a todos los servicios de una categoria"""
+def asignar(categoria_nombre, distrito_nombre):
+    """Asignar Autoridades-Servicios a todos los Distritos una Categoria"""
     cit_categoria = CitCategoria.query.filter_by(nombre=categoria_nombre).first()
     if cit_categoria is None:
         click.echo("ERROR: No se encuentra la categoria")
@@ -36,4 +38,7 @@ def asignar_a_cit_categoria_con_distrito(categoria_nombre, distrito_nombre):
         cit_categoria_id=cit_categoria.id,
         distrito_id=distrito.id,
     )
-    click.echo("Limpiar oficinas se está ejecutando en el fondo.")
+    click.echo("Asignar se está ejecutando en el fondo.")
+
+
+cli.add_command(asignar)
