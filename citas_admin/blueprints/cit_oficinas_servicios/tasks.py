@@ -66,7 +66,7 @@ def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
             oficinas.append(oficina)
     bitacora.info("Hay %d oficinas activas en el distrito %s", len(oficinas), distrito.nombre)
 
-    # Procedimiento 2
+    # Actualizar o insertar registros de Oficina-Servicio
     actualizaciones_contador = 0
     inserciones_contador = 0
     for oficina in oficinas:
@@ -89,6 +89,6 @@ def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
 
     # Terminar
     set_task_progress(100)
-    mensaje_final = f"Terminado con {actualizaciones_contador} actualizaciones y {inserciones_contador} inserciones."
+    mensaje_final = f"Terminado con {actualizaciones_contador} actualizaciones y {inserciones_contador} inserciones en Oficinas-Servicios."
     bitacora.info(mensaje_final)
     return mensaje_final

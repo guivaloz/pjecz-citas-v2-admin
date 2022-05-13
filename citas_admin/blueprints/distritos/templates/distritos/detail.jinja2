@@ -21,6 +21,9 @@
         {{ detail.label_value('Nombre', distrito.nombre) }}
         {{ detail.label_value('Nombre corto', distrito.nombre_corto) }}
         {{ detail.label_value_boolean('Es Distrito Judicial', distrito.es_distrito_judicial) }}
+        {% if current_user.can_insert('CIT OFICINAS SERVICIOS') %}
+            <a href="{{ url_for('cit_oficinas_servicios.add_cit_categoria_to_distrito', distrito_id=distrito.id) }}" class="btn btn-primary">Asignar servicios de una categoria a todas sus oficinas</a>
+        {% endif %}
     {% endcall %}
     {# Autoridades en este distrito #}
     {% if current_user.can_view('AUTORIDADES') %}

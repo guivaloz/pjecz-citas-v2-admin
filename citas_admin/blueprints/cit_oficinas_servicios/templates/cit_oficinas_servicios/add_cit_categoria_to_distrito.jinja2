@@ -5,15 +5,15 @@
 {% block title %}Asignar servicios de una categoria a todas las oficinas de un distrito{% endblock %}
 
 {% block topbar_actions %}
-    {{ topbar.page('Asignar servicios de una categoria a todas las oficinas de un distrito') }}
+    {{ topbar.page('Asignar servicios de una categoria a todas las oficinas del distrito ' + distrito.nombre) }}
 {% endblock %}
 
 {% block content %}
     {% call f.card() %}
-        {% set form_kwargs = {'instancia_id': instancia.id} %}
-        {% call f.form_tag('blueprint.edit', fid='instancia_form', **form_kwargs) %}
+        {% set form_kwargs = {'distrito_id': distrito.id} %}
+        {% call f.form_tag('cit_oficinas_servicios.add_cit_categoria_to_distrito', fid='add_cit_categoria_to_distrito_form', **form_kwargs) %}
             {% call f.form_group(form.cit_categoria) %}{% endcall %}
-            {% call f.form_group(form.distrito) %}{% endcall %}
+            {% call f.form_group(form.distrito, readonly=true) %}{% endcall %}
             {% call f.form_group(form.guardar) %}{% endcall %}
         {% endcall %}
     {% endcall %}
