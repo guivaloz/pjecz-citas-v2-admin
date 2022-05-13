@@ -27,17 +27,22 @@ db.app = app
 def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
     """Asignar servicios de una categoria a todas las oficinas de un distrito"""
 
-    # Iniciar
+    # Iniciar la tarea y los contadores
     bitacora.info("Inicia asignar servicios de una categoria a todas las oficinas de un distrito")
+    set_task_progress(0)
+    actualizaciones_contador = 0
+    inserciones_contador = 0
 
     # Validar Categoria
     cit_categoria = CitCategoria.query.get(cit_categoria_id)
     if cit_categoria is None:
         mensaje_error = "No se encuentra la categoria"
+        set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
     if cit_categoria.estatus != "A":
         mensaje_error = "Esta eliminada la categoria"
+        set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
 
@@ -45,10 +50,12 @@ def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
     distrito = Distrito.query.get(distrito_id)
     if distrito is None:
         mensaje_error = "No se encuentra el distrito"
+        set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
     if distrito.estatus != "A":
         mensaje_error = "Esta eliminado el distrito"
+        set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
 
@@ -57,6 +64,11 @@ def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
     for cit_servicio in cit_categoria.cit_servicios:
         if cit_servicio.estatus == "A":
             cit_servicios.append(cit_servicio)
+    if len(cit_servicios) == 0:
+        mensaje_error = f"No hay servicios activos para la categoria {cit_categoria.nombre}"
+        set_task_error(mensaje_error)
+        bitacora.error(mensaje_error)
+        return mensaje_error
     bitacora.info("Hay %d servicios activos en la categoria %s", len(cit_servicios), cit_categoria.nombre)
 
     # Juntar las oficinas activas del distrito
@@ -64,11 +76,14 @@ def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
     for oficina in distrito.oficinas:
         if oficina.estatus == "A" and oficina.puede_agendar_citas:
             oficinas.append(oficina)
+    if len(oficinas) == 0:
+        mensaje_error = f"No hay oficinas activas o que puedan agendar citas para el distrito {distrito.nombre}"
+        set_task_error(mensaje_error)
+        bitacora.error(mensaje_error)
+        return mensaje_error
     bitacora.info("Hay %d oficinas activas en el distrito %s", len(oficinas), distrito.nombre)
 
-    # Procedimiento 2
-    actualizaciones_contador = 0
-    inserciones_contador = 0
+    # Actualizar o insertar registros de Oficina-Servicio
     for oficina in oficinas:
         for cit_servicio in cit_servicios:
             posible_cit_oficina_servicio = CitOficinaServicio.query.filter_by(cit_servicio_id=cit_servicio.id).filter_by(oficina_id=oficina.id).first()
@@ -89,6 +104,6 @@ def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
 
     # Terminar
     set_task_progress(100)
-    mensaje_final = f"Terminado con {actualizaciones_contador} actualizaciones y {inserciones_contador} inserciones."
+    mensaje_final = f"Terminado con {actualizaciones_contador} actualizaciones y {inserciones_contador} inserciones en Oficinas-Servicios."
     bitacora.info(mensaje_final)
     return mensaje_final

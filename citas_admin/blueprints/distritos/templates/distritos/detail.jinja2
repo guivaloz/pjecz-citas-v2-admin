@@ -56,6 +56,14 @@
             </table>
         {% endcall %}
     {% endif %}
+    {# Tareas en el fondo #}
+    {% if current_user.can_insert('CIT OFICINAS SERVICIOS') %}
+        {% call detail.card('Tareas en el fondo') %}
+            <a href="{{ url_for('cit_oficinas_servicios.add_cit_categoria_to_distrito', distrito_id=distrito.id) }}" class="btn btn-primary">
+                Asignar servicios de una categoria a todas sus oficinas
+            </a>
+        {% endcall %}
+    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}

@@ -2,16 +2,18 @@
 Cit Oficinas-Servicios, vistas
 """
 import json
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message, safe_string
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_categorias.models import CitCategoria
 from citas_admin.blueprints.cit_oficinas_servicios.models import CitOficinaServicio
-from citas_admin.blueprints.cit_oficinas_servicios.forms import CitOficinaServicioFormWithOficina, CitOficinaServicioFormWithCitServicio
+from citas_admin.blueprints.cit_oficinas_servicios.forms import CitOficinaServicioFormWithOficina, CitOficinaServicioFormWithCitServicio, CitOficinaServicioFormWithCitCategoria, CitOficinaServicioFormWithDistrito
 from citas_admin.blueprints.cit_servicios.models import CitServicio
+from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.permisos.models import Permiso
@@ -177,6 +179,44 @@ def new_with_cit_servicio(cit_servicio_id):
         form=form,
         cit_servicio=cit_servicio,
     )
+
+
+@cit_oficinas_servicios.route("/cit_oficinas_servicios/asignar_cit_categoria_a_distrito/<int:distrito_id>", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.CREAR)
+def add_cit_categoria_to_distrito(distrito_id):
+    """Asignar servicios de una categoria a todas las oficinas de un distrito"""
+    distrito = Distrito.query.get_or_404(distrito_id)
+    form = CitOficinaServicioFormWithDistrito()
+    if form.validate_on_submit():
+        cit_categoria = form.cit_categoria.data
+        current_app.task_queue.enqueue(
+            "citas_admin.blueprints.cit_oficinas_servicios.tasks.asignar_a_cit_categoria_con_distrito",
+            cit_categoria_id=cit_categoria.id,
+            distrito_id=distrito.id,
+        )
+        flash(f"Tarea en el fondo lanzada: Asignar servicios de {cit_categoria.nombre} a todas las oficinas de {distrito.nombre}", "success")
+        return redirect(url_for("distritos.detail", distrito_id=distrito.id))
+    form.distrito.data = distrito.nombre  # Read only
+    return render_template("cit_oficinas_servicios/add_cit_categoria_to_distrito.jinja2", form=form, distrito=distrito)
+
+
+@cit_oficinas_servicios.route("/cit_oficinas_servicios/asignar_distrito_a_cit_categoria/<int:cit_categoria_id>", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.CREAR)
+def add_distrito_to_cit_categoria(cit_categoria_id):
+    """Asignar a todas las oficinas de un distrito los servicios de una categoria"""
+    cit_categoria = CitCategoria.query.get_or_404(cit_categoria_id)
+    form = CitOficinaServicioFormWithCitCategoria()
+    if form.validate_on_submit():
+        distrito = form.distrito.data
+        current_app.task_queue.enqueue(
+            "citas_admin.blueprints.cit_oficinas_servicios.tasks.asignar_a_cit_categoria_con_distrito",
+            cit_categoria_id=cit_categoria.id,
+            distrito_id=distrito.id,
+        )
+        flash(f"Tarea en el fondo lanzada: Asignar a todas las oficinas de {distrito.nombre} los servicios de {cit_categoria.nombre}", "success")
+        return redirect(url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id))
+    form.cit_categoria.data = cit_categoria.nombre  # Read only
+    return render_template("cit_oficinas_servicios/add_distrito_to_cit_categoria.jinja2", form=form, cit_categoria=cit_categoria)
 
 
 @cit_oficinas_servicios.route("/cit_oficinas_servicios/eliminar/<int:cit_oficina_servicio_id>")
