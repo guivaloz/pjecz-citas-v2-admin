@@ -195,6 +195,7 @@ def add_cit_categoria_to_distrito(distrito_id):
             distrito_id=distrito.id,
         )
         flash(f"Tarea en el fondo lanzada: Asignar servicios de {cit_categoria.nombre} a todas las oficinas de {distrito.nombre}", "success")
+        return redirect(url_for("distritos.detail", distrito_id=distrito.id))
     form.distrito.data = distrito.nombre  # Read only
     return render_template("cit_oficinas_servicios/add_cit_categoria_to_distrito.jinja2", form=form, distrito=distrito)
 
@@ -213,6 +214,7 @@ def add_distrito_to_cit_categoria(cit_categoria_id):
             distrito_id=distrito.id,
         )
         flash(f"Tarea en el fondo lanzada: Asignar a todas las oficinas de {distrito.nombre} los servicios de {cit_categoria.nombre}", "success")
+        return redirect(url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id))
     form.cit_categoria.data = cit_categoria.nombre  # Read only
     return render_template("cit_oficinas_servicios/add_distrito_to_cit_categoria.jinja2", form=form, cit_categoria=cit_categoria)
 

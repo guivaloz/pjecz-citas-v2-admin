@@ -17,12 +17,6 @@
 {% endblock %}
 
 {% block content %}
-    {% call detail.card(estatus=cit_categoria.estatus) %}
-        {{ detail.label_value('Nombre', cit_categoria.nombre) }}
-        {% if current_user.can_insert('CIT OFICINAS SERVICIOS') %}
-            <a href="{{ url_for('cit_oficinas_servicios.add_distrito_to_cit_categoria', cit_categoria_id=cit_categoria.id) }}" class="btn btn-primary">Asignar a todas las oficinas de un distrito sus servicios</a>
-        {% endif %}
-    {% endcall %}
     {% if current_user.can_view('CIT SERVICIOS') %}
         {% call detail.card('Servicios') %}
             <table id="cit_servicios_datatable" class="table display nowrap" style="width:100%">
@@ -38,6 +32,14 @@
             {% if current_user.can_insert('CIT SERVICIOS') %}
             <a href="{{ url_for('cit_servicios.new', cit_categoria_id=cit_categoria.id) }}" class="btn btn-primary">Agregar</a>
             {% endif %}
+        {% endcall %}
+    {% endif %}
+    {# Tareas en el fondo #}
+    {% if current_user.can_insert('CIT OFICINAS SERVICIOS') %}
+        {% call detail.card('Servicios') %}
+            <a href="{{ url_for('cit_oficinas_servicios.add_distrito_to_cit_categoria', cit_categoria_id=cit_categoria.id) }}" class="btn btn-primary">
+                Asignar a todas las oficinas de un distrito sus servicios
+            </a>
         {% endcall %}
     {% endif %}
 {% endblock %}
