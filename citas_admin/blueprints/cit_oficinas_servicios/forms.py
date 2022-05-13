@@ -1,6 +1,7 @@
 """
 Cit Oficinas-Servicios, formularios
 """
+from flask import Flask
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
@@ -34,3 +35,7 @@ class CitOficinaServicioFormWithCitServicio(FlaskForm):
     oficina = QuerySelectField(label="Oficina", query_factory=oficinas_opciones, get_label="compuesto", validators=[DataRequired()])
     cit_servicio = StringField("Cit Servicio")  # Solo lectura
     guardar = SubmitField("Guardar")
+
+
+class CitCategoriaAndDistritoForm(FlaskForm):
+    """Formulario asignar servicios de una categoria a todas las oficinas de un distrito"""
