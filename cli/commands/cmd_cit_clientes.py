@@ -32,8 +32,8 @@ def agregar(email):
         return
     # Preguntar los datos del cliente
     nombres = input("Nombres: ")
-    apellido_paterno = input("Apellido paterno: ")
-    apellido_materno = input("Apellido materno: ")
+    apellido_primero = input("Apellido primero: ")
+    apellido_segundo = input("Apellido segundo: ")
     curp = input("CURP: ")
     telefono = input("Teléfono: ")
     # Crear una contraseña aleatoria
@@ -43,14 +43,13 @@ def agregar(email):
     # Agregar el cliente
     cit_cliente = CitCliente(
         nombres=nombres,
-        apellido_paterno=apellido_paterno,
-        apellido_materno=apellido_materno,
+        apellido_primero=apellido_primero,
+        apellido_segundo=apellido_segundo,
         curp=curp,
         telefono=telefono,
         email=email,
         contrasena=pwd_context.hash(contrasena),
-        hash=pwd_context.hash(generar_contrasena()),
-        renovacion_fecha=renovacion_fecha.date(),
+        renovacion=renovacion_fecha.date(),
     )
     cit_cliente.save()
     click.echo(f"Se ha creado el cliente {email} con contraseña {contrasena}")

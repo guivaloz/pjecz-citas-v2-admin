@@ -6,20 +6,18 @@
 {% block title %}Clientes{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons('Cliente ' + cliente.email) %}
+    {% call topbar.page_buttons('Cliente ' + cit_cliente.email) %}
         {{ topbar.button_previous('Clientes', url_for('cit_clientes.list_active')) }}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
-    {% call detail.card(estatus=cliente.estatus) %}
-        {{ detail.label_value_big('Nombre', cliente.nombre) }}
-        {{ detail.label_value('CURP', cliente.curp) }}
-        {{ detail.label_value('e-mail', cliente.email) }}
-        {{ detail.label_value('Teléfono', cliente.telefono) }}
-        {{ detail.label_value('Creado', moment(cliente.creado).format('llll')) }}
-        {{ detail.label_value('Renovación', moment(cliente.renovacion_fecha).format('ll')) }}
-        {{ detail.label_value('Hash de cuenta verificada', cliente.hash) }}
+    {% call detail.card(estatus=cit_cliente.estatus) %}
+        {{ detail.label_value_big('Nombre', cit_cliente.nombre) }}
+        {{ detail.label_value('CURP', cit_cliente.curp) }}
+        {{ detail.label_value('Teléfono', cit_cliente.telefono) }}
+        {{ detail.label_value('Renovación', moment(cit_cliente.renovacion).format('ll')) }}
+        {{ detail.label_value('Creado', moment(cit_cliente.creado).format('llll')) }}
     {% endcall %}
 {% endblock %}
 
