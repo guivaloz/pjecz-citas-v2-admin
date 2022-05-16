@@ -88,3 +88,39 @@ def detail(cit_cliente_registro_id):
     """Detalle de un Cliente Registro"""
     cit_cliente_registro = CitClienteRegistro.query.get_or_404(cit_cliente_registro_id)
     return render_template("cit_clientes_registros/detail.jinja2", cit_cliente_registro=cit_cliente_registro)
+
+
+@cit_clientes_registros.route("/cit_clientes_registros/eliminar/<int:cit_cliente_registro_id>")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def delete(cit_cliente_registro_id):
+    """Eliminar Registro de Cliente"""
+    cit_cliente_registro = CitClienteRegistro.query.get_or_404(cit_cliente_registro_id)
+    if cit_cliente_registro.estatus == "A":
+        cit_cliente_registro.delete()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Eliminado Registro {cit_cliente_registro.email}"),
+            url=url_for("cit_clientes_registros.detail", cit_cliente_registro_id=cit_cliente_registro.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("cit_clientes_registros.detail", cit_cliente_registro_id=cit_cliente_registro.id))
+
+
+@cit_clientes_registros.route("/cit_clientes_registros/recuperar/<int:cit_cliente_registro_id>")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def recover(cit_cliente_registro_id):
+    """Recuperar Registro de Cliente"""
+    cit_cliente_registro = CitClienteRegistro.query.get_or_404(cit_cliente_registro_id)
+    if cit_cliente_registro.estatus == "B":
+        cit_cliente_registro.recover()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Recuperado Registro {cit_cliente_registro.email}"),
+            url=url_for("cit_clientes_registros.detail", cit_cliente_registro_id=cit_cliente_registro.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("cit_clientes_registros.detail", cit_cliente_registro_id=cit_cliente_registro.id))
