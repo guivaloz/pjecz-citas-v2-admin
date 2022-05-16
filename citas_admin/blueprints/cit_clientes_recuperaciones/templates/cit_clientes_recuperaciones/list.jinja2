@@ -53,6 +53,16 @@
                 render: function(data, type, row, meta) {
                     return '<a href="' + data.url + '">' + data.email + '</a>';
                 }
+            },
+            {
+                targets: 3, // ya_recuperado
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data) {
+                        return 'SI';
+                    }
+                    return 'NO';
+                }
             }
         ];
         $('#cit_clientes_recuperaciones_datatable').DataTable(configDataTable);
