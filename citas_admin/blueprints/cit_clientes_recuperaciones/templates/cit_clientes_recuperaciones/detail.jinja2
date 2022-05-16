@@ -6,15 +6,15 @@
 {% block title %}Cliente Recuperacion{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons(cit_cliente_recuperacion.email) %}
+    {% call topbar.page_buttons('Recuperacion ' + cit_cliente_recuperacion.id | string) %}
         {{ topbar.button_previous('Clientes Recuperaciones', url_for('cit_clientes_recuperaciones.list_active')) }}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
     {% call detail.card(estatus=cit_cliente_recuperacion.estatus) %}
-        {{ detail.label_value_big('Correo electronico', cit_cliente_recuperacion.email) }}
-        {{ detail.label_value('Expiracion', moment(lista_de_acuerdo.expiracion, local=True).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Cliente', cit_cliente_recuperacion.cit_cliente.email, url_for('cit_clientes.detail', cit_cliente_id=cit_cliente_recuperacion.cit_cliente_id)) }}
+        {{ detail.label_value('Expiracion', moment(cit_cliente_recuperacion.expiracion, local=True).format('DD MMM YYYY')) }}
         {{ detail.label_value('Ya recuperado', cit_cliente_recuperacion.ya_recuperado) }}
     {% endcall %}
 {% endblock %}
