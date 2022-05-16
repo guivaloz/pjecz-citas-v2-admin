@@ -45,8 +45,12 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "email": resultado.cliente.email,
+                    "id": resultado.id,
                     "url": url_for("cit_clientes_recuperaciones.detail", cit_cliente_recuperacion_id=resultado.id),
+                },
+                "cit_cliente": {
+                    "email": resultado.cit_cliente.email,
+                    "url": url_for("cit_clientes.detail", cit_cliente_id=resultado.cit_cliente_id),
                 },
                 "expiracion": resultado.expiracion,
                 "ya_recuperado": resultado.ya_recuperado,
