@@ -43,7 +43,7 @@
             { data: 'apellido_segundo' },
             { data: 'email' },
             { data: 'expiracion' },
-            { data: 'ya_registrado' },
+            { data: 'ya_registrado' }
         ];
         configDataTable['columnDefs'] = [
             {
@@ -51,6 +51,16 @@
                 data: null,
                 render: function(data, type, row, meta) {
                     return '<a href="' + data.url + '">' + data.id + '</a>';
+                }
+            },
+            {
+                targets: 6, // ya_registrado
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data) {
+                        return 'SI';
+                    }
+                    return 'NO';
                 }
             }
         ];
