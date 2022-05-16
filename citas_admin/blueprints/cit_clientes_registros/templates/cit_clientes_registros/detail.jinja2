@@ -17,7 +17,6 @@
 
 {% block content %}
     {% call detail.card(estatus=cit_cliente_registro.estatus) %}
-        {{ detail.label_value_big('Correo electronico', cit_cliente_registro.email) }}
         {{ detail.label_value('nombres', cit_cliente_registro.nombres) }}
         {{ detail.label_value('apellido_primero', cit_cliente_registro.apellido_primero) }}
         {{ detail.label_value('apellido_segundo', cit_cliente_registro.apellido_segundo) }}
