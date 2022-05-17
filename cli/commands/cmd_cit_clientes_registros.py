@@ -67,11 +67,14 @@ def ver(id):
 def enviar(id):
     """Enviar mensaje con URL de confirmacion"""
     cit_cliente_registro = CitClienteRegistro.query.get(id)
-    click.echo("Por programar que se mande un mensaje a...")
-    click.echo(f"  e-mail: {cit_cliente_registro.email}")
-    click.echo("Con este contenido...")
-    click.echo(f"  URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}")
-    click.echo(f"El contador de mensajes valdra {cit_cliente_registro.mensajes_cantidad}")
+    click.echo(f"Por enviar un mensaje a: {cit_cliente_registro.email}")
+    click.echo(f"Con este URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}")
+    click.echo(f"El contador de mensajes sera: {cit_cliente_registro.mensajes_cantidad}")
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.cit_clientes_registros.tasks.enviar",
+        cit_cliente_registro_id=cit_cliente_registro.id,
+    )
+    click.echo("Enviar se está ejecutando en el fondo.")
 
 
 @click.command()
