@@ -61,12 +61,13 @@ def enviar(cit_cliente_registro_id):
     momento_str = momento.strftime("%d/%B/%Y %I:%M%p")
 
     # Contenidos
+    url = f"{NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}"
     contenidos = [
         "<h1>Sistema de Citas</h1>",
         "<h2>PODER JUDICIAL DEL ESTADO DE COAHUILA DE ZARAGOZA</h2>",
         f"<p>Fecha de elaboración: {momento_str}.</p>",
-        f"<p>Antes de {EXPIRACION_HORAS} horas vaya a esta pagina para validar y definir su contrasena:<br>",
-        "{NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}</p>",
+        f"<p>Antes de {EXPIRACION_HORAS} horas vaya a este URL para validar su registro y definir su contraseña:<br>",
+        f"<a href='{url}>{url}</a></p>",
         "<p>ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</p>",
     ]
     content = Content("text/html", "<br>".join(contenidos))

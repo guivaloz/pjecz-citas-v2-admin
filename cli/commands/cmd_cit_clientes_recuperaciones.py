@@ -2,7 +2,7 @@
 Cit Clientes Recuperaciones
 
 - ver: Ver recuperaciones
-- enviar: Enviar mensajes con URL para definir contrasena
+- enviar: Enviar mensaje con URL para definir contrasena
 - eliminar: Eliminar recuperaciones
 """
 import os
@@ -65,13 +65,16 @@ def ver(id):
 @click.command()
 @click.argument("id", type=int)
 def enviar(id):
-    """Enviar mensajes con URL para definir contrasena"""
+    """Enviar mensaje con URL para definir contrasena"""
     cit_cliente_recuperacion = CitClienteRecuperacion.query.get(id)
-    click.echo("Por programar que se mande un mensaje a...")
-    click.echo(f"  e-mail: {cit_cliente_recuperacion.email}")
-    click.echo("Con este contenido...")
-    click.echo(f"  URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_recuperacion.cadena_validar}")
-    click.echo(f"El contador de mensajes valdra {cit_cliente_recuperacion.mensajes_cantidad}")
+    click.echo(f"Por enviar un mensaje a: {cit_cliente_recuperacion.email}")
+    click.echo(f"Con este URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_recuperacion.cadena_validar}")
+    click.echo(f"El contador de mensajes sera: {cit_cliente_recuperacion.mensajes_cantidad}")
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.cit_clientes_registros.tasks.enviar",
+        cit_cliente_recuperacion_id=cit_cliente_recuperacion.id,
+    )
+    click.echo("Enviar se está ejecutando en el fondo.")
 
 
 @click.command()
