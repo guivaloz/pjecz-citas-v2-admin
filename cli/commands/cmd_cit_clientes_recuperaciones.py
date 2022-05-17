@@ -58,7 +58,7 @@ def ver(id):
         click.echo(f"Apellido segundo: {cit_cliente_recuperacion.cit_cliente.apellido_segundo}")
         click.echo(f"CURP: {cit_cliente_recuperacion.cit_cliente.curp}")
         click.echo(f"e-mail: {cit_cliente_recuperacion.cit_cliente.email}")
-        click.echo(f"URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_recuperacion.cadena_validar}")
+        click.echo(f"URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_recuperacion.cadena_validar}")
         click.echo(f"Cantidad de mensajes: {cit_cliente_recuperacion.mensajes_cantidad}")
 
 
@@ -68,7 +68,7 @@ def enviar(id):
     """Enviar mensaje con URL para definir contrasena"""
     cit_cliente_recuperacion = CitClienteRecuperacion.query.get(id)
     click.echo(f"Por enviar un mensaje a: {cit_cliente_recuperacion.cit_cliente.email}")
-    click.echo(f"Con este URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_recuperacion.cadena_validar}")
+    click.echo(f"Con este URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_recuperacion.cadena_validar}")
     click.echo(f"El contador de mensajes sera: {cit_cliente_recuperacion.mensajes_cantidad + 1}")
     app.task_queue.enqueue(
         "citas_admin.blueprints.cit_clientes_recuperaciones.tasks.enviar",
