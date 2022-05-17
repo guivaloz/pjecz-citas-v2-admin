@@ -3,9 +3,11 @@ Cit Clientes Registros
 
 - ver: Ver mensaje de registro
 - enviar: Enviar mensaje de registro
-- cancelar: Cancelar mensaje de registro
+- eliminar: Eliminar mensaje de registro
 """
+import os
 import click
+from dotenv import load_dotenv
 from tabulate import tabulate
 
 from citas_admin.app import create_app
@@ -16,6 +18,10 @@ from citas_admin.blueprints.cit_clientes_registros.models import CitClienteRegis
 app = create_app()
 db.app = app
 
+load_dotenv()  # Take environment variables from .env
+
+NEW_ACCOUNT_CONFIRM_URL = os.getenv("NEW_ACCOUNT_CONFIRM_URL", "https://localhost:3000/new_account_confirm")
+
 
 @click.group()
 def cli():
@@ -23,40 +29,63 @@ def cli():
 
 
 @click.command()
-@click.option("--id", default=1, help="Number of greetings.")
-def ver():
-    """Ver mensaje de registro"""
+@click.option("--id", default=None, help="Number of greetings.")
+def ver(id):
+    """Ver registros"""
+    if id is None:
+        cit_clientes_registros = CitClienteRegistro.query.filter_by(estatus="A").filter_by(ya_registrado=False).all()
+        if len(cit_clientes_registros) == 0:
+            click.echo("No hay registros")
+            return
+        datos = []
+        for cit_cliente_registro in cit_clientes_registros:
+            datos.append(
+                [
+                    cit_cliente_registro.id,
+                    cit_cliente_registro.nombres,
+                    cit_cliente_registro.apellido_primero,
+                    cit_cliente_registro.apellido_segundo,
+                    cit_cliente_registro.curp,
+                    cit_cliente_registro.email,
+                ]
+            )
+        click.echo(tabulate(datos, headers=["id", "nombres", "apellido_primero", "apellido_segundo", "curp", "email"]))
+    else:
+        cit_cliente_registro = CitClienteRegistro.query.get(id)
+        click.echo(f"Nombres: {cit_cliente_registro.nombres}")
+        click.echo(f"Apellido primero: {cit_cliente_registro.apellido_primero}")
+        click.echo(f"Apellido segundo: {cit_cliente_registro.apellido_segundo}")
+        click.echo(f"CURP: {cit_cliente_registro.curp}")
+        click.echo(f"e-mail: {cit_cliente_registro.email}")
+        click.echo(f"URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}")
+
+
+@click.command()
+@click.argument("id", type=int)
+def enviar(id):
+    """Enviar mensaje"""
+    cit_cliente_registro = CitClienteRegistro.query.get(id)
+    click.echo("Por programar que se mande un mensaje a...")
+    click.echo(f"  e-mail: {cit_cliente_registro.email}")
+    click.echo("Con este contenido...")
+    click.echo(f"URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}")
+
+
+@click.command()
+def eliminar():
+    """Eliminar registros"""
     cit_clientes_registros = CitClienteRegistro.query.filter_by(estatus="A").filter_by(ya_registrado=False).all()
-    if cit_clientes_registros is None:
+    if len(cit_clientes_registros) == 0:
         click.echo("No hay registros")
         return
-    datos = []
+    contador = 0
     for cit_cliente_registro in cit_clientes_registros:
-        datos.append(
-            [
-                cit_cliente_registro.id,
-                cit_cliente_registro.nombres,
-                cit_cliente_registro.apellido_primero,
-                cit_cliente_registro.apellido_segundo,
-                cit_cliente_registro.email,
-                cit_cliente_registro.curp,
-            ]
-        )
-    click.echo(tabulate(datos, headers=["id", "nombres", "apellido_primero", "apellido_segundo", "email", "curp"]))
-
-
-@click.command()
-def enviar():
-    """Enviar mensaje de registro"""
-    click.echo("Por programar")
-
-
-@click.command()
-def cancelar():
-    """Cancelar mensaje de registro"""
-    click.echo("Por programar")
+        cit_cliente_registro.estatus = "B"
+        cit_cliente_registro.save()
+        contador += 1
+    click.echo(f"Se eliminaron {contador} registros")
 
 
 cli.add_command(ver)
 cli.add_command(enviar)
-cli.add_command(cancelar)
+cli.add_command(eliminar)
