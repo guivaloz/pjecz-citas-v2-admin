@@ -15,7 +15,8 @@
     {% call detail.card(estatus=cit_cliente_recuperacion.estatus) %}
         {{ detail.label_value('Cliente', cit_cliente_recuperacion.cit_cliente.email, url_for('cit_clientes.detail', cit_cliente_id=cit_cliente_recuperacion.cit_cliente_id)) }}
         {{ detail.label_value('Expiracion', moment(cit_cliente_recuperacion.expiracion, local=True).format('DD MMM YYYY')) }}
-        {{ detail.label_value('Ya recuperado', cit_cliente_recuperacion.ya_recuperado) }}
+        {{ detail.label_value('Cantidad de mensajes', cit_cliente_recuperacion.mensajes_cantidad) }}
+        {{ detail.label_value_boolean('Ya recuperado', cit_cliente_recuperacion.ya_recuperado) }}
     {% endcall %}
 {% endblock %}
 
