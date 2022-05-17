@@ -22,7 +22,7 @@ locale.setlocale(locale.LC_TIME, "es_MX.utf8")
 bitacora = logging.getLogger(__name__)
 bitacora.setLevel(logging.INFO)
 formato = logging.Formatter("%(asctime)s:%(levelname)s:%(message)s")
-empunadura = logging.FileHandler("cit_clientes_registros.log")
+empunadura = logging.FileHandler("cit_clientes_recuperaciones.log")
 empunadura.setFormatter(formato)
 bitacora.addHandler(empunadura)
 
@@ -80,7 +80,7 @@ def enviar(cit_cliente_recuperacion_id):
         bandera = False
 
     # Destinatario
-    to_email = To(cit_cliente_recuperacion.email)
+    to_email = To(cit_cliente_recuperacion.cit_cliente.email)
 
     # Asunto
     subject = "Recuperar su contraseña en el Sistema de Citas"
@@ -105,6 +105,6 @@ def enviar(cit_cliente_recuperacion_id):
 
     # Terminar tarea
     set_task_progress(100)
-    mensaje_final = f"Se ha enviado el mensaje {cit_cliente_recuperacion.mensajes_cantidad} a {cit_cliente_recuperacion.email}"
+    mensaje_final = f"Se ha enviado el mensaje {cit_cliente_recuperacion.mensajes_cantidad} a {cit_cliente_recuperacion.cit_cliente.email}"
     bitacora.info(mensaje_final)
     return mensaje_final
