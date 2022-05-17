@@ -60,8 +60,14 @@ def enviar(cit_cliente_registro_id):
     momento = datetime.now()
     momento_str = momento.strftime("%d/%B/%Y %I:%M%p")
 
+    # URL
+    url = None
+    if NEW_ACCOUNT_CONFIRM_URL != "":
+        url = f"{NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}"
+    else:
+        bandera = False
+
     # Contenidos
-    url = f"{NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}"
     contenidos = [
         "<h1>Sistema de Citas</h1>",
         "<h2>PODER JUDICIAL DEL ESTADO DE COAHUILA DE ZARAGOZA</h2>",
@@ -97,7 +103,7 @@ def enviar(cit_cliente_registro_id):
         mail = Mail(from_email, to_email, subject, content)
         sendgrid_client.client.mail.send.post(request_body=mail.get())
     else:
-        bitacora.warning("Se omite el envio a XXXX por XXX")
+        bitacora.warning("Se omite el envio a %s por que faltan elementos", cit_cliente_registro.email)
 
     # Incrementar contador
     cit_cliente_registro.mensajes_cantidad += 1

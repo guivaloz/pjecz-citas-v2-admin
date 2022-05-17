@@ -32,7 +32,7 @@ db.app = app
 load_dotenv()  # Take environment variables from .env
 
 EXPIRACION_HORAS = 48
-RECOVER_ACCOUNT_CONFIRM_URL = os.getenv("RECOVER_ACCOUNT_CONFIRM_URL", "https://localhost:3000/recover_account_confirm")
+RECOVER_ACCOUNT_CONFIRM_URL = os.getenv("RECOVER_ACCOUNT_CONFIRM_URL", "")
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "")
 
@@ -60,8 +60,14 @@ def enviar(cit_cliente_recuperacion_id):
     momento = datetime.now()
     momento_str = momento.strftime("%d/%B/%Y %I:%M%p")
 
+    # URL
+    url = None
+    if RECOVER_ACCOUNT_CONFIRM_URL != "":
+        url = f"{RECOVER_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_recuperacion.cadena_validar}</p>"
+    else:
+        bandera = False
+
     # Contenidos
-    url = f"{RECOVER_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_recuperacion.cadena_validar}</p>"
     contenidos = [
         "<h1>Sistema de Citas</h1>",
         "<h2>PODER JUDICIAL DEL ESTADO DE COAHUILA DE ZARAGOZA</h2>",
@@ -97,7 +103,7 @@ def enviar(cit_cliente_recuperacion_id):
         mail = Mail(from_email, to_email, subject, content)
         sendgrid_client.client.mail.send.post(request_body=mail.get())
     else:
-        bitacora.warning("Se omite el envio a XXXX por XXX")
+        bitacora.warning("Se omite el envio a %s por que faltan elementos", cit_cliente_recuperacion.cit_cliente.email)
 
     # Incrementar contador
     cit_cliente_recuperacion.mensajes_cantidad += 1
