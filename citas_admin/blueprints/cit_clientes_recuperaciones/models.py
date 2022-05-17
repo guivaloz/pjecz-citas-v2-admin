@@ -21,6 +21,7 @@ class CitClienteRecuperacion(db.Model, UniversalMixin):
     # Columnas
     expiracion = db.Column(db.DateTime(), nullable=False)
     cadena_validar = db.Column(db.String(256), nullable=False)
+    mensajes_cantidad = db.Column(db.Integer(), nullable=False, default=0)
     ya_recuperado = db.Column(db.Boolean(), default=False, server_default="false")
 
     def __repr__(self):

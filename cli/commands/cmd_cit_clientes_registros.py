@@ -1,9 +1,9 @@
 """
 Cit Clientes Registros
 
-- ver: Ver mensaje de registro
-- enviar: Enviar mensaje de registro
-- eliminar: Eliminar mensaje de registro
+- ver: Ver registros
+- enviar: Enviar mensaje con URL de confirmacion
+- eliminar: Eliminar registros
 """
 import os
 import click
@@ -33,7 +33,7 @@ def cli():
 def ver(id):
     """Ver registros"""
     if id is None:
-        cit_clientes_registros = CitClienteRegistro.query.filter_by(estatus="A").filter_by(ya_registrado=False).all()
+        cit_clientes_registros = CitClienteRegistro.query.filter_by(estatus="A").filter_by(ya_registrado=False).order_by(CitClienteRegistro.id).all()
         if len(cit_clientes_registros) == 0:
             click.echo("No hay registros")
             return
@@ -47,9 +47,10 @@ def ver(id):
                     cit_cliente_registro.apellido_segundo,
                     cit_cliente_registro.curp,
                     cit_cliente_registro.email,
+                    cit_cliente_registro.mensajes_cantidad,
                 ]
             )
-        click.echo(tabulate(datos, headers=["id", "nombres", "apellido_primero", "apellido_segundo", "curp", "email"]))
+        click.echo(tabulate(datos, headers=["id", "nombres", "apellido_primero", "apellido_segundo", "curp", "email", "cantidad"]))
     else:
         cit_cliente_registro = CitClienteRegistro.query.get(id)
         click.echo(f"Nombres: {cit_cliente_registro.nombres}")
@@ -58,17 +59,19 @@ def ver(id):
         click.echo(f"CURP: {cit_cliente_registro.curp}")
         click.echo(f"e-mail: {cit_cliente_registro.email}")
         click.echo(f"URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}")
+        click.echo(f"Cantidad de mensajes: {cit_cliente_registro.mensajes_cantidad}")
 
 
 @click.command()
 @click.argument("id", type=int)
 def enviar(id):
-    """Enviar mensaje"""
+    """Enviar mensaje con URL de confirmacion"""
     cit_cliente_registro = CitClienteRegistro.query.get(id)
     click.echo("Por programar que se mande un mensaje a...")
     click.echo(f"  e-mail: {cit_cliente_registro.email}")
     click.echo("Con este contenido...")
-    click.echo(f"URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}")
+    click.echo(f"  URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}")
+    click.echo(f"El contador de mensajes valdra {cit_cliente_registro.mensajes_cantidad}")
 
 
 @click.command()

@@ -17,14 +17,15 @@
 
 {% block content %}
     {% call detail.card(estatus=cit_cliente_registro.estatus) %}
-        {{ detail.label_value('nombres', cit_cliente_registro.nombres) }}
-        {{ detail.label_value('apellido_primero', cit_cliente_registro.apellido_primero) }}
-        {{ detail.label_value('apellido_segundo', cit_cliente_registro.apellido_segundo) }}
-        {{ detail.label_value('curp', cit_cliente_registro.curp) }}
-        {{ detail.label_value('telefono', cit_cliente_registro.telefono) }}
-        {{ detail.label_value('expiracion', moment(cit_cliente_registro.expiracion).format('DD MMM YYYY')) }}
-        {{ detail.label_value('cadena_validar', cit_cliente_registro.cadena_validar) }}
-        {{ detail.label_value_boolean('ya_registrado', cit_cliente_registro.columna_2) }}
+        {{ detail.label_value('Nombres', cit_cliente_registro.nombres) }}
+        {{ detail.label_value('Apellido primero', cit_cliente_registro.apellido_primero) }}
+        {{ detail.label_value('Apellido segundo', cit_cliente_registro.apellido_segundo) }}
+        {{ detail.label_value('CURP', cit_cliente_registro.curp) }}
+        {{ detail.label_value('Telefono', cit_cliente_registro.telefono) }}
+        {{ detail.label_value('Expiracion', moment(cit_cliente_registro.expiracion).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Cadena validar', cit_cliente_registro.cadena_validar) }}
+        {{ detail.label_value('Cantidad de mensajes', cit_cliente_registro.mensajes_cantidad) }}
+        {{ detail.label_value_boolean('Ya registrado', cit_cliente_registro.columna_2) }}
     {% endcall %}
 {% endblock %}
 
