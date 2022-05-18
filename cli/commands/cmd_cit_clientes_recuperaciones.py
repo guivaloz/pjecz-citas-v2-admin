@@ -20,7 +20,7 @@ db.app = app
 
 load_dotenv()  # Take environment variables from .env
 
-RECOVER_ACCOUNT_CONFIRM_URL = os.getenv("RECOVER_ACCOUNT_CONFIRM_URL", "https://localhost:3000/recover_account_confirm")
+RECOVER_ACCOUNT_CONFIRM_URL = os.getenv("RECOVER_ACCOUNT_CONFIRM_URL", "")
 
 
 @click.group()
