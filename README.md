@@ -36,6 +36,10 @@ Verifique con
 
     pip list
 
+Instalar el Comando Cli
+
+    pip install --editable .
+
 ## Configurar
 
 Debe crear un archivo `instance/settings.py` que defina su conexion a la base de datos...

@@ -21,7 +21,8 @@ class CitCliente(db.Model, UniversalMixin):
     curp = db.Column(db.String(18), unique=True, nullable=False)
     telefono = db.Column(db.String(64), nullable=False, default="", server_default="")
     email = db.Column(db.String(256), unique=True, nullable=False)
-    contrasena = db.Column(db.String(256), nullable=False)
+    contrasena_md5 = db.Column(db.String(256), nullable=False)
+    contrasena_sha256 = db.Column(db.String(256), nullable=False)
     renovacion = db.Column(db.Date(), nullable=False)
 
     # Hijos
