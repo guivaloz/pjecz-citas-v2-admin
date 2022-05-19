@@ -63,7 +63,7 @@ def enviar(cit_cliente_recuperacion_id):
     # URL
     url = None
     if RECOVER_ACCOUNT_CONFIRM_URL != "":
-        url = f"{RECOVER_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_recuperacion.cadena_validar}</p>"
+        url = f"{RECOVER_ACCOUNT_CONFIRM_URL}?hashid={cit_cliente_recuperacion.encode_id()}&cadena_validar={cit_cliente_recuperacion.cadena_validar}</p>"
     else:
         bandera = False
 
