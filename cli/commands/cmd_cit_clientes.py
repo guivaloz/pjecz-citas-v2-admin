@@ -6,7 +6,9 @@ Cit Clientes
 """
 from datetime import datetime, timedelta
 import click
+
 from lib.pwgen import generar_contrasena
+from lib.safe_string import safe_string
 
 from citas_admin.app import create_app
 from citas_admin.extensions import db, pwd_context
@@ -31,11 +33,11 @@ def agregar(email):
         click.echo(f"El email {email} ya existe")
         return
     # Preguntar los datos del cliente
-    nombres = input("Nombres: ")
-    apellido_primero = input("Apellido primero: ")
-    apellido_segundo = input("Apellido segundo: ")
-    curp = input("CURP: ")
-    telefono = input("Teléfono: ")
+    nombres = safe_string(input("Nombres: "))
+    apellido_primero = safe_string(input("Apellido primero: "))
+    apellido_segundo = safe_string(input("Apellido segundo: "))
+    curp = safe_string(input("CURP: "))
+    telefono = safe_string(input("Teléfono: "))
     # Crear una contraseña aleatoria
     contrasena = generar_contrasena()
     # Definir la fecha de renovación dos meses después
