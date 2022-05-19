@@ -53,12 +53,13 @@ def ver(id):
         click.echo(tabulate(datos, headers=["id", "nombres", "apellido_primero", "apellido_segundo", "curp", "email", "cantidad"]))
     else:
         cit_cliente_recuperacion = CitClienteRecuperacion.query.get(id)
+        url = f"{RECOVER_ACCOUNT_CONFIRM_URL}?hashid={cit_cliente_recuperacion.encode_id()}&cadena_validar={cit_cliente_recuperacion.cadena_validar}"
         click.echo(f"Nombres: {cit_cliente_recuperacion.cit_cliente.nombres}")
         click.echo(f"Apellido primero: {cit_cliente_recuperacion.cit_cliente.apellido_primero}")
         click.echo(f"Apellido segundo: {cit_cliente_recuperacion.cit_cliente.apellido_segundo}")
         click.echo(f"CURP: {cit_cliente_recuperacion.cit_cliente.curp}")
         click.echo(f"e-mail: {cit_cliente_recuperacion.cit_cliente.email}")
-        click.echo(f"URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_recuperacion.cadena_validar}")
+        click.echo(f"URL para confirmar: {url}")
         click.echo(f"Cantidad de mensajes: {cit_cliente_recuperacion.mensajes_cantidad}")
 
 

@@ -84,7 +84,7 @@ Guarde sus configuraciones, contrasenas y tokens en un archivo `.env`
     # Host
     HOST=
 
-    # Salt para convertir/reconverir el id en hash
+    # Salt sirve para cifrar el ID con HashID, debe ser igual en la API
     SALT=****************
 
     # Sendgrid
