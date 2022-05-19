@@ -63,7 +63,7 @@ def enviar(cit_cliente_registro_id):
     # URL
     url = None
     if NEW_ACCOUNT_CONFIRM_URL != "":
-        url = f"{NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}"
+        url = f"{NEW_ACCOUNT_CONFIRM_URL}?hashid={cit_cliente_registro.encode_id()}&cadena_validar={cit_cliente_registro.cadena_validar}"
     else:
         bandera = False
 

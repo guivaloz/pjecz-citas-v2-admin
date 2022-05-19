@@ -48,7 +48,8 @@ def agregar(email):
         curp=curp,
         telefono=telefono,
         email=email,
-        contrasena=pwd_context.hash(contrasena),
+        contrasena_md5="",
+        contrasena_sha256=pwd_context.hash(contrasena),
         renovacion=renovacion_fecha.date(),
     )
     cit_cliente.save()

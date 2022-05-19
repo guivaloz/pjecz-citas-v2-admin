@@ -20,7 +20,7 @@ db.app = app
 
 load_dotenv()  # Take environment variables from .env
 
-NEW_ACCOUNT_CONFIRM_URL = os.getenv("NEW_ACCOUNT_CONFIRM_URL", "https://localhost:3000/new_account_confirm")
+NEW_ACCOUNT_CONFIRM_URL = os.getenv("NEW_ACCOUNT_CONFIRM_URL", "")
 
 
 @click.group()
@@ -53,12 +53,13 @@ def ver(id):
         click.echo(tabulate(datos, headers=["id", "nombres", "apellido_primero", "apellido_segundo", "curp", "email", "cantidad"]))
     else:
         cit_cliente_registro = CitClienteRegistro.query.get(id)
+        url = f"{NEW_ACCOUNT_CONFIRM_URL}?hashid={cit_cliente_registro.encode_id()}&cadena_validar={cit_cliente_registro.cadena_validar}"
         click.echo(f"Nombres: {cit_cliente_registro.nombres}")
         click.echo(f"Apellido primero: {cit_cliente_registro.apellido_primero}")
         click.echo(f"Apellido segundo: {cit_cliente_registro.apellido_segundo}")
         click.echo(f"CURP: {cit_cliente_registro.curp}")
         click.echo(f"e-mail: {cit_cliente_registro.email}")
-        click.echo(f"URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}")
+        click.echo(f"URL para confirmar: {url}")
         click.echo(f"Cantidad de mensajes: {cit_cliente_registro.mensajes_cantidad}")
 
 
@@ -68,7 +69,7 @@ def enviar(id):
     """Enviar mensaje con URL de confirmacion"""
     cit_cliente_registro = CitClienteRegistro.query.get(id)
     click.echo(f"Por enviar un mensaje a: {cit_cliente_registro.email}")
-    click.echo(f"Con este URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?confirm={cit_cliente_registro.cadena_validar}")
+    click.echo(f"Con este URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_registro.cadena_validar}")
     click.echo(f"El contador de mensajes sera: {cit_cliente_registro.mensajes_cantidad}")
     app.task_queue.enqueue(
         "citas_admin.blueprints.cit_clientes_registros.tasks.enviar",

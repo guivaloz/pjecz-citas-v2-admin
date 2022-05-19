@@ -84,13 +84,16 @@ Guarde sus configuraciones, contrasenas y tokens en un archivo `.env`
     # Host
     HOST=
 
-    # Salt para convertir/reconverir el id en hash
+    # Salt sirve para cifrar el ID con HashID, debe ser igual en la API
     SALT=****************
 
     # Sendgrid
     SENDGRID_API_KEY=
     SENDGRID_FROM_EMAIL=
-    SENDGRID_TO_EMAIL_REPORTES=
+
+    # URLs de destino a las paginas de confirmacion
+    NEW_ACCOUNT_CONFIRM_URL=https://localhost:3000/new_account_confirm
+    RECOVER_ACCOUNT_CONFIRM_URL=https://localhost:3000/recover_account_confirm
 
     # Si esta en PRODUCTION se evita reiniciar la base de datos
     DEPLOYMENT_ENVIRONMENT=develop
