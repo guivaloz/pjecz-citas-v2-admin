@@ -71,7 +71,8 @@ def cambiar_contrasena(email):
     if contrasena_1 != contrasena_2:
         click.echo("No son iguales las contraseñas. Por favor intente de nuevo.")
         return
-    cit_cliente.contrasena = pwd_context.hash(contrasena_1)
+    cit_cliente.contrasena_md5 = ""
+    cit_cliente.contrasena_sha256 = pwd_context.hash(contrasena_1)
     cit_cliente.save()
     click.echo(f"Se ha cambiado la contraseña de {email} en usuarios")
 
