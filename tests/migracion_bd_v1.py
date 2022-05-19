@@ -105,6 +105,8 @@ def main():
                     count_insert += 1
         print(f"Total de registros insertados {count_insert}, omitidos {count_skip}")
 
+        # -- Migración de la Tabla 'usuario' -> cit_clientes --
+
 
 if __name__ == "__main__":
     main()
