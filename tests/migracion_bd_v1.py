@@ -67,12 +67,16 @@ def main():
             num_registros = 0
             result = connection.execute(text("SELECT COUNT(*) AS total FROM usuario"))
             for row in result:
-                num_registros = int(row['total'])
+                num_registros = int(row["total"])
             # leer los registros de la BD v1 de usuarios
-            result = connection.execute(text("SELECT id, nombre, apPaterno, apMaterno, celular, email, curp, password \
+            result = connection.execute(
+                text(
+                    "SELECT id, nombre, apPaterno, apMaterno, celular, email, curp, password \
                 FROM usuario \
                 WHERE activo = 1 \
-                ORDER BY id DESC"))
+                ORDER BY id DESC"
+                )
+            )
             count_insert = 0
             count_skip = 0
             for row in result:
@@ -89,38 +93,38 @@ def main():
                     count_skip += 1
                     continue
                 # Revisar si existe un nombre
-                if safe_string(row["nombre"]) == '':
+                if safe_string(row["nombre"]) == "":
                     count_skip += 1
                     print(f"! Registro Omitido - falta el nombre: [ID:{row['id']}]")
                     continue
                 # Revisar si existe un apellido paterno
-                if safe_string(row["apPaterno"]) == '':
+                if safe_string(row["apPaterno"]) == "":
                     count_skip += 1
                     print(f"! Registro Omitido - falta el apellido: [ID:{row['id']}]")
                     continue
                 # Revisar si existe la CURP
-                if safe_string(row["curp"])== '':
+                if safe_string(row["curp"]) == "":
                     count_skip += 1
                     print(f"! Registro Omitido - falta el curp: [ID:{row['id']}]")
                     continue
                 # Insertar registro
                 count_insert += 1
                 cliente = CitCliente(
-                        nombres=safe_string(row["nombre"]),
-                        apellido_primero=safe_string(row["apPaterno"]),
-                        apellido_segundo=safe_string(row["apMaterno"]),
-                        curp=safe_string(row["curp"]),
-                        email=row["email"],
-                        telefono=safe_string(row["celular"]),
-                        contrasena_md5=safe_string(row["password"]),
-                        contrasena_sha256="",
-                        renovacion= datetime.now() + timedelta(days=60),
-                    )
+                    nombres=safe_string(row["nombre"]),
+                    apellido_primero=safe_string(row["apPaterno"]),
+                    apellido_segundo=safe_string(row["apMaterno"]),
+                    curp=safe_string(row["curp"]),
+                    email=row["email"],
+                    telefono=safe_string(row["celular"]),
+                    contrasena_md5=safe_string(row["password"]),
+                    contrasena_sha256="",
+                    renovacion=datetime.now() + timedelta(days=60),
+                )
                 if simulacion is False:
                     cliente.save()
                 # Toma de muestras, para comprobar su funcionamiento
                 if count_insert % 200 == 0:
-                    porcentaje = 100 - (int(row['id']) * 100 / num_registros)
+                    porcentaje = 100 - (int(row["id"]) * 100 / num_registros)
                     print(f"({porcentaje:.2f}%) [ID:{row['id']}] =V1= CURP:{safe_string(row['curp'])}, EMAIL:{row['email']} =V2= [ID:{cliente.id}]")
             print(f"= Total de registros insertados {count_insert} de {num_registros}, omitidos {count_skip}")
 
@@ -161,22 +165,26 @@ def main():
             num_registros = 0
             result = connection.execute(text("SELECT COUNT(*) AS total FROM citas"))
             for row in result:
-                num_registros = int(row['total'])
+                num_registros = int(row["total"])
             print(f"- Registros de citas a procesar de la V1: {num_registros:,} citas a migrar")
             # Lectura de la BD v1, tabla de citas
-            citas_v1 = connection.execute(text("SELECT \
+            citas_v1 = connection.execute(
+                text(
+                    "SELECT \
                 citas.id AS citas_id, id_servicio, citas.correo, id_juzgado,\
                 cat_servicios.servicio AS nombre_servicio, fecha, hora, citas.detalles\
                 FROM citas\
                 JOIN cat_servicios ON cat_servicios.id = citas.id_servicio \
                 JOIN juzgados ON juzgados.id = citas.id_juzgado \
-                WHERE fecha >= CURDATE()"))
+                WHERE fecha >= CURDATE()"
+                )
+            )
             count_insert = 0
             count_skip = 0
             for row in citas_v1:
                 # Hacer match con el servicio de la BD v2
                 # Comprobar parecido
-                nombre_servicio = safe_string(row['nombre_servicio'])
+                nombre_servicio = safe_string(row["nombre_servicio"])
                 if nombre_servicio in tabla_parecidos:
                     servicio_v2 = CitServicio.query.filter(CitServicio.id == tabla_parecidos[nombre_servicio]).first()
                 else:
@@ -186,13 +194,13 @@ def main():
                     print(f"! Servicio de la cita NO encontrado: [ID:{row['citas_id']}] = NOM-SERVICIO: {nombre_servicio}")
                     continue
                 # Buscar el cliente con este email
-                cliente_v2 = CitCliente.query.filter(CitCliente.email == row['correo']).first()
+                cliente_v2 = CitCliente.query.filter(CitCliente.email == row["correo"]).first()
                 if cliente_v2 is None:
                     count_skip += 1
                     print(f"! Cliente de la cita NO encontrado: [ID:{row['citas_id']}] = EMAIL: {row['correo']}")
                     continue
                 # Buscar Oficina_id en citas v1.
-                if row['id_juzgado'] not in oficinas:
+                if row["id_juzgado"] not in oficinas:
                     count_skip += 1
                     print(f"! Oficina de la cita NO establecida: [ID:{row['citas_id']}] = Juzgado_id: {row['id_juzgado']}")
                     continue
@@ -201,22 +209,24 @@ def main():
                 fecha_inicio_str = f"{row['fecha']} {row['hora']}"
                 fecha_inicio = datetime.strptime(fecha_inicio_str, "%Y-%m-%d %H:%M:%S")
                 cita = CitCita(
-                        cit_servicio_id = servicio_v2.id,
-                        cit_cliente_id = cliente_v2.id,
-                        oficina_id = oficinas[row['id_juzgado']],
-                        inicio = fecha_inicio,
-                        termino = fecha_inicio + timedelta(minutes=30),
-                        notas = row["detalles"],
-                        estado = "PENDIENTE",
-                        asistencia = None,
-                    )
+                    cit_servicio_id=servicio_v2.id,
+                    cit_cliente_id=cliente_v2.id,
+                    oficina_id=oficinas[row["id_juzgado"]],
+                    inicio=fecha_inicio,
+                    termino=fecha_inicio + timedelta(minutes=30),
+                    notas=row["detalles"],
+                    estado="PENDIENTE",
+                    asistencia=None,
+                )
                 if simulacion == False:
                     cita.save()
                 # Toma de muestras, para comprobar su funcionamiento
                 if count_insert % 100 == 0:
-                    porcentaje = int(row['citas_id']) * 100 / num_registros
-                    print(f"({porcentaje:.2f}%) [ID_CITA:{row['citas_id']}] =V1= ID:{row['id_servicio']}, SERVICIO:{row['nombre_servicio']}, EMAIL:{row['correo']}\n\t\
---> =V2= ID:{servicio_v2.id}, SERVICIO:{servicio_v2.descripcion}, EMAIL:{cliente_v2.email}, INI:{cita.inicio}, EDO:{cita.estado}, DETAIL:{cita.notas}")
+                    porcentaje = int(row["citas_id"]) * 100 / num_registros
+                    print(
+                        f"({porcentaje:.2f}%) [ID_CITA:{row['citas_id']}] =V1= ID:{row['id_servicio']}, SERVICIO:{row['nombre_servicio']}, EMAIL:{row['correo']}\n\t\
+--> =V2= ID:{servicio_v2.id}, SERVICIO:{servicio_v2.descripcion}, EMAIL:{cliente_v2.email}, INI:{cita.inicio}, EDO:{cita.estado}, DETAIL:{cita.notas}"
+                    )
             print(f"Total de registros insertados {count_insert}, omitidos {count_skip}")
 
 
