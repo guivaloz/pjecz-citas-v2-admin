@@ -46,11 +46,11 @@ def datatable_json():
             {
                 "detalle": {
                     "id": cita.id,
-                    "url": url_for("cit_citas.detail", cita_id=cita.id),
+                    "url": url_for("cit_citas.detail", cit_cita_id=cita.id),
                 },
                 "horario": cita.inicio.strftime("%Y-%m-%d %H:%M") + " - " + cita.termino.strftime("%Y-%m-%d %H:%M"),
                 "estado": cita.estado,
-                "servicio": cita.servicio.descripcion,
+                "servicio": cita.cit_servicio.descripcion,
             }
         )
     # Entregar JSON

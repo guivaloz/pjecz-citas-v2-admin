@@ -49,13 +49,18 @@ def main():
     if args.exec:
         simulacion = False
     msg_exec = "SIMULACIÓN" if simulacion else "EJECUCIÓN"
-    print(f"=====================================")
+    print("=====================================")
     print(f"=== Migración de datos de v1 a v2 === ({msg_exec})")
-    print(f"=====================================")
+    print("=====================================")
 
     # -- Migración de las Tablas --
     with engine.connect() as connection:
         if args.clientes:
+            # Eliminar tabla V2 de clientes 'cit_clientes'.
+            if simulacion is False:
+                print("- Eliminando la tabla cit_clientes")
+                conexion_v2 = db.engine.connect()
+                conexion_v2.execute(text("TRUNCATE TABLE cit_clientes CASCADE"))
             # -- Migración de la Tabla 'usuario' -> cit_clientes --
             print("--Migración de la tabla: usuario -> cit_clientes")
             # extraer el número total de registros
@@ -100,8 +105,7 @@ def main():
                     continue
                 # Insertar registro
                 count_insert += 1
-                if simulacion is False:
-                    cliente = CitCliente(
+                cliente = CitCliente(
                         nombres=safe_string(row["nombre"]),
                         apellido_primero=safe_string(row["apPaterno"]),
                         apellido_segundo=safe_string(row["apMaterno"]),
@@ -111,15 +115,26 @@ def main():
                         contrasena_md5=safe_string(row["password"]),
                         contrasena_sha256="",
                         renovacion= datetime.now() + timedelta(days=60),
-                    ).save()
+                    )
+                if simulacion is False:
+                    cliente.save()
                 # Toma de muestras, para comprobar su funcionamiento
-                if count_insert % 100 == 0:
+                if count_insert % 200 == 0:
                     porcentaje = 100 - (int(row['id']) * 100 / num_registros)
                     print(f"({porcentaje:.2f}%) [ID:{row['id']}] =V1= CURP:{safe_string(row['curp'])}, EMAIL:{row['email']} =V2= [ID:{cliente.id}]")
             print(f"= Total de registros insertados {count_insert} de {num_registros}, omitidos {count_skip}")
 
         # -- Migración de la Tabla 'citas' -> cit_citas --
         if args.citas:
+            tabla_parecidos = {
+                "TRAMITACION DE OFICIOS / EDICTOS / EXHORTOS": 3,
+                "CITAS CON ACTUARIOS": 4,
+            }
+            # Eliminar tabla V2 de citas 'cit_citas'.
+            if simulacion is False:
+                print("- Eliminando la tabla cit_citas")
+                conexion_v2 = db.engine.connect()
+                conexion_v2.execute(text("TRUNCATE TABLE cit_citas CASCADE"))
             print("--Migración de la tabla: citas -> cit_citas")
             # Carga de la relación de Juzgados_id --> Oficinas_id
             ruta = Path(OFICINAS_CSV)
@@ -160,10 +175,15 @@ def main():
             count_skip = 0
             for row in citas_v1:
                 # Hacer match con el servicio de la BD v2
-                servicio_v2 = CitServicio.query.filter(CitServicio.descripcion == safe_string(row['nombre_servicio'])).first()
+                # Comprobar parecido
+                nombre_servicio = safe_string(row['nombre_servicio'])
+                if nombre_servicio in tabla_parecidos:
+                    servicio_v2 = CitServicio.query.filter(CitServicio.id == tabla_parecidos[nombre_servicio]).first()
+                else:
+                    servicio_v2 = CitServicio.query.filter(CitServicio.descripcion == nombre_servicio).first()
                 if servicio_v2 is None:
                     count_skip += 1
-                    print(f"! Servicio de la cita NO encontrado: [ID:{row['citas_id']}] = NOM-SERVICIO: {safe_string(row['nombre_servicio'])}")
+                    print(f"! Servicio de la cita NO encontrado: [ID:{row['citas_id']}] = NOM-SERVICIO: {nombre_servicio}")
                     continue
                 # Buscar el cliente con este email
                 cliente_v2 = CitCliente.query.filter(CitCliente.email == row['correo']).first()
