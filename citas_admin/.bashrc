@@ -52,7 +52,9 @@ echo
 
 alias reiniciar="citas db reiniciar"
 alias arrancar="flask run --port 5010"
+alias fondear="rq worker ${TASK_QUEUE}"
 echo "-- Aliases"
 echo "   reiniciar: citas db reiniciar"
 echo "   arrancar:  flask run --port 5010"
+echo "   fondear:   Arrancar RQ Worker"
 echo
