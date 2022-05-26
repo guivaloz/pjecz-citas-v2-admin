@@ -34,8 +34,8 @@ def main():
     db.app = app
 
     # -- Crear conexión a la BD v1 MySQL
-    load_dotenv('.env')  # Se necesita un arhivo .env local para cargar la variable de la BD v1
-    ENGINE_V1 = os.getenv('ENGINE_V1', "")  # Ruta de conexión de la BD V1.
+    load_dotenv(".env")  # Se necesita un arhivo .env local para cargar la variable de la BD v1
+    ENGINE_V1 = os.getenv("ENGINE_V1", "")  # Ruta de conexión de la BD V1.
     engine = create_engine(ENGINE_V1)
 
     # Simulacion o ejecucion
