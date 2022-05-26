@@ -22,8 +22,6 @@ from citas_admin.blueprints.cit_servicios.models import CitServicio
 from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.cit_citas.models import CitCita
 
-from instance.settings import DATABASE_V1_URI
-
 OFICINAS_CSV = "seed/oficinas_table.csv"
 
 
@@ -36,7 +34,9 @@ def main():
     db.app = app
 
     # -- Crear conexión a la BD v1 MySQL
-    engine = create_engine(DATABASE_V1_URI)
+    load_dotenv('.env')  # Se necesita un arhivo .env local para cargar la variable de la BD v1
+    ENGINE_V1 = os.getenv('ENGINE_V1', "")  # Ruta de conexión de la BD V1.
+    engine = create_engine(ENGINE_V1)
 
     # Simulacion o ejecucion
     simulacion = True
