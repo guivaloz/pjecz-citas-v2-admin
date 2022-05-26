@@ -22,6 +22,8 @@ from citas_admin.blueprints.cit_servicios.models import CitServicio
 from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.cit_citas.models import CitCita
 
+from instance.settings import DATABASE_V1_URI
+
 OFICINAS_CSV = "seed/oficinas_table.csv"
 
 
@@ -34,10 +36,7 @@ def main():
     db.app = app
 
     # -- Crear conexión a la BD v1 MySQL
-    DB_USER = "pjeczadmin"
-    DB_PASS = "papasytomates"
-    DB_HOST = os.getenv("DB_HOST", "")
-    engine = create_engine(f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/citas_v1")
+    engine = create_engine(DATABASE_V1_URI)
 
     # Simulacion o ejecucion
     simulacion = True
