@@ -34,10 +34,9 @@ def main():
     db.app = app
 
     # -- Crear conexión a la BD v1 MySQL
-    DB_USER = "pjeczadmin"
-    DB_PASS = "papasytomates"
-    DB_HOST = os.getenv("DB_HOST", "")
-    engine = create_engine(f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/citas_v1")
+    load_dotenv(".env")  # Se necesita un arhivo .env local para cargar la variable de la BD v1
+    ENGINE_V1 = os.getenv("ENGINE_V1", "")  # Ruta de conexión de la BD V1.
+    engine = create_engine(ENGINE_V1)
 
     # Simulacion o ejecucion
     simulacion = True
