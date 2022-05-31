@@ -15,6 +15,7 @@ from citas_admin.blueprints.cit_dias_inhabiles.models import CitDiaInhabil
 from citas_admin.blueprints.cit_horas_bloqueadas.models import CitHoraBloqueada
 from citas_admin.blueprints.cit_citas.models import CitCita
 
+
 def main():
     """Main function"""
 
@@ -98,7 +99,7 @@ def main():
     # Agregar cada día hasta el límite desde el día de mañana.
     for fecha in (date.today() + timedelta(n) for n in range(1, LIMITE_DIAS)):
         # Quitar los Sábados y Domingos
-        if fecha.weekday() in (5,6):
+        if fecha.weekday() in (5, 6):
             continue
         # Quitar los días inhábiles
         if fecha in dias_inhabiles:
@@ -110,7 +111,7 @@ def main():
     print("------------")
     col = 0
     for dia in dias_disponibles:
-        print(f" {dia}", end ="\t")
+        print(f" {dia}", end="\t")
         col += 1
         if col > 4:
             print()
@@ -120,7 +121,7 @@ def main():
     while True:
         fecha_str = input("Seleccione una Fecha (YYYY-MM-DD):")
         try:
-            fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+            fecha = datetime.strptime(fecha_str, "%Y-%m-%d").date()
         except:
             print("! Formato incorrecto de la fecha.")
         if fecha in dias_disponibles:
@@ -134,9 +135,9 @@ def main():
     horas_disponibles = []
 
     # Calcular horarios
-    inicio = datetime.strptime('08:30:00', '%H:%M:%S') #oficina.apertura
-    final = datetime.strptime('16:30:00', '%H:%M:%S') #oficina.cierre
-    intervalo = datetime.strptime('00:15:00', '%H:%M:%S') #cit_servicio.duracion
+    inicio = datetime.strptime("08:30:00", "%H:%M:%S")  # oficina.apertura
+    final = datetime.strptime("16:30:00", "%H:%M:%S")  # oficina.cierre
+    intervalo = datetime.strptime("00:15:00", "%H:%M:%S")  # cit_servicio.duracion
 
     # consultar horas bloquedas
     horas_bloqueadas_obj = CitHoraBloqueada.query.filter(CitHoraBloqueada.fecha == fecha).filter(CitHoraBloqueada.estatus == "A").all()
@@ -163,7 +164,7 @@ def main():
     print("------------")
     col = 0
     for hora in horas_disponibles:
-        print(f" {hora}", end ="\t")
+        print(f" {hora}", end="\t")
         col += 1
         if col > 4:
             print()
@@ -173,7 +174,7 @@ def main():
     while True:
         hora_str = input("Seleccione una Hora (H:M:S):")
         try:
-            hora = datetime.strptime(hora_str, '%H:%M:%S').time()
+            hora = datetime.strptime(hora_str, "%H:%M:%S").time()
         except:
             print("! Formato incorrecto de la hora.")
         if hora in horas_disponibles:
