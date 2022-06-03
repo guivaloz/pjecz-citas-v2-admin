@@ -24,7 +24,7 @@ class CitClienteRegistro(db.Model, UniversalMixin):
     expiracion = db.Column(db.DateTime(), nullable=False)
     cadena_validar = db.Column(db.String(256), nullable=False)
     mensajes_cantidad = db.Column(db.Integer(), nullable=False, default=0)
-    ya_registrado = db.Column(db.Boolean(), nullable=False, default=False, server_default="false")
+    ya_registrado = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         """Representación"""
