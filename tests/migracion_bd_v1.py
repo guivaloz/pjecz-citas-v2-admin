@@ -15,8 +15,6 @@ from datetime import datetime, timedelta
 from citas_admin.app import create_app
 from citas_admin.extensions import db
 
-from citas_admin.blueprints.cit_dias_inhabiles.models import CitDiaInhabil
-from citas_admin.blueprints.cit_horas_bloqueadas.models import CitHoraBloqueada
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_servicios.models import CitServicio
 from citas_admin.blueprints.oficinas.models import Oficina
@@ -162,7 +160,7 @@ def main():
             # extraer el número total de registros
             print("- Leyendo Tabla de citas V1")
             num_registros = 0
-            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas"))
+            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas WHERE fecha >= CURDATE()"))
             for row in result:
                 num_registros = int(row["total"])
             print(f"- Registros de citas a procesar de la V1: {num_registros:,} citas a migrar")
@@ -202,6 +200,12 @@ def main():
                 if row["id_juzgado"] not in oficinas:
                     count_skip += 1
                     print(f"! Oficina de la cita NO establecida: [ID:{row['citas_id']}] = Juzgado_id: {row['id_juzgado']}")
+                    continue
+                # Buscar Oficina_id.
+                oficina_v2 = Oficina.query.filter(Oficina.id == oficinas[row["id_juzgado"]]).first()
+                if oficina_v2 is None:
+                    count_skip += 1
+                    print(f"! Oficina NO encontrada: [ID:{row['citas_id']}] = Juzgado_id: {row['id_juzgado']}")
                     continue
                 # Insertar la cita v2
                 count_insert += 1
