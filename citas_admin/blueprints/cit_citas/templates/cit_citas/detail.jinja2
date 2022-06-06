@@ -6,23 +6,50 @@
 {% block title %}Cita{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons('Cita ' + cita.id | string) %}
+    {% call topbar.page_buttons('Cita ' + cit_cita.id | string) %}
         {{ topbar.button_previous('Citas', url_for('cit_citas.list_active')) }}
+        {% if current_user.can_edit('CIT CITAS') %}
+            {% if cit_cita.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_citas.delete', cit_cita_id=cit_cita.id)) }}{% endif %}
+            {% if cit_cita.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_citas.recover', cit_cita_id=cit_cita.id)) }}{% endif %}
+        {% endif %}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
-    {% call detail.card(estatus=cita.estatus) %}
-        {{ detail.label_value_big('Id', cita.id) }}
-        {{ detail.label_value('Inicia', moment(cita.inicio).format('llll')) }}
-        {{ detail.label_value('Termina', moment(cita.termino).format('llll')) }}
-        {{ detail.label_value('Cliente', cita.cliente.nombre, url_for('cit_clientes.detail', cliente_id=cita.cliente.id)) }}
-        {{ detail.label_value('Servicio', cita.servicio.nombre, url_for('cit_servicios.detail', servicio_id=cita.servicio.id)) }}
-        {{ detail.label_value('Notas', cita.notas) }}
-        {{ detail.label_value('Estado', cita.estado) }}
+    <div class="row">
+        <div class="col-lg-4 col-md-12">
+            {% call detail.card(title='Cliente', estatus=cit_cita.estatus) %}
+                {{ detail.label_value('Nombre', cit_cita.cit_cliente.nombre) }}
+                {{ detail.label_value('e-mail', cit_cita.cit_cliente.email, url_for('cit_clientes.detail', cit_cliente_id=cit_cita.cit_cliente_id)) }}
+            {% endcall %}
+        </div>
+        <div class="col-lg-4 col-md-12">
+            {% call detail.card(title='Oficina', estatus=cit_cita.estatus) %}
+                {{ detail.label_value('Distrito', cit_cita.oficina.distrito.nombre) }}
+                {{ detail.label_value('Clave', cit_cita.oficina.clave, url_for('oficinas.detail', oficina_id=cit_cita.oficina_id)) }}
+                {{ detail.label_value('Descripcion', cit_cita.oficina.descripcion) }}
+            {% endcall %}
+        </div>
+        <div class="col-lg-4 col-md-12">
+            {% call detail.card(title='Servicio', estatus=cit_cita.estatus) %}
+                {{ detail.label_value('Clave', cit_cita.cit_servicio.clave, url_for('cit_servicios.detail', cit_servicio_id=cit_cita.cit_servicio_id)) }}
+                {{ detail.label_value('Descripcion', cit_cita.cit_servicio.descripcion) }}
+                {{ detail.label_value('Duracion', cit_cita.cit_servicio.duracion) }}
+            {% endcall %}
+        </div>
+    </div>
+    {% call detail.card(title='Detalles de esta cita', estatus=cit_cita.estatus) %}
+        {{ detail.label_value_big('Notas', cit_cita.notas) }}
+        {{ detail.label_value('Inicia', moment(cit_cita.inicio).format('llll')) }}
+        {{ detail.label_value('Termina', moment(cit_cita.termino).format('llll')) }}
+        {{ detail.label_value('Estado', cit_cita.estado) }}
     {% endcall %}
 {% endblock %}
 
 {% block custom_javascript %}
+    {% if current_user.can_edit('CIT CITAS') %}
+        {% if cit_cita.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar la cita ' + cit_cita.id | string + '?') }}{% endif %}
+        {% if cit_cita.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar la cita ' + cit_cita.id | string + '?') }}{% endif %}
+    {% endif %}
     {{ detail.moment_js(moment) }}
 {% endblock %}

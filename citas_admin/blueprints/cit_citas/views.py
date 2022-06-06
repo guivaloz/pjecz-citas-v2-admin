@@ -6,7 +6,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_string, safe_message
+from lib.safe_string import safe_message
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
@@ -85,3 +85,39 @@ def detail(cit_cita_id):
     """Detalle de una Cita"""
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
     return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita)
+
+
+@cit_citas.route("/cit_citas/eliminar/<int:cit_cita_id>")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def delete(cit_cita_id):
+    """Eliminar Cita"""
+    cit_citas = CitCita.query.get_or_404(cit_cita_id)
+    if cit_citas.estatus == "A":
+        cit_citas.delete()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Eliminado Cita {cit_citas.id}"),
+            url=url_for("cit_citas.detail", cit_citas_id=cit_citas.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("cit_citas.detail", cit_cita_id=cit_citas.id))
+
+
+@cit_citas.route("/cit_citas/recuperar/<int:cit_citas_id>")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def recover(cit_citas_id):
+    """Recuperar Cita"""
+    cit_cita = CitCita.query.get_or_404(cit_citas_id)
+    if cit_cita.estatus == "B":
+        cit_cita.recover()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Recuperado Cita {cit_cita.id}"),
+            url=url_for("cit_citas.detail", cit_cita_id=cit_cita.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("cit_citas.detail", cit_citas_id=cit_cita.id))
