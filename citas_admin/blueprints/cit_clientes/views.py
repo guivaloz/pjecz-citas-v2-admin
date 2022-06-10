@@ -84,4 +84,8 @@ def list_inactive():
 def detail(cit_cliente_id):
     """Detalle de un Cliente"""
     cit_cliente = CitCliente.query.get_or_404(cit_cliente_id)
-    return render_template("cit_clientes/detail.jinja2", cit_cliente=cit_cliente)
+    return render_template(
+        "cit_clientes/detail.jinja2",
+        filtros=json.dumps({"estatus": "A", "cliente_id": cit_cliente_id}),
+        cit_cliente=cit_cliente
+    )
