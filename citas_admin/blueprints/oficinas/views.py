@@ -5,6 +5,7 @@ import json
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy.sql import or_
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_clave, safe_message, safe_string
@@ -260,3 +261,28 @@ def recover(oficina_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
     return redirect(url_for("oficinas.detail", oficina_id=oficina_id))
+
+
+@oficinas.route("/oficinas/select2", methods=["POST"])
+@login_required
+def select2():
+    """Listado para el select2 de oficinas"""
+    # Consultar
+    consulta = Oficina.query
+    consulta = consulta.filter_by(estatus="A")
+    if "searchString" in request.form:
+        busqueda = safe_string(request.form["searchString"])
+        consulta = consulta.filter(or_(Oficina.clave.contains(busqueda), Oficina.descripcion_corta.contains(busqueda)))
+        consulta = consulta.order_by(Oficina.clave).limit(15).all()
+
+    # Elaborar datos para el Select2
+    results = []
+    for centro in consulta:
+        results.append(
+            {
+                "id": centro.id,
+                "text": centro.clave + ": " + centro.descripcion_corta
+            }
+        )
+
+    return {"results": results, "pagination": {"more": False}}

@@ -22,6 +22,7 @@ class CitHoraBloqueada(db.Model, UniversalMixin):
     fecha = db.Column(db.Date(), nullable=False, index=True)
     inicio = db.Column(db.Time(), nullable=False)
     termino = db.Column(db.Time(), nullable=False)
+    descripcion = db.Column(db.String)
 
     def __repr__(self):
         """Representación"""

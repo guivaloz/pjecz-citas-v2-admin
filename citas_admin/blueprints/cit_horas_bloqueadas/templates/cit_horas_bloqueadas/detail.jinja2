@@ -6,28 +6,29 @@
 {% block title %}Horas Bloqueadas{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons('Horas Bloqueadas ID: ' + hora_bloqueada.id | string) %}
+    {% call topbar.page_buttons('Horas Bloqueadas ID: ' + cit_hora_bloqueada.id | string) %}
         {{ topbar.button_previous('Horas Bloqueada', url_for('cit_horas_bloqueadas.list_active')) }}
         {% if current_user.can_edit('CIT HORAS BLOQUEADAS') %}
-            {{ topbar.button_edit('Editar', url_for('cit_horas_bloqueadas.edit', hora_bloqueada_id=hora_bloqueada.id)) }}
-            {% if hora_bloqueada.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_horas_bloqueadas.delete', hora_bloqueada_id=hora_bloqueada.id)) }}{% endif %}
-            {% if hora_bloqueada.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_horas_bloqueadas.recover', hora_bloqueada_id=hora_bloqueada.id)) }}{% endif %}
+            {{ topbar.button_edit('Editar', url_for('cit_horas_bloqueadas.edit', cit_hora_bloqueada_id=cit_hora_bloqueada.id)) }}
+            {% if cit_hora_bloqueada.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_horas_bloqueadas.delete', cit_hora_bloqueada_id=cit_hora_bloqueada.id)) }}{% endif %}
+            {% if cit_hora_bloqueada.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_horas_bloqueadas.recover', cit_hora_bloqueada_id=cit_hora_bloqueada.id)) }}{% endif %}
         {% endif %}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
-    {% call detail.card(estatus=hora_bloqueada.estatus) %}
-        {{ detail.label_value_big('Oficina', hora_bloqueada.oficina.clave + " — " + hora_bloqueada.oficina.descripcion_corta ) }}
-        {{ detail.label_value('Fecha', hora_bloqueada.fecha) }}
-        {{ detail.label_value('Hora Inicio', hora_bloqueada.inicio_tiempo.strftime("%H:%M")) }}
-        {{ detail.label_value('Hora Termino', hora_bloqueada.termino_tiempo.strftime("%H:%M")) }}
+    {% call detail.card(estatus=cit_hora_bloqueada.estatus) %}
+        {{ detail.label_value_big('Oficina', cit_hora_bloqueada.oficina.clave + " — " + cit_hora_bloqueada.oficina.descripcion_corta ) }}
+        {{ detail.label_value('Fecha', cit_hora_bloqueada.fecha.strftime("%Y/%m/%d, %A")) }}
+        {{ detail.label_value('Hora Inicio', cit_hora_bloqueada.inicio.strftime("%H:%M")) }}
+        {{ detail.label_value('Hora Termino', cit_hora_bloqueada.termino.strftime("%H:%M")) }}
+        {{ detail.label_value('Descripción', cit_hora_bloqueada.descripcion) }}
     {% endcall %}
 {% endblock %}
 
 {% block custom_javascript %}
     {% if current_user.can_edit('CIT DIAS INHABILES') %}
-        {% if hora_bloqueada.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar hora bloqeuada ' + hora_bloqueada.id | string + '?') }}{% endif %}
-        {% if hora_bloqueada.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar hora bloqeuada ' + hora_bloqueada.id  | string + '?') }}{% endif %}
+        {% if cit_hora_bloqueada.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar hora bloqeuada ' + cit_hora_bloqueada.id | string + '?') }}{% endif %}
+        {% if cit_hora_bloqueada.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar hora bloqeuada ' + cit_hora_bloqueada.id  | string + '?') }}{% endif %}
     {% endif %}
 {% endblock %}
