@@ -111,10 +111,24 @@ def list_active():
 @permission_required(MODULO, Permiso.MODIFICAR)
 def list_inactive():
     """Listado de Citas inactivas"""
+    # La fecha puede venir como argumento
+    fecha = request.args.get("fecha", None)
+    # Si es administrador, puede ver las citas de todas las oficinas
+    if current_user.can_admin(MODULO):
+        return render_template(
+            "cit_citas/list_admin.jinja2",
+            filtros=json.dumps({"estatus": "A", "fecha": fecha}),
+            titulo="Todas las Citas eliminadas" if fecha is None else f"Todas las citas del {fecha}",
+            estatus="B",
+        )
+    # No es administrador, entonces la fecha por defecto es hoy
+    if fecha is None:
+        fecha = datetime.now().strftime("%Y-%m-%d")
+    # Y siempre se filtra por su propia oficina
     return render_template(
         "cit_citas/list.jinja2",
-        filtros=json.dumps({"estatus": "B"}),
-        titulo="Citas inactivas",
+        filtros=json.dumps({"estatus": "A", "fecha": fecha, "oficina_id": current_user.oficina_id}),
+        titulo=f"Citas eliminadas del {fecha} de {current_user.oficina.descripcion_corta}",
         estatus="B",
     )
 
