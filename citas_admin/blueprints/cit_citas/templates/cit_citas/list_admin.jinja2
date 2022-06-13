@@ -2,7 +2,7 @@
 {% import 'macros/list.jinja2' as list %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Citas{% endblock %}
+{% block title %}Todas las Citas{% endblock %}
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
@@ -23,6 +23,7 @@
                     <th>Inicio</th>
                     <th>Termino</th>
                     <th>Cliente</th>
+                    <th>Oficina</th>
                     <th>Servicio</th>
                     <th>Estado</th>
                 </tr>
@@ -42,6 +43,7 @@
             { data: "inicio" },
             { data: "termino" },
             { data: "cit_cliente" },
+            { data: "oficina" },
             { data: "cit_servicio" },
             { data: "estado" },
         ];
@@ -71,7 +73,7 @@
                 }
             },
             {
-                targets: 5, // cit_servicio
+                targets: [5, 6], // oficina, cit_servicio
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data.url != '') {

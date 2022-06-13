@@ -1,6 +1,7 @@
 """
 Cit Citas, vistas
 """
+from datetime import datetime
 import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -43,6 +44,11 @@ def datatable_json():
         consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
     if "oficina_id" in request.form:
         consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
+    if "fecha" in request.form:
+        fecha = datetime.strptime(request.form["fecha"], "%Y-%m-%d")
+        inicio_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=0, minute=0, second=0)
+        termino_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=23, minute=59, second=59)
+        consulta = consulta.filter(CitCita.inicio >= inicio_dt).filter(CitCita.inicio <= termino_dt)
     registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -76,13 +82,27 @@ def datatable_json():
     return output_datatable_json(draw, total, data)
 
 
-@cit_citas.route("/cit_citas")
+@cit_citas.route("/cit_citas", methods=["POST", "GET"])
 def list_active():
     """Listado de Citas activas"""
+    # La fecha puede venir como argumento
+    fecha = request.args.get("fecha", None)
+    # Si es administrador, puede ver las citas de todas las oficinas
+    if current_user.can_admin(MODULO):
+        return render_template(
+            "cit_citas/list_admin.jinja2",
+            filtros=json.dumps({"estatus": "A", "fecha": fecha}),
+            titulo="Todas las Citas" if fecha is None else f"Todas las citas del {fecha}",
+            estatus="A",
+        )
+    # No es administrador, entonces la fecha por defecto es hoy
+    if fecha is None:
+        fecha = datetime.now().strftime("%Y-%m-%d")
+    # Y siempre se filtra por su propia oficina
     return render_template(
         "cit_citas/list.jinja2",
-        filtros=json.dumps({"estatus": "A"}),
-        titulo="Citas",
+        filtros=json.dumps({"estatus": "A", "fecha": fecha, "oficina_id": current_user.oficina_id}),
+        titulo=f"Citas del {fecha} de {current_user.oficina.descripcion_corta}",
         estatus="A",
     )
 
