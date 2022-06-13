@@ -37,8 +37,12 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    if "cliente_id" in request.form:
-        consulta = consulta.filter_by(cit_cliente_id=request.form["cliente_id"])
+    if "cit_cliente_id" in request.form:
+        consulta = consulta.filter_by(cit_cliente_id=request.form["cit_cliente_id"])
+    if "cit_servicio_id" in request.form:
+        consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
+    if "oficina_id" in request.form:
+        consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
     registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -50,9 +54,21 @@ def datatable_json():
                     "id": cita.id,
                     "url": url_for("cit_citas.detail", cit_cita_id=cita.id),
                 },
-                "horario": cita.inicio.strftime("%Y-%m-%d %H:%M") + " - " + cita.termino.strftime("%Y-%m-%d %H:%M"),
+                "cit_cliente": {
+                    "nombre": cita.cit_cliente.nombre,
+                    "url": url_for("cit_clientes.detail", cit_cliente_id=cita.cit_cliente.id) if current_user.can_view("CIT CLIENTES") else "",
+                },
+                "cit_servicio": {
+                    "clave": cita.cit_servicio.clave,
+                    "url": url_for("cit_servicios.detail", cit_servicio_id=cita.cit_servicio.id) if current_user.can_view("CIT SERVICIOS") else "",
+                },
+                "oficina": {
+                    "clave": cita.oficina.clave,
+                    "url": url_for("oficinas.detail", oficina_id=cita.oficina.id) if current_user.can_view("OFICINAS") else "",
+                },
+                "inicio": cita.inicio.strftime("%H:%M"),
+                "termino": cita.termino.strftime("%H:%M"),
                 "estado": cita.estado,
-                "servicio": cita.cit_servicio.descripcion,
             }
         )
     # Entregar JSON
@@ -93,18 +109,18 @@ def detail(cit_cita_id):
 @permission_required(MODULO, Permiso.MODIFICAR)
 def delete(cit_cita_id):
     """Eliminar Cita"""
-    cit_citas = CitCita.query.get_or_404(cit_cita_id)
-    if cit_citas.estatus == "A":
-        cit_citas.delete()
+    cit_cita = CitCita.query.get_or_404(cit_cita_id)
+    if cit_cita.estatus == "A":
+        cit_cita.delete()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Eliminado Cita {cit_citas.id}"),
-            url=url_for("cit_citas.detail", cit_citas_id=cit_citas.id),
+            descripcion=safe_message(f"Eliminado Cita {cit_cita.id}"),
+            url=url_for("cit_citas.detail", cit_cita_id=cit_cita.id),
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
-    return redirect(url_for("cit_citas.detail", cit_cita_id=cit_citas.id))
+    return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
 
 
 @cit_citas.route("/cit_citas/recuperar/<int:cit_citas_id>")

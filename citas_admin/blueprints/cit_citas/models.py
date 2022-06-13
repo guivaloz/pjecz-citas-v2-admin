@@ -25,10 +25,10 @@ class CitCita(db.Model, UniversalMixin):
     id = db.Column(db.Integer, primary_key=True)
 
     # Claves foráneas
-    cit_servicio_id = db.Column(db.Integer, db.ForeignKey("cit_servicios.id"), index=True, nullable=False)
-    cit_servicio = db.relationship("CitServicio", back_populates="cit_citas")
     cit_cliente_id = db.Column(db.Integer, db.ForeignKey("cit_clientes.id"), index=True, nullable=False)
     cit_cliente = db.relationship("CitCliente", back_populates="cit_citas")
+    cit_servicio_id = db.Column(db.Integer, db.ForeignKey("cit_servicios.id"), index=True, nullable=False)
+    cit_servicio = db.relationship("CitServicio", back_populates="cit_citas")
     oficina_id = db.Column(db.Integer, db.ForeignKey("oficinas.id"), index=True, nullable=False)
     oficina = db.relationship("Oficina", back_populates="cit_citas")
 
