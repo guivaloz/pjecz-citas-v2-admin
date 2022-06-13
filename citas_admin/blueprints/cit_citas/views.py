@@ -66,6 +66,7 @@ def datatable_json():
                     "clave": cita.oficina.clave,
                     "url": url_for("oficinas.detail", oficina_id=cita.oficina.id) if current_user.can_view("OFICINAS") else "",
                 },
+                "fecha": cita.inicio.strftime("%Y-%m-%d 00:00:00"),
                 "inicio": cita.inicio.strftime("%H:%M"),
                 "termino": cita.termino.strftime("%H:%M"),
                 "estado": cita.estado,

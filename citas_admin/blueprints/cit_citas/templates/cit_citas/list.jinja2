@@ -19,11 +19,12 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Servicio</th>
-                    <th>Oficina</th>
+                    <th>Fecha</th>
                     <th>Inicio</th>
                     <th>Termino</th>
+                    <th>Cliente</th>
+                    <th>Oficina</th>
+                    <th>Servicio</th>
                     <th>Estado</th>
                 </tr>
             </thead>
@@ -38,11 +39,12 @@
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
             { data: "detalle" },
-            { data: "cit_cliente" },
-            { data: "cit_servicio" },
-            { data: "oficina" },
+            { data: "fecha" },
             { data: "inicio" },
             { data: "termino" },
+            { data: "cit_cliente" },
+            { data: "oficina" },
+            { data: "cit_servicio" },
             { data: "estado" },
         ];
         configDataTable['columnDefs'] = [
@@ -54,7 +56,14 @@
                 }
             },
             {
-                targets: 1, // cit_cliente
+                targets: 1, // fecha
+                type: 'date',
+                render: function (data, type, row) {
+                    return moment.utc(data).local().format("DD MMM YYYY");
+                }
+            },
+            {
+                targets: 4, // cit_cliente
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data.url != '') {
@@ -64,7 +73,7 @@
                 }
             },
             {
-                targets: [2, 3], // cit_servicio, oficina
+                targets: [5, 6], // oficina, cit_servicio
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data.url != '') {

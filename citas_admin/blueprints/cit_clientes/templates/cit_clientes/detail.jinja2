@@ -26,7 +26,10 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Horario</th>
+                        <th>Fecha</th>
+                        <th>Inicio</th>
+                        <th>Termino</th>
+                        <th>Oficina</th>
                         <th>Servicio</th>
                         <th>Estado</th>
                     </tr>
@@ -45,8 +48,11 @@
             configDataTable['ajax']['data'] = { 'estatus': "A", 'cit_cliente_id': {{ cit_cliente.id}} };
             configDataTable['columns'] = [
                 { data: "detalle" },
-                { data: "horario" },
-                { data: "servicio" },
+                { data: "fecha" },
+                { data: "inicio" },
+                { data: "termino" },
+                { data: "oficina" },
+                { data: "cit_servicio" },
                 { data: "estado" },
             ];
             configDataTable['columnDefs'] = [
@@ -55,6 +61,23 @@
                     data: null,
                     render: function(data, type, row, meta) {
                         return '<a href="' + data.url + '">' + data.id + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // fecha
+                    type: 'date',
+                    render: function (data, type, row) {
+                        return moment.utc(data).local().format("DD MMM YYYY");
+                    }
+                },
+                {
+                    targets: [4, 5], // oficina, cit_servicio
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url != '') {
+                            return '<a href="' + data.url + '">' + data.clave + '</a>';
+                        }
+                        return data.clave
                     }
                 }
             ];
