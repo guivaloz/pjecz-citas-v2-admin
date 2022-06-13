@@ -2,8 +2,10 @@
 Cit Horas Bloqueadas, vistas
 """
 import json
+from datetime import datetime, time
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from citas_admin.blueprints.oficinas.models import Oficina
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_message
@@ -45,12 +47,11 @@ def datatable_json():
     for resultado in registros:
         data.append(
             {
-                "detalle": {
-                    "fecha": resultado.fecha,
-                    "url": url_for("cit_horas_bloqueadas.detail", cit_horas_bloqueadas_id=resultado.id),
-                },
-                "inicio": resultado.inicio,
-                "termino": resultado.termino,
+                "detalle": {"fecha": resultado.fecha.strftime("%Y/%m/%d, %a"), "url": url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=resultado.id)},
+                "oficina": {"clave": resultado.oficina.clave, "descripcion": resultado.oficina.descripcion, "url": url_for("oficinas.detail", oficina_id=resultado.oficina.id)},
+                "inicio": resultado.inicio.strftime("%H:%M"),
+                "termino": resultado.termino.strftime("%H:%M"),
+                "descripcion": resultado.descripcion,
             }
         )
     # Entregar JSON
@@ -93,7 +94,13 @@ def new():
     """Nueva Hora Bloqueada"""
     form = CitHoraBloqueadaForm()
     if form.validate_on_submit():
-        cit_hora_bloqueada = CitHoraBloqueada(fecha=form.fecha.data)
+        cit_hora_bloqueada = CitHoraBloqueada(
+            oficina_id=int(form.oficina.data),
+            fecha=form.fecha.data,
+            inicio=form.inicio_tiempo.data,
+            termino=form.termino_tiempo.data,
+            descripcion=safe_string(form.descripcion.data),
+        )
         cit_hora_bloqueada.save()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
@@ -115,17 +122,23 @@ def edit(cit_hora_bloqueada_id):
     form = CitHoraBloqueadaForm()
     if form.validate_on_submit():
         cit_hora_bloqueada.fecha = form.fecha.data
+        cit_hora_bloqueada.inicio = form.inicio_tiempo.data
+        cit_hora_bloqueada.termino = form.termino_tiempo.data
+        cit_hora_bloqueada.descripcion = safe_string(form.descripcion.data)
         cit_hora_bloqueada.save()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Editado Hora Bloqueada {cit_hora_bloqueada.fecha}"),
+            descripcion=safe_message(f"Editado Hora Bloqueada {cit_hora_bloqueada.fecha} a las {cit_hora_bloqueada.inicio}"),
             url=url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=cit_hora_bloqueada.id),
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
         return redirect(bitacora.url)
     form.fecha.data = cit_hora_bloqueada.fecha
+    form.inicio_tiempo.data = cit_hora_bloqueada.inicio
+    form.termino_tiempo.data = cit_hora_bloqueada.termino
+    form.descripcion.data = cit_hora_bloqueada.descripcion
     return render_template("cit_horas_bloqueadas/edit.jinja2", form=form, cit_hora_bloqueada=cit_hora_bloqueada)
 
 
