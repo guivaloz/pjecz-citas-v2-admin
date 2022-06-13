@@ -24,6 +24,24 @@
         {{ detail.label_value('Duración', cit_servicio.duracion.strftime("%H:%M")) }}
         {{ detail.label_value('Documentos Limite', cit_servicio.documentos_limite) }}
     {% endcall %}
+    {# Citas de este servicio #}
+    {% if current_user.can_view('CIT CITAS') %}
+        {% call detail.card('Citas') %}
+            <table id="cit_citas_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Inicio</th>
+                        <th>Termino</th>
+                        <th>Cliente</th>
+                        <th>Oficina</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
     {# Oficinas que ofrecen este servicio #}
     {% if current_user.can_view('CIT OFICINAS SERVICIOS') %}
         {% call detail.card('Oficinas que ofrecen este servicio') %}
@@ -52,6 +70,58 @@
         {% if cit_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar ' + cit_servicio.clave + '?') }}{% endif %}
     {% endif %}
     {{ detail.config_datatable() }}
+    {% if current_user.can_view('CIT CITAS') %}
+        <script>
+            configDataTable['ajax']['url'] = '/cit_citas/datatable_json';
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'cit_servicio_id': {{ cit_servicio.id }} };
+            configDataTable['columns'] = [
+                { data: "detalle" },
+                { data: "fecha" },
+                { data: "inicio" },
+                { data: "termino" },
+                { data: "cit_cliente" },
+                { data: "oficina" },
+                { data: "estado" },
+            ];
+            configDataTable['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.id + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // fecha
+                    type: 'date',
+                    render: function (data, type, row) {
+                        return moment.utc(data).local().format("DD MMM YYYY");
+                    }
+                },
+                {
+                    targets: 4, // cit_cliente
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url != '') {
+                            return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                        }
+                        return data.nombre
+                    }
+                },
+                {
+                    targets: 5, // oficina
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url != '') {
+                            return '<a href="' + data.url + '">' + data.clave + '</a>';
+                        }
+                        return data.clave
+                    }
+                }
+            ];
+            $('#cit_citas_datatable').DataTable(configDataTable);
+        </script>
+    {% endif %}
     {% if current_user.can_view('CIT OFICINAS SERVICIOS') %}
         <script>
             configDataTable['ajax']['url'] = '/cit_oficinas_servicios/datatable_json';
