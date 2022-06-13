@@ -2,14 +2,12 @@
 Cit Clientes, vistas
 """
 import json
-from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_login import current_user, login_required
+from flask import Blueprint, render_template, request, url_for
+from flask_login import login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_text
 
-from citas_admin.blueprints.bitacoras.models import Bitacora
-from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.cit_clientes.models import CitCliente
@@ -47,7 +45,7 @@ def datatable_json():
         consulta = consulta.filter(CitCliente.apellido_primero.contains(safe_string(request.form["apellido_primero"])))
     if "curp" in request.form:
         consulta = consulta.filter(CitCliente.curp.contains(safe_string(request.form["curp"])))
-    registros = consulta.order_by(CitCliente.id).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(CitCliente.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
