@@ -47,15 +47,8 @@ def datatable_json():
     for resultado in registros:
         data.append(
             {
-                "detalle": {
-                    "fecha": resultado.fecha.strftime("%Y/%m/%d, %a"),
-                    "url": url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=resultado.id)
-                },
-                "oficina": {
-                    "clave": resultado.oficina.clave,
-                    "descripcion": resultado.oficina.descripcion,
-                    "url": url_for("oficinas.detail", oficina_id=resultado.oficina.id)
-                },
+                "detalle": {"fecha": resultado.fecha.strftime("%Y/%m/%d, %a"), "url": url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=resultado.id)},
+                "oficina": {"clave": resultado.oficina.clave, "descripcion": resultado.oficina.descripcion, "url": url_for("oficinas.detail", oficina_id=resultado.oficina.id)},
                 "inicio": resultado.inicio.strftime("%H:%M"),
                 "termino": resultado.termino.strftime("%H:%M"),
                 "descripcion": resultado.descripcion,
@@ -107,7 +100,7 @@ def new():
             inicio=form.inicio_tiempo.data,
             termino=form.termino_tiempo.data,
             descripcion=safe_string(form.descripcion.data),
-            )
+        )
         cit_hora_bloqueada.save()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),

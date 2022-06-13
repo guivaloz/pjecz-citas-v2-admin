@@ -278,11 +278,6 @@ def select2():
     # Elaborar datos para el Select2
     results = []
     for centro in consulta:
-        results.append(
-            {
-                "id": centro.id,
-                "text": centro.clave + ": " + centro.descripcion_corta
-            }
-        )
+        results.append({"id": centro.id, "text": centro.clave + ": " + centro.descripcion_corta})
 
     return {"results": results, "pagination": {"more": False}}
