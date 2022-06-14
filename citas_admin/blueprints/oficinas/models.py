@@ -31,10 +31,10 @@ class Oficina(db.Model, UniversalMixin):
     limite_personas = db.Column(db.Integer(), nullable=False)
 
     # Hijos
-    usuarios = db.relationship("Usuario", back_populates="oficina", lazy="noload")
-    cit_citas = db.relationship("CitCita", back_populates="oficina", lazy="noload")
-    cit_horas_bloqueadas = db.relationship("CitHoraBloqueada", back_populates="oficina", lazy="noload")
-    cit_oficinas_servicios = db.relationship("CitOficinaServicio", back_populates="oficina", lazy="noload")
+    usuarios = db.relationship("Usuario", back_populates="oficina")
+    cit_citas = db.relationship("CitCita", back_populates="oficina")
+    cit_horas_bloqueadas = db.relationship("CitHoraBloqueada", back_populates="oficina")
+    cit_oficinas_servicios = db.relationship("CitOficinaServicio", back_populates="oficina")
 
     @property
     def compuesto(self):

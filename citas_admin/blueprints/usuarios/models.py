@@ -37,9 +37,9 @@ class Usuario(db.Model, UserMixin, UniversalMixin):
     telefono_celular = db.Column(db.String(256), default="", server_default="")
 
     # Hijos
-    bitacoras = db.relationship("Bitacora", back_populates="usuario", lazy="noload")
-    entradas_salidas = db.relationship("EntradaSalida", back_populates="usuario", lazy="noload")
-    tareas = db.relationship("Tarea", back_populates="usuario", lazy="noload")
+    bitacoras = db.relationship("Bitacora", back_populates="usuario")
+    entradas_salidas = db.relationship("EntradaSalida", back_populates="usuario")
+    tareas = db.relationship("Tarea", back_populates="usuario")
     usuarios_roles = db.relationship("UsuarioRol", back_populates="usuario")  # Sin lazy="noload" para que funcione el menu
 
     # Propiedades

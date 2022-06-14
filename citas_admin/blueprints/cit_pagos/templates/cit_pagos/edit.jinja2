@@ -1,0 +1,21 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/form.jinja2' as f with context %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Editar Pago{% endblock %}
+
+{% block topbar_actions %}
+    {{ topbar.page('Editar ' + cit_pago.descripcion) }}
+{% endblock %}
+
+{% block content %}
+    {% call f.card() %}
+        {% set form_kwargs = {'cit_pago_id': cit_pago.id} %}
+        {% call f.form_tag('cit_pagos.edit', fid='cit_pago_form', **form_kwargs) %}
+            {% call f.form_group(form.cit_cliente_nombre, readonly=true) %}{% endcall %}
+            {% call f.form_group(form.descripcion) %}{% endcall %}
+            {% call f.form_group(form.total) %}{% endcall %}
+            {% call f.form_group(form.guardar) %}{% endcall %}
+        {% endcall %}
+    {% endcall %}
+{% endblock %}

@@ -40,7 +40,7 @@ class CitCita(db.Model, UniversalMixin):
     asistencia = db.Column(db.Boolean, nullable=False, default=False)
 
     # Hijos
-    cit_citas_documentos = db.relationship("CitCitaDocumento", back_populates="cit_cita", lazy="noload")
+    cit_citas_documentos = db.relationship("CitCitaDocumento", back_populates="cit_cita")
 
     def __repr__(self):
         """Representación"""

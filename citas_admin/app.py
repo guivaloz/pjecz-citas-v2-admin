@@ -17,6 +17,7 @@ from citas_admin.blueprints.cit_clientes_registros.views import cit_clientes_reg
 from citas_admin.blueprints.cit_dias_inhabiles.views import cit_dias_inhabiles
 from citas_admin.blueprints.cit_horas_bloqueadas.views import cit_horas_bloqueadas
 from citas_admin.blueprints.cit_oficinas_servicios.views import cit_oficinas_servicios
+from citas_admin.blueprints.cit_pagos.views import cit_pagos
 from citas_admin.blueprints.cit_servicios.views import cit_servicios
 from citas_admin.blueprints.distritos.views import distritos
 from citas_admin.blueprints.domicilios.views import domicilios
@@ -57,6 +58,7 @@ def create_app():
     app.register_blueprint(cit_dias_inhabiles)
     app.register_blueprint(cit_horas_bloqueadas)
     app.register_blueprint(cit_oficinas_servicios)
+    app.register_blueprint(cit_pagos)
     app.register_blueprint(cit_servicios)
     app.register_blueprint(distritos)
     app.register_blueprint(domicilios)

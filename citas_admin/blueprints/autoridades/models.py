@@ -44,7 +44,7 @@ class Autoridad(db.Model, UniversalMixin):
     )
 
     # Hijos
-    usuarios = db.relationship("Usuario", back_populates="autoridad", lazy="noload")
+    usuarios = db.relationship("Usuario", back_populates="autoridad")
 
     @property
     def compuesto(self):

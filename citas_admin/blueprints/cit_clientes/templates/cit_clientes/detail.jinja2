@@ -37,6 +37,22 @@
             </table>
         {% endcall %}
     {% endif %}
+    {% if current_user.can_view('CIT PAGOS') %}
+        {% call list.card("Pagos") %}
+            <table id="cit_pagos_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Descripcion</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+            </table>
+            {% if current_user.can_insert('CIT PAGOS') %}
+            <a href="{{ url_for('cit_pagos.new', cit_cliente_id=cit_cliente.id) }}" class="btn btn-primary">Agregar</a>
+            {% endif %}
+        {% endcall %}
+    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}

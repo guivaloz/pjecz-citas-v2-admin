@@ -28,7 +28,7 @@
 			"\tdescripcion = db.Column(db.String(256), nullable=False)",
 			"",
 			"\t# Hijos",
-			"\t${8:plural_hijos} = db.relationship('${9:Clase_hijo}', back_populates='${10:singular_esta_clase}', lazy='noload')",
+			"\t${8:plural_hijos} = db.relationship('${9:Clase_hijo}', back_populates='${10:singular_esta_clase}')",
 			"",
 			"\tdef __repr__(self):",
 			"\t\t\"\"\" Representación \"\"\"",
@@ -53,7 +53,7 @@
 		"prefix": "fmodels_hijo",
 		"body": [
 			"# Hijos",
-			"${1:plural_hijos} = db.relationship('${2:Clase_hijo}', back_populates='${3:singular_esta_clase}', lazy='noload')",
+			"${1:plural_hijos} = db.relationship('${2:Clase_hijo}', back_populates='${3:singular_esta_clase}')",
 			""
 		],
 		"description": "Hijo"
