@@ -2,11 +2,12 @@
 Cit Pagos, vistas
 """
 import json
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for, Response
 from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_message
+from lib.wpp import create_chain_xml
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.cit_clientes.models import CitCliente
@@ -91,7 +92,18 @@ def list_inactive():
 def detail(cit_pago_id):
     """Detalle de un pago"""
     cit_pago = CitPago.query.get_or_404(cit_pago_id)
-    return render_template("cit_pagos/detail.jinja2", cit_pago=cit_pago)
+    return render_template(
+        "cit_pagos/detail.jinja2",
+        cit_pago=cit_pago,
+    )
+
+
+@cit_pagos.route("/cit_pagos/cadena/<int:cit_pago_id>")
+def chain(cit_pago_id):
+    """Cadena XML de un pago"""
+    cit_pago = CitPago.query.get_or_404(cit_pago_id)
+    xml = create_chain_xml(amount=cit_pago.total)
+    return Response(xml, mimetype="text/xml")
 
 
 @cit_pagos.route("/cit_pagos/nuevo/<int:cit_cliente_id>", methods=["GET", "POST"])
