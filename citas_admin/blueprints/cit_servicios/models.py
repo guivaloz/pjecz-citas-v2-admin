@@ -25,8 +25,8 @@ class CitServicio(db.Model, UniversalMixin):
     documentos_limite = db.Column(db.Integer, nullable=False)
 
     # Hijos
-    cit_citas = db.relationship("CitCita", back_populates="cit_servicio", lazy="noload")
-    cit_oficinas_servicios = db.relationship("CitOficinaServicio", back_populates="cit_servicio", lazy="noload")
+    cit_citas = db.relationship("CitCita", back_populates="cit_servicio")
+    cit_oficinas_servicios = db.relationship("CitOficinaServicio", back_populates="cit_servicio")
 
     @property
     def compuesto(self):

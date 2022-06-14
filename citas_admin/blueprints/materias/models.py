@@ -18,7 +18,7 @@ class Materia(db.Model, UniversalMixin):
     nombre = db.Column(db.String(64), unique=True, nullable=False)
 
     # Hijos
-    autoridades = db.relationship("Autoridad", back_populates="materia", lazy="noload")
+    autoridades = db.relationship("Autoridad", back_populates="materia")
 
     def __repr__(self):
         """Representación"""
