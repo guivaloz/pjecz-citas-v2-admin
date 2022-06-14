@@ -44,7 +44,7 @@ def datatable_json():
         consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
     if "oficina_id" in request.form:
         consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
-    if "fecha" in request.form:
+    if "fecha" in request.form and request.form["fecha"] != "":
         fecha = datetime.strptime(request.form["fecha"], "%Y-%m-%d")
         inicio_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=0, minute=0, second=0)
         termino_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=23, minute=59, second=59)

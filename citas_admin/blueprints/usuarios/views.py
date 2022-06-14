@@ -218,8 +218,6 @@ def datatable_json():
         consulta = consulta.filter(Usuario.puesto.contains(safe_string(request.form["puesto"])))
     if "email" in request.form:
         consulta = consulta.filter(Usuario.email.contains(safe_email(request.form["email"], search_fragment=True)))
-    if "workspace" in request.form:
-        consulta = consulta.filter(Usuario.workspace == safe_string(request.form["email"]))
     registros = consulta.order_by(Usuario.email).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -276,7 +274,6 @@ def new():
             apellido_materno=form.apellido_materno.data,
             curp=form.curp.data,
             email=form.email.data,
-            workspace=form.workspace.data,
             puesto=form.puesto.data,
             contrasena=contrasena,
         )
@@ -327,7 +324,6 @@ def edit(usuario_id):
     form.curp.data = usuario.curp
     form.puesto.data = usuario.puesto
     form.email.data = usuario.email  # Read only
-    form.workspace.data = usuario.workspace  # Read only
     form.oficina.data = usuario.oficina
     return render_template("usuarios/edit.jinja2", form=form, usuario=usuario)
 
@@ -357,7 +353,6 @@ def edit_admin(usuario_id):
             usuario.curp = safe_string(form.curp.data)
             usuario.puesto = safe_string(form.puesto.data)
             usuario.email = email
-            usuario.workspace = safe_string(form.workspace.data)
             usuario.oficina = form.oficina.data
             if form.contrasena.data != "":
                 usuario.contrasena = pwd_context.hash(form.contrasena.data)
@@ -379,7 +374,6 @@ def edit_admin(usuario_id):
     form.curp.data = usuario.curp
     form.puesto.data = usuario.puesto
     form.email.data = usuario.email
-    form.workspace.data = usuario.workspace
     form.oficina.data = usuario.oficina
     distritos = Distrito.query.filter_by(estatus="A").order_by(Distrito.nombre).all()
     autoridades = Autoridad.query.filter_by(estatus="A").order_by(Autoridad.clave).all()
