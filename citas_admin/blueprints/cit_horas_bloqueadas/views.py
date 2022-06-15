@@ -95,7 +95,7 @@ def list_inactive():
     # No es administrador
     return render_template(
         "cit_horas_bloqueadas/list.jinja2",
-        filtros=json.dumps({"estatus": "B"}),
+        filtros=json.dumps({"estatus": "B", "oficina_id": current_user.oficina_id}),
         titulo=f"Horas Bloqueadas inactivas en {current_user.oficina.descripcion_corta}",
         estatus="B",
     )
@@ -224,6 +224,11 @@ def edit(cit_hora_bloqueada_id):
 def delete(cit_hora_bloqueada_id):
     """Eliminar Hora Bloqueada"""
     cit_hora_bloqueada = CitHoraBloqueada.query.get_or_404(cit_hora_bloqueada_id)
+    if not current_user.can_admin(MODULO):
+        # Si no es administrador, no puede ver los detalles de una hora bloqueada de otra oficina
+        if cit_hora_bloqueada.oficina != current_user.oficina:
+            return redirect(url_for("cit_horas_bloqueadas.list_active"))
+
     if cit_hora_bloqueada.estatus == "A":
         cit_hora_bloqueada.delete()
         bitacora = Bitacora(
@@ -242,6 +247,11 @@ def delete(cit_hora_bloqueada_id):
 def recover(cit_hora_bloqueada_id):
     """Recuperar Hora Bloqueada"""
     cit_hora_bloqueada = CitHoraBloqueada.query.get_or_404(cit_hora_bloqueada_id)
+    if not current_user.can_admin(MODULO):
+        # Si no es administrador, no puede ver los detalles de una hora bloqueada de otra oficina
+        if cit_hora_bloqueada.oficina != current_user.oficina:
+            return redirect(url_for("cit_horas_bloqueadas.list_inactive"))
+
     if cit_hora_bloqueada.estatus == "B":
         cit_hora_bloqueada.recover()
         bitacora = Bitacora(
