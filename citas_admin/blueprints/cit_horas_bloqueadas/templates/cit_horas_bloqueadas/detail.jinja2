@@ -28,7 +28,7 @@
 
 {% block custom_javascript %}
     {{ moment.include_moment() }}
-    {% if current_user.can_edit('CIT DIAS INHABILES') %}
+    {% if current_user.can_edit('CIT HORAS BLOQUEADAS') %}
         {% if cit_hora_bloqueada.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar hora bloqeuada ' + cit_hora_bloqueada.id | string + '?') }}{% endif %}
         {% if cit_hora_bloqueada.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar hora bloqeuada ' + cit_hora_bloqueada.id  | string + '?') }}{% endif %}
     {% endif %}

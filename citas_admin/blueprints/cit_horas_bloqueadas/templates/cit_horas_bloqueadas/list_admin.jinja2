@@ -24,6 +24,7 @@
                     <th>Fecha</th>
                     <th>Inicio</th>
                     <th>Termino</th>
+                    <th>Oficina</th>
                     <th>Descripción</th>
                 </tr>
             </thead>
@@ -40,6 +41,7 @@
             { data: 'detalle' },
             { data: 'inicio' },
             { data: 'termino' },
+            { data: 'oficina' },
             { data: 'descripcion' }
         ];
         configDataTable['columnDefs'] = [
@@ -51,11 +53,18 @@
                 }
             },
             {
-                targets: 3, // descripción
+                targets: 3, // oficina
                 data: null,
                 render: function(data, type, row, meta) {
-                    if (data.length > 32)
-                        texto = '<span title="' + data + '">' + data.substr(0, 32) + '…' + '</span>';
+                    return '<span title="' + data.descripcion + '">' + '<a href="' + data.url + '">' + data.clave + '</a></span>';
+                }
+            },
+            {
+                targets: 4, // descripción
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.length > 16)
+                        texto = '<span title="' + data + '">' + data.substr(0, 16) + '…' + '</span>';
                     else
                         texto = data;
                     return texto;
