@@ -1,0 +1,56 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/form.jinja2' as f with context %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Editar Horas Bloqueadas{% endblock %}
+
+{% block custom_head %}
+    <!-- Select2 bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block topbar_actions %}
+    {{ topbar.page('Editar Hora Bloqueada ID: ' +  cit_hora_bloqueada.id | string) }}
+{% endblock %}
+
+{% block content %}
+    {% call f.card() %}
+        {% set form_kwargs = {'cit_hora_bloqueada_id': cit_hora_bloqueada.id} %}
+        {% call f.form_tag('cit_horas_bloqueadas.edit', fid='cit_hora_bloqueada_id_form', **form_kwargs) %}
+            {% call f.form_group(form.oficina) %}{% endcall %}
+            {% call f.form_group(form.fecha) %}{% endcall %}
+            {% call f.form_group(form.inicio_tiempo) %}{% endcall %}
+            {% call f.form_group(form.termino_tiempo) %}{% endcall %}
+            {% call f.form_group(form.descripcion) %}{% endcall %}
+            {% call f.form_group(form.guardar) %}{% endcall %}
+        {% endcall %}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    <!-- Select2 bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- AJAX -->
+    <script>
+    $(document).ready(function() {
+        $('#oficina').addClass('js-example-placeholder-single js-states form-control');
+        let newOption = new Option('{{cit_hora_bloqueada.oficina.clave}}: {{cit_hora_bloqueada.oficina.descripcion_corta}}', '{{cit_hora_bloqueada.oficina_id}}', false, false);
+        $('#oficina').append(newOption).trigger('change');
+        $(".js-example-placeholder-single").select2({
+            ajax: {
+                url: '/oficinas/select2',
+                headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" },
+                dataType: 'json',
+                delay: 250,
+                type: "POST",
+                data: function (params) {
+                    return { 'searchString': params.term };
+                }
+            },
+            placeholder: "Oficina",
+            minimumInputLength: 3,
+            allowClear: true
+        });
+    });
+    </script>
+{% endblock %}
