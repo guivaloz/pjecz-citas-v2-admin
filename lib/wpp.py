@@ -2,7 +2,6 @@
 Web Pay Plus
 """
 import os
-import unidecode
 
 import asyncio
 import aiohttp
@@ -48,7 +47,7 @@ def create_chain_xml(amount, email, description, client_id):
 
     ET.SubElement(url, "version").text = "IntegraWPP"
 
-    return ET.tostring(root, encoding="utf-8")
+    return ET.tostring(root, encoding="unicode")
 
 
 def encrypt_chain(chain: str):
@@ -86,23 +85,34 @@ async def send(chain: str):
 
     # Pack the chain
     root = ET.Element("pgs")
-    data0 = ET.SubElement(root, "data0")
-    data0.text = commerce_id
-    data = ET.SubElement(root, "data")
-    data.text = chain
-    chain_bytes = ET.tostring(root, encoding="utf-8")
+    ET.SubElement(root, "data0").text = commerce_id
+    ET.SubElement(root, "data").text = chain
+
+    chain_bytes = ET.tostring(root, encoding="unicode")
 
     # Send the chain
     async with aiohttp.ClientSession() as session:
-        async with session.post(wpp_url, data=chain_bytes) as resp:
+        async with session.post(wpp_url, data={"xml": chain_bytes}) as resp:
             return await resp.text()
+
+
+def get_url_from_xml_encrypt(xml_encrypt: str):
+    """Extrae la url del xml de respuesta"""
+    xml = decrypt_chain(xml_encrypt)
+    root = ET.fromstring(xml)
+    return root.find("nb_url").text
 
 
 if __name__ == "__main__":
     chain = create_chain_xml(
         amount=100.0,
         email="guivaloz@gmail.com",
-        description="Test",
+        description="Servicio Test",
         client_id="123456789",
     )
-    print(chain)
+
+    chain_encrypt = encrypt_chain(chain).decode()  # bytes
+    respuesta = asyncio.run(send(chain_encrypt))
+    url_pay = get_url_from_xml_encrypt(respuesta)
+
+    print(url_pay)  # URL del link de formulario de pago
