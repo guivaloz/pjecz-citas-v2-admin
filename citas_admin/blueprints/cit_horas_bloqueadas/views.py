@@ -3,9 +3,8 @@ Cit Horas Bloqueadas, vistas
 """
 import json
 from datetime import datetime, time
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for, abort
 from flask_login import current_user, login_required
-from citas_admin.blueprints.oficinas.models import Oficina
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_message
@@ -42,6 +41,9 @@ def datatable_json():
         consulta = consulta.filter_by(estatus="A")
     if "oficina_id" in request.form:
         consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
+    # Omitir las horas bloqueadas ya pasadas
+    consulta = consulta.filter(CitHoraBloqueada.fecha >= datetime.now().date())
+    # Ordenar
     registros = consulta.order_by(CitHoraBloqueada.fecha, CitHoraBloqueada.inicio).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -116,33 +118,32 @@ def detail(cit_hora_bloqueada_id):
 @permission_required(MODULO, Permiso.CREAR)
 def new():
     """Nueva Hora Bloqueada"""
+    # Si es administrador, puede elegir la oficina
     if current_user.can_admin(MODULO):
         form = CitHoraBloqueadaAdminForm()
-        if form.validate_on_submit():
-            cit_hora_bloqueada = CitHoraBloqueada(
-                oficina_id=int(form.oficina.data),
-                fecha=form.fecha.data,
-                inicio=form.inicio_tiempo.data,
-                termino=form.termino_tiempo.data,
-                descripcion=safe_string(form.descripcion.data),
-            )
-            cit_hora_bloqueada.save()
-            bitacora = Bitacora(
-                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-                usuario=current_user,
-                descripcion=safe_message(f"Nuevo Hora Bloqueada {cit_hora_bloqueada.fecha}"),
-                url=url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=cit_hora_bloqueada.id),
-            )
-            bitacora.save()
-            flash(bitacora.descripcion, "success")
-            return redirect(bitacora.url)
-        else:
-            return render_template("cit_horas_bloqueadas/new_admin.jinja2", form=form)
+        oficina_id = form.oficina.data
     else:
         form = CitHoraBloqueadaForm()
-        if form.validate_on_submit():
+        oficina_id = current_user.oficina_id
+    # Si se recibe el formulario
+    if form.validate_on_submit():
+        es_valido = True
+        # Validar que el inicio sea igual o posterior a la apertura de la oficina
+        if form.inicio_tiempo.data < current_user.oficina.apertura:
+            flash(f"El inicio debe ser igual o posterior a la apertura de la oficina {current_user.oficina.apertura}", "warning")
+            es_valido = False
+        # Validar que el termino sea igual o anterior al cierre de la oficina
+        if form.termino_tiempo.data > current_user.oficina.cierre:
+            flash(f"El termino debe ser igual o anterior al cierre de la oficina {current_user.oficina.cierre}", "warning")
+            es_valido = False
+        # Validar que el tiempo de inicio sea menor al tiempo de termino
+        if form.inicio_tiempo.data >= form.termino_tiempo.data:
+            flash("El tiempo de inicio debe ser anterior y diferente al tiempo de termino", "warning")
+            es_valido = False
+        # Si es valido, insertar
+        if es_valido:
             cit_hora_bloqueada = CitHoraBloqueada(
-                oficina=current_user.oficina,
+                oficina_id=oficina_id,
                 fecha=form.fecha.data,
                 inicio=form.inicio_tiempo.data,
                 termino=form.termino_tiempo.data,
@@ -158,8 +159,11 @@ def new():
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
-        else:
-            form.oficina.data = current_user.oficina.clave + ": " + current_user.oficina.descripcion
+    # Si es administrador, puede elegir la oficina
+    if current_user.can_admin(MODULO):
+        return render_template("cit_horas_bloqueadas/new_admin.jinja2", form=form)
+    # No es administrador
+    form.oficina.data = current_user.oficina.clave + ": " + current_user.oficina.descripcion
     return render_template("cit_horas_bloqueadas/new.jinja2", form=form)
 
 
@@ -167,36 +171,38 @@ def new():
 @permission_required(MODULO, Permiso.MODIFICAR)
 def edit(cit_hora_bloqueada_id):
     """Editar Hora Bloqueada"""
+    cit_hora_bloqueada = CitHoraBloqueada.query.get_or_404(cit_hora_bloqueada_id)
+    # Si es administrador, puede elegir la oficina
     if current_user.can_admin(MODULO):
-        cit_hora_bloqueada = CitHoraBloqueada.query.get_or_404(cit_hora_bloqueada_id)
         form = CitHoraBloqueadaAdminForm()
-        if form.validate_on_submit():
-            cit_hora_bloqueada.oficina_id = (int(form.oficina.data),)
-            cit_hora_bloqueada.fecha = form.fecha.data
-            cit_hora_bloqueada.inicio = form.inicio_tiempo.data
-            cit_hora_bloqueada.termino = form.termino_tiempo.data
-            cit_hora_bloqueada.descripcion = safe_string(form.descripcion.data)
-            cit_hora_bloqueada.save()
-            bitacora = Bitacora(
-                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-                usuario=current_user,
-                descripcion=safe_message(f"Editado Hora Bloqueada {cit_hora_bloqueada.fecha} a las {cit_hora_bloqueada.inicio}"),
-                url=url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=cit_hora_bloqueada.id),
-            )
-            bitacora.save()
-            flash(bitacora.descripcion, "success")
-            return redirect(bitacora.url)
-        form.fecha.data = cit_hora_bloqueada.fecha
-        form.inicio_tiempo.data = cit_hora_bloqueada.inicio
-        form.termino_tiempo.data = cit_hora_bloqueada.termino
-        form.descripcion.data = cit_hora_bloqueada.descripcion
-        return render_template("cit_horas_bloqueadas/edit_admin.jinja2", form=form, cit_hora_bloqueada=cit_hora_bloqueada)
     else:
-        cit_hora_bloqueada = CitHoraBloqueada.query.get_or_404(cit_hora_bloqueada_id)
-        if current_user.oficina != cit_hora_bloqueada.oficina:
-            return redirect(url_for("cit_horas_bloqueadas.list_active"))
+        # No es administrador, si no es de su oficina, se patea con error fordibben
+        if cit_hora_bloqueada.oficina_id != current_user.oficina_id:
+            abort(403)
         form = CitHoraBloqueadaForm()
-        if form.validate_on_submit():
+    # Si se recibe el formulario
+    if form.validate_on_submit():
+        # Si es administrador, puede elegir la oficina
+        if current_user.can_admin(MODULO):
+            oficina_id = form.oficina.data
+        else:
+            oficina_id = current_user.oficina_id
+        es_valido = True
+        # Validar que el inicio sea igual o posterior a la apertura de la oficina
+        if form.inicio_tiempo.data < current_user.oficina.apertura:
+            flash(f"El inicio debe ser igual o posterior a la apertura de la oficina {current_user.oficina.apertura}", "warning")
+            es_valido = False
+        # Validar que el termino sea igual o anterior al cierre de la oficina
+        if form.termino_tiempo.data > current_user.oficina.cierre:
+            flash(f"El termino debe ser igual o anterior al cierre de la oficina {current_user.oficina.cierre}", "warning")
+            es_valido = False
+        # Validar que el tiempo de inicio sea menor al tiempo de termino
+        if form.inicio_tiempo.data >= form.termino_tiempo.data:
+            flash("El tiempo de inicio debe ser anterior y diferente al tiempo de termino", "warning")
+            es_valido = False
+        # Si es valido, actualizar
+        if es_valido:
+            cit_hora_bloqueada.oficina_id = oficina_id
             cit_hora_bloqueada.fecha = form.fecha.data
             cit_hora_bloqueada.inicio = form.inicio_tiempo.data
             cit_hora_bloqueada.termino = form.termino_tiempo.data
@@ -211,12 +217,18 @@ def edit(cit_hora_bloqueada_id):
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
-        form.oficina.data = current_user.oficina.clave + ": " + current_user.oficina.descripcion
-        form.fecha.data = cit_hora_bloqueada.fecha
-        form.inicio_tiempo.data = cit_hora_bloqueada.inicio
-        form.termino_tiempo.data = cit_hora_bloqueada.termino
-        form.descripcion.data = cit_hora_bloqueada.descripcion
-        return render_template("cit_horas_bloqueadas/edit.jinja2", form=form, cit_hora_bloqueada=cit_hora_bloqueada)
+    # Cargar datos al formulario
+    form.fecha.data = cit_hora_bloqueada.fecha
+    form.inicio_tiempo.data = cit_hora_bloqueada.inicio
+    form.termino_tiempo.data = cit_hora_bloqueada.termino
+    form.descripcion.data = cit_hora_bloqueada.descripcion
+    # Si es administrador, puede elegir la oficina
+    if current_user.can_admin(MODULO):
+        form.oficina.data = cit_hora_bloqueada.oficina_id
+        return render_template("cit_horas_bloqueadas/edit_admin.jinja2", form=form, cit_hora_bloqueada=cit_hora_bloqueada)
+    # No es administrador
+    form.oficina.data = current_user.oficina.clave + ": " + current_user.oficina.descripcion
+    return render_template("cit_horas_bloqueadas/edit.jinja2", form=form, cit_hora_bloqueada=cit_hora_bloqueada)
 
 
 @cit_horas_bloqueadas.route("/cit_horas_bloqueadas/eliminar/<int:cit_hora_bloqueada_id>")
