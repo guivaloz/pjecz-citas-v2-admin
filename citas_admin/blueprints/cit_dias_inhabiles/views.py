@@ -38,7 +38,7 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    registros = consulta.order_by(CitDiaInhabil.id).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(CitDiaInhabil.fecha.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -46,7 +46,7 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "fecha": resultado.fecha,
+                    "fecha": resultado.fecha.strftime("%Y/%m/%d, %a"),
                     "url": url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=resultado.id),
                 },
                 "descripcion": resultado.descripcion,
@@ -92,7 +92,10 @@ def new():
     """Nuevo Dia Inhabil"""
     form = CitDiaInhabilForm()
     if form.validate_on_submit():
-        cit_dia_inhabil = CitDiaInhabil(descripcion=safe_string(form.descripcion.data))
+        cit_dia_inhabil = CitDiaInhabil(
+            fecha=form.fecha.data,
+            descripcion=safe_string(form.descripcion.data),
+        )
         cit_dia_inhabil.save()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
@@ -113,6 +116,7 @@ def edit(cit_dia_inhabil_id):
     cit_dia_inhabil = CitDiaInhabil.query.get_or_404(cit_dia_inhabil_id)
     form = CitDiaInhabilForm()
     if form.validate_on_submit():
+        cit_dia_inhabil.fecha = form.fecha.data
         cit_dia_inhabil.descripcion = safe_string(form.descripcion.data)
         cit_dia_inhabil.save()
         bitacora = Bitacora(
@@ -124,6 +128,7 @@ def edit(cit_dia_inhabil_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
         return redirect(bitacora.url)
+    form.fecha.data = cit_dia_inhabil.fecha
     form.descripcion.data = cit_dia_inhabil.descripcion
     return render_template("cit_dias_inhabiles/edit.jinja2", form=form, cit_dia_inhabil=cit_dia_inhabil)
 
