@@ -46,7 +46,7 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "fecha": resultado.fecha.strftime("%Y/%m/%d, %a"),
+                    "fecha": resultado.fecha.strftime("%Y/%m/%d"),
                     "url": url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=resultado.id),
                 },
                 "descripcion": resultado.descripcion,
@@ -100,7 +100,7 @@ def new():
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Nuevo Dia In {cit_dia_inhabil.descripcion}"),
+            descripcion=safe_message(f"Nuevo Dia en {cit_dia_inhabil.descripcion}"),
             url=url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id),
         )
         bitacora.save()
