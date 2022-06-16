@@ -137,7 +137,14 @@ def list_inactive():
 def detail(cit_cita_id):
     """Detalle de una Cita"""
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
-    return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita)
+    # Si es administrador, ve todas las citas
+    if current_user.can_admin(MODULO):
+        return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita)
+    # Si no es administrador, solo puede ver los detalles de una cita de su propia oficina
+    if cit_cita.oficina == current_user.oficina:
+        return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita)
+    # Si no es administrador, no puede ver los detalles de una cita de otra oficina, lo reenviamos al listado
+    return redirect(url_for("cit_citas.list_active"))
 
 
 @cit_citas.route("/cit_citas/eliminar/<int:cit_cita_id>")
@@ -145,6 +152,10 @@ def detail(cit_cita_id):
 def delete(cit_cita_id):
     """Eliminar Cita"""
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
+    # Si no es administrador, no puede eliminar un cita de otra oficina
+    if not current_user.can_admin(MODULO) and cit_cita.oficina != current_user.oficina:
+        return redirect(url_for("cit_citas.list_active"))
+
     if cit_cita.estatus == "A":
         cit_cita.delete()
         bitacora = Bitacora(
@@ -158,11 +169,15 @@ def delete(cit_cita_id):
     return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
 
 
-@cit_citas.route("/cit_citas/recuperar/<int:cit_citas_id>")
+@cit_citas.route("/cit_citas/recuperar/<int:cit_cita_id>")
 @permission_required(MODULO, Permiso.MODIFICAR)
-def recover(cit_citas_id):
+def recover(cit_cita_id):
     """Recuperar Cita"""
-    cit_cita = CitCita.query.get_or_404(cit_citas_id)
+    cit_cita = CitCita.query.get_or_404(cit_cita_id)
+    # Si no es administrador, no puede eliminar un cita de otra oficina
+    if not current_user.can_admin(MODULO) and cit_cita.oficina != current_user.oficina:
+        return redirect(url_for("cit_citas.list_inactive"))
+
     if cit_cita.estatus == "B":
         cit_cita.recover()
         bitacora = Bitacora(
@@ -173,4 +188,4 @@ def recover(cit_citas_id):
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
-    return redirect(url_for("cit_citas.detail", cit_citas_id=cit_cita.id))
+    return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
