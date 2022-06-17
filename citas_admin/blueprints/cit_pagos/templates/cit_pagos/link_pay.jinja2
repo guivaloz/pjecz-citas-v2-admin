@@ -3,16 +3,11 @@
 {% import 'macros/modals.jinja2' as modals %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Pago{% endblock %}
+{% block title %}Link de Pago{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons(cit_pago.descripcion) %}
-        {{ topbar.button_previous('Pagos', url_for('cit_pagos.list_active')) }}
-        {% if current_user.can_edit('CIT PAGOS') %}
-            {{ topbar.button_edit('Editar', url_for('cit_pagos.edit', cit_pago_id=cit_pago.id)) }}
-            {% if cit_pago.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_pagos.delete', cit_pago_id=cit_pago.id)) }}{% endif %}
-            {% if cit_pago.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_pagos.recover', cit_pago_id=cit_pago.id)) }}{% endif %}
-        {% endif %}
+    {% call topbar.page_buttons('Pago ID: ' + cit_pago.id | string) %}
+        {{ topbar.button_previous('Regresar', url_for('cit_pagos.detail', cit_pago_id=cit_pago.id)) }}
     {% endcall %}
 {% endblock %}
 
@@ -22,7 +17,9 @@
         {{ detail.label_value('Descripción', cit_pago.descripcion) }}
         {{ detail.label_value('Total', cit_pago.total) }}
     {% endcall %}
-        {{ topbar.button_primary('Generar Link de Pago', url_for('cit_pagos.link_pay', cit_pago_id=cit_pago.id), 'mdi:currency-usd') }}
+    {% call detail.card('Link de Pago') %}
+        {{ detail.label_value('Link', url_pay) }}
+    {% endcall %}
 {% endblock %}
 
 {% block custom_javascript %}

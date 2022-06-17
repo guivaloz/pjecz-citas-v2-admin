@@ -32,7 +32,7 @@ def create_chain_xml(amount, email, description, client_id):
     ET.SubElement(url, "canal").text = "W"
     ET.SubElement(url, "omitir_notif_default").text = "1"
     ET.SubElement(url, "st_correo").text = "1"
-    ET.SubElement(url, "fh_vigencia").text = "14/07/2022"
+    ET.SubElement(url, "fh_vigencia").text = "28/07/2022"
     ET.SubElement(url, "mail_cliente").text = email
     ET.SubElement(url, "st_cr").text = "A"
 
@@ -91,7 +91,7 @@ async def send(chain: str):
     chain_bytes = ET.tostring(root, encoding="unicode")
 
     # Send the chain
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(timeout=30) as session:
         async with session.post(wpp_url, data={"xml": chain_bytes}) as resp:
             return await resp.text()
 
@@ -112,7 +112,31 @@ if __name__ == "__main__":
     )
 
     chain_encrypt = encrypt_chain(chain).decode()  # bytes
-    respuesta = asyncio.run(send(chain_encrypt))
-    url_pay = get_url_from_xml_encrypt(respuesta)
+    try:
+        respuesta = asyncio.run(send(chain_encrypt))
+        url_pay = get_url_from_xml_encrypt(respuesta)
+    except Exception as err:
+        raise Exception(f"ERROR: Algo a salido mal en el envío. {err}")
 
     print(url_pay)  # URL del link de formulario de pago
+
+
+def create_pay_link(email:str, service_detail:str, client_id:int, amount:float):
+    """Regresa el link para mostrar el formulario de pago"""
+
+    chain = create_chain_xml(
+        amount=amount,
+        email=email,
+        description=service_detail,
+        client_id=client_id,
+    )
+
+    chain_encrypt = encrypt_chain(chain).decode()  # bytes
+    #return chain_encrypt
+    try:
+        respuesta = asyncio.run(send(chain_encrypt))
+        url_pay = get_url_from_xml_encrypt(respuesta)
+    except Exception as err:
+        raise BaseException(f"ERROR: Algo a salido mal en el envío. {err}")
+
+    return url_pay  # URL del link de formulario de pago

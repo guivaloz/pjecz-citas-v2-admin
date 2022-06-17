@@ -99,5 +99,24 @@
             ];
             $('#cit_citas_datatable').DataTable(configDataTable);
         </script>
+        <script>
+            configDataTable['ajax']['url'] = '/cit_pagos/datatable_json';
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'cit_cliente_id': {{ cit_cliente.id}} };
+            configDataTable['columns'] = [
+                { data: "detalle" },
+                { data: "descripcion" },
+                { data: "total" },
+            ];
+            configDataTable['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.id + '</a>';
+                    }
+                }
+            ];
+            $('#cit_pagos_datatable').DataTable(configDataTable);
+        </script>
     {% endif %}
 {% endblock %}
