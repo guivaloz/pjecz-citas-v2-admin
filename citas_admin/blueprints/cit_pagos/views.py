@@ -119,7 +119,7 @@ def link_pay(cit_pago_id):
             amount=cit_pago.total,
         )
     except Exception as err:
-        url_pay=f"ERROR! {err}"
+        url_pay = f"ERROR! {err}"
 
     return render_template(
         "cit_pagos/link_pay.jinja2",

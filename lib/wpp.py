@@ -121,7 +121,7 @@ if __name__ == "__main__":
     print(url_pay)  # URL del link de formulario de pago
 
 
-def create_pay_link(email:str, service_detail:str, client_id:int, amount:float):
+def create_pay_link(email: str, service_detail: str, client_id: int, amount: float):
     """Regresa el link para mostrar el formulario de pago"""
 
     chain = create_chain_xml(
@@ -132,7 +132,7 @@ def create_pay_link(email:str, service_detail:str, client_id:int, amount:float):
     )
 
     chain_encrypt = encrypt_chain(chain).decode()  # bytes
-    #return chain_encrypt
+    # return chain_encrypt
     try:
         respuesta = asyncio.run(send(chain_encrypt))
         url_pay = get_url_from_xml_encrypt(respuesta)
