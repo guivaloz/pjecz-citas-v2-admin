@@ -44,6 +44,7 @@
         {{ detail.label_value('Termina', moment(cit_cita.termino).format('llll')) }}
         {{ detail.label_value('Estado', cit_cita.estado) }}
     {% endcall %}
+        {{ modals.button_make('Marcar Asistencia', url_for('cit_citas.assistance', cit_cita_id=cit_cita.id), 'Asistencia', 'mdi:check-bold', '¿Desea marcar como asistió a la cita ' + cit_cita.id | string + '?')}}
 {% endblock %}
 
 {% block custom_javascript %}
@@ -51,5 +52,6 @@
         {% if cit_cita.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar la cita ' + cit_cita.id | string + '?') }}{% endif %}
         {% if cit_cita.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar la cita ' + cit_cita.id | string + '?') }}{% endif %}
     {% endif %}
+    {{ modals.custom_javascript('Marcar Asistencia', '¿Desea marcar como asistió la cita ' + cit_cita.id | string + '?', 'Asistencia') }}
     {{ detail.moment_js(moment) }}
 {% endblock %}
