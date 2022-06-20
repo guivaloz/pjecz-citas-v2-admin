@@ -91,19 +91,19 @@ async def send(chain: str):
     chain_bytes = ET.tostring(root, encoding="unicode")
 
     # Send the chain
-    page = ''
+    page = ""
     try:
         timeout = aiohttp.ClientTimeout(total=10.0)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.post(wpp_url, data={"xml": chain_bytes}) as resp:
                 page = await resp.text()
                 if resp.status != 200:
-                    raise asyncio.TimeoutError('Status: %s' % resp.status)
+                    raise asyncio.TimeoutError("Status: %s" % resp.status)
     except (
-            UnicodeDecodeError,
-            asyncio.TimeoutError,
+        UnicodeDecodeError,
+        asyncio.TimeoutError,
     ) as err:
-        page = ''
+        page = ""
 
     return page
 
@@ -124,17 +124,17 @@ if __name__ == "__main__":
     )
 
     chain_encrypt = encrypt_chain(chain).decode()  # bytes
-    respuesta = ''
+    respuesta = ""
     try:
         respuesta = asyncio.run(send(chain_encrypt))
     except asyncio.TimeoutError as err:
         print(f"ERROR: Algo a salido mal en el envío. {err}")
 
-    if respuesta != '':
+    if respuesta != "":
         url_pay = get_url_from_xml_encrypt(respuesta)
         print(url_pay)  # URL del link de formulario de pago
 
-    print('¡ERROR!')
+    print("¡ERROR!")
 
 
 def create_pay_link(email: str, service_detail: str, client_id: int, amount: float):
