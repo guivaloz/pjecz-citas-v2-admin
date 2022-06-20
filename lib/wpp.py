@@ -2,6 +2,7 @@
 Web Pay Plus
 """
 import os
+import requests
 
 import asyncio
 import aiohttp
@@ -70,18 +71,18 @@ def decrypt_chain(chain_encrypted: str):
     return plaintext
 
 
-async def send(chain: str):
+async def send_chain(chain: str):
     """Send to WPP"""
 
     # Get the commerce ID
     commerce_id = os.getenv("WPP_COMMERCE_ID")
     if commerce_id is None:
-        return None
+        raise ValueError("No se ha definido el WPP_COMMERCE_ID")
 
     # Get the WPP URL
     wpp_url = os.getenv("WPP_URL")
     if wpp_url is None:
-        return None
+        raise ValueError("No se ha definido el WPP_URL")
 
     # Pack the chain
     root = ET.Element("pgs")
@@ -98,13 +99,11 @@ async def send(chain: str):
             async with session.post(wpp_url, data={"xml": chain_bytes}) as resp:
                 page = await resp.text()
                 if resp.status != 200:
-                    raise asyncio.TimeoutError("Status: %s" % resp.status)
-    except (
-        UnicodeDecodeError,
-        asyncio.TimeoutError,
-    ) as err:
-        page = ""
+                    raise requests.HTTPError(resp.status)
+    except (UnicodeDecodeError, asyncio.TimeoutError) as error:
+        raise error
 
+    # Return
     return page
 
 
@@ -113,28 +112,6 @@ def get_url_from_xml_encrypt(xml_encrypt: str):
     xml = decrypt_chain(xml_encrypt)
     root = ET.fromstring(xml)
     return root.find("nb_url").text
-
-
-if __name__ == "__main__":
-    chain = create_chain_xml(
-        amount=100.0,
-        email="guivaloz@gmail.com",
-        description="Servicio Test",
-        client_id="123456789",
-    )
-
-    chain_encrypt = encrypt_chain(chain).decode()  # bytes
-    respuesta = ""
-    try:
-        respuesta = asyncio.run(send(chain_encrypt))
-    except asyncio.TimeoutError as err:
-        print(f"ERROR: Algo a salido mal en el envío. {err}")
-
-    if respuesta != "":
-        url_pay = get_url_from_xml_encrypt(respuesta)
-        print(url_pay)  # URL del link de formulario de pago
-
-    print("¡ERROR!")
 
 
 def create_pay_link(email: str, service_detail: str, client_id: int, amount: float):
