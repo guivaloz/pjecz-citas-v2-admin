@@ -7,7 +7,7 @@ from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_message
-from lib.wpp import create_chain_xml
+from lib.wpp import create_chain_xml, create_pay_link
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.cit_clientes.models import CitCliente
@@ -40,8 +40,8 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    if "cit_cliente" in request.form:
-        consulta = consulta.filter_by(cit_cliente_id=request.form["cit_cliente"])
+    if "cit_cliente_id" in request.form:
+        consulta = consulta.filter_by(cit_cliente_id=request.form["cit_cliente_id"])
     registros = consulta.order_by(CitPago.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -104,6 +104,28 @@ def chain(cit_pago_id):
     cit_pago = CitPago.query.get_or_404(cit_pago_id)
     xml = create_chain_xml(amount=cit_pago.total)
     return Response(xml, mimetype="text/xml")
+
+
+@cit_pagos.route("/cit_pagos/link_pay/<int:cit_pago_id>")
+def link_pay(cit_pago_id):
+    """Cadena XML de un pago"""
+    cit_pago = CitPago.query.get_or_404(cit_pago_id)
+
+    try:
+        url_pay = create_pay_link(
+            client_id=cit_pago.cit_cliente.id,
+            email=cit_pago.cit_cliente.email,
+            service_detail=cit_pago.descripcion,
+            amount=cit_pago.total,
+        )
+    except Exception as err:
+        url_pay = f"ERROR! {err}"
+
+    return render_template(
+        "cit_pagos/link_pay.jinja2",
+        cit_pago=cit_pago,
+        url_pay=url_pay,
+    )
 
 
 @cit_pagos.route("/cit_pagos/nuevo/<int:cit_cliente_id>", methods=["GET", "POST"])
