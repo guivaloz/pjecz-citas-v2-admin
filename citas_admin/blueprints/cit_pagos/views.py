@@ -102,7 +102,12 @@ def detail(cit_pago_id):
 def chain(cit_pago_id):
     """Cadena XML de un pago"""
     cit_pago = CitPago.query.get_or_404(cit_pago_id)
-    xml = create_chain_xml(amount=cit_pago.total)
+    xml = create_chain_xml(
+        amount=cit_pago.total,
+        email=cit_pago.cit_cliente.email,
+        description=cit_pago.descripcion,
+        client_id=cit_pago.cit_cliente.id,
+    )
     return Response(xml, mimetype="text/xml")
 
 
@@ -110,7 +115,6 @@ def chain(cit_pago_id):
 def link_pay(cit_pago_id):
     """Cadena XML de un pago"""
     cit_pago = CitPago.query.get_or_404(cit_pago_id)
-
     try:
         url_pay = create_pay_link(
             client_id=cit_pago.cit_cliente.id,
