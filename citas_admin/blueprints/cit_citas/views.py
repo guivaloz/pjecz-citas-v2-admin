@@ -202,6 +202,7 @@ def assistance(cit_cita_id):
 
     if cit_cita.estatus == "A":
         cit_cita.estado = "ASISTIO"
+        cit_cita.asistencia = True
         cit_cita.save()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
@@ -214,4 +215,25 @@ def assistance(cit_cita_id):
     return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
 
 
-# TODO: función para regresar a pendiente la asistencia de una cita
+@cit_citas.route("/cit_citas/pendiente/<int:cit_cita_id>")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def pending(cit_cita_id):
+    """Marcar la Cita como Pendiente"""
+    cit_cita = CitCita.query.get_or_404(cit_cita_id)
+    # Si no es administrador, no puede eliminar un cita de otra oficina
+    if not current_user.can_admin(MODULO) and cit_cita.oficina != current_user.oficina:
+        abort(403)
+
+    if cit_cita.estatus == "A":
+        cit_cita.estado = "PENDIENTE"
+        cit_cita.asistencia = False
+        cit_cita.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Cambiado estado de la Cita {cit_cita.id} a Pendiente"),
+            url=url_for("cit_citas.detail", cit_cita_id=cit_cita.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
