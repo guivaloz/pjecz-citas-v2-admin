@@ -2,10 +2,6 @@
 Web Pay Plus
 """
 import os
-import requests
-
-import asyncio
-import aiohttp
 
 from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
@@ -16,7 +12,7 @@ from lib.AESEncryption import AES128Encryption
 load_dotenv()  # Take environment variables from .env
 
 
-def create_chain_xml(amount, email, description, client_id):
+def create_chain_xml(amount, email, description, cit_client_id):
     """Crear cadena XML"""
     root = ET.Element("P")
 
@@ -44,7 +40,7 @@ def create_chain_xml(amount, email, description, client_id):
     label1 = ET.SubElement(data1, "label")
     label1.text = description
     value1 = ET.SubElement(data1, "value")
-    value1.text = str(client_id)
+    value1.text = str(cit_client_id)
 
     ET.SubElement(url, "version").text = "IntegraWPP"
 
@@ -92,19 +88,22 @@ async def send_chain(chain: str):
     chain_bytes = ET.tostring(root, encoding="unicode")
 
     # Send the chain
-    page = ""
     try:
-        timeout = aiohttp.ClientTimeout(total=10.0)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.post(wpp_url, data={"xml": chain_bytes}) as resp:
-                page = await resp.text()
-                if resp.status != 200:
-                    raise requests.HTTPError(resp.status)
-    except (UnicodeDecodeError, asyncio.TimeoutError) as error:
+        response = requests.post(
+            url=wpp_url,
+            params={"xml": chain_bytes},
+            timeout=12,
+        )
+    except requests.exceptions.RequestException as error:
         raise error
+    if response.status_code != 200:
+        raise requests.HTTPError(response.status_code)
+    data_json = response.json()
+    if "items" in data_json:
+        return data_json
 
     # Return
-    return page
+    return None
 
 
 def get_url_from_xml_encrypt(xml_encrypt: str):
@@ -125,11 +124,14 @@ def create_pay_link(email: str, service_detail: str, client_id: int, amount: flo
     )
 
     chain_encrypt = encrypt_chain(chain).decode()  # bytes
-    # return chain_encrypt
+    respuesta = None
     try:
-        respuesta = asyncio.run(send(chain_encrypt))
-        url_pay = get_url_from_xml_encrypt(respuesta)
+        respuesta = send_chain(chain_encrypt)
     except Exception as err:
         raise BaseException(f"ERROR: Algo a salido mal en el envío. {err}")
 
-    return url_pay  # URL del link de formulario de pago
+    if respuesta:
+        url_pay = get_url_from_xml_encrypt(respuesta)
+        return url_pay  # URL del link de formulario de pago
+
+    return None

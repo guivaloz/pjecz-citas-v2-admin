@@ -44,6 +44,7 @@
         {{ detail.label_value('Termina', moment(cit_cita.termino).format('llll')) }}
         {{ detail.label_value('Estado', cit_cita.estado) }}
     {% endcall %}
+        {{ modals.button_make('Marcar Asistencia', '#', '', 'mdi:check-bold', 'Marcar asistencia')}}
 {% endblock %}
 
 {% block custom_javascript %}
