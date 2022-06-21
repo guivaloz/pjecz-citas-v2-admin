@@ -9,7 +9,7 @@ class CitTramiteServicio(db.Model, UniversalMixin):
     """CitTramiteServicio"""
 
     # Nombre de la tabla
-    __tablename__ = 'cit_tramites_servicios'
+    __tablename__ = "cit_tramites_servicios"
 
     # Clave primaria
     id = db.Column(db.Integer, primary_key=True)
@@ -20,5 +20,5 @@ class CitTramiteServicio(db.Model, UniversalMixin):
     url = db.Column(db.String(512))
 
     def __repr__(self):
-        """ Representación """
-        return f'<CitTramiteServicio> {self.id}'
+        """Representación"""
+        return f"<CitTramiteServicio> {self.id}"
