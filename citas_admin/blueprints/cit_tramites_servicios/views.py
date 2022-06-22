@@ -1,5 +1,5 @@
 """
-Cit Cita Tramites y Servicois, vistas
+Cit Tramites Servicios, vistas
 """
 import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -16,7 +16,7 @@ from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.cit_tramites_servicios.models import CitTramiteServicio
 from citas_admin.blueprints.cit_tramites_servicios.forms import CitTramiteServicioForm
 
-MODULO = "CIT TRAMITES Y SERVICIOS"
+MODULO = "CIT TRAMITES SERVICIOS"
 
 cit_tramites_servicios = Blueprint("cit_tramites_servicios", __name__, template_folder="templates")
 
