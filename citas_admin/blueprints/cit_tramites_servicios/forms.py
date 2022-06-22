@@ -2,7 +2,7 @@
 Cit Tramites y Servicios, formularios
 """
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, StringField, SubmitField, DecimalField
+from wtforms import StringField, SubmitField, DecimalField
 from wtforms.validators import DataRequired, Length, Optional
 
 

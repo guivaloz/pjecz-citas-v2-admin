@@ -34,6 +34,7 @@ def alimentar_cit_tramites_servicios():
                 nombre=safe_string(row["nombre"], max_len=64, do_unidecode=False),
                 costo=float(row["costo"]),
                 url=safe_url(row["url"]),
+                estatus=row["estatus"],
             ).save()
             contador += 1
             if contador % 100 == 0:

@@ -26,6 +26,7 @@ def respaldar_cit_tramites_servicios(salida: str = "cit_tramites_servicios.csv")
                 "nombre",
                 "costo",
                 "url",
+                "estatus",
             ]
         )
         for servicio in servicios:
@@ -35,6 +36,7 @@ def respaldar_cit_tramites_servicios(salida: str = "cit_tramites_servicios.csv")
                     servicio.nombre,
                     servicio.costo,
                     servicio.url,
+                    servicio.estatus,
                 ]
             )
             id += 1
