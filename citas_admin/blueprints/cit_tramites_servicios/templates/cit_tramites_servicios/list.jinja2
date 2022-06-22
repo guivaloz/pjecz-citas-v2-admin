@@ -42,10 +42,14 @@
         ];
         configDataTable['columnDefs'] = [
             {
-                targets: 0, // ID
+                targets: 0, // Nombre
                 data: null,
                 render: function(data, type, row, meta) {
-                    return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                    if (data.nombre.length > 45)
+                        texto = '<span title="' + data.nombre + '">' + data.nombre.substr(0, 45) + '…' + '</span>';
+                    else
+                        texto = data.nombre;
+                    return '<a href="' + data.url + '">' + texto + '</a>';
                 }
             },
             {
