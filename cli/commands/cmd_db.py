@@ -18,6 +18,7 @@ from cli.commands.alimentar_distritos import alimentar_distritos, eliminar_distr
 from cli.commands.alimentar_domicilios import alimentar_domicilios
 from cli.commands.alimentar_cit_categorias import alimentar_cit_categorias
 from cli.commands.alimentar_cit_servicios import alimentar_cit_servicios
+from cli.commands.alimentar_cit_tramites_servicios import alimentar_cit_tramites_servicios
 from cli.commands.alimentar_materias import alimentar_materias
 from cli.commands.alimentar_modulos import alimentar_modulos
 from cli.commands.alimentar_oficinas import alimentar_oficinas
@@ -25,7 +26,6 @@ from cli.commands.alimentar_permisos import alimentar_permisos
 from cli.commands.alimentar_roles import alimentar_roles
 from cli.commands.alimentar_usuarios import alimentar_usuarios
 from cli.commands.alimentar_usuarios_roles import alimentar_usuarios_roles
-from cli.commands.alimentar_cit_tramites_servicios import alimentar_cit_tramites_servicios
 
 from cli.commands.respaldar_autoridades import respaldar_autoridades
 from cli.commands.respaldar_distritos import respaldar_distritos
@@ -33,12 +33,12 @@ from cli.commands.respaldar_domicilios import respaldar_domicilios
 
 # from cli.commands.respaldar_cit_categorias import respaldar_cit_categorias
 # from cli.commands.respaldar_cit_servicios import respaldar_cit_servicios
+from cli.commands.respaldar_cit_tramites_servicios import respaldar_cit_tramites_servicios
 from cli.commands.respaldar_materias import respaldar_materias
 from cli.commands.respaldar_modulos import respaldar_modulos
 from cli.commands.respaldar_oficinas import respaldar_oficinas
 from cli.commands.respaldar_roles_permisos import respaldar_roles_permisos
 from cli.commands.respaldar_usuarios_roles import respaldar_usuarios_roles
-from cli.commands.respaldar_cit_tramites_servicios import respaldar_cit_tramites_servicios
 
 app = create_app()
 db.app = app
