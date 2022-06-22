@@ -1,5 +1,5 @@
 """
-Cit Tramites y Servicios, formularios
+Cit Tramites Servicios, formularios
 """
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, DecimalField
