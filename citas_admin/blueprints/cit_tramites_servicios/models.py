@@ -19,6 +19,9 @@ class CitTramiteServicio(db.Model, UniversalMixin):
     costo = db.Column(db.Numeric(12, 2), nullable=False)
     url = db.Column(db.String(512), nullable=False)
 
+    # Hijos
+    cit_pagos = db.relationship("CitPago", back_populates="cit_tramite_servicio")
+
     def __repr__(self):
         """Representación"""
         return f"<CitTramiteServicio> {self.id}"

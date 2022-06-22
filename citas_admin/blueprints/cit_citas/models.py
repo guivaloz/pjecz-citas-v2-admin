@@ -36,7 +36,7 @@ class CitCita(db.Model, UniversalMixin):
     inicio = db.Column(db.DateTime(), nullable=False)
     termino = db.Column(db.DateTime(), nullable=False)
     notas = db.Column(db.Text(), nullable=False, default="", server_default="")
-    estado = db.Column(db.Enum(*ESTADOS, name="tipos_estados", native_enum=False))
+    estado = db.Column(db.Enum(*ESTADOS, name="estados", native_enum=False))
     asistencia = db.Column(db.Boolean, nullable=False, default=False)
 
     # Hijos
