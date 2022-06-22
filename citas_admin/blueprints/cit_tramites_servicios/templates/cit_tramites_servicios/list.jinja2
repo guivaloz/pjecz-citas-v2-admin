@@ -1,0 +1,75 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/list.jinja2' as list %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Tramites y Servicios{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(titulo) %}
+        {% if current_user.can_edit('CIT TRAMITES Y SERVICIOS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_tramites_servicios.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_tramites_servicios.list_active')) }}{% endif %}
+        {% endif %}
+        {% if current_user.can_insert('CIT TRAMITES Y SERVICIOS') %}
+            {{ topbar.button_new('Nuevo Tramite y Servicio', url_for('cit_tramites_servicios.new')) }}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call list.card() %}
+        <table id="cit_tramites_servicios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Costo</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {{ list.config_datatable() }}
+    <script>
+        configDataTable['ajax']['url'] = '/cit_tramites_servicios/datatable_json';
+        configDataTable['ajax']['data'] = {{ filtros }};
+        configDataTable['columns'] = [
+            { data: 'nombre' },
+            { data: 'costo' },
+            { data: 'url' },
+        ];
+        configDataTable['columnDefs'] = [
+            {
+                targets: 0, // Nombre
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.nombre.length > 45)
+                        texto = '<span title="' + data.nombre + '">' + data.nombre.substr(0, 45) + '…' + '</span>';
+                    else
+                        texto = data.nombre;
+                    return '<a href="' + data.url + '">' + texto + '</a>';
+                }
+            },
+            {
+                targets: 1, // Costo
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<span style="text-align: right; display: block; padding-right:2em;">$ ' + data + "</span>";
+                }
+            },
+            {
+                targets: 2, // Url
+                data: null,
+                render: function(data, type, row, meta) {
+                    if( data == '')
+                        return ''
+                    else
+                        return '<a href="' + data + '" target="_blank">link<span class="iconify" data-icon="mdi:open-in-new"></span></a>';
+                }
+            }
+        ];
+        $('#cit_tramites_servicios_datatable').DataTable(configDataTable);
+    </script>
+{% endblock %}

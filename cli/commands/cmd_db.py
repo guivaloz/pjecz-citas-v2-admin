@@ -25,6 +25,7 @@ from cli.commands.alimentar_permisos import alimentar_permisos
 from cli.commands.alimentar_roles import alimentar_roles
 from cli.commands.alimentar_usuarios import alimentar_usuarios
 from cli.commands.alimentar_usuarios_roles import alimentar_usuarios_roles
+from cli.commands.alimentar_cit_tramites_servicios import alimentar_cit_tramites_servicios
 
 from cli.commands.respaldar_autoridades import respaldar_autoridades
 from cli.commands.respaldar_distritos import respaldar_distritos
@@ -37,6 +38,7 @@ from cli.commands.respaldar_modulos import respaldar_modulos
 from cli.commands.respaldar_oficinas import respaldar_oficinas
 from cli.commands.respaldar_roles_permisos import respaldar_roles_permisos
 from cli.commands.respaldar_usuarios_roles import respaldar_usuarios_roles
+from cli.commands.respaldar_cit_tramites_servicios import respaldar_cit_tramites_servicios
 
 app = create_app()
 db.app = app
@@ -80,6 +82,7 @@ def alimentar():
     alimentar_cit_categorias()
     alimentar_cit_servicios()
     alimentar_cit_dias_inhabiles()
+    alimentar_cit_tramites_servicios()
     click.echo("Termina alimentar.")
 
 
@@ -104,6 +107,7 @@ def respaldar():
     respaldar_roles_permisos()
     respaldar_usuarios_roles()
     respaldar_oficinas()
+    respaldar_cit_tramites_servicios()
     click.echo("Termina respaldar.")
 
 
