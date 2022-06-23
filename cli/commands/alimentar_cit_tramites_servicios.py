@@ -31,7 +31,7 @@ def alimentar_cit_tramites_servicios():
                 click.echo(f"  AVISO: cit_tramite_servicio_id {servicio_id} no es consecutivo")
                 continue
             CitTramiteServicio(
-                nombre=safe_string(row["nombre"], max_len=64, do_unidecode=False),
+                nombre=safe_string(row["nombre"]),
                 costo=float(row["costo"]),
                 url=safe_url(row["url"]),
                 estatus=row["estatus"],
