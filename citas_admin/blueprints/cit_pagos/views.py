@@ -59,6 +59,8 @@ def datatable_json():
                 },
                 "descripcion": resultado.descripcion,
                 "total": resultado.total,
+                "estado": resultado.estado,
+                "folio": resultado.folio,
             }
         )
     # Entregar JSON

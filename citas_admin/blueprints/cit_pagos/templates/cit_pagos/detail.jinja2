@@ -18,9 +18,11 @@
 
 {% block content %}
     {% call detail.card(estatus=cit_pago.estatus) %}
+        {{ detail.label_value_big('Estado', cit_pago.estado) }}
         {{ detail.label_value('Cliente', cit_pago.cit_cliente.nombre) }}
         {{ detail.label_value('Descripción', cit_pago.descripcion) }}
         {{ detail.label_value('Total', cit_pago.total) }}
+        {{ detail.label_value('Folio', cit_pago.folio) }}
     {% endcall %}
         {{ topbar.button_primary('Generar Link de Pago', url_for('cit_pagos.link_pay', cit_pago_id=cit_pago.id), 'mdi:currency-usd') }}
 {% endblock %}

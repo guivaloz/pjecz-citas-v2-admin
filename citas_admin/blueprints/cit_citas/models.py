@@ -13,7 +13,6 @@ class CitCita(db.Model, UniversalMixin):
         [
             ("ASISTIO", "Asistió"),
             ("CANCELO", "Canceló"),
-            ("CONFIRMO", "Confirmó"),
             ("PENDIENTE", "Pendiente"),
         ]
     )
