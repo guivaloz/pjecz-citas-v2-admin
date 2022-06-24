@@ -44,11 +44,11 @@
         {{ detail.label_value('Termina', moment(cit_cita.termino).format('llll')) }}
         {{ detail.label_value('Estado', cit_cita.estado) }}
     {% endcall %}
-        {% if cit_cita.asistencia %}
-            {{ modals.button_delete('Quitar la Asistencia', url_for('cit_citas.pending', cit_cita_id=cit_cita.id), 'Pendiente', 'mdi:close-thick', '¿Desea desmarcar la asistencia de la cita ' + cit_cita.id | string + '?')}}
-        {% else %}
-            {{ modals.button_make('Marcar Asistencia', url_for('cit_citas.assistance', cit_cita_id=cit_cita.id), 'Asistencia', 'mdi:check-bold', '¿Desea marcar como asistió a la cita ' + cit_cita.id | string + '?')}}
-        {% endif %}
+    {% if cit_cita.asistencia %}
+        {{ modals.button_delete('Quitar la Asistencia', url_for('cit_citas.pending', cit_cita_id=cit_cita.id), 'Pendiente', 'mdi:close-thick', '¿Desea desmarcar la asistencia de la cita ' + cit_cita.id | string + '?')}}
+    {% else %}
+        {{ modals.button_make('Marcar Asistencia', url_for('cit_citas.assistance', cit_cita_id=cit_cita.id), 'Asistencia', 'mdi:check-bold', '¿Desea marcar como asistió a la cita ' + cit_cita.id | string + '?')}}
+    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
