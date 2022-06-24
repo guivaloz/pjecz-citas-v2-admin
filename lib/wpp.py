@@ -113,14 +113,14 @@ def get_url_from_xml_encrypt(xml_encrypt: str):
     return root.find("nb_url").text
 
 
-def create_pay_link(email: str, service_detail: str, client_id: int, amount: float):
+def create_pay_link(email: str, service_detail: str, cit_client_id: int, amount: float):
     """Regresa el link para mostrar el formulario de pago"""
 
     chain = create_chain_xml(
         amount=amount,
         email=email,
         description=service_detail,
-        client_id=client_id,
+        cit_client_id=cit_client_id,
     )
 
     chain_encrypt = encrypt_chain(chain).decode()  # bytes
