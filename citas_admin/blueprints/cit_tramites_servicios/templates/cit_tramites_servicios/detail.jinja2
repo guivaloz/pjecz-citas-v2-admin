@@ -1,0 +1,33 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Tramite y Servicio{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Tramites y Servicios') %}
+        {{ topbar.button_previous('Rregresar', url_for('cit_tramites_servicios.list_active')) }}
+        {% if current_user.can_edit('CIT TRAMITES SERVICIOS') %}
+            {{ topbar.button_edit('Editar', url_for('cit_tramites_servicios.edit', cit_tramite_servicio_id=cit_tramite_servicio.id)) }}
+            {% if cit_tramite_servicio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_tramites_servicios.delete', cit_tramite_servicio_id=cit_tramite_servicio.id)) }}{% endif %}
+            {% if cit_tramite_servicio.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_tramites_servicios.recover', cit_tramite_servicio_id=cit_tramite_servicio.id)) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=cit_tramite_servicio.estatus) %}
+        {{ detail.label_value('Nombre', cit_tramite_servicio.nombre) }}
+        {{ detail.label_value('Costo', '$ ' + cit_tramite_servicio.costo | string) }}
+        {{ detail.label_value('URL', cit_tramite_servicio.url) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {% if current_user.can_edit('CIT TRAMITES SERVICIOS') %}
+        {% if cit_tramite_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar tramite ' + cit_tramite_servicio.nombre + '?') }}{% endif %}
+        {% if cit_tramite_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar tramite ' + cit_tramite_servicio.nombre + '?') }}{% endif %}
+    {% endif %}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

@@ -28,4 +28,4 @@ class CitClienteRegistro(db.Model, UniversalMixin):
 
     def __repr__(self):
         """Representación"""
-        return "<CitClienteRegistro>"
+        return f"<CitClienteRegistro {self.id}>"

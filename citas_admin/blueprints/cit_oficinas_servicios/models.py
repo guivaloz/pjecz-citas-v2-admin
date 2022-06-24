@@ -25,4 +25,4 @@ class CitOficinaServicio(db.Model, UniversalMixin):
 
     def __repr__(self):
         """Representación"""
-        return f"<CitOficinaServicio {self.id}>"
+        return f"<CitOficinaServicio {self.descripcion}>"

@@ -1,0 +1,20 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/form.jinja2' as f with context %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Nuevo Tramite y Servicio{% endblock %}
+
+{% block topbar_actions %}
+    {{ topbar.page('Nuevo Tramite y Servicio') }}
+{% endblock %}
+
+{% block content %}
+    {% call f.card() %}
+        {% call f.form_tag('cit_tramites_servicios.new', fid='cit_tramites_servicios_form') %}
+            {% call f.form_group(form.nombre) %}{% endcall %}
+            {% call f.form_group(form.costo) %}{% endcall %}
+            {% call f.form_group(form.url) %}{% endcall %}
+            {% call f.form_group(form.guardar) %}{% endcall %}
+        {% endcall %}
+    {% endcall %}
+{% endblock %}

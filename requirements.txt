@@ -15,7 +15,6 @@ google-cloud-logging
 google-cloud-storage
 hashids
 Jinja2
-markdown
 pandas
 passlib
 pdfkit
@@ -24,15 +23,17 @@ pylint
 pylint-sqlalchemy
 pylint-flask-sqlalchemy
 PyMySQL
-pylint
 python-dateutil
 python-dotenv
 pytz
 quill-delta[html]
+ratelimit
+requests
 rq
 sendgrid
 SQLAlchemy
 SQLAlchemy-Utils
 tabulate
 Unidecode
+Werkzeug==2.0.2
 WTForms >=2.3.3,<3.0.0
