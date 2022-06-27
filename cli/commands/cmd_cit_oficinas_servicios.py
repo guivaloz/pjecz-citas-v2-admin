@@ -41,4 +41,20 @@ def asignar(categoria_nombre, distrito_nombre):
     click.echo("Asignar se está ejecutando en el fondo.")
 
 
+@click.command()
+@click.argument("categoria_nombre", type=str)
+def asignar_todos_distritos(categoria_nombre):
+    """Asignar servicios de una categoria a todas las oficinas de todos los distritos"""
+    cit_categoria = CitCategoria.query.filter_by(nombre=categoria_nombre).first()
+    if cit_categoria is None:
+        click.echo("ERROR: No se encuentra la categoria")
+        return
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.cit_oficinas_servicios.tasks.asignar_a_cit_categoria_todos_distritos",
+        cit_categoria_id=cit_categoria.id,
+    )
+    click.echo("Asignar se está ejecutando en el fondo.")
+
+
 cli.add_command(asignar)
+cli.add_command(asignar_todos_distritos)
