@@ -15,6 +15,16 @@
 
 {% block content %}
     {% call list.card() %}
+        <div class="mb-3">
+            {% if fecha_anterior %}
+                <a href="{{ url_for('cit_citas.list_active', fecha=fecha_anterior) }}" class="btn btn-primary btn-sm">Dia anterior</a>
+            {% endif %}
+            {% if fecha_siguiente %}
+                <div class="float-end">
+                    <a href="{{ url_for('cit_citas.list_active', fecha=fecha_siguiente) }}" class="btn btn-primary btn-sm">Dia siguiente</a>
+                </div>
+            {% endif %}
+        </div>
         <table id="cit_citas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>

@@ -107,3 +107,11 @@ def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
     mensaje_final = f"Terminado con {actualizaciones_contador} actualizaciones y {inserciones_contador} inserciones en Oficinas-Servicios."
     bitacora.info(mensaje_final)
     return mensaje_final
+
+
+def asignar_a_cit_categoria_todos_distritos(cit_categoria_id):
+    """Asignar servicios de una categoria a todas las oficinas de todos los distritos"""
+
+    # Bucle para asignar los servicios de la categoria en todos los distritos
+    for distrito in Distrito.query.filter_by(estatus="A").all():
+        asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito.id)
