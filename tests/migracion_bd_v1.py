@@ -68,7 +68,7 @@ def main():
             # leer los registros de la BD v1 de usuarios
             result = connection.execute(
                 text(
-                    "SELECT id, nombre, apPaterno, apMaterno, celular, email, curp, password \
+                    "SELECT id, nombre, apPaterno, apMaterno, celular, lower(email) as email, upper(curp) as curp, password \
                 FROM usuario \
                 WHERE activo = 1 \
                 ORDER BY id DESC"
@@ -168,7 +168,7 @@ def main():
             citas_v1 = connection.execute(
                 text(
                     "SELECT \
-                citas.id AS citas_id, id_servicio, citas.correo, id_juzgado,\
+                citas.id AS citas_id, id_servicio, lower(citas.correo) as correo, id_juzgado,\
                 cat_servicios.servicio AS nombre_servicio, fecha, hora, citas.detalles\
                 FROM citas\
                 JOIN cat_servicios ON cat_servicios.id = citas.id_servicio \
