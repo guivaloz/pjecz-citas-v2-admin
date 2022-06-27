@@ -24,12 +24,25 @@ Ayuda del programa de migracion
     citas cit_oficinas_servicios asignar-todos-distritos COMUN
     tail -f cit_oficinas_servicios.log
 
-2) Pruebe primero, ejecute luego, la migracion de clientes
+3) Pruebe primero, ejecute luego, la migracion de clientes
 
     python tests/migracion_bd_v1.py --cli
     python tests/migracion_bd_v1.py --cli -x
 
-3) Pruebe primero, ejecute luego, la migracion de citas
+4) Pruebe primero, ejecute luego, la migracion de citas
 
     python tests/migracion_bd_v1.py --cit
     python tests/migracion_bd_v1.py --cit -x
+
+## Respaldar la base de datos en Diana
+
+Ingrese y ejecute
+
+    cd ~/Downloads/Minerva/pjecz_citas_v2/
+    pg_dump -F t pjecz_citas_v2 > pjecz_citas_v2-2022-06-27-1558.tar
+    gzip pjecz_citas_v2-2022-06-27-1558.tar
+
+Copie el archivo tar.gz a su equipo, descomprima y restablezca
+
+    gunzip pjecz_citas_v2-2022-06-27-1558.tar.gz
+    pg_restore -F t -d pjecz_citas_v2 ~/Downloads/Minerva/pjecz_citas_v2/pjecz_citas_v2-2022-06-27-1558.tar
