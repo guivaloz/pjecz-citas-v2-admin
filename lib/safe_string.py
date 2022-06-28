@@ -150,6 +150,6 @@ def safe_curp(input_str, max_len=32):
     if re.fullmatch(CURP_REGEXP, unidecode(mayusculas_str)):
         final = mayusculas_str.strip()
     else:
-        #raise ValueError("No es un valor permitido para una CURP")
+        # raise ValueError("No es un valor permitido para una CURP")
         return None
     return final
