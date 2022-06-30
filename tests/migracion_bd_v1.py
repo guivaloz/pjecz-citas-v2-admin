@@ -5,12 +5,10 @@ import argparse
 import os
 import csv
 from dotenv import load_dotenv
-from numpy import number
 from sqlalchemy import text, create_engine
-from lib.safe_string import safe_string, safe_text
+from lib.safe_string import safe_string, safe_email, safe_curp
 from pathlib import Path
 from datetime import datetime, timedelta
-
 
 from citas_admin.app import create_app
 from citas_admin.extensions import db
@@ -77,6 +75,24 @@ def main():
             count_insert = 0
             count_skip = 0
             for row in result:
+                # Validar email v1
+                if row["email"] == "" or row["email"] is None:
+                    print(f"! Registro Omitido - EMAIL vacío [ID:{row['id']}]")
+                    count_skip += 1
+                    continue
+                if safe_email(row["email"]) is None:
+                    print(f"! Registro Omitido - EMAIL inválido {row['email']} : [ID:{row['id']}]")
+                    count_skip += 1
+                    continue
+                # Validar CURP v1
+                if row["curp"] == "" or row["curp"] is None:
+                    print(f"! Registro Omitido - CURP vacío [ID:{row['id']}]")
+                    count_skip += 1
+                    continue
+                if safe_curp(row["curp"]) is None:
+                    print(f"! Registro Omitido - CURP inválido {row['curp']} : [ID:{row['id']}]")
+                    count_skip += 1
+                    continue
                 # Revisar CURP repetido
                 registro = CitCliente.query.filter(CitCliente.curp == row["curp"]).first()
                 if registro:

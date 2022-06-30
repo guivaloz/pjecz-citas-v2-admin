@@ -6,7 +6,7 @@ from datetime import date
 from unidecode import unidecode
 
 CONTRASENA_REGEXP = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,48}$"
-CURP_REGEXP = r"^[A-Z]{4}\d{6}[A-Z]{6}\d{2}$"
+CURP_REGEXP = r"^[A-Z]{4}\d{6}[A-Z]{6}[A-Z0-9]{2}$"
 EMAIL_REGEXP = r"^[\w.-]+@[\w.-]+\.\w+$"
 EXPEDIENTE_REGEXP = r"^\d+\/[12]\d\d\d(-[a-zA-Z0-9]+(-[a-zA-Z0-9]+)?)?$"
 TOKEN_REGEXP = r"^[a-zA-Z0-9_.=+-]+$"
@@ -138,3 +138,18 @@ def safe_url(input_str):
     if re.match(URL_REGEXP, input_str) is None:
         return ""
     return input_str
+
+
+def safe_curp(input_str, max_len=32):
+    """Safe CURP"""
+    if not isinstance(input_str, str):
+        return None
+    removed_spaces = re.sub(r"\s", "", input_str)
+    removed_simbols = re.sub(r"[()\[\]:/.-]+", "", removed_spaces)
+    mayusculas_str = removed_simbols.upper()
+    if re.fullmatch(CURP_REGEXP, unidecode(mayusculas_str)):
+        final = mayusculas_str.strip()
+    else:
+        # raise ValueError("No es un valor permitido para una CURP")
+        return None
+    return final
