@@ -58,7 +58,7 @@ def enviar(cit_cita_id):
     contenidos.append("<h1>Sistema de Citas</h1>")
     contenidos.append("<h2>PODER JUDICIAL DEL ESTADO DE COAHUILA DE ZARAGOZA</h2>")
     contenidos.append(f"<p>Fecha de elaboración: {momento_str}.</p>")
-    contenidos.append("<p>Le proporcionamos la informacion detalla de la cita que agendo en este sistema:</p>")
+    contenidos.append("<p>Le proporcionamos la informacion detalla de la cita que agendó en este sistema:</p>")
     contenidos.append("<ul>")
     contenidos.append(f"<li>Oficina: {cit_cita.oficina.descripcion}</li>")
     contenidos.append(f"<li>Servicio: {cit_cita.cit_servicio.descripcion}</li>")
@@ -79,7 +79,7 @@ def enviar(cit_cita_id):
     to_email = To(cit_cita.cit_cliente.email)
 
     # Asunto
-    subject = "Informacion de la cita"
+    subject = "Información de la cita"
 
     # SendGrid
     sendgrid_client = None
