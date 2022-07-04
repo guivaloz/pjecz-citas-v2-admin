@@ -72,11 +72,11 @@ def enviar(cit_cliente_recuperacion_id):
         "<h1>Sistema de Citas</h1>",
         "<h2>PODER JUDICIAL DEL ESTADO DE COAHUILA DE ZARAGOZA</h2>",
         f"<p>Fecha de elaboración: {momento_str}.</p>",
-        f"<p>Antes de {EXPIRACION_HORAS} horas vaya a este URL para cambiar su contraseña:<br>",
-        f"<a href='{url}>{url}</a></p>",
+        f"Antes de {EXPIRACION_HORAS} horas vaya a este URL para cambiar su contraseña:<br>",
+        url,
         "<p>ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</p>",
     ]
-    content = Content("text/html", "<br>".join(contenidos))
+    content = Content("text/html", "".join(contenidos))
 
     # Remitente
     from_email = None

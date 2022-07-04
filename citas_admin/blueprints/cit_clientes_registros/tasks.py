@@ -32,7 +32,7 @@ db.app = app
 load_dotenv()  # Take environment variables from .env
 
 EXPIRACION_HORAS = 48
-NEW_ACCOUNT_CONFIRM_URL = os.getenv("NEW_ACCOUNT_CONFIRM_URL", "https://localhost:3000/new_account_confirm")
+NEW_ACCOUNT_CONFIRM_URL = os.getenv("NEW_ACCOUNT_CONFIRM_URL", "")
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "")
 
@@ -72,8 +72,8 @@ def enviar(cit_cliente_registro_id):
         "<h1>Sistema de Citas</h1>",
         "<h2>PODER JUDICIAL DEL ESTADO DE COAHUILA DE ZARAGOZA</h2>",
         f"<p>Fecha de elaboración: {momento_str}.</p>",
-        f"<p>Antes de {EXPIRACION_HORAS} horas vaya a este URL para validar su registro y definir su contraseña:<br>",
-        f"<a href='{url}>{url}</a></p>",
+        f"Antes de {EXPIRACION_HORAS} horas vaya a este URL para validar su registro y definir su contraseña:",
+        url,
         "<p>ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</p>",
     ]
     content = Content("text/html", "<br>".join(contenidos))
