@@ -33,10 +33,10 @@ def main():
     db.app = app
 
     # Manejo de un Log
-    bitacora = logging.getLogger(__name__)
+    bitacora = logging.getLogger("migracion")
     bitacora.setLevel(logging.INFO)
     formato = logging.Formatter("%(asctime)s:%(levelname)s:%(message)s")
-    empunadura = logging.FileHandler("migracion-bd.log")
+    empunadura = logging.FileHandler("migracion-db.log")
     empunadura.setFormatter(formato)
     bitacora.addHandler(empunadura)
 
@@ -62,16 +62,22 @@ def main():
     # -- Migración de las Tablas --
     with engine.connect() as connection:
         if args.clientes:
+            # Se crea la bitacora de errores de la migracion de clientes
+            bitacora_clientes_errores = logging.getLogger("errores-clientes")
+            bitacora_clientes_errores.setLevel(logging.INFO)
+            empunadura_cli = logging.FileHandler(filename="migracion-errores-clientes.log", mode='w')
+            bitacora_clientes_errores.addHandler(empunadura_cli)
+            bitacora_clientes_errores.info(f"{datetime.now()} - Último reporte de errores de la migración de la tabla de clientes")
             # Eliminar tabla V2 de clientes 'cit_clientes'.
             if simulacion is False:
                 print("- Eliminando la tabla cit_clientes")
                 conexion_v2 = db.engine.connect()
                 conexion_v2.execute(text("TRUNCATE TABLE cit_clientes CASCADE"))
             # -- Migración de la Tabla 'usuario' -> cit_clientes --
-            print("--Migración de la tabla: usuario -> cit_clientes")
+            bitacora.info("Comienzo de la migración de la tabla: usuario -> cit_clientes")
             # extraer el número total de registros
             num_registros_total = 0
-            result = connection.execute(text("SELECT COUNT(*) AS total FROM usuario WHERE activo=1"))
+            result = connection.execute(text("SELECT COUNT(*) AS total FROM usuario WHERE activo=1 AND idRol = 1"))
             for row in result:
                 num_registros_total = int(row["total"])
             # leer los registros de la BD v1 de usuarios
@@ -79,34 +85,41 @@ def main():
                 text(
                     "SELECT id, nombre, apPaterno, apMaterno, celular, lower(email) as email, upper(curp) as curp, password \
                 FROM usuario \
-                WHERE activo = 1 \
+                WHERE activo = 1 AND idRol = 1\
                 ORDER BY id DESC"
                 )
             )
             count_insert = 0
-            count_skip = 0
+            count_error = {
+                'curp_repetido': 0,
+                'email_repetido': 0,
+                'nombre_vacio': 0,
+                'apellido_paterno_vacio': 0,
+                'curp_vacia': 0,
+            }
             for row in result:
                 # Revisar CURP repetido
                 registro = CitCliente.query.filter(CitCliente.curp == row["curp"]).first()
                 if registro:
-                    count_skip += 1
+                    count_error['curp_repetido'] += 1
                     continue
                 # Revisar email repetido
                 registro = CitCliente.query.filter(CitCliente.email == row["email"]).first()
                 if registro:
-                    count_skip += 1
+                    count_error['email_repetido'] += 1
                     continue
                 # Revisar si existe un nombre
                 if safe_string(row["nombre"]) == "":
-                    count_skip += 1
+                    count_error['nombre_vacio'] += 1
                     continue
                 # Revisar si existe un apellido paterno
                 if safe_string(row["apPaterno"]) == "":
-                    count_skip += 1
+                    count_error['apellido_paterno_vacio'] += 1
                     continue
                 # Revisar si existe la CURP
                 if safe_string(row["curp"]) == "":
-                    count_skip += 1
+                    count_error['curp_vacia'] += 1
+                    bitacora_clientes_errores.info("CURP Vacía en V1 con el id=%d", row["id"])
                     continue
                 # Insertar registro
                 count_insert += 1
@@ -124,8 +137,11 @@ def main():
                 if simulacion is False:
                     cliente.save()
 
-            bitacora.info(f"Total de clientes insertados {count_insert} de {num_registros_total}, omitidos {count_skip}")
-            bitacora.info(f"Reporte de omitidos {count_skip}")
+            # Da el total de errores encontrados
+            sum_errors = 0
+            for key, value in count_error.items():
+                sum_errors += value
+            bitacora.info(f"Total de clientes insertados {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}")
 
         # -- Migración de la Tabla 'citas' -> cit_citas --
         if args.citas:
@@ -179,7 +195,7 @@ def main():
                 )
             )
             count_insert = 0
-            count_skip = 0
+            count_error = 0
             for row in citas_v1:
                 # Hacer match con el servicio de la BD v2
                 # Comprobar parecido
@@ -189,24 +205,24 @@ def main():
                 else:
                     servicio_v2 = CitServicio.query.filter(CitServicio.descripcion == nombre_servicio).first()
                 if servicio_v2 is None:
-                    count_skip += 1
+                    count_error += 1
                     print(f"! Servicio de la cita NO encontrado: [ID:{row['citas_id']}] = NOM-SERVICIO: {nombre_servicio}")
                     continue
                 # Buscar el cliente con este email
                 cliente_v2 = CitCliente.query.filter(CitCliente.email == row["correo"]).first()
                 if cliente_v2 is None:
-                    count_skip += 1
+                    count_error += 1
                     print(f"! Cliente de la cita NO encontrado: [ID:{row['citas_id']}] = EMAIL: {row['correo']}")
                     continue
                 # Buscar Oficina_id en citas v1.
                 if row["id_juzgado"] not in oficinas:
-                    count_skip += 1
+                    count_error += 1
                     print(f"! Oficina de la cita NO establecida: [ID:{row['citas_id']}] = Juzgado_id: {row['id_juzgado']}")
                     continue
                 # Buscar Oficina_id.
                 oficina_v2 = Oficina.query.filter(Oficina.id == oficinas[row["id_juzgado"]]).first()
                 if oficina_v2 is None:
-                    count_skip += 1
+                    count_error += 1
                     print(f"! Oficina NO encontrada: [ID:{row['citas_id']}] = Juzgado_id: {row['id_juzgado']}")
                     continue
                 # Insertar la cita v2
@@ -232,7 +248,7 @@ def main():
                         f"({porcentaje:.2f}%) [ID_CITA:{row['citas_id']}] =V1= ID:{row['id_servicio']}, SERVICIO:{row['nombre_servicio']}, EMAIL:{row['correo']}\n\t\
 --> =V2= ID:{servicio_v2.id}, SERVICIO:{servicio_v2.descripcion}, EMAIL:{cliente_v2.email}, INI:{cita.inicio}, EDO:{cita.estado}, DETAIL:{cita.notas}"
                     )
-            print(f"Total de registros insertados {count_insert}, omitidos {count_skip}")
+            print(f"Total de registros insertados {count_insert}, omitidos {count_error}")
 
 
 if __name__ == "__main__":
