@@ -65,7 +65,7 @@ def main():
             # Se crea la bitacora de errores de la migracion de clientes
             bitacora_clientes_errores = logging.getLogger("errores-clientes")
             bitacora_clientes_errores.setLevel(logging.INFO)
-            empunadura_cli = logging.FileHandler(filename="migracion-errores-clientes.log", mode='w')
+            empunadura_cli = logging.FileHandler(filename="migracion-errores-clientes.log", mode="w")
             bitacora_clientes_errores.addHandler(empunadura_cli)
             bitacora_clientes_errores.info(f"{datetime.now()} - Último reporte de errores de la migración de la tabla de clientes")
             # Eliminar tabla V2 de clientes 'cit_clientes'.
@@ -91,34 +91,34 @@ def main():
             )
             count_insert = 0
             count_error = {
-                'curp_repetido': 0,
-                'email_repetido': 0,
-                'nombre_vacio': 0,
-                'apellido_paterno_vacio': 0,
-                'curp_vacia': 0,
+                "curp_repetido": 0,
+                "email_repetido": 0,
+                "nombre_vacio": 0,
+                "apellido_paterno_vacio": 0,
+                "curp_vacia": 0,
             }
             for row in result:
                 # Revisar CURP repetido
                 registro = CitCliente.query.filter(CitCliente.curp == row["curp"]).first()
                 if registro:
-                    count_error['curp_repetido'] += 1
+                    count_error["curp_repetido"] += 1
                     continue
                 # Revisar email repetido
                 registro = CitCliente.query.filter(CitCliente.email == row["email"]).first()
                 if registro:
-                    count_error['email_repetido'] += 1
+                    count_error["email_repetido"] += 1
                     continue
                 # Revisar si existe un nombre
                 if safe_string(row["nombre"]) == "":
-                    count_error['nombre_vacio'] += 1
+                    count_error["nombre_vacio"] += 1
                     continue
                 # Revisar si existe un apellido paterno
                 if safe_string(row["apPaterno"]) == "":
-                    count_error['apellido_paterno_vacio'] += 1
+                    count_error["apellido_paterno_vacio"] += 1
                     continue
                 # Revisar si existe la CURP
                 if safe_string(row["curp"]) == "":
-                    count_error['curp_vacia'] += 1
+                    count_error["curp_vacia"] += 1
                     bitacora_clientes_errores.info("CURP Vacía en V1 con el id=%d", row["id"])
                     continue
                 # Insertar registro
