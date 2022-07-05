@@ -2,6 +2,7 @@
 Lectura de la Base de datos de la versión 1.0
 """
 import argparse
+import logging
 import os
 import csv
 from dotenv import load_dotenv
@@ -30,6 +31,14 @@ def main():
     load_dotenv()  # Take environment variables from .env
     app = create_app()
     db.app = app
+
+    # Manejo de un Log
+    bitacora = logging.getLogger(__name__)
+    bitacora.setLevel(logging.INFO)
+    formato = logging.Formatter("%(asctime)s:%(levelname)s:%(message)s")
+    empunadura = logging.FileHandler("migracion-bd.log")
+    empunadura.setFormatter(formato)
+    bitacora.addHandler(empunadura)
 
     # -- Crear conexión a la BD v1 MySQL
     load_dotenv(".env")  # Se necesita un arhivo .env local para cargar la variable de la BD v1
@@ -61,10 +70,10 @@ def main():
             # -- Migración de la Tabla 'usuario' -> cit_clientes --
             print("--Migración de la tabla: usuario -> cit_clientes")
             # extraer el número total de registros
-            num_registros = 0
-            result = connection.execute(text("SELECT COUNT(*) AS total FROM usuario"))
+            num_registros_total = 0
+            result = connection.execute(text("SELECT COUNT(*) AS total FROM usuario WHERE activo=1"))
             for row in result:
-                num_registros = int(row["total"])
+                num_registros_total = int(row["total"])
             # leer los registros de la BD v1 de usuarios
             result = connection.execute(
                 text(
@@ -80,29 +89,24 @@ def main():
                 # Revisar CURP repetido
                 registro = CitCliente.query.filter(CitCliente.curp == row["curp"]).first()
                 if registro:
-                    print(f"! Registro Omitido - CURP repetido {row['curp']} : [ID:{row['id']}]")
                     count_skip += 1
                     continue
                 # Revisar email repetido
                 registro = CitCliente.query.filter(CitCliente.email == row["email"]).first()
                 if registro:
-                    print(f"! Registro Omitido - email repetido {row['email']} : [ID:{row['id']}]")
                     count_skip += 1
                     continue
                 # Revisar si existe un nombre
                 if safe_string(row["nombre"]) == "":
                     count_skip += 1
-                    print(f"! Registro Omitido - falta el nombre: [ID:{row['id']}]")
                     continue
                 # Revisar si existe un apellido paterno
                 if safe_string(row["apPaterno"]) == "":
                     count_skip += 1
-                    print(f"! Registro Omitido - falta el apellido: [ID:{row['id']}]")
                     continue
                 # Revisar si existe la CURP
                 if safe_string(row["curp"]) == "":
                     count_skip += 1
-                    print(f"! Registro Omitido - falta el curp: [ID:{row['id']}]")
                     continue
                 # Insertar registro
                 count_insert += 1
@@ -119,11 +123,9 @@ def main():
                 )
                 if simulacion is False:
                     cliente.save()
-                # Toma de muestras, para comprobar su funcionamiento
-                if count_insert % 200 == 0:
-                    porcentaje = 100 - (int(row["id"]) * 100 / num_registros)
-                    print(f"({porcentaje:.2f}%) [ID:{row['id']}] =V1= CURP:{safe_string(row['curp'])}, EMAIL:{row['email']} =V2= [ID:{cliente.id}]")
-            print(f"= Total de registros insertados {count_insert} de {num_registros}, omitidos {count_skip}")
+
+            bitacora.info(f"Total de clientes insertados {count_insert} de {num_registros_total}, omitidos {count_skip}")
+            bitacora.info(f"Reporte de omitidos {count_skip}")
 
         # -- Migración de la Tabla 'citas' -> cit_citas --
         if args.citas:
