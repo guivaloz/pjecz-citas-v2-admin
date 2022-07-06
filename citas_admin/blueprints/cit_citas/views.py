@@ -265,3 +265,33 @@ def pending(cit_cita_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
     return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
+
+
+@cit_citas.route("/cit_citas/estadisticas")
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def stats():
+    """Estadísticas del módulo citas"""
+    return render_template(
+        "cit_citas/stats.jinja2",
+        titulo=f"Estadísticas de Citas",
+    )
+
+
+@cit_citas.route("/cit_citas/estadisticas/data/<string:rango>", methods=["POST", "GET"])
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def stats_json(rango):
+    """Entrega los datos para gráficas"""
+
+    if rango == "HOY":
+        etiquetas = ["8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"]
+        datos = [5, 4, 3, 3, 4, 5, 4, 2, 6]
+    elif rango == "SEMANA":
+        etiquetas = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
+        datos = [55, 24, 33, 23, 36]
+
+    respuesta = {
+        "etiquetas": etiquetas,
+        "datos": datos,
+    }
+    # Entregar JSON
+    return respuesta

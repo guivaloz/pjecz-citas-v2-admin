@@ -1,0 +1,112 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Cita{% endblock %}
+
+{% block custom_head %}
+
+{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(titulo) %}
+        {{ topbar.button_previous('Citas', url_for('cit_citas.list_active')) }}
+    {% endcall %}
+    {% call topbar.page_buttons() %}
+        {{ topbar.button_modal('Hoy', "javascript:cargar_ajax('HOY');", 'mdi:calendar-today') }}
+        {{ topbar.button_modal('Semana', "javascript:cargar_ajax('SEMANA');", 'mdi:calendar-range') }}
+        {{ topbar.button_primary('Mes', "#", 'mdi:calendar-month') }}
+        {{ topbar.button_primary('6 Meses', "#", 'mdi:calendar-text') }}
+        {{ topbar.button_primary('Año', "#", 'mdi:calendar-check') }}
+    {% endcall %}
+
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <canvas id="myChart"></canvas>
+        <canvas id="myChart2"></canvas>
+    </div>
+{% endblock %}
+
+{% block custom_javascript %}
+    <!-- Chart.js 3.8.0 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.8.0/dist/chart.min.js"></script>
+    <script>
+        async function cargar_ajax(param="HOY") {
+            // Llamar a nuestra API. Puedes usar cualquier librería para la llamada, yo uso fetch, que viene nativamente en JS
+            const respuestaRaw = await fetch("./estadisticas/data/" + param);
+            // Decodificar como JSON
+            const respuesta = await respuestaRaw.json();
+            // Ahora ya tenemos las etiquetas y datos dentro de "respuesta"
+            const etiquetas = respuesta.etiquetas; // <- Aquí estamos pasando el valor traído usando AJAX
+            // Podemos tener varios conjuntos de datos. Comencemos con uno
+
+            const data = {
+                labels: etiquetas,
+                datasets: [{
+                    label: "Ventas por Mes",
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    borderRadius: 10,
+                    data: respuesta.datos,
+                }]
+            };
+
+            const config = {
+                type: 'bar',
+                data: data,
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Semana Actual - 4-8 Jul 2022',
+                            font: {
+                                size: 18
+                            }
+                        },
+                        subtitle: {
+                            display: true,
+                            text: 'Muestra tomada: 2022.07.06 13:28'
+                        }
+                    }
+                }
+            };
+
+            const myChart = new Chart(
+                document.getElementById('myChart'),
+                config
+            );
+        };
+
+        cargar_ajax();
+    </script>
+    <script>
+        window.onload = function() {
+
+            var dataPoints = [];
+
+            var chart = new Chart(document.getElementById('myChart2'), {
+                data: [{
+                    type: "column",
+                    dataPoints: dataPoints
+                }]
+            });
+        
+            function addData(data) {
+                for (var i = 0; i < data.length; i++) {
+                    dataPoints.push({
+                        x: new Date(data[i].date),
+                        y: data[i].units
+                    });
+                }
+                chart.render();
+            }
+
+        $.getJSON("https://canvasjs.com/data/gallery/javascript/daily-sales-data.json", addData);
+        }
+    </script>
+
+    {{ detail.moment_js(moment) }}
+{% endblock %}

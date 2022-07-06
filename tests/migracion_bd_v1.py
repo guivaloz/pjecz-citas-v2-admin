@@ -195,7 +195,7 @@ def main():
             bitacora.info(f"Oficinas cargadas: {len(oficinas)}")
             # extraer el número total de registros
             num_registros_total = 0
-            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas"))  # WHERE fecha >= CURDATE()"))
+            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas WHERE fecha >= CURDATE()"))
             for row in result:
                 num_registros_total = int(row["total"])
             # Lectura de la BD v1, tabla de citas
@@ -207,7 +207,7 @@ def main():
                 FROM citas\
                 JOIN cat_servicios ON cat_servicios.id = citas.id_servicio \
                 JOIN juzgados ON juzgados.id = citas.id_juzgado \
-                "  # WHERE fecha >= CURDATE()"
+                WHERE fecha >= CURDATE()"
                 )
             )
             count_insert = 0
