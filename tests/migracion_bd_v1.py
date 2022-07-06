@@ -98,20 +98,20 @@ def main():
                 # Validar email v1
                 if row["email"] == "" or row["email"] is None:
                     bitacora_clientes_errores.info(f"EMAIL vacío [ID:{row['id']}]")
-                    count_error['email_vacio'] += 1
+                    count_error["email_vacio"] += 1
                     continue
                 if safe_email(row["email"]) is None:
                     bitacora_clientes_errores.info(f"EMAIL inválido {row['email']} [ID:{row['id']}]")
-                    count_error['email_invalido'] += 1
+                    count_error["email_invalido"] += 1
                     continue
                 # Validar CURP v1
                 if safe_string(row["curp"]) == "" or row["curp"] is None:
                     bitacora_clientes_errores.info(f"CURP vacío [ID:{row['id']}]")
-                    count_error['curp_vacio'] += 1
+                    count_error["curp_vacio"] += 1
                     continue
                 if safe_curp(row["curp"]) is None:
                     bitacora_clientes_errores.info(f"CURP inválido {row['curp']} [ID:{row['id']}]")
-                    count_error['email_invalido'] += 1
+                    count_error["email_invalido"] += 1
                     continue
                 # Revisar CURP repetido
                 registro = CitCliente.query.filter(CitCliente.curp == row["curp"]).first()
@@ -125,12 +125,12 @@ def main():
                     continue
                 # Revisar si existe un nombre
                 if safe_string(row["nombre"]) == "":
-                    bitacora_clientes_errores.info("NOMBRE vacío [ID:%d]", {row['id']})
+                    bitacora_clientes_errores.info("NOMBRE vacío [ID:%d]", {row["id"]})
                     count_error["nombre_vacio"] += 1
                     continue
                 # Revisar si existe un apellido paterno
                 if safe_string(row["apPaterno"]) == "":
-                    bitacora_clientes_errores.info("APELLIDO PATERNO vacío [ID:%d]", {row['id']})
+                    bitacora_clientes_errores.info("APELLIDO PATERNO vacío [ID:%d]", {row["id"]})
                     count_error["apellido_paterno_vacio"] += 1
                     continue
                 # Insertar registro
@@ -195,7 +195,7 @@ def main():
             bitacora.info(f"Oficinas cargadas: {len(oficinas)}")
             # extraer el número total de registros
             num_registros_total = 0
-            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas"))# WHERE fecha >= CURDATE()"))
+            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas"))  # WHERE fecha >= CURDATE()"))
             for row in result:
                 num_registros_total = int(row["total"])
             # Lectura de la BD v1, tabla de citas
@@ -207,7 +207,7 @@ def main():
                 FROM citas\
                 JOIN cat_servicios ON cat_servicios.id = citas.id_servicio \
                 JOIN juzgados ON juzgados.id = citas.id_juzgado \
-                "#WHERE fecha >= CURDATE()"
+                "  # WHERE fecha >= CURDATE()"
                 )
             )
             count_insert = 0
