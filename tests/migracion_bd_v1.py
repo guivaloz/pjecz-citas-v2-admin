@@ -54,20 +54,16 @@ def main():
     args = parser.parse_args()
     if args.exec:
         simulacion = False
-    msg_exec = "SIMULACIÓN" if simulacion else "EJECUCIÓN"
-    print("=====================================")
-    print(f"=== Migración de datos de v1 a v2 === ({msg_exec})")
-    print("=====================================")
 
     # -- Migración de las Tablas --
     with engine.connect() as connection:
         if args.clientes:
-            # Se crea la bitacora de errores de la migracion de clientes
+            # Se crea la bitácora de errores de la migración de clientes
             bitacora_clientes_errores = logging.getLogger("errores-clientes")
             bitacora_clientes_errores.setLevel(logging.INFO)
             empunadura_cli = logging.FileHandler(filename="migracion-errores-clientes.log", mode="w")
             bitacora_clientes_errores.addHandler(empunadura_cli)
-            bitacora_clientes_errores.info(f"{datetime.now()} - Último reporte de errores de la migración de la tabla de clientes")
+            bitacora_clientes_errores.info(f"{datetime.now()} - Último reporte de errores de la migración de la tabla de *clientes*")
             # Eliminar tabla V2 de clientes 'cit_clientes'.
             if simulacion is False:
                 print("- Eliminando la tabla cit_clientes")
@@ -145,6 +141,13 @@ def main():
 
         # -- Migración de la Tabla 'citas' -> cit_citas --
         if args.citas:
+            # Se crea la bitácora de errores de la migración de citas
+            bitacora_citas_errores = logging.getLogger("errores-citas")
+            bitacora_citas_errores.setLevel(logging.INFO)
+            empunadura_cit = logging.FileHandler(filename="migracion-errores-citas.log", mode="w")
+            bitacora_citas_errores.addHandler(empunadura_cit)
+            bitacora_citas_errores.info(f"{datetime.now()} - Último reporte de errores de la migración de la tabla de *citas*")
+            # Hardcode de las variones de servicios
             tabla_parecidos = {
                 "TRAMITACION DE OFICIOS / EDICTOS / EXHORTOS": 3,
                 "CITAS CON ACTUARIOS": 4,
@@ -154,7 +157,8 @@ def main():
                 print("- Eliminando la tabla cit_citas")
                 conexion_v2 = db.engine.connect()
                 conexion_v2.execute(text("TRUNCATE TABLE cit_citas CASCADE"))
-            print("--Migración de la tabla: citas -> cit_citas")
+            # -- Migración de la Tabla 'usuario' -> cit_clientes --
+            bitacora.info("Comienzo de la migración de la tabla: citas -> cit_citas")
             # Carga de la relación de Juzgados_id --> Oficinas_id
             ruta = Path(OFICINAS_CSV)
             if not ruta.exists():
@@ -163,8 +167,7 @@ def main():
             if not ruta.is_file():
                 print(f"AVISO: {ruta.name} no es un archivo.")
                 return
-            print("Cargando archivo de relación id_juzgados -> oficinas...")
-            contador = 0
+
             oficinas = {}
             with open(ruta, encoding="utf-8") as puntero:
                 rows = csv.DictReader(puntero)
@@ -173,15 +176,12 @@ def main():
                     oficina_id_v1 = row["id_citas_v1"]
                     if oficina_id_v1.isnumeric() and int(oficina_id_v1) > 0:
                         oficinas[int(oficina_id_v1)] = oficina_id
-                        contador += 1
-            print(f"-- Oficinas cargadas: {contador}")
+            bitacora.info(f"Oficinas cargadas: {len(oficinas)}")
             # extraer el número total de registros
-            print("- Leyendo Tabla de citas V1")
-            num_registros = 0
+            num_registros_total = 0
             result = connection.execute(text("SELECT COUNT(*) AS total FROM citas WHERE fecha >= CURDATE()"))
             for row in result:
-                num_registros = int(row["total"])
-            print(f"- Registros de citas a procesar de la V1: {num_registros:,} citas a migrar")
+                num_registros_total = int(row["total"])
             # Lectura de la BD v1, tabla de citas
             citas_v1 = connection.execute(
                 text(
@@ -195,7 +195,12 @@ def main():
                 )
             )
             count_insert = 0
-            count_error = 0
+            count_error = {
+                "servicio_no_encontrado": 0,
+                "email_no_encontrado": 0,
+                "oficina_no_establecida": 0,
+                "oficina_no_encontrada": 0,
+            }
             for row in citas_v1:
                 # Hacer match con el servicio de la BD v2
                 # Comprobar parecido
@@ -205,25 +210,25 @@ def main():
                 else:
                     servicio_v2 = CitServicio.query.filter(CitServicio.descripcion == nombre_servicio).first()
                 if servicio_v2 is None:
-                    count_error += 1
-                    print(f"! Servicio de la cita NO encontrado: [ID:{row['citas_id']}] = NOM-SERVICIO: {nombre_servicio}")
+                    count_error["servicio_no_encontrado"] += 1
+                    bitacora_citas_errores.info("Servicio de la cita NO encontrado, id=%d. NOM-SERVICIO:%s", row["citas_id"], nombre_servicio)
                     continue
                 # Buscar el cliente con este email
                 cliente_v2 = CitCliente.query.filter(CitCliente.email == row["correo"]).first()
                 if cliente_v2 is None:
-                    count_error += 1
-                    print(f"! Cliente de la cita NO encontrado: [ID:{row['citas_id']}] = EMAIL: {row['correo']}")
+                    count_error["email_no_encontrado"] += 1
+                    bitacora_citas_errores.info("Cliente de la cita NO encontrado, id=%d. EMAIL:%s", row["citas_id"], row["correo"])
                     continue
                 # Buscar Oficina_id en citas v1.
                 if row["id_juzgado"] not in oficinas:
-                    count_error += 1
-                    print(f"! Oficina de la cita NO establecida: [ID:{row['citas_id']}] = Juzgado_id: {row['id_juzgado']}")
+                    count_error["oficina_no_establecida"] += 1
+                    bitacora_citas_errores.info("Oficina NO establecida, id=%d. Juzgado_id:%d", row["citas_id"], row["id_juzgado"])
                     continue
                 # Buscar Oficina_id.
                 oficina_v2 = Oficina.query.filter(Oficina.id == oficinas[row["id_juzgado"]]).first()
                 if oficina_v2 is None:
-                    count_error += 1
-                    print(f"! Oficina NO encontrada: [ID:{row['citas_id']}] = Juzgado_id: {row['id_juzgado']}")
+                    count_error["oficina_no_encontrada"] += 1
+                    bitacora_citas_errores.info("Oficina NO encontrada, id=%d. Juzgado_id:%d", row["citas_id"], row["id_juzgado"])
                     continue
                 # Insertar la cita v2
                 count_insert += 1
@@ -241,14 +246,11 @@ def main():
                 )
                 if simulacion == False:
                     cita.save()
-                # Toma de muestras, para comprobar su funcionamiento
-                if count_insert % 100 == 0:
-                    porcentaje = int(row["citas_id"]) * 100 / num_registros
-                    print(
-                        f"({porcentaje:.2f}%) [ID_CITA:{row['citas_id']}] =V1= ID:{row['id_servicio']}, SERVICIO:{row['nombre_servicio']}, EMAIL:{row['correo']}\n\t\
---> =V2= ID:{servicio_v2.id}, SERVICIO:{servicio_v2.descripcion}, EMAIL:{cliente_v2.email}, INI:{cita.inicio}, EDO:{cita.estado}, DETAIL:{cita.notas}"
-                    )
-            print(f"Total de registros insertados {count_insert}, omitidos {count_error}")
+            # Da el total de errores encontrados
+            sum_errors = 0
+            for key, value in count_error.items():
+                sum_errors += value
+            bitacora.info(f"Total de citas insertadas {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}")
 
 
 if __name__ == "__main__":
