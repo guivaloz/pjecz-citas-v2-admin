@@ -283,13 +283,22 @@ def stats_json(rango):
     """Entrega los datos para gráficas"""
 
     if rango == "HOY":
+        titulo = "Día de hoy: 4 Julio 2022"
+        subtitulo = "Reporte Generado: 2022.07.07 a las 10:55"
+        label = "Citas por Hora"
         etiquetas = ["8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"]
         datos = [5, 4, 3, 3, 4, 5, 4, 2, 6]
     elif rango == "SEMANA":
+        titulo = "Semana Actual: 4-8 Julio 2022"
+        subtitulo = "Reporte Generado: 2022.07.07 a las 10:55"
+        label = "Citas por Día"
         etiquetas = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
         datos = [55, 24, 33, 23, 36]
 
     respuesta = {
+        "titulo": titulo,
+        "subtitulo": subtitulo,
+        "label": label,
         "etiquetas": etiquetas,
         "datos": datos,
     }
