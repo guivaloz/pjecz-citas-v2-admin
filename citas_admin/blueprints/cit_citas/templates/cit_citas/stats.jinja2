@@ -15,10 +15,10 @@
     {% endcall %}
     {% call topbar.page_buttons() %}
         <span id="btn_1">{{ topbar.button_modal('Hoy', "javascript:cargar_datos_ajax('HOY');", 'mdi:calendar-today') }}</span>
-        <span id="btn_2" style="boder">{{ topbar.button_modal('Semana', "javascript:cargar_datos_ajax('SEMANA');", 'mdi:calendar-range') }}</span>
-        {{ topbar.button_primary('Mes', "#", 'mdi:calendar-month') }}
-        {{ topbar.button_primary('6 Meses', "#", 'mdi:calendar-text') }}
-        {{ topbar.button_primary('Año', "#", 'mdi:calendar-check') }}
+        <span id="btn_2">{{ topbar.button_modal('Semana', "javascript:cargar_datos_ajax('SEMANA');", 'mdi:calendar-range') }}</span>
+        <span id="btn_3">{{ topbar.button_modal('Mes', "javascript:cargar_datos_ajax('MES');", 'mdi:calendar-month') }}</span>
+        <span id="btn_4">{{ topbar.button_modal('6 Meses', "javascript:cargar_datos_ajax('SEIS_MESES');", 'mdi:calendar-text') }}</span>
+        <span id="btn_5">{{ topbar.button_modal('Año', "javascript:cargar_datos_ajax('ANO');", 'mdi:calendar-check') }}</span>
     {% endcall %}
 
 {% endblock %}
@@ -55,9 +55,15 @@
         function cargar_datos_ajax(param="HOY") {
             _desseleccionar_btn("#btn_1");
             _desseleccionar_btn("#btn_2");
+            _desseleccionar_btn("#btn_3");
+            _desseleccionar_btn("#btn_4");
+            _desseleccionar_btn("#btn_5");
             switch(param) {
-                case "HOY":     _seleccionar_btn("#btn_1"); break;
-                case "SEMANA":  _seleccionar_btn("#btn_2"); break;
+                case "HOY":         _seleccionar_btn("#btn_1"); break;
+                case "SEMANA":      _seleccionar_btn("#btn_2"); break;
+                case "MES":         _seleccionar_btn("#btn_3"); break;
+                case "SEIS_MESES":  _seleccionar_btn("#btn_4"); break;
+                case "ANO":         _seleccionar_btn("#btn_5"); break;
             };
             $.ajax({
                 type: "GET",

@@ -294,6 +294,24 @@ def stats_json(rango):
         label = "Citas por Día"
         etiquetas = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
         datos = [55, 24, 33, 23, 36]
+    elif rango == "MES":
+        titulo = "Mes Actual: Julio 2022"
+        subtitulo = "Reporte Generado: 2022.07.07 a las 10:55"
+        label = "Citas por Día"
+        etiquetas = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"]
+        datos = [55, 24, 33, 23, 36, 34, 54, 56, 78, 12, 34, 45, 34, 54, 23]
+    elif rango == "SEIS_MESES":
+        titulo = "Seis Meses: Feb-Jun 2022"
+        subtitulo = "Reporte Generado: 2022.07.07 a las 10:55"
+        label = "Citas por Meses"
+        etiquetas = ["Febrero", "Mazo", "Abril", "Mayo", "Junio", "Julio"]
+        datos = [55, 24, 33, 23, 36, 15]
+    elif rango == "ANO":
+        titulo = "Año Actual: 2022"
+        subtitulo = "Reporte Generado: 2022.07.07 a las 10:55"
+        label = "Citas por Meses"
+        etiquetas = ["Enero", "Febrero", "Mazo", "Abril", "Mayo", "Junio", "Julio"]
+        datos = [40, 55, 24, 33, 23, 36, 15]
 
     respuesta = {
         "titulo": titulo,
