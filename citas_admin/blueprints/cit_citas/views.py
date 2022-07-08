@@ -292,7 +292,7 @@ def stats_json(rango):
     elif rango == "SEMANA":
         etiquetas, datos, subtitulo = _obtener_labels_datos_stats("SEMANA")
         # Crea el titulo: númDía del Lunes, númDía del Viernes de la semana actual
-        lunes, viernes =_calcular_lunes_viernes_fecha(datetime.now())
+        lunes, viernes = _calcular_lunes_viernes_fecha(datetime.now())
         titulo = f"Semana Actual: {lunes.day}-{viernes.day} {datetime.now().strftime('%B %Y')}"
         label = "Citas por Día"
     elif rango == "MES":
@@ -324,7 +324,7 @@ def stats_json(rango):
 
 def _obtener_labels_datos_stats(stat_name):
     """Extrae las etiquetas y datos de la estadística indicada"""
-    results = CitCitaStats.query.filter(CitCitaStats.estatus == 'A').filter(CitCitaStats.tipo == stat_name).order_by(CitCitaStats.id).all()
+    results = CitCitaStats.query.filter(CitCitaStats.estatus == "A").filter(CitCitaStats.tipo == stat_name).order_by(CitCitaStats.id).all()
     etiquetas = []
     datos = []
     ultima_actualizacion = None
@@ -370,7 +370,7 @@ def actualizar_estadistica(labels, datos, tipo):
             stat_result.dato = datos[label]
             # Si el dato no cambiaba, seguía siendo el mismo no hacía la actualización de la hora. Ahora lo forzamos.
             stat_result.modificado = datetime.now()
-            stat_result.save()      
+            stat_result.save()
         else:
             CitCitaStats(
                 etiqueta=label,
@@ -379,7 +379,7 @@ def actualizar_estadistica(labels, datos, tipo):
             ).save()
 
 
-def _calcular_lunes_viernes_fecha(fecha:datetime):
+def _calcular_lunes_viernes_fecha(fecha: datetime):
     """Calcula la fecha para el Lunes y Viernes con la fecha dada"""
     lunes = None
     viernes = None
@@ -402,9 +402,9 @@ def _calcular_lunes_viernes_fecha(fecha:datetime):
     return lunes, viernes
 
 
-def _calcular_dias_mes(fecha:datetime):
+def _calcular_dias_mes(fecha: datetime):
     """Regresa el número de días en un mes dado"""
-    numero_dias = (fecha.replace(month = fecha.month % 12+1, day=1) - timedelta(days=1)).day
+    numero_dias = (fecha.replace(month=fecha.month % 12 + 1, day=1) - timedelta(days=1)).day
     return numero_dias
 
 
@@ -414,23 +414,23 @@ def _stats_hoy():
     fecha_hora_inicio = None
     fecha_hora_fin = None
     resultados = {}
-    labels = ["8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"] # Tiene un elemento de más, para formar los rangos de búsqueda
-    for i in range(len(labels)-1):
+    labels = ["8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]  # Tiene un elemento de más, para formar los rangos de búsqueda
+    for i in range(len(labels) - 1):
         fecha_hora_inicio = fecha_hoy + " " + labels[i]
         fecha_hora_inicio = datetime.strptime(fecha_hora_inicio, "%Y-%m-%d %H:%M")
-        fecha_hora_fin = fecha_hoy + " " + labels[i+1]
+        fecha_hora_fin = fecha_hoy + " " + labels[i + 1]
         fecha_hora_fin = datetime.strptime(fecha_hora_fin, "%Y-%m-%d %H:%M")
         # La regla es: Cita que comienza a cierta hora y termina antes del comienzo del otro horario
         conteo = CitCita.query.filter(CitCita.inicio >= fecha_hora_inicio).filter(CitCita.inicio < fecha_hora_fin).count()
         resultados[labels[i]] = conteo
     # Quita de las etiquetas el último elemento, que solo se utiliza para hacer los rangos de búsqueda
     labels.pop()
-    return labels, resultados, 'HOY'
+    return labels, resultados, "HOY"
 
 
 def _stats_semana():
     """Generador de la estadística SEMANA, citas por día de la semana"""
-    lunes, _ =_calcular_lunes_viernes_fecha(datetime.now())
+    lunes, _ = _calcular_lunes_viernes_fecha(datetime.now())
     dia_inicio = lunes
     dia_fin = lunes + timedelta(days=1)
     resultados = {}
@@ -440,7 +440,7 @@ def _stats_semana():
         resultados[labels[i]] = conteo
         dia_inicio = dia_inicio + timedelta(days=1)
         dia_fin = dia_fin + timedelta(days=1)
-    return labels, resultados, 'SEMANA'
+    return labels, resultados, "SEMANA"
 
 
 def _stats_mes():
@@ -458,17 +458,17 @@ def _stats_mes():
             dia = dia + timedelta(days=1)
 
             if i >= 28:
-                registro = CitCitaStats.query.filter(CitCitaStats.etiqueta == str(i)).filter(CitCitaStats.tipo == 'MES').first()
+                registro = CitCitaStats.query.filter(CitCitaStats.etiqueta == str(i)).filter(CitCitaStats.tipo == "MES").first()
                 if registro:
-                    registro.estatus = 'A'
+                    registro.estatus = "A"
                     registro.save()
         else:
             # borra los regitros no utilizados
-            registro = CitCitaStats.query.filter(CitCitaStats.etiqueta == str(i)).filter(CitCitaStats.tipo == 'MES').first()
+            registro = CitCitaStats.query.filter(CitCitaStats.etiqueta == str(i)).filter(CitCitaStats.tipo == "MES").first()
             if registro:
                 registro.delete()
 
-    return labels, resultados, 'MES'
+    return labels, resultados, "MES"
 
 
 def _stats_cinco_meses():
@@ -478,26 +478,26 @@ def _stats_cinco_meses():
     mes = datetime.now().date().replace(day=1, month=1)
     resultados = {}
     labels = []
-    label = ''
+    label = ""
     for i in range(1, 13):
-        label = mes.strftime('%B')
+        label = mes.strftime("%B")
         if i >= mes_ini.month and i <= mes_fin.month:
             labels.append(label)
             conteo = CitCita.query.filter(CitCita.inicio >= mes).filter(CitCita.inicio < mes + relativedelta(months=1)).count()
             resultados[label] = conteo
 
-            registro = CitCitaStats.query.filter(CitCitaStats.etiqueta == label).filter(CitCitaStats.tipo == 'CINCO_MESES').first()
+            registro = CitCitaStats.query.filter(CitCitaStats.etiqueta == label).filter(CitCitaStats.tipo == "CINCO_MESES").first()
             if registro:
-                registro.estatus = 'A'
+                registro.estatus = "A"
                 registro.save()
         else:
             # borra los regitros no utilizados
-            registro = CitCitaStats.query.filter(CitCitaStats.etiqueta == label).filter(CitCitaStats.tipo == 'CINCO_MESES').first()
+            registro = CitCitaStats.query.filter(CitCitaStats.etiqueta == label).filter(CitCitaStats.tipo == "CINCO_MESES").first()
             if registro:
                 registro.delete()
         mes = mes + relativedelta(months=1)
 
-    return labels, resultados, 'CINCO_MESES'
+    return labels, resultados, "CINCO_MESES"
 
 
 def _stats_ano():
@@ -507,9 +507,9 @@ def _stats_ano():
     resultados = {}
     labels = []
     for i in range(13):
-        label = mes.strftime('%B')
+        label = mes.strftime("%B")
         labels.append(label)
         conteo = CitCita.query.filter(CitCita.inicio >= mes).filter(CitCita.inicio < mes + relativedelta(months=1)).count()
         resultados[label] = conteo
         mes = mes + relativedelta(months=1)
-    return labels, resultados, 'ANO'
+    return labels, resultados, "ANO"
