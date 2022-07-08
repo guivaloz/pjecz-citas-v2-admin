@@ -111,16 +111,18 @@ def main():
                     continue
                 if safe_curp(row["curp"]) is None:
                     bitacora_clientes_errores.info(f"CURP inválido {row['curp']} [ID:{row['id']}]")
-                    count_error["email_invalido"] += 1
+                    count_error["curp_invalido"] += 1
                     continue
                 # Revisar CURP repetido
                 registro = CitCliente.query.filter(CitCliente.curp == row["curp"]).first()
                 if registro:
+                    bitacora_clientes_errores.info(f"CURP repetido {row['curp']} [ID:{row['id']}]")
                     count_error["curp_repetido"] += 1
                     continue
                 # Revisar email repetido
                 registro = CitCliente.query.filter(CitCliente.email == row["email"]).first()
                 if registro:
+                    bitacora_clientes_errores.info(f"EMAIL repetido {row['email']} [ID:{row['id']}]")
                     count_error["email_repetido"] += 1
                     continue
                 # Revisar si existe un nombre
@@ -154,6 +156,7 @@ def main():
             for key, value in count_error.items():
                 sum_errors += value
             bitacora.info(f"Total de clientes insertados {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}")
+            bitacora_clientes_errores.info("¡¡¡Sin Errores!!!")
 
         # -- Migración de la Tabla 'citas' -> cit_citas --
         if args.citas:

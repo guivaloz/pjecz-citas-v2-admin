@@ -17,7 +17,7 @@
         <span id="btn_1">{{ topbar.button_modal('Hoy', "javascript:cargar_datos_ajax('HOY');", 'mdi:calendar-today') }}</span>
         <span id="btn_2">{{ topbar.button_modal('Semana', "javascript:cargar_datos_ajax('SEMANA');", 'mdi:calendar-range') }}</span>
         <span id="btn_3">{{ topbar.button_modal('Mes', "javascript:cargar_datos_ajax('MES');", 'mdi:calendar-month') }}</span>
-        <span id="btn_4">{{ topbar.button_modal('6 Meses', "javascript:cargar_datos_ajax('SEIS_MESES');", 'mdi:calendar-text') }}</span>
+        <span id="btn_4">{{ topbar.button_modal('5 Meses', "javascript:cargar_datos_ajax('CINCO_MESES');", 'mdi:calendar-text') }}</span>
         <span id="btn_5">{{ topbar.button_modal('Año', "javascript:cargar_datos_ajax('ANO');", 'mdi:calendar-check') }}</span>
     {% endcall %}
 
@@ -26,6 +26,9 @@
 {% block content %}
     <div class="row">
         <canvas id="myChart"></canvas>
+    </div>
+    <div>
+        {{ topbar.button_primary('Actualizar Estadísticas', url_for('cit_citas.actualizar_estadisticas'), 'mdi:refresh') }}
     </div>
 {% endblock %}
 
@@ -62,7 +65,7 @@
                 case "HOY":         _seleccionar_btn("#btn_1"); break;
                 case "SEMANA":      _seleccionar_btn("#btn_2"); break;
                 case "MES":         _seleccionar_btn("#btn_3"); break;
-                case "SEIS_MESES":  _seleccionar_btn("#btn_4"); break;
+                case "CINCO_MESES": _seleccionar_btn("#btn_4"); break;
                 case "ANO":         _seleccionar_btn("#btn_5"); break;
             };
             $.ajax({
