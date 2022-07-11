@@ -156,7 +156,10 @@ def main():
             for key, value in count_error.items():
                 sum_errors += value
             bitacora.info(f"Total de clientes insertados {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}")
-            bitacora_clientes_errores.info("¡¡¡Sin Errores!!!")
+            if sum_errors == 0:
+                bitacora_clientes_errores.info("¡¡¡Sin Errores!!!")
+            else:
+                bitacora_clientes_errores.info(f"Total de errores: {sum_errors}")
 
         # -- Migración de la Tabla 'citas' -> cit_citas --
         if args.citas:
@@ -198,10 +201,10 @@ def main():
             bitacora.info(f"Oficinas cargadas: {len(oficinas)}")
             # extraer el número total de registros
             num_registros_total = 0
-            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas WHERE fecha >= CURDATE()"))
+            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas WHERE fecha >= CURDATE() AND fecha <= CURDATE() + 90"))
             for row in result:
                 num_registros_total = int(row["total"])
-            # Lectura de la BD v1, tabla de citas
+            # Lectura de la BD v1, tabla de citas, solo migra las citas a futuro y no mayor a 90 días.
             citas_v1 = connection.execute(
                 text(
                     "SELECT \
@@ -210,7 +213,7 @@ def main():
                 FROM citas\
                 JOIN cat_servicios ON cat_servicios.id = citas.id_servicio \
                 JOIN juzgados ON juzgados.id = citas.id_juzgado \
-                WHERE fecha >= CURDATE()"
+                WHERE fecha >= CURDATE() AND fecha <= CURDATE() + 90"
                 )
             )
             count_insert = 0
@@ -270,7 +273,10 @@ def main():
             for key, value in count_error.items():
                 sum_errors += value
             bitacora.info(f"Total de citas insertadas {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}")
-
+            if sum_errors == 0:
+                bitacora_citas_errores.info("¡¡¡Sin Errores!!!")
+            else:
+                bitacora_citas_errores.info(f"Total de errores: {sum_errors}")
 
 if __name__ == "__main__":
     main()
