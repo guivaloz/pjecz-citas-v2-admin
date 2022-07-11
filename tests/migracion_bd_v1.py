@@ -278,5 +278,6 @@ def main():
             else:
                 bitacora_citas_errores.info(f"Total de errores: {sum_errors}")
 
+
 if __name__ == "__main__":
     main()
