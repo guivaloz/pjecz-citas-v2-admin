@@ -44,7 +44,11 @@ Instalar el Comando Cli
 
 Debe crear un archivo `instance/settings.py` que defina su conexion a la base de datos...
 
+    """
+    Configuracion para desarrollo
+    """
     import os
+
 
     # Base de datos
     DB_USER = os.environ.get("DB_USER", "wronguser")
@@ -52,11 +56,11 @@ Debe crear un archivo `instance/settings.py` que defina su conexion a la base de
     DB_NAME = os.environ.get("DB_NAME", "pjecz_citas_v2")
     DB_HOST = os.environ.get("DB_HOST", "127.0.0.1")
 
-    # MySQL
+    # MariaDB o MySQL
     # SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
 
     # PostgreSQL
-    # SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
+    SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
 
     # SQLite
     # SQLALCHEMY_DATABASE_URI = 'sqlite:///pjecz_citas_v2.sqlite3'
