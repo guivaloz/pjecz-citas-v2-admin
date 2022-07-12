@@ -1,8 +1,8 @@
 """
 Cit Citas, vistas
 """
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta
 from flask import Blueprint, flash, redirect, render_template, request, url_for, abort
 from flask_login import current_user, login_required
 
@@ -14,6 +14,8 @@ from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
+
+from citas_admin.blueprints.cit_citas.stats import obtener_stats_json, actualizar_stats
 
 MODULO = "CIT CITAS"
 
@@ -265,3 +267,34 @@ def pending(cit_cita_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
     return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
+
+
+@cit_citas.route("/cit_citas/estadisticas")
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def stats():
+    """Estadísticas del módulo citas"""
+
+    return render_template(
+        "cit_citas/stats.jinja2",
+        titulo="Estadísticas de Citas",
+    )
+
+
+@cit_citas.route("/cit_citas/estadisticas/data/<string:rango>", methods=["POST", "GET"])
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def stats_json(rango):
+    """Entrega los datos para gráficas"""
+
+    # Entregar JSON
+    return obtener_stats_json(rango)
+
+
+@cit_citas.route("/cit_citas/estadisticas/actualizar", methods=["GET"])
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def actualizar_estadisticas():
+    """Actualiza las estadísticas"""
+
+    actualizar_stats()
+
+    flash("Actualización de los datos estadísticos de citas", "success")
+    return redirect("/cit_citas/estadisticas")

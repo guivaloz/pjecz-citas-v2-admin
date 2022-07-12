@@ -15,7 +15,9 @@ from lib.tasks import set_task_progress, set_task_error
 from citas_admin.app import create_app
 from citas_admin.extensions import db
 
-from citas_admin.blueprints.cit_citas.models import CitCita
+from citas_admin.blueprints.cit_citas.models import CitCita, CitCitaStats
+
+from sqlalchemy import text
 
 locale.setlocale(locale.LC_TIME, "es_MX.utf8")
 
@@ -100,3 +102,14 @@ def enviar(cit_cita_id):
     mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}"
     bitacora.info(mensaje_final)
     return mensaje_final
+
+
+def generar_estadisticas():
+    """Actualiza los datos de las estadísticas"""
+
+    # -- Actualiza la estadística para el Día Actual conocido como 'HOY'
+    # query = text(f"SELECT COUNT(*) FROM {CitCita.__tablename__}")
+
+    result = CitCita.query.count()
+
+    return True
