@@ -111,18 +111,16 @@ def main():
                     continue
                 if safe_curp(row["curp"]) is None:
                     bitacora_clientes_errores.info(f"CURP inválido {row['curp']} [ID:{row['id']}]")
-                    count_error["curp_invalido"] += 1
+                    count_error["email_invalido"] += 1
                     continue
                 # Revisar CURP repetido
                 registro = CitCliente.query.filter(CitCliente.curp == row["curp"]).first()
                 if registro:
-                    bitacora_clientes_errores.info(f"CURP repetido {row['curp']} [ID:{row['id']}]")
                     count_error["curp_repetido"] += 1
                     continue
                 # Revisar email repetido
                 registro = CitCliente.query.filter(CitCliente.email == row["email"]).first()
                 if registro:
-                    bitacora_clientes_errores.info(f"EMAIL repetido {row['email']} [ID:{row['id']}]")
                     count_error["email_repetido"] += 1
                     continue
                 # Revisar si existe un nombre
@@ -156,10 +154,6 @@ def main():
             for key, value in count_error.items():
                 sum_errors += value
             bitacora.info(f"Total de clientes insertados {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}")
-            if sum_errors == 0:
-                bitacora_clientes_errores.info("¡¡¡Sin Errores!!!")
-            else:
-                bitacora_clientes_errores.info(f"Total de errores: {sum_errors}")
 
         # -- Migración de la Tabla 'citas' -> cit_citas --
         if args.citas:
@@ -201,10 +195,10 @@ def main():
             bitacora.info(f"Oficinas cargadas: {len(oficinas)}")
             # extraer el número total de registros
             num_registros_total = 0
-            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas WHERE fecha >= CURDATE() AND fecha <= CURDATE() + 90"))
+            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas"))  # WHERE fecha >= CURDATE()"))
             for row in result:
                 num_registros_total = int(row["total"])
-            # Lectura de la BD v1, tabla de citas, solo migra las citas a futuro y no mayor a 90 días.
+            # Lectura de la BD v1, tabla de citas
             citas_v1 = connection.execute(
                 text(
                     "SELECT \
@@ -213,7 +207,7 @@ def main():
                 FROM citas\
                 JOIN cat_servicios ON cat_servicios.id = citas.id_servicio \
                 JOIN juzgados ON juzgados.id = citas.id_juzgado \
-                WHERE fecha >= CURDATE() AND fecha <= CURDATE() + 90"
+                "  # WHERE fecha >= CURDATE()"
                 )
             )
             count_insert = 0
@@ -273,10 +267,6 @@ def main():
             for key, value in count_error.items():
                 sum_errors += value
             bitacora.info(f"Total de citas insertadas {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}")
-            if sum_errors == 0:
-                bitacora_citas_errores.info("¡¡¡Sin Errores!!!")
-            else:
-                bitacora_citas_errores.info(f"Total de errores: {sum_errors}")
 
 
 if __name__ == "__main__":
