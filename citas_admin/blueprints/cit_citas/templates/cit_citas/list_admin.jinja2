@@ -80,7 +80,7 @@
                     if (data.url != '') {
                         return '<span title="' + data.descripcion + '">' + '<a href="' + data.url + '">' + data.clave + '</a></span>';
                     }
-                    return data.clave
+                    return '<span title="' + data.descripcion + '">' + data.clave + '</span>'
                 }
             },
             {
