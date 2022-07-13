@@ -10,6 +10,7 @@ from citas_admin.blueprints.autoridades.views import autoridades
 from citas_admin.blueprints.bitacoras.views import bitacoras
 from citas_admin.blueprints.cit_categorias.views import cit_categorias
 from citas_admin.blueprints.cit_citas.views import cit_citas
+from citas_admin.blueprints.cit_citas_stats.views import cit_citas_stats
 from citas_admin.blueprints.cit_citas_documentos.views import cit_citas_documentos
 from citas_admin.blueprints.cit_clientes.views import cit_clientes
 from citas_admin.blueprints.cit_clientes_recuperaciones.views import cit_clientes_recuperaciones
@@ -52,6 +53,7 @@ def create_app():
     app.register_blueprint(bitacoras)
     app.register_blueprint(cit_categorias)
     app.register_blueprint(cit_citas)
+    app.register_blueprint(cit_citas_stats)
     app.register_blueprint(cit_citas_documentos)
     app.register_blueprint(cit_clientes)
     app.register_blueprint(cit_clientes_recuperaciones)
