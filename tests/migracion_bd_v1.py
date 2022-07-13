@@ -34,7 +34,7 @@ def main():
     bitacora = logging.getLogger("migracion")
     bitacora.setLevel(logging.INFO)
     formato = logging.Formatter("%(asctime)s:%(levelname)s:%(message)s")
-    empunadura = logging.FileHandler("migracion-db.log")
+    empunadura = logging.FileHandler("migracion_db_v1.log")
     empunadura.setFormatter(formato)
     bitacora.addHandler(empunadura)
 
@@ -59,7 +59,7 @@ def main():
             # Se crea la bitácora de errores de la migración de clientes
             bitacora_clientes_errores = logging.getLogger("errores-clientes")
             bitacora_clientes_errores.setLevel(logging.INFO)
-            empunadura_cli = logging.FileHandler(filename="migracion-errores-clientes.log", mode="w")
+            empunadura_cli = logging.FileHandler(filename="migracion_errores-clientes.log", mode="w")
             bitacora_clientes_errores.addHandler(empunadura_cli)
             bitacora_clientes_errores.info(f"{datetime.now()} - Último reporte de errores de la migración de la tabla de *clientes*")
             # Eliminar tabla V2 de clientes 'cit_clientes'.
@@ -85,53 +85,55 @@ def main():
             )
             count_insert = 0
             count_error = {
-                "curp_repetido": 0,
+                "email_vacio": 0,
+                "email_invalido": 0,
                 "email_repetido": 0,
+                "curp_vacio": 0,
+                "curp_invalido": 0,
+                "curp_repetido": 0,
                 "nombre_vacio": 0,
                 "apellido_paterno_vacio": 0,
-                "curp_vacia": 0,
             }
             for row in result:
                 # Validar email v1
                 if row["email"] == "" or row["email"] is None:
-                    print(f"! Registro Omitido - EMAIL vacío [ID:{row['id']}]")
-                    count_skip += 1
+                    bitacora_clientes_errores.info(f"EMAIL vacío [ID:{row['id']}]")
+                    count_error["email_vacio"] += 1
                     continue
                 if safe_email(row["email"]) is None:
-                    print(f"! Registro Omitido - EMAIL inválido {row['email']} : [ID:{row['id']}]")
-                    count_skip += 1
+                    bitacora_clientes_errores.info(f"EMAIL inválido {row['email']} [ID:{row['id']}]")
+                    count_error["email_invalido"] += 1
                     continue
                 # Validar CURP v1
-                if row["curp"] == "" or row["curp"] is None:
-                    print(f"! Registro Omitido - CURP vacío [ID:{row['id']}]")
-                    count_skip += 1
+                if safe_string(row["curp"]) == "" or row["curp"] is None:
+                    bitacora_clientes_errores.info(f"CURP vacío [ID:{row['id']}]")
+                    count_error["curp_vacio"] += 1
                     continue
                 if safe_curp(row["curp"]) is None:
-                    print(f"! Registro Omitido - CURP inválido {row['curp']} : [ID:{row['id']}]")
-                    count_skip += 1
+                    bitacora_clientes_errores.info(f"CURP inválido {row['curp']} [ID:{row['id']}]")
+                    count_error["curp_invalido"] += 1
                     continue
                 # Revisar CURP repetido
                 registro = CitCliente.query.filter(CitCliente.curp == row["curp"]).first()
                 if registro:
+                    bitacora_clientes_errores.info(f"CURP repetido {row['curp']} [ID:{row['id']}]")
                     count_error["curp_repetido"] += 1
                     continue
                 # Revisar email repetido
                 registro = CitCliente.query.filter(CitCliente.email == row["email"]).first()
                 if registro:
+                    bitacora_clientes_errores.info(f"EMAIL repetido {row['email']} [ID:{row['id']}]")
                     count_error["email_repetido"] += 1
                     continue
                 # Revisar si existe un nombre
                 if safe_string(row["nombre"]) == "":
+                    bitacora_clientes_errores.info("NOMBRE vacío [ID:%d]", {row["id"]})
                     count_error["nombre_vacio"] += 1
                     continue
                 # Revisar si existe un apellido paterno
                 if safe_string(row["apPaterno"]) == "":
+                    bitacora_clientes_errores.info("APELLIDO PATERNO vacío [ID:%d]", {row["id"]})
                     count_error["apellido_paterno_vacio"] += 1
-                    continue
-                # Revisar si existe la CURP
-                if safe_string(row["curp"]) == "":
-                    count_error["curp_vacia"] += 1
-                    bitacora_clientes_errores.info("CURP Vacía en V1 con el id=%d", row["id"])
                     continue
                 # Insertar registro
                 count_insert += 1
@@ -154,13 +156,17 @@ def main():
             for key, value in count_error.items():
                 sum_errors += value
             bitacora.info(f"Total de clientes insertados {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}")
+            if sum_errors == 0:
+                bitacora_clientes_errores.info("¡¡¡Sin Errores!!!")
+            else:
+                bitacora_clientes_errores.info(f"Total de errores: {sum_errors}")
 
         # -- Migración de la Tabla 'citas' -> cit_citas --
         if args.citas:
             # Se crea la bitácora de errores de la migración de citas
             bitacora_citas_errores = logging.getLogger("errores-citas")
             bitacora_citas_errores.setLevel(logging.INFO)
-            empunadura_cit = logging.FileHandler(filename="migracion-errores-citas.log", mode="w")
+            empunadura_cit = logging.FileHandler(filename="migracion_errores-citas.log", mode="w")
             bitacora_citas_errores.addHandler(empunadura_cit)
             bitacora_citas_errores.info(f"{datetime.now()} - Último reporte de errores de la migración de la tabla de *citas*")
             # Hardcode de las variones de servicios
@@ -195,10 +201,10 @@ def main():
             bitacora.info(f"Oficinas cargadas: {len(oficinas)}")
             # extraer el número total de registros
             num_registros_total = 0
-            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas WHERE fecha >= CURDATE()"))
+            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas WHERE fecha >= CURDATE() AND fecha <= CURDATE() + 90"))
             for row in result:
                 num_registros_total = int(row["total"])
-            # Lectura de la BD v1, tabla de citas
+            # Lectura de la BD v1, tabla de citas, solo migra las citas a futuro y no mayor a 90 días.
             citas_v1 = connection.execute(
                 text(
                     "SELECT \
@@ -207,7 +213,7 @@ def main():
                 FROM citas\
                 JOIN cat_servicios ON cat_servicios.id = citas.id_servicio \
                 JOIN juzgados ON juzgados.id = citas.id_juzgado \
-                WHERE fecha >= CURDATE()"
+                WHERE fecha >= CURDATE() AND fecha <= CURDATE() + 90"
                 )
             )
             count_insert = 0
@@ -267,6 +273,10 @@ def main():
             for key, value in count_error.items():
                 sum_errors += value
             bitacora.info(f"Total de citas insertadas {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}")
+            if sum_errors == 0:
+                bitacora_citas_errores.info("¡¡¡Sin Errores!!!")
+            else:
+                bitacora_citas_errores.info(f"Total de errores: {sum_errors}")
 
 
 if __name__ == "__main__":
