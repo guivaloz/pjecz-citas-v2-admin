@@ -67,7 +67,7 @@ def main():
                 print("- Eliminando la tabla cit_clientes")
                 conexion_v2 = db.engine.connect()
                 conexion_v2.execute(text("TRUNCATE TABLE cit_clientes CASCADE"))
-                conexion_v2.execute(text("ALTER SEQUENCE cit_clientes_id_seq RESTART WITH 1"))   # Reinicia la Secuencia
+                conexion_v2.execute(text("ALTER SEQUENCE cit_clientes_id_seq RESTART WITH 1"))  # Reinicia la Secuencia
             # -- Migración de la Tabla 'usuario' -> cit_clientes --
             bitacora.info("Comienzo de la migración de la tabla: usuario -> cit_clientes")
             # extraer el número total de registros
@@ -180,7 +180,7 @@ def main():
                 print("- Eliminando la tabla cit_citas")
                 conexion_v2 = db.engine.connect()
                 conexion_v2.execute(text("TRUNCATE TABLE cit_citas CASCADE"))
-                conexion_v2.execute(text("ALTER SEQUENCE cit_citas_id_seq RESTART WITH 1"))   # Reinicia la Secuencia
+                conexion_v2.execute(text("ALTER SEQUENCE cit_citas_id_seq RESTART WITH 1"))  # Reinicia la Secuencia
             # -- Migración de la Tabla 'usuario' -> cit_clientes --
             bitacora.info("Comienzo de la migración de la tabla: citas -> cit_citas")
             # Carga de la relación de Juzgados_id --> Oficinas_id
