@@ -74,7 +74,7 @@ def datatable_json():
                     "url": url_for("oficinas.detail", oficina_id=cita.oficina.id) if current_user.can_view("OFICINAS") else "",
                     "descripcion": cita.oficina.descripcion,
                 },
-                "fecha": cita.inicio.strftime("%Y-%m-%d 00:00:00"),
+                "fecha": cita.inicio.strftime("%Y-%m-%d %H:%M"),
                 "inicio": cita.inicio.strftime("%H:%M"),
                 "termino": cita.termino.strftime("%H:%M"),
                 "estado": cita.estado,

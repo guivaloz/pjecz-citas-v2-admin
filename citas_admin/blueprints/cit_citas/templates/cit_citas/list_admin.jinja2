@@ -33,6 +33,7 @@
 {% endblock %}
 
 {% block custom_javascript %}
+    {{ list.moment_js(moment) }}
     {{ list.config_datatable() }}
     <script>
         configDataTable['ajax']['url'] = '/cit_citas/datatable_json';

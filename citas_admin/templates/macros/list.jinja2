@@ -123,3 +123,9 @@
 {%- macro button_edit(label="", url="#") -%}
     {{ button(label, url, 'mdi:pencil') }}
 {%- endmacro -%}
+
+{# Moment.js #}
+{%- macro moment_js(moment) -%}
+    <!-- Moment.js -->
+    {{ moment.include_moment() }}
+{%- endmacro -%}
