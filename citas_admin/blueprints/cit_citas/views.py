@@ -67,10 +67,12 @@ def datatable_json():
                 "cit_servicio": {
                     "clave": cita.cit_servicio.clave,
                     "url": url_for("cit_servicios.detail", cit_servicio_id=cita.cit_servicio.id) if current_user.can_view("CIT SERVICIOS") else "",
+                    "descripcion": cita.cit_servicio.descripcion,
                 },
                 "oficina": {
                     "clave": cita.oficina.clave,
                     "url": url_for("oficinas.detail", oficina_id=cita.oficina.id) if current_user.can_view("OFICINAS") else "",
+                    "descripcion": cita.oficina.descripcion,
                 },
                 "fecha": cita.inicio.strftime("%Y-%m-%d 00:00:00"),
                 "inicio": cita.inicio.strftime("%H:%M"),
