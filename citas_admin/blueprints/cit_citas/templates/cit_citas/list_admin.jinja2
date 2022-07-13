@@ -84,18 +84,18 @@
                 }
             },
             {
-                    targets: 7, // Estado
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        let color = "black";
-                        switch (data)    {
-                            case "ASISTIO":     color = "#0b5345"; break;
-                            case "PENDIENTE":   color = "#7d6608"; break;
-                            case "CANCELO":     color = "#e53935"; break;
-                        }
-                        return '<strong style="color:' + color + '; display:block; text-align:center;">' + data + '</strong>';
+                targets: 7, // Estado
+                data: null,
+                render: function(data, type, row, meta) {
+                    let color = "black";
+                    switch (data)    {
+                        case "ASISTIO":     color = "#0b5345"; break;
+                        case "PENDIENTE":   color = "#7d6608"; break;
+                        case "CANCELO":     color = "#e53935"; break;
                     }
+                    return '<strong style="color:' + color + '; display:block; text-align:center;">' + data + '</strong>';
                 }
+            }
         ];
         configDataTable['createdRow'] = function( row, data, dataIndex ){
                 switch (data.estado)    {
