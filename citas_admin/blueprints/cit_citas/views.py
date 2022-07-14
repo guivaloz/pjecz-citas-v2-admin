@@ -49,7 +49,11 @@ def datatable_json():
         inicio_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=0, minute=0, second=0)
         termino_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=23, minute=59, second=59)
         consulta = consulta.filter(CitCita.inicio >= inicio_dt).filter(CitCita.inicio <= termino_dt)
-    registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
+    # Si es admin, ordenar por id, si es juzgado ordenar por fecha
+    if current_user.can_admin(MODULO):
+        registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
+    else:
+        registros = consulta.order_by(CitCita.inicio).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
