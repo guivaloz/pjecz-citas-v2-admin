@@ -15,15 +15,26 @@
 
 {% block content %}
     {% call list.card() %}
-        <div class="mb-3">
-            {% if fecha_anterior %}
-                <a href="{{ url_for('cit_citas.list_active', fecha=fecha_anterior) }}" class="btn btn-primary btn-sm">Dia anterior</a>
-            {% endif %}
-            {% if fecha_siguiente %}
-                <div class="float-end">
-                    <a href="{{ url_for('cit_citas.list_active', fecha=fecha_siguiente) }}" class="btn btn-primary btn-sm">Dia siguiente</a>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-3">
+                {% if fecha_anterior %}
+                    <a href="{{ url_for('cit_citas.list_active', fecha=fecha_anterior) }}" class="btn btn-primary btn-sm">« Día Anterior</a>
+                {% endif %}
                 </div>
-            {% endif %}
+                <div class="col-5">
+                    <h1 class="col">{{fecha_actual}}</h1>
+                    <input id="startDate" class="form-control" type="date" />
+                </div>
+                <div class="col-1">
+                    <a href="#" class="btn btn-primary btn-sm"><span class="iconify" data-icon="mdi:calendar"></span></i></a>
+                </div>
+                <div class="col-3">
+                {% if fecha_siguiente %}
+                    <a href="{{ url_for('cit_citas.list_active', fecha=fecha_siguiente) }}" class="btn btn-primary btn-sm">Día Siguiente »</a>
+                {% endif %}
+                </div>
+            </div>
         </div>
         <table id="cit_citas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>

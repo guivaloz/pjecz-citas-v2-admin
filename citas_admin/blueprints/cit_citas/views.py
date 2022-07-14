@@ -109,6 +109,7 @@ def list_active():
             filtros=json.dumps({"estatus": "A", "fecha": fecha_str}),
             titulo="Todas las Citas" if fecha is None else f"Todas las citas del {fecha_str}",
             estatus="A",
+            fecha_actual=fecha_str,
             fecha_anterior=fecha_anterior_str,
             fecha_siguiente=fecha_siguiente_str,
         )
@@ -118,6 +119,7 @@ def list_active():
         filtros=json.dumps({"estatus": "A", "oficina_id": current_user.oficina_id, "fecha": fecha_str}),
         titulo=f"Citas del {fecha.strftime('%Y-%m-%d')} de {current_user.oficina.descripcion_corta}",
         estatus="A",
+        fecha_actual=fecha_str,
         fecha_anterior=fecha_anterior_str,
         fecha_siguiente=fecha_siguiente_str,
     )
