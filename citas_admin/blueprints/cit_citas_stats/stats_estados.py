@@ -79,7 +79,7 @@ def _stats_porcentaje_estado():
     """Generador de la estadística PORCENTAJE, da el porcentaje del estado de las citas totales"""
     resultados = {}
     labels = ["ASISTIO", "CANCELO", "PENDIENTE"]
-    #total = CitCita.query.count()
+    # total = CitCita.query.count()
     for label in labels:
         conteo = CitCita.query
         conteo = conteo.filter(CitCita.estado == label)

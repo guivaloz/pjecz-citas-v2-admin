@@ -81,7 +81,7 @@ def actualizar_stats(categoria):
             descripcion=safe_message(f"Actualización individual de los datos estadísticos de citas, categoría: {categoria}"),
             url=url_for("cit_citas_stats.detail"),
         ).save()
-        return redirect(url_for('cit_citas_stats.stats', categoria=categoria))
+        return redirect(url_for("cit_citas_stats.stats", categoria=categoria))
 
     flash(f"No se pudo actalizar la estadística de esa categoria: {categoria}", "warning")
     return redirect("/cit_citas_stats")
