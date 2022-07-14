@@ -67,12 +67,14 @@ def datatable_json():
                 "cit_servicio": {
                     "clave": cita.cit_servicio.clave,
                     "url": url_for("cit_servicios.detail", cit_servicio_id=cita.cit_servicio.id) if current_user.can_view("CIT SERVICIOS") else "",
+                    "descripcion": cita.cit_servicio.descripcion,
                 },
                 "oficina": {
                     "clave": cita.oficina.clave,
                     "url": url_for("oficinas.detail", oficina_id=cita.oficina.id) if current_user.can_view("OFICINAS") else "",
+                    "descripcion": cita.oficina.descripcion,
                 },
-                "fecha": cita.inicio.strftime("%Y-%m-%d 00:00:00"),
+                "fecha": cita.inicio.strftime("%Y-%m-%d %H:%M"),
                 "inicio": cita.inicio.strftime("%H:%M"),
                 "termino": cita.termino.strftime("%H:%M"),
                 "estado": cita.estado,
@@ -107,6 +109,7 @@ def list_active():
             filtros=json.dumps({"estatus": "A", "fecha": fecha_str}),
             titulo="Todas las Citas" if fecha is None else f"Todas las citas del {fecha_str}",
             estatus="A",
+            fecha_actual=fecha_str,
             fecha_anterior=fecha_anterior_str,
             fecha_siguiente=fecha_siguiente_str,
         )
@@ -116,6 +119,7 @@ def list_active():
         filtros=json.dumps({"estatus": "A", "oficina_id": current_user.oficina_id, "fecha": fecha_str}),
         titulo=f"Citas del {fecha.strftime('%Y-%m-%d')} de {current_user.oficina.descripcion_corta}",
         estatus="A",
+        fecha_actual=fecha_str,
         fecha_anterior=fecha_anterior_str,
         fecha_siguiente=fecha_siguiente_str,
     )

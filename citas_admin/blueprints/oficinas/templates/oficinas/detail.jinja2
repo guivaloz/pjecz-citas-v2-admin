@@ -140,12 +140,32 @@
                     data: null,
                     render: function(data, type, row, meta) {
                         if (data.url != '') {
-                            return '<a href="' + data.url + '">' + data.clave + '</a>';
+                            return '<span title="' + data.descripcion + '">' + '<a href="' + data.url + '">' + data.clave + '</a></span>';
                         }
-                        return data.clave
+                        return '<span title="' + data.descripcion + '">' + data.clave+ '</span>';
                     }
+                },
+            {
+                targets: 6, // Estado
+                data: null,
+                render: function(data, type, row, meta) {
+                    let color = "black";
+                    switch (data)    {
+                        case "ASISTIO":     color = "#0b5345"; break;
+                        case "PENDIENTE":   color = "#7d6608"; break;
+                        case "CANCELO":     color = "#e53935"; break;
+                    }
+                    return '<strong style="color:' + color + '; display:block; text-align:center;">' + data + '</strong>';
                 }
+            }
             ];
+            configDataTable['createdRow'] = function( row, data, dataIndex ){
+                switch (data.estado)    {
+                    case "PENDIENTE": $(row).css("background-color", "#fef9e7");  break;
+                    case "CANCELO":   $(row).css("background-color", "#fdedec");  break;
+                    case "ASISTIO":   $(row).css("background-color", "#eafaf1");  break;
+                }
+            };
             $('#cit_citas_datatable').DataTable(configDataTable);
         </script>
     {% endif %}

@@ -52,6 +52,7 @@
 {% endblock %}
 
 {% block custom_javascript %}
+    {{ detail.moment_js(moment) }}
     {% if current_user.can_edit('CIT CITAS') %}
         {% if cit_cita.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar la cita ' + cit_cita.id | string + '?') }}{% endif %}
         {% if cit_cita.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar la cita ' + cit_cita.id | string + '?') }}{% endif %}
@@ -61,5 +62,4 @@
     {% else %}
         {{ modals.custom_javascript('Marcar Asistencia', '¿Desea marcar como asistió la cita ' + cit_cita.id | string + '?', 'Asistencia') }}
     {% endif %}
-    {{ detail.moment_js(moment) }}
 {% endblock %}
