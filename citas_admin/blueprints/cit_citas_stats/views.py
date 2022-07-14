@@ -40,7 +40,7 @@ def stats(categoria):
 
     if categoria == CitCitaStats.CAT_SERVICIOS_TOP:
         return render_template("cit_citas_stats/detail_servicios_top.jinja2")
-    
+
     return redirect("/cit_citas_stats")
 
 
