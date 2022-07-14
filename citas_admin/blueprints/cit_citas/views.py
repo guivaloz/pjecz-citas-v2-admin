@@ -121,7 +121,7 @@ def list_active():
     return render_template(
         "cit_citas/list.jinja2",
         filtros=json.dumps({"estatus": "A", "oficina_id": current_user.oficina_id, "fecha": fecha_str}),
-        titulo=f"Citas del {fecha.strftime('%Y-%m-%d')} de {current_user.oficina.descripcion_corta}",
+        titulo=f"Citas del {current_user.oficina.descripcion_corta}",
         estatus="A",
         fecha_actual=fecha_str,
         fecha_anterior=fecha_anterior_str,
