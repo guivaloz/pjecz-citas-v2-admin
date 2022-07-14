@@ -49,7 +49,11 @@ def datatable_json():
         inicio_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=0, minute=0, second=0)
         termino_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=23, minute=59, second=59)
         consulta = consulta.filter(CitCita.inicio >= inicio_dt).filter(CitCita.inicio <= termino_dt)
-    registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
+    # Si es admin, ordenar por id, si es juzgado ordenar por fecha
+    if current_user.can_admin(MODULO):
+        registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
+    else:
+        registros = consulta.order_by(CitCita.inicio).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -117,7 +121,7 @@ def list_active():
     return render_template(
         "cit_citas/list.jinja2",
         filtros=json.dumps({"estatus": "A", "oficina_id": current_user.oficina_id, "fecha": fecha_str}),
-        titulo=f"Citas del {fecha.strftime('%Y-%m-%d')} de {current_user.oficina.descripcion_corta}",
+        titulo=f"Citas del {current_user.oficina.descripcion_corta}",
         estatus="A",
         fecha_actual=fecha_str,
         fecha_anterior=fecha_anterior_str,
@@ -158,8 +162,9 @@ def list_inactive():
     return render_template(
         "cit_citas/list.jinja2",
         filtros=json.dumps({"estatus": "B", "oficina_id": current_user.oficina_id, "fecha": fecha_str}),
-        titulo=f"Citas eliminadas del {fecha.strftime('%Y-%m-%d')} de {current_user.oficina.descripcion_corta}",
+        titulo=f"Citas eliminadas del {current_user.oficina.descripcion_corta}",
         estatus="B",
+        fecha_actual=fecha_str,
         fecha_anterior=fecha_anterior_str,
         fecha_siguiente=fecha_siguiente_str,
     )

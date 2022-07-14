@@ -19,19 +19,15 @@
             <div class="row align-items-center">
                 <div class="col-3">
                 {% if fecha_anterior %}
-                    <a href="{{ url_for('cit_citas.list_active', fecha=fecha_anterior) }}" class="btn btn-primary btn-sm">« Día Anterior</a>
+                    <a onclick="recorrer_fecha(-1)" class="btn btn-primary btn-sm">« Día Anterior</a>
                 {% endif %}
                 </div>
-                <div class="col-5">
-                    <h1 class="col">{{fecha_actual}}</h1>
-                    <input id="startDate" class="form-control" type="date" />
-                </div>
-                <div class="col-1">
-                    <a href="#" class="btn btn-primary btn-sm"><span class="iconify" data-icon="mdi:calendar"></span></i></a>
+                <div class="col-6">
+                    <input id="fecha_actual" class="form-control" type="date" value="{{fecha_actual}}"/>
                 </div>
                 <div class="col-3">
                 {% if fecha_siguiente %}
-                    <a href="{{ url_for('cit_citas.list_active', fecha=fecha_siguiente) }}" class="btn btn-primary btn-sm">Día Siguiente »</a>
+                    <a onclick="recorrer_fecha(1)" class="btn btn-primary btn-sm">Día Siguiente »</a>
                 {% endif %}
                 </div>
             </div>
@@ -114,5 +110,24 @@
             }
         };
         $('#cit_citas_datatable').DataTable(configDataTable);
+    </script>
+    <script>
+        $('#fecha_actual').change(function() {
+            $('#cit_citas_datatable').DataTable().destroy();
+            configDataTable['ajax']['data']['fecha'] = $('#fecha_actual').val();
+            $('#cit_citas_datatable').DataTable(configDataTable);
+        });
+        function cambiar_fecha(fecha) {
+            $('#fecha_actual').val(fecha);
+            $('#fecha_actual').text(fecha);
+            $('#fecha_actual').change();
+        };
+        function recorrer_fecha(dias) {
+            var date = new Date($("#fecha_actual").val());
+            date.setDate(date.getDate() + dias);
+            salida_f = date.toISOString().split('.');
+            output_s = salida_f[0].split('T');
+            cambiar_fecha(output_s[0]);
+        };
     </script>
 {% endblock %}
