@@ -9,21 +9,18 @@
 {% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons("Estadísticas de Citas - Citas Totales") %}
+    {% call topbar.page_buttons("Estadísticas de Citas - Servicios TOP") %}
         {{ topbar.button_previous('Citas', url_for('cit_citas.list_active')) }}
     {% endcall %}
 
-    {# {% call topbar.page_buttons() %}
-        <a class="btn btn-success disabled" role="button" aria-disabled="true">Citas Totales</a>
-        <a class="btn btn-outline-success" role="button" href="{{url_for('cit_citas_stats.stats', categoria='SERVICIOS_TOP')}}">Servicios</a>
-    {% endcall %} #}
+    {% call topbar.page_buttons() %}
+        <a class="btn btn-outline-success" role="button" href="{{url_for('cit_citas_stats.stats', categoria='FECHAS_TOTALES')}}">Citas Totales</a>
+        <a class="btn btn-success disabled" role="button" aria-disabled="true">Servicios</a>
+    {% endcall %}
         
     {% call topbar.page_buttons() %}
         <span id="btn_1">{{ topbar.button_modal('Hoy', "javascript:cargar_datos_ajax('HOY');", 'mdi:calendar-today') }}</span>
         <span id="btn_2">{{ topbar.button_modal('Semana', "javascript:cargar_datos_ajax('SEMANA');", 'mdi:calendar-range') }}</span>
-        <span id="btn_3">{{ topbar.button_modal('Mes', "javascript:cargar_datos_ajax('MES');", 'mdi:calendar-month') }}</span>
-        <span id="btn_4">{{ topbar.button_modal('5 Meses', "javascript:cargar_datos_ajax('CINCO_MESES');", 'mdi:calendar-text') }}</span>
-        <span id="btn_5">{{ topbar.button_modal('Año', "javascript:cargar_datos_ajax('ANO');", 'mdi:calendar-check') }}</span>
     {% endcall %}
 
 {% endblock %}
@@ -65,19 +62,13 @@
         function cargar_datos_ajax(subcategoria="HOY") {
             _desseleccionar_btn("#btn_1");
             _desseleccionar_btn("#btn_2");
-            _desseleccionar_btn("#btn_3");
-            _desseleccionar_btn("#btn_4");
-            _desseleccionar_btn("#btn_5");
             switch(subcategoria) {
                 case "HOY":         _seleccionar_btn("#btn_1"); break;
                 case "SEMANA":      _seleccionar_btn("#btn_2"); break;
-                case "MES":         _seleccionar_btn("#btn_3"); break;
-                case "CINCO_MESES": _seleccionar_btn("#btn_4"); break;
-                case "ANO":         _seleccionar_btn("#btn_5"); break;
             };
             $.ajax({
                 type: "GET",
-                url: 'cit_citas_stats/data/CITAS_TOTALES/' + subcategoria,
+                url: 'cit_citas_stats/data/SERVICIOS_TOP/' + subcategoria,
                 success: function (dataCheck) {
                     myChart.destroy();
                     delete myChart;
