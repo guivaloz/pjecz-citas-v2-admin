@@ -10,11 +10,11 @@ class CitCitaStats(db.Model, UniversalMixin):
     """Registros de las estadísticas de Citas"""
 
     CAT_CITAS_TOTALES = "CITAS_TOTALES"
-    CAT_SERVICIOS_TOP = "SERVICIOS_TOP"
+    CAT_CITAS_ESTADO = "CITAS_ESTADO"
 
     CATEGORIAS = [
         CAT_CITAS_TOTALES,
-        CAT_SERVICIOS_TOP,
+        CAT_CITAS_ESTADO,
     ]
 
     SUBCAT_CITAS_TOTALES_HOY = "HOY"
@@ -23,7 +23,7 @@ class CitCitaStats(db.Model, UniversalMixin):
     SUBCAT_CITAS_TOTALES_CINCO_MESES = "CINCO_MESES"
     SUBCAT_CITAS_TOTALES_ANO = "ANO"
 
-    SUBCAT_SERVICIOS_TOP_CINCO_MAS = "5 MAS USADOS"
+    SUBCAT_CITAS_ESTADO_PORCENTAJE = "PORCENTAJE"
 
     SUBCATEGORIAS = [
         # CITAS_TOTALES
@@ -32,8 +32,8 @@ class CitCitaStats(db.Model, UniversalMixin):
         SUBCAT_CITAS_TOTALES_MES,
         SUBCAT_CITAS_TOTALES_CINCO_MESES,
         SUBCAT_CITAS_TOTALES_ANO,
-        # SERVICIOS_TOP
-        SUBCAT_SERVICIOS_TOP_CINCO_MAS,
+        # CAT_CITAS_ESTADO
+        SUBCAT_CITAS_ESTADO_PORCENTAJE,
     ]
 
     # Nombre de la tabla

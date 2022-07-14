@@ -13,10 +13,10 @@
         {{ topbar.button_previous('Citas', url_for('cit_citas.list_active')) }}
     {% endcall %}
 
-    {# {% call topbar.page_buttons() %}
-        <a class="btn btn-success disabled" role="button" aria-disabled="true">Citas Totales</a>
-        <a class="btn btn-outline-success" role="button" href="{{url_for('cit_citas_stats.stats', categoria='SERVICIOS_TOP')}}">Servicios</a>
-    {% endcall %} #}
+    {% call topbar.page_buttons() %}
+        <a class="btn btn-success disabled" role="button" aria-disabled="true">Conteo</a>
+        <a class="btn btn-outline-success" role="button" href="{{url_for('cit_citas_stats.stats', categoria='CITAS_ESTADO')}}">Estados</a>
+    {% endcall %}
         
     {% call topbar.page_buttons() %}
         <span id="btn_1">{{ topbar.button_modal('Hoy', "javascript:cargar_datos_ajax('HOY');", 'mdi:calendar-today') }}</span>

@@ -13,6 +13,7 @@ from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 
 from .stats_citas_totales import obtener_stats_json_citas_totales, actualizar_stats_citas_totales
+from .stats_estados import obtener_stats_json_estados, actualizar_stats_estados
 from .models import CitCitaStats
 
 MODULO = "CIT CITAS STATS"
@@ -38,8 +39,8 @@ def detail():
 def stats(categoria):
     """Muestra la estadística indicada"""
 
-    if categoria == CitCitaStats.CAT_SERVICIOS_TOP:
-        return render_template("cit_citas_stats/detail_servicios_top.jinja2")
+    if categoria == CitCitaStats.CAT_CITAS_ESTADO:
+        return render_template("cit_citas_stats/citas_estado.jinja2")
 
     return redirect("/cit_citas_stats")
 
@@ -51,6 +52,8 @@ def stats_json(categoria, subcategoria):
     # Entregar JSON
     if categoria == CitCitaStats.CAT_CITAS_TOTALES:
         return obtener_stats_json_citas_totales(subcategoria)
+    elif categoria == CitCitaStats.CAT_CITAS_ESTADO:
+        return obtener_stats_json_estados(subcategoria)
 
     return None
 
@@ -69,14 +72,16 @@ def actualizar_stats(categoria):
             url=url_for("cit_citas_stats.detail"),
         ).save()
         return redirect("/cit_citas_stats")
+    elif categoria == CitCitaStats.CAT_CITAS_ESTADO:
+        actualizar_stats_estados()
+        flash(f"Actualización individual de los datos estadísticos de citas, categoría: {categoria}", "success")
+        Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Actualización individual de los datos estadísticos de citas, categoría: {categoria}"),
+            url=url_for("cit_citas_stats.detail"),
+        ).save()
+        return redirect(url_for('cit_citas_stats.stats', categoria=categoria))
 
-    # Si no se especifica la categoría se actualizan todas las estadísticas
-    actualizar_stats_citas_totales()
-    flash("Actualización de TODOS los datos estadísticos de citas", "success")
-    Bitacora(
-        modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-        usuario=current_user,
-        descripcion=safe_message("Actualización de TODOS los datos estadísticos de citas"),
-        url=url_for("cit_citas_stats.detail"),
-    ).save()
+    flash(f"No se pudo actalizar la estadística de esa categoria: {categoria}", "warning")
     return redirect("/cit_citas_stats")
