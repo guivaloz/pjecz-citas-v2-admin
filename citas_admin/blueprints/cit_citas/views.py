@@ -162,8 +162,9 @@ def list_inactive():
     return render_template(
         "cit_citas/list.jinja2",
         filtros=json.dumps({"estatus": "B", "oficina_id": current_user.oficina_id, "fecha": fecha_str}),
-        titulo=f"Citas eliminadas del {fecha.strftime('%Y-%m-%d')} de {current_user.oficina.descripcion_corta}",
+        titulo=f"Citas eliminadas del {current_user.oficina.descripcion_corta}",
         estatus="B",
+        fecha_actual=fecha_str,
         fecha_anterior=fecha_anterior_str,
         fecha_siguiente=fecha_siguiente_str,
     )
