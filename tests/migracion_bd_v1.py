@@ -7,6 +7,7 @@ import os
 import csv
 from dotenv import load_dotenv
 from sqlalchemy import text, create_engine
+from tomlkit import date
 from lib.safe_string import safe_string, safe_email, safe_curp
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -18,6 +19,7 @@ from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_servicios.models import CitServicio
 from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.cit_citas.models import CitCita
+from citas_admin.blueprints.cit_dias_inhabiles.models import CitDiaInhabil
 
 OFICINAS_CSV = "seed/oficinas_table.csv"
 
@@ -225,6 +227,7 @@ def main():
                 "email_no_encontrado": 0,
                 "oficina_no_establecida": 0,
                 "oficina_no_encontrada": 0,
+                "fecha_inhabil": 0,
             }
             for row in citas_v1:
                 # Hacer match con el servicio de la BD v2
@@ -263,10 +266,24 @@ def main():
                         expediente_str = safe_string(row[nombre_campo])
                         if len(expediente_str) > 0:
                             notas += "; " + expediente_str
-                # Insertar la cita v2
-                count_insert += 1
+                # Verificar si está dentro de las fechas válidas
                 fecha_inicio_str = f"{row['fecha']} {row['hora']}"
                 fecha_inicio = datetime.strptime(fecha_inicio_str, "%Y-%m-%d %H:%M:%S")
+                fecha = date
+
+                fecha_invalida = CitDiaInhabil.query.filter(CitDiaInhabil.fecha == fecha_inicio.date()).first()
+                if fecha_invalida:
+                    count_error["fecha_inhabil"] += 1
+                    bitacora_citas_errores.info("Fecha en día inhábil, id=%d. fecha:%s", row["citas_id"], fecha_inicio_str)
+                    continue
+                # Si es weekday
+                if fecha_inicio.weekday() >= 5:
+                    count_error["fecha_inhabil"] += 1
+                    bitacora_citas_errores.info("Fecha en día inhábil, id=%d. fecha:%s", row["citas_id"], fecha_inicio_str)
+                    continue
+
+                # Insertar la cita v2
+                count_insert += 1
                 cita = CitCita(
                     cit_servicio_id=servicio_v2.id,
                     cit_cliente_id=cliente_v2.id,
