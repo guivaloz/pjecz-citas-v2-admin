@@ -145,7 +145,7 @@ def main():
                     curp=safe_string(row["curp"]),
                     email=row["email"],
                     telefono=safe_string(row["celular"]),
-                    contrasena_md5=safe_string(row["password"]),
+                    contrasena_md5=safe_string(row["password"], to_uppercase=False),
                     contrasena_sha256="",
                     renovacion=datetime.now() + timedelta(days=60),
                 )
@@ -211,7 +211,8 @@ def main():
                 text(
                     "SELECT \
                 citas.id AS citas_id, id_servicio, lower(citas.correo) as correo, id_juzgado,\
-                cat_servicios.servicio AS nombre_servicio, fecha, hora, citas.detalles\
+                cat_servicios.servicio AS nombre_servicio, fecha, hora,\
+                citas.detalles, citas.expediente1, citas.expediente2, citas.expediente3, citas.expediente4, citas.expediente5\
                 FROM citas\
                 JOIN cat_servicios ON cat_servicios.id = citas.id_servicio \
                 JOIN juzgados ON juzgados.id = citas.id_juzgado \
@@ -254,6 +255,14 @@ def main():
                     count_error["oficina_no_encontrada"] += 1
                     bitacora_citas_errores.info("Oficina NO encontrada, id=%d. Juzgado_id:%d", row["citas_id"], row["id_juzgado"])
                     continue
+                # Copia las notas y números de expedientes a las notas
+                notas = safe_string(row["detalles"])
+                for i in range(1, 6):
+                    nombre_campo = f"expediente{i}"
+                    if row[nombre_campo] != None:
+                        expediente_str = safe_string(row[nombre_campo])
+                        if len(expediente_str) > 0:
+                            notas += "; " + expediente_str
                 # Insertar la cita v2
                 count_insert += 1
                 fecha_inicio_str = f"{row['fecha']} {row['hora']}"
@@ -264,7 +273,7 @@ def main():
                     oficina_id=oficinas[row["id_juzgado"]],
                     inicio=fecha_inicio,
                     termino=fecha_inicio + timedelta(minutes=30),
-                    notas=row["detalles"],
+                    notas=notas,
                     estado="PENDIENTE",
                     asistencia=None,
                 )
