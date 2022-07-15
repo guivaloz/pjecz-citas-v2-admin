@@ -145,7 +145,7 @@ def main():
                     curp=safe_string(row["curp"]),
                     email=row["email"],
                     telefono=safe_string(row["celular"]),
-                    contrasena_md5=safe_string(row["password"]),
+                    contrasena_md5=safe_string(row["password"], to_uppercase=False),
                     contrasena_sha256="",
                     renovacion=datetime.now() + timedelta(days=60),
                 )
