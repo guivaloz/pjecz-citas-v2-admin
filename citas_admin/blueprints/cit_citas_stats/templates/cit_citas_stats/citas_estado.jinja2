@@ -21,7 +21,9 @@
 
 {% block content %}
     <div class="row">
-        <canvas id="myChart"></canvas>
+        <div class="chart-container" style="max-width:500px;">
+            <canvas id="myChart"></canvas>
+        </div>
     </div>
     {% if current_user.can_edit('CIT CITAS STATS') %}
     <div>
