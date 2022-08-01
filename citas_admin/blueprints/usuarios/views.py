@@ -14,7 +14,7 @@ from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.firebase_auth import firebase_auth
 from lib.pwgen import generar_contrasena
 from lib.safe_next_url import safe_next_url
-from lib.safe_string import CONTRASENA_REGEXP, EMAIL_REGEXP, TOKEN_REGEXP, safe_message, safe_string
+from lib.safe_string import CONTRASENA_REGEXP, EMAIL_REGEXP, TOKEN_REGEXP, safe_message, safe_string, safe_email
 
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import anonymous_required, permission_required
