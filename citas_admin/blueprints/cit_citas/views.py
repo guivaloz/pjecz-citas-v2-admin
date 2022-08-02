@@ -7,13 +7,16 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for,
 from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_message
+from lib.safe_string import safe_message, safe_string, safe_email, safe_text
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.permisos.models import Permiso
+from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.usuarios.decorators import permission_required
+
+from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm
 
 MODULO = "CIT CITAS"
 
@@ -40,6 +43,12 @@ def datatable_json():
         consulta = consulta.filter_by(estatus="A")
     if "cit_cliente_id" in request.form:
         consulta = consulta.filter_by(cit_cliente_id=request.form["cit_cliente_id"])
+    if "cit_cliente" in request.form:
+        consulta = consulta.join(CitCliente)
+        consulta = consulta.filter(CitCliente.nombres.contains(request.form["cit_cliente"]))
+    if "cit_cliente_email" in request.form:
+        consulta = consulta.join(CitCliente)
+        consulta = consulta.filter(CitCliente.email.contains(request.form["cit_cliente_email"]))
     if "cit_servicio_id" in request.form:
         consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
     if "oficina_id" in request.form:
@@ -78,6 +87,7 @@ def datatable_json():
                     "url": url_for("oficinas.detail", oficina_id=cita.oficina.id) if current_user.can_view("OFICINAS") else "",
                     "descripcion": cita.oficina.descripcion,
                 },
+                "creado": cita.creado.strftime("%Y-%m-%d %H:%M"),
                 "fecha": cita.inicio.strftime("%Y-%m-%d %H:%M"),
                 "inicio": cita.inicio.strftime("%H:%M"),
                 "termino": cita.termino.strftime("%H:%M"),
@@ -274,3 +284,31 @@ def pending(cit_cita_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
     return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
+
+
+@cit_citas.route("/cit_citas/buscar", methods=["GET", "POST"])
+def search():
+    """Buscar cit_citas"""
+    form_search = CitCitaSearchForm()
+    if form_search.validate_on_submit():
+        busqueda = {"estatus": "A"}
+        titulos = []
+
+        if form_search.cliente.data:
+            cliente = safe_string(form_search.cliente.data)
+            if cliente != "":
+                busqueda["cit_cliente"] = cliente
+                titulos.append("cit_cliente " + cliente)
+        if form_search.email.data:
+            email = safe_text(form_search.email.data, to_uppercase=False)
+            if email != "":
+                busqueda["cit_cliente_email"] = email
+                titulos.append("email " + email)
+
+        return render_template(
+            "cit_citas/list_search.jinja2",
+            filtros=json.dumps(busqueda),
+            titulo="Citas con " + ", ".join(titulos),
+            estatus="A",
+        )
+    return render_template("cit_citas/search.jinja2", form=form_search)
