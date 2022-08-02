@@ -45,6 +45,7 @@
     </div>
     {% call detail.card(title='Detalles de esta cita', estatus=cit_cita.estatus) %}
         {{ detail.label_value_big('Notas', cit_cita.notas) }}
+        {{ detail.label_value('Agendada', moment(cit_cita.creado).format('llll')) }}
         {{ detail.label_value('Inicia', moment(cit_cita.inicio).format('llll')) }}
         {{ detail.label_value('Termina', moment(cit_cita.termino).format('llll')) }}
         {{ detail.label_value('Estado', cit_cita.estado) }}

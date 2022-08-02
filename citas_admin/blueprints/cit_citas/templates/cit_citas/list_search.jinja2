@@ -7,6 +7,7 @@
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
         {% if current_user.can_edit('CIT CITAS') %}
+            {{ topbar.button_previous('Citas HOY', url_for('cit_citas.list_active')) }}
             {{ topbar.button_search('Buscar', url_for('cit_citas.search')) }}
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_citas.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_citas.list_active')) }}{% endif %}
@@ -16,31 +17,12 @@
 
 {% block content %}
     {% call list.card() %}
-        <div class="container">
-            <div class="row justify-content-between">
-                <div class="col-2">
-                {% if fecha_anterior %}
-                    <a onclick="recorrer_fecha(-1)" class="btn btn-primary btn-sm">« Día Anterior</a>
-                {% endif %}
-                </div>
-                <div class="col-4">
-                {% if fecha_actual %}
-                    <input id="fecha_actual" class="form-control" type="date" value="{{fecha_actual}}"/>
-                {% endif %}
-                </div>
-                <div class="col-2">
-                {% if fecha_siguiente %}
-                    <a onclick="recorrer_fecha(1)" class="btn btn-primary btn-sm">Día Siguiente »</a>
-                {% endif %}
-                </div>
-            </div>
-        </div>
         <table id="cit_citas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Inicio</th>
-                    <th>Termino</th>
+                    <th>Agendada desde</th>
+                    <th>Fecha de cita</th>
                     <th>Cliente</th>
                     <th>Servicio</th>
                     <th>Estado</th>
@@ -57,8 +39,8 @@
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
             { data: "detalle" },
-            { data: "inicio" },
-            { data: "termino" },
+            { data: "creado" },
+            { data: "fecha" },
             { data: "cit_cliente" },
             { data: "cit_servicio" },
             { data: "estado" },
