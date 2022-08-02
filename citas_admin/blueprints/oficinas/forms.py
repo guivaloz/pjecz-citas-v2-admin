@@ -2,6 +2,7 @@
 Oficinas, formularios
 """
 from flask_wtf import FlaskForm
+from sqlalchemy import true
 from wtforms import StringField, SubmitField, BooleanField, TimeField, IntegerField
 from wtforms.validators import DataRequired, Length, Optional
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
@@ -41,4 +42,5 @@ class OficinaSearchForm(FlaskForm):
 
     clave = StringField("Clave", validators=[Optional(), Length(max=32)])
     descripcion = StringField("Descripción", validators=[Optional(), Length(max=512)])
+    distrito = QuerySelectField("Distrito", query_factory=distritos_opciones, get_label="nombre", allow_blank=True, blank_text='', validators=[Optional()])
     buscar = SubmitField("Buscar")

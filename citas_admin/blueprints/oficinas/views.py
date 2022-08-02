@@ -119,6 +119,11 @@ def search():
             if descripcion != "":
                 busqueda["descripcion"] = descripcion
                 titulos.append("descripción " + descripcion)
+        if form_search.distrito.data:
+            distrito = form_search.distrito.data
+            if distrito != "":
+                busqueda["distrito_id"] = distrito.id
+                titulos.append("distrito " + distrito.nombre)
         return render_template(
             "oficinas/list.jinja2",
             filtros=json.dumps(busqueda),
