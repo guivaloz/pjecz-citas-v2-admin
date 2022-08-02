@@ -312,4 +312,3 @@ def search():
             estatus="A",
         )
     return render_template("cit_citas/search.jinja2", form=form_search)
-
