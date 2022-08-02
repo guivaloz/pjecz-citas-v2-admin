@@ -41,4 +41,5 @@ class OficinaSearchForm(FlaskForm):
 
     clave = StringField("Clave", validators=[Optional(), Length(max=32)])
     descripcion = StringField("Descripción", validators=[Optional(), Length(max=512)])
+    distrito = QuerySelectField("Distrito", query_factory=distritos_opciones, get_label="nombre", allow_blank=True, blank_text="", validators=[Optional()])
     buscar = SubmitField("Buscar")
