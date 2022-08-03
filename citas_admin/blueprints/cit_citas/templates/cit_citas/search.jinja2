@@ -15,6 +15,7 @@
             {% call f.form_group(form.email) %}{% endcall %}
             {% if current_user.can_admin('CIT CITAS') %}
                 {% call f.form_group(form.fecha) %}{% endcall %}
+                {% call f.form_group(form.distrito) %}{% endcall %}
             {% endif %}
             {{ form.buscar() }}
         {% endcall %}
