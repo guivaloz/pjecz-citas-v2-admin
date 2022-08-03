@@ -18,7 +18,7 @@ from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.oficinas.models import Oficina
 
-from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm
+from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm, CitCitaSearchAdminForm
 
 MODULO = "CIT CITAS"
 
@@ -292,7 +292,11 @@ def pending(cit_cita_id):
 @cit_citas.route("/cit_citas/buscar", methods=["GET", "POST"])
 def search():
     """Buscar cit_citas"""
-    form_search = CitCitaSearchForm()
+    if current_user.can_admin(MODULO):
+        form_search = CitCitaSearchAdminForm()
+    else:
+        form_search = CitCitaSearchForm()
+    
     if form_search.validate_on_submit():
         busqueda = {"estatus": "A"}
         titulos = []
@@ -307,11 +311,17 @@ def search():
             if email != "":
                 busqueda["cit_cliente_email"] = email
                 titulos.append("email " + email)
-
+        if form_search.fecha.data:
+            fecha = form_search.fecha.data
+            if fecha != "":
+                busqueda["fecha"] = fecha.strftime("%Y-%m-%d")
+                titulos.append("fecha " + fecha.strftime("%Y-%m-%d"))
+    
         return render_template(
             "cit_citas/list_search.jinja2",
             filtros=json.dumps(busqueda),
             titulo="Citas con " + ", ".join(titulos),
             estatus="A",
         )
+
     return render_template("cit_citas/search.jinja2", form=form_search)
