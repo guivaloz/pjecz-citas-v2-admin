@@ -124,17 +124,33 @@
             }
         };
     
-        //configDataTable['responsive'] = false;
+        // --- Btn para imprimir pdf del listado datatable
         configDataTable['dom'] = 'Bfrtip';
-        configDataTable['buttons'] = ['pdf'];
-        
+        configDataTable['buttons'] = [
+            {
+                extend: 'pdf',
+                title: 'Listado de {{ titulo }} : {{ fecha_actual }}',
+            }
+        ];
+
         $('#cit_citas_datatable').DataTable(configDataTable);
+        $('#cit_citas_datatable').DataTable().button(0).text('Convertir a PDF');
     </script>
     <script>
         $('#fecha_actual').change(function() {
             $('#cit_citas_datatable').DataTable().destroy();
             configDataTable['ajax']['data']['fecha'] = $('#fecha_actual').val();
+            // --- Imprimir tiutlo del pdf --- //
+            configDataTable['dom'] = 'Bfrtip';
+            configDataTable['buttons'] = [
+                {
+                    extend: 'pdf',
+                    title: 'Listado de {{ titulo }} : ' + $('#fecha_actual').val(),
+                    buttonText: 'jajajaj',
+                }
+            ];
             $('#cit_citas_datatable').DataTable(configDataTable);
+            $('#cit_citas_datatable').DataTable().button(0).text('Convertir a PDF');
         });
         function cambiar_fecha(fecha) {
             $('#fecha_actual').val(fecha);
