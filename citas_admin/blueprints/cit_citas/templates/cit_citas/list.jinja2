@@ -2,6 +2,11 @@
 {% import 'macros/list.jinja2' as list %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
+{% block custom_head %}
+    <!-- Librería para utilizar el botón de impresion de datatables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.12.1/b-2.2.3/b-html5-2.2.3/b-print-2.2.3/datatables.min.css"/>
+{% endblock %}
+
 {% block title %}Citas{% endblock %}
 
 {% block topbar_actions %}
@@ -44,6 +49,7 @@
                     <th>Cliente</th>
                     <th>Servicio</th>
                     <th>Estado</th>
+                    <th>Notas</th>
                 </tr>
             </thead>
         </table>
@@ -51,6 +57,10 @@
 {% endblock %}
 
 {% block custom_javascript %}
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.12.1/b-2.2.3/b-html5-2.2.3/b-print-2.2.3/datatables.min.js"></script>
+
     {{ list.config_datatable() }}
     <script>
         configDataTable['ajax']['url'] = '/cit_citas/datatable_json';
@@ -62,6 +72,7 @@
             { data: "cit_cliente" },
             { data: "cit_servicio" },
             { data: "estado" },
+            { data: "notas" },
         ];
         configDataTable['columnDefs'] = [
             {
@@ -112,6 +123,11 @@
                 case "ASISTIO":   $(row).css("background-color", "#eafaf1");  break;
             }
         };
+    
+        //configDataTable['responsive'] = false;
+        configDataTable['dom'] = 'Bfrtip';
+        configDataTable['buttons'] = ['pdf'];
+        
         $('#cit_citas_datatable').DataTable(configDataTable);
     </script>
     <script>

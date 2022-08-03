@@ -94,6 +94,7 @@ def datatable_json():
                 "inicio": cita.inicio.strftime("%H:%M"),
                 "termino": cita.termino.strftime("%H:%M"),
                 "estado": cita.estado,
+                "notas": cita.notas,
             }
         )
     # Entregar JSON
