@@ -300,7 +300,7 @@ def search():
         form_search = CitCitaSearchAdminForm()
     else:
         form_search = CitCitaSearchForm()
-    
+
     if form_search.validate_on_submit():
         busqueda = {"estatus": "A"}
         titulos = []
@@ -320,12 +320,19 @@ def search():
             if fecha != "":
                 busqueda["fecha"] = fecha.strftime("%Y-%m-%d")
                 titulos.append("fecha " + fecha.strftime("%Y-%m-%d"))
-        if form_search.distrito.data:
-            distrito = form_search.distrito.data
-            if distrito != "":
-                busqueda["distrito_id"] = distrito.id
-                titulos.append("distrito " + distrito.nombre_corto)
-    
+        if form_search.oficina.data:
+            oficina_id = form_search.oficina.data
+            if oficina_id != "":
+                busqueda["oficina_id"] = oficina_id
+                oficina = Oficina.query.get_or_404(oficina_id)
+                titulos.append("oficina " + oficina.clave)
+        else:
+            if form_search.distrito.data:
+                distrito = form_search.distrito.data
+                if distrito != "":
+                    busqueda["distrito_id"] = distrito.id
+                    titulos.append("distrito " + distrito.nombre_corto)
+
         return render_template(
             "cit_citas/list_search.jinja2",
             filtros=json.dumps(busqueda),

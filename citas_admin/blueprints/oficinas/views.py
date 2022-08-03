@@ -286,3 +286,21 @@ def select2():
         results.append({"id": centro.id, "text": centro.clave + ": " + centro.descripcion_corta})
 
     return {"results": results, "pagination": {"more": False}}
+
+
+@oficinas.route("/oficinas/select_list_all_PAC/<int:distrito_id>", methods=["GET"])
+def select_list_all(distrito_id):
+    """Listado de Oficinas"""
+
+    # Consultar
+    consulta = Oficina.query
+    consulta = consulta.filter_by(estatus="A").filter_by(puede_agendar_citas=True)
+    consulta = consulta.filter_by(distrito_id=distrito_id)
+    consulta = consulta.order_by(Oficina.clave).all()
+
+    # Elaborar datos para el Select2
+    results = []
+    for oficina in consulta:
+        results.append({"id": oficina.id, "text": oficina.clave + " : " + oficina.descripcion_corta})
+
+    return {"results": results, "pagination": {"more": False}}
