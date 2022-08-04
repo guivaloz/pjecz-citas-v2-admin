@@ -108,7 +108,7 @@ def search():
         busqueda = {"estatus": "A"}
         titulos = []
         if form_search.descripcion.data:
-            descripcion = safe_string(form_search.descripcion.data, to_uppercase=False)
+            descripcion = safe_string(form_search.descripcion.data)
             if descripcion != "":
                 busqueda["descripcion"] = descripcion
                 titulos.append("descripción " + descripcion)

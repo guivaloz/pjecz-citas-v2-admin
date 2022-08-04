@@ -15,8 +15,10 @@ from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.usuarios.decorators import permission_required
+from citas_admin.blueprints.distritos.models import Distrito
+from citas_admin.blueprints.oficinas.models import Oficina
 
-from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm
+from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm, CitCitaSearchAdminForm
 
 MODULO = "CIT CITAS"
 
@@ -53,6 +55,10 @@ def datatable_json():
         consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
     if "oficina_id" in request.form:
         consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
+    else:
+        if "distrito_id" in request.form:
+            consulta = consulta.join(Oficina)
+            consulta = consulta.filter_by(distrito_id=request.form["distrito_id"])
     if "fecha" in request.form and request.form["fecha"] != "":
         fecha = datetime.strptime(request.form["fecha"], "%Y-%m-%d")
         inicio_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=0, minute=0, second=0)
@@ -92,6 +98,7 @@ def datatable_json():
                 "inicio": cita.inicio.strftime("%H:%M"),
                 "termino": cita.termino.strftime("%H:%M"),
                 "estado": cita.estado,
+                "notas": cita.notas,
             }
         )
     # Entregar JSON
@@ -289,7 +296,11 @@ def pending(cit_cita_id):
 @cit_citas.route("/cit_citas/buscar", methods=["GET", "POST"])
 def search():
     """Buscar cit_citas"""
-    form_search = CitCitaSearchForm()
+    if current_user.can_admin(MODULO):
+        form_search = CitCitaSearchAdminForm()
+    else:
+        form_search = CitCitaSearchForm()
+
     if form_search.validate_on_submit():
         busqueda = {"estatus": "A"}
         titulos = []
@@ -304,6 +315,23 @@ def search():
             if email != "":
                 busqueda["cit_cliente_email"] = email
                 titulos.append("email " + email)
+        if form_search.fecha.data:
+            fecha = form_search.fecha.data
+            if fecha != "":
+                busqueda["fecha"] = fecha.strftime("%Y-%m-%d")
+                titulos.append("fecha " + fecha.strftime("%Y-%m-%d"))
+        if form_search.oficina.data:
+            oficina_id = form_search.oficina.data
+            if oficina_id != "":
+                busqueda["oficina_id"] = oficina_id
+                oficina = Oficina.query.get_or_404(oficina_id)
+                titulos.append("oficina " + oficina.clave)
+        else:
+            if form_search.distrito.data:
+                distrito = form_search.distrito.data
+                if distrito != "":
+                    busqueda["distrito_id"] = distrito.id
+                    titulos.append("distrito " + distrito.nombre_corto)
 
         return render_template(
             "cit_citas/list_search.jinja2",
@@ -311,4 +339,5 @@ def search():
             titulo="Citas con " + ", ".join(titulos),
             estatus="A",
         )
+
     return render_template("cit_citas/search.jinja2", form=form_search)

@@ -2,15 +2,19 @@
 Cit Clientes, vistas
 """
 import json
-from flask import Blueprint, render_template, request, url_for
-from flask_login import login_required
+import os
+from flask import Blueprint, render_template, request, url_for, flash, redirect
+from flask_login import login_required, current_user
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_text
 
+from dotenv import load_dotenv
+
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.cit_clientes.models import CitCliente
+from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitClienteRecuperacion
 
 from citas_admin.blueprints.cit_clientes.forms import ClienteSearchForm
 
@@ -92,7 +96,24 @@ def list_inactive():
 def detail(cit_cliente_id):
     """Detalle de un Cliente"""
     cit_cliente = CitCliente.query.get_or_404(cit_cliente_id)
-    return render_template("cit_clientes/detail.jinja2", cit_cliente=cit_cliente)
+    # Revisar si el cliente está en estado de recuperación
+    recuperacion = CitClienteRecuperacion.query
+    recuperacion = recuperacion.filter_by(estatus="A").filter_by(cit_cliente_id=cit_cliente_id)
+    recuperacion = recuperacion.filter_by(ya_recuperado=False)
+    recuperacion = recuperacion.first()
+
+    url = None
+    if recuperacion:
+        load_dotenv()  # Take environment variables from .env
+        RECOVER_ACCOUNT_CONFIRM_URL = os.getenv("RECOVER_ACCOUNT_CONFIRM_URL", "")
+        url = f"{RECOVER_ACCOUNT_CONFIRM_URL}?hashid={recuperacion.encode_id()}&cadena_validar={recuperacion.cadena_validar}"
+
+    return render_template(
+        "cit_clientes/detail.jinja2",
+        cit_cliente=cit_cliente,
+        recuperacion=recuperacion,
+        url_recuperacion=url,
+    )
 
 
 @cit_clientes.route("/cit_clientes/buscar", methods=["GET", "POST"])
@@ -129,3 +150,23 @@ def search():
             estatus="A",
         )
     return render_template("cit_clientes/search.jinja2", form=form_search)
+
+
+@cit_clientes.route("/cit_clientes/enviar_recuperacion_contrasena/<int:cit_cliente_recuperacion_id>")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def send_email_recover_password(cit_cliente_recuperacion_id):
+    """Envía el correo de recuperación de contraseña"""
+    cliente_recuperacion = CitClienteRecuperacion.query.get_or_404(cit_cliente_recuperacion_id)
+    # Salir si hay una tarea en el fondo
+    if current_user.get_task_in_progress("cit_clientes_recuperaciones.tasks.enviar"):
+        flash("Debe esperar porque hay una tarea en el fondo sin terminar.", "warning")
+    else:
+        # Lanzar tarea en el fondo
+        current_user.launch_task(
+            nombre="cit_clientes_recuperaciones.tasks.enviar",
+            descripcion=f"Enviar correo de recuperación de contraseña al cliente {cliente_recuperacion.cit_cliente_id}",
+            cit_cliente_recuperacion_id=cliente_recuperacion.id,
+        )
+        flash("Se está reenviando un correo de recuperación de contraseña al cliente... ", "info")
+    # Mostrar detalle del cliente
+    return redirect(url_for("cit_clientes.detail", cit_cliente_id=cliente_recuperacion.cit_cliente_id))
