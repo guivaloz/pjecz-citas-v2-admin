@@ -21,6 +21,29 @@
         {{ detail.label_value('Creado', moment(cit_cliente.creado).format('llll')) }}
     {% endcall %}
     {% if current_user.can_view('CIT CITAS') %}
+        {% if recuperacion %}
+            <div class="alert alert-warning" role="alert">
+                <div class=" d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                    </svg>
+                    <h4 class="alert-heading">Recuperación de Contraseña</h4>
+                </div>
+                <p>Este usuario se encuentra en estado de recuperación de contraseña.<br>
+                Aquí se enlistan los datos generados.</p>
+                <hr>
+                <p>
+                    <strong>Generado: </strong>{{ moment(recuperacion.creado).format('YYYY-MM-DD HH:m a') }}<br>
+                    <strong>Expiración: </strong>{{ moment(recuperacion.expiracion).format('YYYY-MM-DD HH:m a') }}<br>
+                    <strong>Cantidad de mensajes: </strong><span class="badge bg-secondary">{{ recuperacion.mensajes_cantidad }}</span><br>
+                    <strong>Link de recuperación: </strong><br>{{ url_recuperacion }}<br>
+                </p>
+                    
+                    <a href="{{ url_for('cit_clientes.send_email_recover_password', cit_cliente_recuperacion_id=recuperacion.id) }}" role="button" class="btn btn-primary btn-sm m-2 ms-0">Reenvíar correo <span class="iconify" data-icon="mdi:email-arrow-right-outline"></span></a>
+                    <a href="{{ url_recuperacion }}" target="_blank">Ir al link <span class="iconify" data-icon="mdi:open-in-new"></span></a>
+            </div>
+        {% endif %}
+
         {% call list.card("Citas") %}
             <table id="cit_citas_datatable" class="table display nowrap" style="width:100%">
                 <thead>

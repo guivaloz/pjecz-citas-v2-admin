@@ -122,7 +122,7 @@ class Usuario(db.Model, UserMixin, UniversalMixin):
 
     def launch_task(self, nombre, descripcion, *args, **kwargs):
         """Arrancar tarea"""
-        rq_job = current_app.task_queue.enqueue("citas_backend.blueprints." + nombre, *args, **kwargs)
+        rq_job = current_app.task_queue.enqueue("citas_admin.blueprints." + nombre, *args, **kwargs)
         tarea = Tarea(id=rq_job.get_id(), nombre=nombre, descripcion=descripcion, usuario=self)
         tarea.save()
         return tarea
