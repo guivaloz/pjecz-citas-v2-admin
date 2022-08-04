@@ -15,6 +15,15 @@
 
 {% block content %}
     {% call list.card() %}
+        <div class="row">
+            <div class="col">
+                <form class="input-group mb-3" id="buscadorForm" onsubmit="buscar(); return false">
+                    <input id="buscadorInput" type="text" class="form-control" placeholder="Buscar por email" aria-label="email" aria-describedby="button-buscar" style="text-transform: lowercase">
+                    <button class="btn btn-primary" type="submit" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span> Buscar</button>
+                    <button class="btn btn-warning" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                </form>
+            </div>
+        </div>
         <table id="cit_clientes_recuperaciones_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -65,6 +74,41 @@
                 }
             }
         ];
+
+        let emailBuscar = document.getElementById('buscadorInput').value.toLowerCase();
+        if(emailBuscar != '')
+            configDataTable['ajax']['data']['email'] = emailBuscar;
+
         $('#cit_clientes_recuperaciones_datatable').DataTable(configDataTable);
+    </script>
+    <!-- Función de buscador -->
+    <script type="text/javascript">
+        function buscar() {
+            let emailBuscar = document.getElementById('buscadorInput').value.toLowerCase();
+
+            if(configDataTable['ajax']['data']['email'] == emailBuscar)
+                return false;
+            if(configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' )
+                return false;
+            
+            $('#cit_clientes_recuperaciones_datatable').DataTable().destroy();
+            if(emailBuscar == '')  {
+                delete configDataTable['ajax']['data']['email'];
+            } else {
+                configDataTable['ajax']['data']['email'] = emailBuscar;
+            }
+            $('#cit_clientes_recuperaciones_datatable').DataTable(configDataTable);
+        };
+        
+        function limpiar()  {
+            if(configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' )
+                return false;
+
+            delete configDataTable['ajax']['data']['email'];
+
+            $('#cit_clientes_recuperaciones_datatable').DataTable().destroy();
+            $('#cit_clientes_recuperaciones_datatable').DataTable(configDataTable);
+        }
+
     </script>
 {% endblock %}
