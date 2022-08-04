@@ -12,6 +12,7 @@ from lib.safe_string import safe_message
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.usuarios.models import Usuario
+from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.usuarios_roles.models import UsuarioRol
 from citas_admin.blueprints.usuarios_roles.forms import UsuarioRolWithUsuarioForm
 
@@ -63,6 +64,10 @@ def datatable_json():
                     "nombre": resultado.rol.nombre,
                     "url": url_for("roles.detail", rol_id=resultado.rol_id) if current_user.can_view("ROLES") else "",
                 },
+                "oficina": {
+                    "nombre": resultado.usuario.oficina.clave,
+                    "url": url_for("oficinas.detail", oficina_id=resultado.usuario.oficina_id) if current_user.can_view("OFICINAS") else "",
+                }
             }
         )
     # Entregar JSON
