@@ -9,3 +9,13 @@ Pasos a seguir
 5. Copie a su equipo ese archivo tar.gz
 6. Descomprima con `gunzip pjecz_citas_v2-2022-MM-DD-HHMM.tar.gz`
 7. Para restablecer en su equipo local, elimine y ejecute pg_restore
+
+## Reestablecer
+
+Primero eliminar las tablas y registros con el alias programado
+
+    eliminar-tablas-pjecz-citas-v2
+
+Comando
+
+    pg_restore -F t -d pjecz_citas_v2 ~/Downloads/Minerva/pjecz_citas_v2/pjecz_citas_v2-2022-02-23-1242.tar

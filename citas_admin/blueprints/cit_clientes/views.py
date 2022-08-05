@@ -105,7 +105,7 @@ def detail(cit_cliente_id):
     url = None
     if recuperacion:
         load_dotenv()  # Take environment variables from .env
-        RECOVER_ACCOUNT_CONFIRM_URL = os.getenv("RECOVER_ACCOUNT_CONFIRM_URL", "")
+        RECOVER_ACCOUNT_CONFIRM_URL = os.getenv("RECOVER_ACCOUNT_CONFIRM_URL", "https://citas.justiciadigital.gob.mx/recover_account_confirm")
         url = f"{RECOVER_ACCOUNT_CONFIRM_URL}?hashid={recuperacion.encode_id()}&cadena_validar={recuperacion.cadena_validar}"
 
     return render_template(

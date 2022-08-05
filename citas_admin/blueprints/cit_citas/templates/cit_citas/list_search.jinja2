@@ -35,6 +35,8 @@
 {% block custom_javascript %}
     {{ list.config_datatable() }}
     <script>
+        const fecha_actual = new Date();
+
         configDataTable['ajax']['url'] = '/cit_citas/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
@@ -87,9 +89,17 @@
                 }
             }
         ];
-        configDataTable['createdRow'] = function( row, data, dataIndex ){
+        configDataTable['createdRow'] = function( row, data, dataIndex, cells ){
             switch (data.estado)    {
-                case "PENDIENTE": $(row).css("background-color", "#fef9e7");  break;
+                case "PENDIENTE":
+                    const fecha_cita = new Date(data.fecha);
+                    if(fecha_cita >= fecha_actual)  {
+                        $(row).css("background-color", "#fef9e7"); 
+                    } else {
+                        cells[5].innerText = 'VENCIDA';
+                        $(row).css("background-color", "#e9ecef");
+                    }
+                    break;
                 case "CANCELO":   $(row).css("background-color", "#fdedec");  break;
                 case "ASISTIO":   $(row).css("background-color", "#eafaf1");  break;
             }

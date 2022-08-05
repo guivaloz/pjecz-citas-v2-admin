@@ -48,7 +48,21 @@
         {{ detail.label_value('Agendada', moment(cit_cita.creado).format('llll')) }}
         {{ detail.label_value('Inicia', moment(cit_cita.inicio).format('llll')) }}
         {{ detail.label_value('Termina', moment(cit_cita.termino).format('llll')) }}
-        {{ detail.label_value('Estado', cit_cita.estado) }}
+        <div class="row">
+            <div class="col-md-3 text-end">Estado</div>
+            <div class="col-md-9">
+                {% if cit_cita.estado == 'CANCELO' %}
+                    {% set color = 'danger' %}
+                {% elif cit_cita.estado == 'PENDIENTE' %}
+                    {% set color = 'warning text-dark' %}
+                {% elif cit_cita.estado == 'ASISTIO' %}
+                    {% set color = 'success' %}
+                {% else %}
+                    {% set color = 'dark' %}
+                {% endif %}
+                    <span class="badge rounded-pill bg-{{color}}">{{ cit_cita.estado }}</span>
+            </div>
+        </div>
     {% endcall %}
 {% endblock %}
 

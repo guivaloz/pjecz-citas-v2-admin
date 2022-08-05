@@ -2,6 +2,7 @@
 Cit Clientes Recuperaciones, vistas
 """
 import json
+from citas_admin.blueprints.usuarios.models import Usuario
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
@@ -13,6 +14,7 @@ from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitClienteRecuperacion
+from citas_admin.blueprints.cit_clientes.models import CitCliente
 
 MODULO = "CIT CLIENTES RECUPERACIONES"
 
@@ -37,7 +39,13 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    registros = consulta.order_by(CitClienteRecuperacion.id).offset(start).limit(rows_per_page).all()
+    if "email" in request.form:
+        consulta = consulta.join(CitCliente)
+        consulta = consulta.filter(CitCliente.email.contains(request.form["email"]))
+    if "ya_recuperado" in request.form:
+        consulta = consulta.filter(CitClienteRecuperacion.ya_recuperado == request.form["ya_recuperado"])
+
+    registros = consulta.order_by(CitClienteRecuperacion.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
