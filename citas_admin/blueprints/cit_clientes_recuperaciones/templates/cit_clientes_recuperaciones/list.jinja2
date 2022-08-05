@@ -19,6 +19,14 @@
             <div class="col">
                 <form class="input-group mb-3" id="buscadorForm" onsubmit="buscar(); return false">
                     <input id="buscadorInput" type="text" class="form-control" placeholder="Buscar por email" aria-label="email" aria-describedby="button-buscar" style="text-transform: lowercase">
+                    <div class="form-floating">
+                        <select class="form-select" id="yaRecuperadoSelect" onchange="buscar(); return false;" style="width: 100px; flex: inherit;">
+                            <option selected value="">Todos</option>
+                            <option value="true">Sí</option>
+                            <option value="false">No</option>
+                        </select>
+                        <label for="yaRecuperadoSelect">Recuperados</label>
+                    </div>
                     <button class="btn btn-primary" type="submit" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span> Buscar</button>
                     <button class="btn btn-warning" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
                 </form>
@@ -68,16 +76,20 @@
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data) {
-                        return 'SI';
+                        return '<span class="badge rounded-pill bg-success px-3 ms-3">Sí</span>';
                     }
-                    return 'NO';
+                    return '<span class="badge rounded-pill bg-danger px-3 ms-3">No</span>';
                 }
             }
         ];
 
         let emailBuscar = document.getElementById('buscadorInput').value.toLowerCase();
+        let yaRecuperadoBuscar = document.getElementById('yaRecuperadoSelect').value;
+
         if(emailBuscar != '')
             configDataTable['ajax']['data']['email'] = emailBuscar;
+        if(yaRecuperadoBuscar != '')
+            configDataTable['ajax']['data']['ya_recuperado'] = yaRecuperadoBuscar;
 
         $('#cit_clientes_recuperaciones_datatable').DataTable(configDataTable);
     </script>
@@ -85,26 +97,37 @@
     <script type="text/javascript">
         function buscar() {
             let emailBuscar = document.getElementById('buscadorInput').value.toLowerCase();
+            let yaRecuperadoBuscar = document.getElementById('yaRecuperadoSelect').value;
 
-            if(configDataTable['ajax']['data']['email'] == emailBuscar)
+            if( configDataTable['ajax']['data']['email'] == emailBuscar &&
+                configDataTable['ajax']['data']['ya_recuperado'] == yaRecuperadoBuscar 
+            )
                 return false;
-            if(configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' )
-                return false;
+            /*if(configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' )
+                return false;*/
             
             $('#cit_clientes_recuperaciones_datatable').DataTable().destroy();
-            if(emailBuscar == '')  {
+
+            if(emailBuscar == '')
                 delete configDataTable['ajax']['data']['email'];
-            } else {
+            else
                 configDataTable['ajax']['data']['email'] = emailBuscar;
-            }
+            if(yaRecuperadoBuscar == '')
+                delete configDataTable['ajax']['data']['ya_recuperado'];
+            else
+                configDataTable['ajax']['data']['ya_recuperado'] = yaRecuperadoBuscar;
+
             $('#cit_clientes_recuperaciones_datatable').DataTable(configDataTable);
         };
         
         function limpiar()  {
-            if(configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' )
+            if( configDataTable['ajax']['data']['email'] === undefined &&
+                configDataTable['ajax']['data']['ya_recuperado'] === undefined
+            )
                 return false;
 
             delete configDataTable['ajax']['data']['email'];
+            delete configDataTable['ajax']['data']['ya_recuperado'];
 
             $('#cit_clientes_recuperaciones_datatable').DataTable().destroy();
             $('#cit_clientes_recuperaciones_datatable').DataTable(configDataTable);
