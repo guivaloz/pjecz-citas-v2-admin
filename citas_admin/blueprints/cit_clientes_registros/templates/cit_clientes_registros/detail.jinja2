@@ -25,7 +25,7 @@
         {{ detail.label_value('Expiracion', moment(cit_cliente_registro.expiracion).format('DD MMM YYYY')) }}
         {{ detail.label_value('Cadena validar', cit_cliente_registro.cadena_validar) }}
         {{ detail.label_value('Cantidad de mensajes', cit_cliente_registro.mensajes_cantidad) }}
-        {{ detail.label_value_boolean('Ya registrado', cit_cliente_registro.columna_2) }}
+        {{ detail.label_value_boolean('Ya registrado', cit_cliente_registro.ya_registrado) }}
     {% endcall %}
 {% endblock %}
 

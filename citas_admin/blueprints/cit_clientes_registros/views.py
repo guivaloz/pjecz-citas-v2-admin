@@ -43,6 +43,8 @@ def datatable_json():
         consulta = consulta.filter(CitClienteRegistro.nombres.contains(safe_string(request.form["nombres"])))
     if "apellido_primero" in request.form:
         consulta = consulta.filter(CitClienteRegistro.apellido_primero.contains(safe_string(request.form["apellido_primero"])))
+    if "ya_registrado" in request.form:
+        consulta = consulta.filter_by(ya_registrado=request.form["ya_registrado"])
 
     registros = consulta.order_by(CitClienteRegistro.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()

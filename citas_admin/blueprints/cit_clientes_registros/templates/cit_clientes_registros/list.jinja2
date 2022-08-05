@@ -21,6 +21,14 @@
                     <input id="nombreInput" type="text" class="form-control" placeholder="nombres" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
                     <input id="apellidoPrimeroInput" type="text" class="form-control" placeholder="apellido Primero" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
                     <input id="emailInput" type="text" class="form-control" placeholder="email" aria-label="email" aria-describedby="button-buscar" style="text-transform: lowercase">
+                    <div class="form-floating">
+                        <select class="form-select" id="yaRegistradoSelect" aria-label="Default select example" onchange="buscar(); return false;" style="width: 100px; flex: inherit;">
+                            <option selected value="">Todos</option>
+                            <option value="true">Sí</option>
+                            <option value="false">No</option>
+                        </select>
+                        <label for="yaRegistradoSelect">Registrados</label>
+                    </div>
                     <button class="btn btn-primary" type="submit" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span> Buscar</button>
                     <button class="btn btn-warning" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
                 </form>
@@ -69,9 +77,9 @@
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data) {
-                        return 'SI';
+                        return '<span class="badge rounded-pill bg-success px-3 ms-3">Sí</span>';
                     }
-                    return 'NO';
+                    return '<span class="badge rounded-pill bg-danger px-3 ms-3">No</span>';
                 }
             }
         ];
@@ -79,6 +87,7 @@
         let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
         let apellidoPrimeroBuscar = document.getElementById('apellidoPrimeroInput').value.toUpperCase();
         let emailBuscar = document.getElementById('emailInput').value.toLowerCase();
+        let yaRegistradoBuscar = document.getElementById('yaRegistradoSelect').value;
 
         if(nombreBuscar != '')
             configDataTable['ajax']['data']['nombres'] = nombreBuscar;
@@ -86,6 +95,8 @@
             configDataTable['ajax']['data']['apellido_primero'] = apellidoPrimeroBuscar;
         if(emailBuscar != '')
             configDataTable['ajax']['data']['email'] = emailBuscar;
+        if(yaRegistradoBuscar != '')
+            configDataTable['ajax']['data']['ya_registrado'] = yaRegistradoBuscar;
 
         $('#cit_clientes_registros_datatable').DataTable(configDataTable);
     </script>
@@ -95,10 +106,12 @@
             let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
             let apellidoPrimeroBuscar = document.getElementById('apellidoPrimeroInput').value.toUpperCase();
             let emailBuscar = document.getElementById('emailInput').value.toLowerCase();
+            let yaRegistradoBuscar = document.getElementById('yaRegistradoSelect').value;
 
             if( configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' &&
                 configDataTable['ajax']['data']['nombres'] === undefined && nombreBuscar === '' &&
-                configDataTable['ajax']['data']['apellido_primero'] === undefined && apellidoPrimeroBuscar === ''
+                configDataTable['ajax']['data']['apellido_primero'] === undefined && apellidoPrimeroBuscar === '' &&
+                configDataTable['ajax']['data']['ya_registrado'] === undefined && yaRegistradoBuscar === ''
             )
                 return false;
 
@@ -116,20 +129,26 @@
                 delete configDataTable['ajax']['data']['email'];
             else
                 configDataTable['ajax']['data']['email'] = emailBuscar;
+            if(yaRegistradoBuscar == '')
+                delete configDataTable['ajax']['data']['ya_registrado'];
+            else
+                configDataTable['ajax']['data']['ya_registrado'] = yaRegistradoBuscar;
 
             $('#cit_clientes_registros_datatable').DataTable(configDataTable);
         };
 
         function limpiar()  {
-            if( configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' &&
-                configDataTable['ajax']['data']['nombres'] === undefined && nombreBuscar === '' &&
-                configDataTable['ajax']['data']['apellido_primero'] === undefined && apellidoPrimeroBuscar === ''
+            if( configDataTable['ajax']['data']['email'] === undefined &&
+                configDataTable['ajax']['data']['nombres'] === undefined &&
+                configDataTable['ajax']['data']['apellido_primero'] === undefined &&
+                configDataTable['ajax']['data']['ya_registrado'] === undefined
             )
                 return false;
             
             delete configDataTable['ajax']['data']['nombres'];
             delete configDataTable['ajax']['data']['apellido_primero'];
             delete configDataTable['ajax']['data']['email'];
+            delete configDataTable['ajax']['data']['ya_registrado'];
 
             $('#cit_clientes_registros_datatable').DataTable().destroy();
             $('#cit_clientes_registros_datatable').DataTable(configDataTable);
