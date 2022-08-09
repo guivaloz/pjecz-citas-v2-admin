@@ -3,6 +3,7 @@ Cit Citas, vistas
 """
 from datetime import datetime, timedelta
 import json
+from tarfile import REGTYPE
 from flask import Blueprint, flash, redirect, render_template, request, url_for, abort
 from flask_login import current_user, login_required
 
@@ -68,7 +69,10 @@ def datatable_json():
     if current_user.can_admin(MODULO):
         registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
     else:
-        registros = consulta.order_by(CitCita.inicio).offset(start).limit(rows_per_page).all()
+        if rows_per_page == -1:
+            registros = consulta.order_by(CitCita.inicio).all()
+        else:
+            registros = consulta.order_by(CitCita.inicio).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
