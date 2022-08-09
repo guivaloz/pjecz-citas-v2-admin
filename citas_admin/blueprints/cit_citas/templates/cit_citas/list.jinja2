@@ -125,7 +125,9 @@
         };
     
         // --- Btn para imprimir pdf del listado datatable
-        configDataTable['dom'] = 'Bfrtip';
+        configDataTable['responsive'] = false;
+        configDataTable['paging'] = false;
+        configDataTable['dom'] = 'B<clear>frtip';
         configDataTable['buttons'] = [
             {
                 extend: 'pdf',
@@ -135,13 +137,16 @@
 
         $('#cit_citas_datatable').DataTable(configDataTable);
         $('#cit_citas_datatable').DataTable().button(0).text('Convertir a PDF');
+        $('#cit_citas_datatable').DataTable().buttons().container().appendTo( '#example_wrapper .col-md-6:eq(0)' );
     </script>
     <script>
         $('#fecha_actual').change(function() {
             $('#cit_citas_datatable').DataTable().destroy();
             configDataTable['ajax']['data']['fecha'] = $('#fecha_actual').val();
             // --- Imprimir tiutlo del pdf --- //
-            configDataTable['dom'] = 'Bfrtip';
+            configDataTable['responsive'] = false;
+            configDataTable['paging'] = false;
+            configDataTable['dom'] = 'B<clear>frtip';
             configDataTable['buttons'] = [
                 {
                     extend: 'pdf',

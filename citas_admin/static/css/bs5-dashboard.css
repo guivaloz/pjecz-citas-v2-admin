@@ -132,3 +132,7 @@ body {
   margin-top: -46px;
 }
 
+.dataTable tbody tr:hover {
+  background-color: #f8f9fa;
+  --bs-table-accent-bg: rgba(245, 245, 250, 0.5);
+}
