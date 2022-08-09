@@ -195,7 +195,13 @@ def list_inactive():
 def detail(cit_cita_id):
     """Detalle de una Cita"""
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
-    marcar_asistencia = True if cit_cita.inicio <= datetime.now() else False
+    if cit_cita.inicio <= datetime.now():
+        if cit_cita.estado == 'PENDIENTE':
+            marcar_asistencia = True
+        else:
+            marcar_asistencia = False
+    else:
+        marcar_asistencia = False
     # Si es administrador, ve todas las citas
     if current_user.can_admin(MODULO):
         return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
