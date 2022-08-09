@@ -12,7 +12,9 @@
             {% if cit_cita.asistencia %}
                 {{ modals.button_delete('Quitar la Asistencia', url_for('cit_citas.pending', cit_cita_id=cit_cita.id), 'Pendiente', 'mdi:close-thick', '¿Desea desmarcar la asistencia de la cita ' + cit_cita.id | string + '?')}}
             {% else %}
-                {{ modals.button_make('Marcar Asistencia', url_for('cit_citas.assistance', cit_cita_id=cit_cita.id), 'Asistencia', 'mdi:check-bold', '¿Desea marcar como asistió a la cita ' + cit_cita.id | string + '?')}}
+                {% if marcar_asistencia %}
+                    {{ modals.button_make('Marcar Asistencia', url_for('cit_citas.assistance', cit_cita_id=cit_cita.id), 'Asistencia', 'mdi:check-bold', '¿Desea marcar como asistió a la cita ' + cit_cita.id | string + '?')}}
+                {% endif %}
             {% endif %}
             {% if cit_cita.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_citas.delete', cit_cita_id=cit_cita.id)) }}{% endif %}
             {% if cit_cita.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_citas.recover', cit_cita_id=cit_cita.id)) }}{% endif %}

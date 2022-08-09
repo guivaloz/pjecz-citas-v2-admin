@@ -195,12 +195,13 @@ def list_inactive():
 def detail(cit_cita_id):
     """Detalle de una Cita"""
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
+    marcar_asistencia = True if cit_cita.inicio <= datetime.now() else False
     # Si es administrador, ve todas las citas
     if current_user.can_admin(MODULO):
-        return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita)
+        return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
     # Si no es administrador, solo puede ver los detalles de una cita de su propia oficina
     if cit_cita.oficina == current_user.oficina:
-        return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita)
+        return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
     # Si no es administrador, no puede ver los detalles de una cita de otra oficina, lo reenviamos al listado
     abort(403)
 
@@ -254,9 +255,16 @@ def recover(cit_cita_id):
 def assistance(cit_cita_id):
     """Marcar Asistencia a una Cita"""
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
-    # Si no es administrador, no puede eliminar un cita de otra oficina
+    # Si no es administrador, no puede marcar Asistencia a una cita de otra oficina
     if not current_user.can_admin(MODULO) and cit_cita.oficina != current_user.oficina:
         abort(403)
+    if cit_cita.estado != 'PENDIENTE':
+        flash("No puede marcar la asistencia de una cita que no tenga estado de PENDIENTE.", "warning")
+        return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
+    # No se puede marcar la asistencia de una cita a futuro
+    if cit_cita.inicio > datetime.now():
+        flash("No puede marcar la asistencia de una cita que aún no ha pasado.", "warning")
+        return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
 
     if cit_cita.estatus == "A":
         cit_cita.estado = "ASISTIO"
@@ -278,9 +286,14 @@ def assistance(cit_cita_id):
 def pending(cit_cita_id):
     """Marcar la Cita como Pendiente"""
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
-    # Si no es administrador, no puede eliminar un cita de otra oficina
+    # Si no es administrador, no puede desmarcar una asistencia de una cita de otra oficina
     if not current_user.can_admin(MODULO) and cit_cita.oficina != current_user.oficina:
         abort(403)
+
+    # No se puede marcar la des-asistencia de una cita que no este en estado de asistio
+    if cit_cita.estado != "ASISTIO":
+        flash("No puede desmarcar al asistencia de una cita que no tenga el estado previo de ASISTIO.", "warning")
+        return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
 
     if cit_cita.estatus == "A":
         cit_cita.estado = "PENDIENTE"
