@@ -258,7 +258,7 @@ def assistance(cit_cita_id):
     # Si no es administrador, no puede marcar Asistencia a una cita de otra oficina
     if not current_user.can_admin(MODULO) and cit_cita.oficina != current_user.oficina:
         abort(403)
-    if cit_cita.estado != 'PENDIENTE':
+    if cit_cita.estado != "PENDIENTE":
         flash("No puede marcar la asistencia de una cita que no tenga estado de PENDIENTE.", "warning")
         return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
     # No se puede marcar la asistencia de una cita a futuro
