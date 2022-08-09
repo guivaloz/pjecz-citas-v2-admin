@@ -69,6 +69,8 @@ def datatable_json():
     if current_user.can_admin(MODULO):
         registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
     else:
+        # No mostrar a los juzgados la citas canceladas
+        consulta = consulta.filter(CitCita.estado != 'CANCELO')
         if rows_per_page == -1:
             registros = consulta.order_by(CitCita.inicio).all()
         else:
