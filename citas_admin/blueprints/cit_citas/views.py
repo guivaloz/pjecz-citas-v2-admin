@@ -70,7 +70,7 @@ def datatable_json():
         registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
     else:
         # No mostrar a los juzgados la citas canceladas
-        consulta = consulta.filter(CitCita.estado != 'CANCELO')
+        consulta = consulta.filter(CitCita.estado != "CANCELO")
         if rows_per_page == -1:
             registros = consulta.order_by(CitCita.inicio).all()
         else:
@@ -198,7 +198,7 @@ def detail(cit_cita_id):
     """Detalle de una Cita"""
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
     if cit_cita.inicio <= datetime.now():
-        if cit_cita.estado == 'PENDIENTE':
+        if cit_cita.estado == "PENDIENTE":
             marcar_asistencia = True
         else:
             marcar_asistencia = False
