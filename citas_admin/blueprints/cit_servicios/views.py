@@ -61,6 +61,9 @@ def datatable_json():
                     "nombre": resultado.cit_categoria.nombre,
                     "url": url_for("cit_categorias.detail", cit_categoria_id=resultado.cit_categoria.id),
                 },
+                "desde": "-" if resultado.desde is None else resultado.desde.strftime("%H:%M"),
+                "hasta": "-" if resultado.hasta is None else resultado.hasta.strftime("%H:%M"),
+                "dias_habiles": "-" if resultado.dias_habiles == "" else _conversion_dias_habiles_numero_letra(resultado.dias_habiles),
             }
         )
     # Entregar JSON
@@ -182,7 +185,7 @@ def edit(cit_servicio_id):
             cit_servicio.hasta = form.hasta.data
             dias_habiles = _conversion_dias_habiles_letra_numero(form.dias_habiles.data)
             if dias_habiles == "01234":
-                dias_habiles = None
+                dias_habiles = ""
             cit_servicio.dias_habiles = dias_habiles
             cit_servicio.save()
             bitacora = Bitacora(
@@ -194,7 +197,7 @@ def edit(cit_servicio_id):
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
-
+    # Llenar los campos del formulario
     form.cit_categoria_nombre.data = cit_servicio.cit_categoria.nombre
     form.clave.data = cit_servicio.clave
     form.descripcion.data = cit_servicio.descripcion
@@ -203,7 +206,7 @@ def edit(cit_servicio_id):
     form.desde.data = cit_servicio.desde
     form.hasta.data = cit_servicio.hasta
     form.dias_habiles.data = _conversion_dias_habiles_numero_letra(cit_servicio.dias_habiles)
-
+    # Entregar
     return render_template(
         "cit_servicios/edit.jinja2",
         form=form,
