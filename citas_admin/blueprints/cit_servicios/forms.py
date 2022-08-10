@@ -16,5 +16,5 @@ class CitServicioForm(FlaskForm):
     documentos_limite = IntegerField("Documentos limite", validators=[Optional()])
     desde = TimeField("Horario de comienzo para agendar citas (horas:minutos)", validators=[Optional()])
     hasta = TimeField("Horario de termino para agendar citas (horas:minutos)", validators=[Optional()])
-    dias_habiles = StringField("Días Hábiles", validators=[Optional()])
+    dias_habilitados = StringField("Días Hábiles", validators=[Optional()])
     guardar = SubmitField("Guardar")

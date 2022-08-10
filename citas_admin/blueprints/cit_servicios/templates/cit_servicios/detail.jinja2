@@ -24,7 +24,7 @@
         {{ detail.label_value('Duración', cit_servicio.duracion.strftime("%H:%M")) }}
         {{ detail.label_value('Documentos Limite', cit_servicio.documentos_limite) }}
         {{ detail.label_value('Horario', horario) }}
-        {{ detail.label_value('Días Hábiles', dias_habiles ) }}
+        {{ detail.label_value('Días Hábiles', dias_habilitados ) }}
     {% endcall %}
     {# Citas de este servicio #}
     {% if current_user.can_view('CIT CITAS') %}

@@ -21,7 +21,7 @@
             <div class="form-text mt-0 mb-2">Si se deja vacío se tomará el horario de la oficina.</div>
             {% call f.form_group(form.hasta) %}{% endcall %}
             <div class="form-text mb-2" for="hasta">Si se deja vacío se tomará el horario de la oficina.</div>
-            {% call f.form_group(form.dias_habiles, readonly=true) %}{% endcall %}
+            {% call f.form_group(form.dias_habilitados, readonly=true) %}{% endcall %}
             <div class="btn-group">
                 <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="button" disabled>Domingo</button>
                 <input type="checkbox" class="btn-check" id="btn-check-lunes" autocomplete="off" onchange="toggle_btn('LUNES', this);">
@@ -44,15 +44,15 @@
 
 {% block custom_javascript %}
     <script>
-    let dias_habiles_input = document.getElementById('dias_habiles');
-    
+    let dias_habilitados_input = document.getElementById('dias_habilitados');
+
     function toggle_btn(dia, btn) {
         if (btn.checked === true)  {
-            dias_habiles_input.value += dia + ', ';
+            dias_habilitados_input.value += dia + ', ';
         } else {
-            console.log(dias_habiles_input.value);
+            console.log(dias_habilitados_input.value);
             console.log(dia + ', ');
-            dias_habiles_input.value = dias_habiles_input.value.replaceAll(dia + ', ', '');
+            dias_habilitados_input.value = dias_habilitados_input.value.replaceAll(dia + ', ', '');
         }
     };
 
@@ -63,24 +63,24 @@
      * 5 - Sábado
      * 6 - Domingo
      */
-    if( dias_habiles.value == '' )  {
+    if( dias_habilitados.value == '' )  {
         document.getElementById('btn-check-lunes').checked = true;      toggle_btn('LUNES', document.getElementById('btn-check-lunes'));
         document.getElementById('btn-check-martes').checked = true;     toggle_btn('MARTES', document.getElementById('btn-check-martes'));
         document.getElementById('btn-check-miercoles').checked = true;  toggle_btn('MIERCOLES', document.getElementById('btn-check-miercoles'));
         document.getElementById('btn-check-jueves').checked = true;     toggle_btn('JUEVES', document.getElementById('btn-check-jueves'));
         document.getElementById('btn-check-viernes').checked = true;    toggle_btn('VIERNES', document.getElementById('btn-check-viernes'));
     } else {
-        if( dias_habiles_input.value.includes('LUNES') )
+        if( dias_habilitados_input.value.includes('LUNES') )
             document.getElementById('btn-check-lunes').checked = true;
-        if( dias_habiles_input.value.includes('MARTES') )
+        if( dias_habilitados_input.value.includes('MARTES') )
             document.getElementById('btn-check-martes').checked = true;
-        if( dias_habiles_input.value.includes('MIERCOLES') )
+        if( dias_habilitados_input.value.includes('MIERCOLES') )
             document.getElementById('btn-check-miercoles').checked = true;
-        if( dias_habiles_input.value.includes('JUEVES') )
+        if( dias_habilitados_input.value.includes('JUEVES') )
             document.getElementById('btn-check-jueves').checked = true;
-        if( dias_habiles_input.value.includes('VIERNES') )
+        if( dias_habilitados_input.value.includes('VIERNES') )
             document.getElementById('btn-check-viernes').checked = true;
     }
-    
+
     </script>
 {% endblock %}
