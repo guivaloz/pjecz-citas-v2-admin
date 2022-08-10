@@ -25,7 +25,7 @@ class CitServicio(db.Model, UniversalMixin):
     documentos_limite = db.Column(db.Integer, nullable=False)
     desde = db.Column(db.Time(), nullable=True)
     hasta = db.Column(db.Time(), nullable=True)
-    dias_habiles = db.Column(db.String(7), nullable=True)
+    dias_habilitados = db.Column(db.String(7), nullable=False)
 
     # Hijos
     cit_citas = db.relationship("CitCita", back_populates="cit_servicio")

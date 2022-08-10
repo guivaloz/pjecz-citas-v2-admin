@@ -63,7 +63,7 @@ def datatable_json():
                 },
                 "desde": "-" if resultado.desde is None else resultado.desde.strftime("%H:%M"),
                 "hasta": "-" if resultado.hasta is None else resultado.hasta.strftime("%H:%M"),
-                "dias_habiles": "-" if resultado.dias_habiles == "" else _conversion_dias_habiles_numero_letra(resultado.dias_habiles),
+                "dias_habilitados": "-" if resultado.dias_habilitados == "" else _conversion_dias_habilitados_numero_letra(resultado.dias_habilitados),
             }
         )
     # Entregar JSON
@@ -104,15 +104,15 @@ def detail(cit_servicio_id):
     else:
         horario = f"{cit_servicio.desde} hasta {cit_servicio.hasta}"
 
-    dias_habiles = _conversion_dias_habiles_numero_letra(cit_servicio.dias_habiles)
-    if dias_habiles == "LUNES, MARTES, MIERCOLES, JUEVES, VIERNES,":
-        dias_habiles = "LUNES A VIERNES"
+    dias_habilitados = _conversion_dias_habilitados_numero_letra(cit_servicio.dias_habilitados)
+    if dias_habilitados == "LUNES, MARTES, MIERCOLES, JUEVES, VIERNES,":
+        dias_habilitados = "LUNES A VIERNES"
 
     return render_template(
         "cit_servicios/detail.jinja2",
         cit_servicio=cit_servicio,
         horario=horario,
-        dias_habiles=dias_habiles,
+        dias_habilitados=dias_habilitados,
     )
 
 
@@ -183,10 +183,10 @@ def edit(cit_servicio_id):
                 cit_servicio.documentos_limite = 0
             cit_servicio.desde = form.desde.data
             cit_servicio.hasta = form.hasta.data
-            dias_habiles = _conversion_dias_habiles_letra_numero(form.dias_habiles.data)
-            if dias_habiles == "01234":
-                dias_habiles = ""
-            cit_servicio.dias_habiles = dias_habiles
+            dias_habilitados = _conversion_dias_habilitados_letra_numero(form.dias_habilitados.data)
+            if dias_habilitados == "01234":
+                dias_habilitados = ""
+            cit_servicio.dias_habilitados = dias_habilitados
             cit_servicio.save()
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
@@ -205,7 +205,7 @@ def edit(cit_servicio_id):
     form.documentos_limite.data = cit_servicio.documentos_limite
     form.desde.data = cit_servicio.desde
     form.hasta.data = cit_servicio.hasta
-    form.dias_habiles.data = _conversion_dias_habiles_numero_letra(cit_servicio.dias_habiles)
+    form.dias_habilitados.data = _conversion_dias_habilitados_numero_letra(cit_servicio.dias_habilitados)
     # Entregar
     return render_template(
         "cit_servicios/edit.jinja2",
@@ -214,7 +214,7 @@ def edit(cit_servicio_id):
     )
 
 
-def _conversion_dias_habiles_letra_numero(texto: str):
+def _conversion_dias_habilitados_letra_numero(texto: str):
     """Regresa la conversión de días en letra a número"""
     if texto == "" or texto is None:
         return None
@@ -234,7 +234,7 @@ def _conversion_dias_habiles_letra_numero(texto: str):
     return resultado
 
 
-def _conversion_dias_habiles_numero_letra(texto: str):
+def _conversion_dias_habilitados_numero_letra(texto: str):
     """Regresa la conversión de días de número a letra"""
     if texto == "" or texto is None:
         return "LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, "
