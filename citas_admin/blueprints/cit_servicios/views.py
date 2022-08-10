@@ -16,6 +16,8 @@ from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 
+from citas_admin.blueprints.oficinas.models import Oficina
+
 MODULO = "CIT SERVICIOS"
 
 cit_servicios = Blueprint("cit_servicios", __name__, template_folder="templates")
@@ -92,7 +94,23 @@ def list_inactive():
 def detail(cit_servicio_id):
     """Detalle de un Servicio"""
     cit_servicio = CitServicio.query.get_or_404(cit_servicio_id)
-    return render_template("cit_servicios/detail.jinja2", cit_servicio=cit_servicio)
+
+    horario = ""
+    if cit_servicio.desde is None:
+        horario = "No se especifica horario, se utilizará el de su oficina."
+    else:
+        horario = f"{cit_servicio.desde} hasta {cit_servicio.hasta}"
+
+    dias_habiles = _conversion_dias_habiles_numero_letra(cit_servicio.dias_habiles)
+    if dias_habiles == "LUNES, MARTES, MIERCOLES, JUEVES, VIERNES,":
+        dias_habiles = "LUNES A VIERNES"
+
+    return render_template(
+        "cit_servicios/detail.jinja2",
+        cit_servicio=cit_servicio,
+        horario=horario,
+        dias_habiles=dias_habiles,
+    )
 
 
 @cit_servicios.route("/cit_servicios/nuevo/<int:cit_categoria_id>", methods=["GET", "POST"])
@@ -160,26 +178,77 @@ def edit(cit_servicio_id):
                 cit_servicio.documentos_limite = int(form.documentos_limite.data)
             else:
                 cit_servicio.documentos_limite = 0
+            cit_servicio.desde = form.desde.data
+            cit_servicio.hasta = form.hasta.data
+            dias_habiles = _conversion_dias_habiles_letra_numero(form.dias_habiles.data)
+            if dias_habiles == "01234":
+                dias_habiles = None
+            cit_servicio.dias_habiles = dias_habiles
             cit_servicio.save()
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
                 usuario=current_user,
-                descripcion=safe_message(f"Editado Ser {cit_servicio.descripcion}"),
+                descripcion=safe_message(f"Editado Servicio: {cit_servicio.descripcion}"),
                 url=url_for("cit_servicios.detail", cit_servicio_id=cit_servicio.id),
             )
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
+
     form.cit_categoria_nombre.data = cit_servicio.cit_categoria.nombre
     form.clave.data = cit_servicio.clave
     form.descripcion.data = cit_servicio.descripcion
     form.duracion.data = cit_servicio.duracion
     form.documentos_limite.data = cit_servicio.documentos_limite
+    form.desde.data = cit_servicio.desde
+    form.hasta.data = cit_servicio.hasta
+    form.dias_habiles.data = _conversion_dias_habiles_numero_letra(cit_servicio.dias_habiles)
+
     return render_template(
         "cit_servicios/edit.jinja2",
         form=form,
         cit_servicio=cit_servicio,
     )
+
+
+def _conversion_dias_habiles_letra_numero(texto: str):
+    """Regresa la conversión de días en letra a número"""
+    if texto == "" or texto is None:
+        return None
+
+    resultado = ""
+    if "LUNES" in texto:
+        resultado = "0"
+    if "MARTES" in texto:
+        resultado += "1"
+    if "MIERCOLES" in texto:
+        resultado += "2"
+    if "JUEVES" in texto:
+        resultado += "3"
+    if "VIERNES" in texto:
+        resultado += "4"
+
+    return resultado
+
+
+def _conversion_dias_habiles_numero_letra(texto: str):
+    """Regresa la conversión de días de número a letra"""
+    if texto == "" or texto is None:
+        return "LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, "
+
+    resultado = ""
+    if "0" in texto:
+        resultado = "LUNES, "
+    if "1" in texto:
+        resultado += "MARTES, "
+    if "2" in texto:
+        resultado += "MIERCOLES, "
+    if "3" in texto:
+        resultado += "JUEVES, "
+    if "4" in texto:
+        resultado += "VIERNES, "
+
+    return resultado
 
 
 @cit_servicios.route("/cit_servicios/eliminar/<int:cit_servicio_id>")
