@@ -17,7 +17,70 @@
             {% call f.form_group(form.descripcion) %}{% endcall %}
             {% call f.form_group(form.duracion) %}{% endcall %}
             {% call f.form_group(form.documentos_limite) %}{% endcall %}
+            {% call f.form_group(form.desde) %}{% endcall %}
+            <div class="form-text mt-0 mb-2">Si se deja vacío se tomará el horario de la oficina.</div>
+            {% call f.form_group(form.hasta) %}{% endcall %}
+            <div class="form-text mb-2" for="hasta">Si se deja vacío se tomará el horario de la oficina.</div>
+            {% call f.form_group(form.dias_habiles, readonly=true) %}{% endcall %}
+            <div class="btn-group">
+                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="button" disabled>Domingo</button>
+                <input type="checkbox" class="btn-check" id="btn-check-lunes" autocomplete="off" onchange="toggle_btn('LUNES', this);">
+                <label class="btn btn-outline-primary btn-sm" for="btn-check-lunes">Lunes</label>
+                <input type="checkbox" class="btn-check" id="btn-check-martes" autocomplete="off" onchange="toggle_btn('MARTES', this);">
+                <label class="btn btn-outline-primary btn-sm" for="btn-check-martes">Martes</label>
+                <input type="checkbox" class="btn-check" id="btn-check-miercoles" autocomplete="off" onchange="toggle_btn('MIERCOLES', this);">
+                <label class="btn btn-outline-primary btn-sm" for="btn-check-miercoles">Miércoles</label>
+                <input type="checkbox" class="btn-check" id="btn-check-jueves" autocomplete="off" onchange="toggle_btn('JUEVES', this);">
+                <label class="btn btn-outline-primary btn-sm" for="btn-check-jueves">Jueves</label>
+                <input type="checkbox" class="btn-check" id="btn-check-viernes" autocomplete="off" onchange="toggle_btn('VIERNES', this);">
+                <label class="btn btn-outline-primary btn-sm" for="btn-check-viernes">Viernes</label>
+                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="button" disabled>Sábado</button>
+            </div>
+            <div class="form-text  text-danger mb-3">Si se deja vacío se tomarán todos los días como hábiles.</div>
             {% call f.form_group(form.guardar) %}{% endcall %}
         {% endcall %}
     {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    <script>
+    let dias_habiles_input = document.getElementById('dias_habiles');
+    
+    function toggle_btn(dia, btn) {
+        if (btn.checked === true)  {
+            dias_habiles_input.value += dia + ', ';
+        } else {
+            console.log(dias_habiles_input.value);
+            console.log(dia + ', ');
+            dias_habiles_input.value = dias_habiles_input.value.replaceAll(dia + ', ', '');
+        }
+    };
+
+    /* Carga inicial de valores para días Hábiles
+     * En Python los días de la semana tienen la siguiente representacion en número:
+     * 0 - Lunes
+     * 1 - Martes
+     * 5 - Sábado
+     * 6 - Domingo
+     */
+    if( dias_habiles.value == '' )  {
+        document.getElementById('btn-check-lunes').checked = true;      toggle_btn('LUNES', document.getElementById('btn-check-lunes'));
+        document.getElementById('btn-check-martes').checked = true;     toggle_btn('MARTES', document.getElementById('btn-check-martes'));
+        document.getElementById('btn-check-miercoles').checked = true;  toggle_btn('MIERCOLES', document.getElementById('btn-check-miercoles'));
+        document.getElementById('btn-check-jueves').checked = true;     toggle_btn('JUEVES', document.getElementById('btn-check-jueves'));
+        document.getElementById('btn-check-viernes').checked = true;    toggle_btn('VIERNES', document.getElementById('btn-check-viernes'));
+    } else {
+        if( dias_habiles_input.value.includes('LUNES') )
+            document.getElementById('btn-check-lunes').checked = true;
+        if( dias_habiles_input.value.includes('MARTES') )
+            document.getElementById('btn-check-martes').checked = true;
+        if( dias_habiles_input.value.includes('MIERCOLES') )
+            document.getElementById('btn-check-miercoles').checked = true;
+        if( dias_habiles_input.value.includes('JUEVES') )
+            document.getElementById('btn-check-jueves').checked = true;
+        if( dias_habiles_input.value.includes('VIERNES') )
+            document.getElementById('btn-check-viernes').checked = true;
+    }
+    
+    </script>
 {% endblock %}

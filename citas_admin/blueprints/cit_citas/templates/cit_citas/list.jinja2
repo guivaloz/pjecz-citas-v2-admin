@@ -141,8 +141,17 @@
     </script>
     <script>
         $('#fecha_actual').change(function() {
+            let fecha_actual = $('#fecha_actual').val();
+            if(fecha_actual == '') {
+                const date = new Date();
+                salida_f = date.toISOString().split('.');
+                output_s = salida_f[0].split('T');
+                fecha_actual =output_s[0];
+                $('#fecha_actual').val(fecha_actual);
+                $('#fecha_actual').text(fecha_actual);
+            };
             $('#cit_citas_datatable').DataTable().destroy();
-            configDataTable['ajax']['data']['fecha'] = $('#fecha_actual').val();
+            configDataTable['ajax']['data']['fecha'] = fecha_actual;
             // --- Imprimir tiutlo del pdf --- //
             configDataTable['responsive'] = false;
             configDataTable['paging'] = false;
@@ -150,7 +159,7 @@
             configDataTable['buttons'] = [
                 {
                     extend: 'pdf',
-                    title: 'Listado de {{ titulo }} : ' + $('#fecha_actual').val(),
+                    title: 'Listado de {{ titulo }} : ' + fecha_actual,
                     buttonText: 'jajajaj',
                 }
             ];
