@@ -10,12 +10,24 @@
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_clientes.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_clientes.list_active')) }}{% endif %}
         {% endif %}
-        {{ topbar.button_search('Buscar', url_for('cit_clientes.search')) }}
+        {{ topbar.button('Avisos', '#', 'mdi:comment-alert-outline') }}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
     {% call list.card() %}
+        <div class="row">
+            <div class="col">
+                <form class="input-group mb-3" id="buscadorForm" onsubmit="buscar(); return false;">
+                    <input id="emailInput" type="text" class="form-control text-primary" placeholder="email" aria-label="email" aria-describedby="button-buscar" style="text-transform: lowercase">
+                    <input id="nombreInput" type="text" class="form-control text-primary" placeholder="nombres" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
+                    <input id="apellidoPrimeroInput" type="text" class="form-control text-primary" placeholder="apellido Primero" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
+                    <input id="curpInput" type="text" class="form-control text-primary" placeholder="CURP" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
+                    <button class="btn btn-primary" type="submit" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                    <button class="btn btn-warning" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                </form>
+            </div>
+        </div>
         <table id="cit_clientes_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -42,13 +54,90 @@
         ];
         configDataTable['columnDefs'] = [
             {
-                targets: 0,
+                targets: 0,     // detalle (email)
                 data: null,
                 render: function(data, type, row, meta) {
                     return '<a href="' + data.url + '">' + data.email + '</a>';
                 }
+            },
+            {
+                targets: [2, 3],     // CURP
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<span class="font-monospace">' + data + '</span>';
+                }
             }
         ];
+
+        // --- Búsqueda --- //
+        let emailBuscar = document.getElementById('emailInput').value.toLowerCase();
+        let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
+        let apellidoPrimeroBuscar = document.getElementById('apellidoPrimeroInput').value.toUpperCase();
+        let curpBuscar = document.getElementById('curpInput').value.toUpperCase();
+
+        if(emailBuscar != '')
+            configDataTable['ajax']['data']['email'] = emailBuscar;
+        if(nombreBuscar != '')
+            configDataTable['ajax']['data']['nombres'] = nombreBuscar;
+        if(apellidoPrimeroBuscar != '')
+            configDataTable['ajax']['data']['apellido_primero'] = apellidoPrimeroBuscar;
+        if(curpBuscar != '')
+            configDataTable['ajax']['data']['curp'] = curpBuscar;
+            
         $('#cit_clientes_datatable').DataTable(configDataTable);
+    </script>
+    <!-- Función de buscador -->
+    <script type="text/javascript">
+        function buscar() {
+            let emailBuscar = document.getElementById('emailInput').value.toLowerCase();
+            let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
+            let apellidoPrimeroBuscar = document.getElementById('apellidoPrimeroInput').value.toUpperCase();
+            let curpBuscar = document.getElementById('curpInput').value.toUpperCase();
+
+            if( configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' &&
+                configDataTable['ajax']['data']['nombres'] === undefined && nombreBuscar === '' &&
+                configDataTable['ajax']['data']['apellido_primero'] === undefined && apellidoPrimeroBuscar === '' &&
+                configDataTable['ajax']['data']['curp'] === undefined && curpBuscar === ''
+            )
+                return false;
+
+            $('#cit_clientes_datatable').DataTable().destroy();
+
+            if(nombreBuscar == '')
+                delete configDataTable['ajax']['data']['nombres'];
+            else
+                configDataTable['ajax']['data']['nombres'] = nombreBuscar;
+            if(apellidoPrimeroBuscar == '')
+                delete configDataTable['ajax']['data']['apellido_primero'];
+            else
+                configDataTable['ajax']['data']['apellido_primero'] = apellidoPrimeroBuscar;
+            if(emailBuscar == '')
+                delete configDataTable['ajax']['data']['email'];
+            else
+                configDataTable['ajax']['data']['email'] = emailBuscar;
+            if(curpBuscar == '')
+                delete configDataTable['ajax']['data']['curp'];
+            else
+                configDataTable['ajax']['data']['curp'] = curpBuscar;
+
+            $('#cit_clientes_datatable').DataTable(configDataTable);
+        };
+
+        function limpiar()  {
+            if( configDataTable['ajax']['data']['email'] === undefined &&
+                configDataTable['ajax']['data']['nombres'] === undefined &&
+                configDataTable['ajax']['data']['apellido_primero'] === undefined &&
+                configDataTable['ajax']['data']['curp'] === undefined
+            )
+                return false;
+            
+            delete configDataTable['ajax']['data']['email'];
+            delete configDataTable['ajax']['data']['nombres'];
+            delete configDataTable['ajax']['data']['apellido_primero'];
+            delete configDataTable['ajax']['data']['curp'];
+
+            $('#cit_clientes_datatable').DataTable().destroy();
+            $('#cit_clientes_datatable').DataTable(configDataTable);
+        };
     </script>
 {% endblock %}

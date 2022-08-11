@@ -153,3 +153,13 @@ def safe_curp(input_str, max_len=32):
         # raise ValueError("No es un valor permitido para una CURP")
         return None
     return final
+
+
+def safe_tel(input_str):
+    """Safe Teléfono"""
+    if not isinstance(input_str, str):
+        return None
+    removed_spaces = re.sub(r"\s", "", input_str)
+    removed_simbols = re.sub(r"[()\[\]:/.-]+", "", removed_spaces)
+    removed_letters = re.sub(r"[a-zA-Z]+", "", removed_simbols)
+    return removed_letters.strip()

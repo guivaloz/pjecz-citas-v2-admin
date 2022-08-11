@@ -25,6 +25,7 @@ class CitCliente(db.Model, UniversalMixin):
     contrasena_sha256 = db.Column(db.String(256), nullable=False)
     renovacion = db.Column(db.Date(), nullable=False)
     # limite_citas_pendientes = Column(Integer(), nullable=False)
+    # recibir_boletin = db.Column(db.Boolean())
 
     # Hijos
     cit_citas = db.relationship("CitCita", back_populates="cit_cliente")
@@ -35,6 +36,13 @@ class CitCliente(db.Model, UniversalMixin):
     def nombre(self):
         """Junta nombres, apellido_primero y apellido segundo"""
         return self.nombres + " " + self.apellido_primero + " " + self.apellido_segundo
+
+    @property
+    def telefono_formato(self):
+        """Teléfono con formato"""
+        if len(self.telefono) != 10:
+            return self.telefono
+        return f"({self.telefono[:3]}) {self.telefono[3:6]}-{self.telefono[6:]}"
 
     def __repr__(self):
         """Representación"""
