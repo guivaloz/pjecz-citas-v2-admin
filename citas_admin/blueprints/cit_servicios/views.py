@@ -2,6 +2,7 @@
 Cit Servicios, vistas
 """
 import json
+from datetime import time
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
@@ -63,7 +64,7 @@ def datatable_json():
                 },
                 "desde": "-" if resultado.desde is None else resultado.desde.strftime("%H:%M"),
                 "hasta": "-" if resultado.hasta is None else resultado.hasta.strftime("%H:%M"),
-                "dias_habilitados": "-" if resultado.dias_habilitados == "" else _conversion_dias_habilitados_numero_letra(resultado.dias_habilitados),
+                "dias_habilitados": "-" if resultado.dias_habilitados == "" else _conversion_dias_habilitados_numero_letra_abreviada(resultado.dias_habilitados),
             }
         )
     # Entregar JSON
@@ -99,13 +100,18 @@ def detail(cit_servicio_id):
     cit_servicio = CitServicio.query.get_or_404(cit_servicio_id)
 
     horario = ""
-    if cit_servicio.desde is None:
+    if cit_servicio.desde is None and cit_servicio.hasta is None:
         horario = "No se especifica horario, se utilizará el de su oficina."
     else:
-        horario = f"{cit_servicio.desde} hasta {cit_servicio.hasta}"
+        if cit_servicio.desde is None:
+            horario = f"Hora de apertura de la oficina hasta {cit_servicio.hasta.strftime('%H:%M')}"
+        elif cit_servicio.hasta is None:
+            horario = f"{cit_servicio.desde.strftime('%H:%M')} hasta hora de cierre de la oficina"
+        else:
+            horario = f"{cit_servicio.desde.strftime('%H:%M')} hasta {cit_servicio.hasta.strftime('%H:%M')}"
 
     dias_habilitados = _conversion_dias_habilitados_numero_letra(cit_servicio.dias_habilitados)
-    if dias_habilitados == "LUNES, MARTES, MIERCOLES, JUEVES, VIERNES,":
+    if dias_habilitados == "LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, ":
         dias_habilitados = "LUNES A VIERNES"
 
     return render_template(
@@ -172,6 +178,9 @@ def edit(cit_servicio_id):
             if cit_servicio_existente and cit_servicio_existente.id != cit_servicio.id:
                 es_valido = False
                 flash("La clave ya está en uso. Debe de ser única.", "warning")
+        if _validar_horario(form.desde.data, form.hasta.data) == False:
+            flash("El horario no es válido", "warning")
+            es_valido = False
         # Si es valido actualizar
         if es_valido:
             cit_servicio.clave = clave
@@ -214,6 +223,19 @@ def edit(cit_servicio_id):
     )
 
 
+def _validar_horario(inicio, termino):
+    """Validad que el horario no se empalme"""
+    if inicio is None and termino is None:
+        return True
+    if inicio is None:
+        inicio = time.fromisoformat("08:30:00")
+    if termino is None:
+        termino = time.fromisoformat("16:30:00")
+    if inicio > termino:
+        return False
+    return True
+
+
 def _conversion_dias_habilitados_letra_numero(texto: str):
     """Regresa la conversión de días en letra a número"""
     if texto == "" or texto is None:
@@ -252,6 +274,23 @@ def _conversion_dias_habilitados_numero_letra(texto: str):
         resultado += "VIERNES, "
 
     return resultado
+
+
+def _conversion_dias_habilitados_numero_letra_abreviada(texto: str):
+    """Regresa la conversión de días de número a letra abreviadas"""
+    resultado = ""
+    if "0" in texto:
+        resultado = "Lun, "
+    if "1" in texto:
+        resultado += "Mar, "
+    if "2" in texto:
+        resultado += "Mie, "
+    if "3" in texto:
+        resultado += "Jue, "
+    if "4" in texto:
+        resultado += "Vie, "
+
+    return resultado[:-2]
 
 
 @cit_servicios.route("/cit_servicios/eliminar/<int:cit_servicio_id>")
