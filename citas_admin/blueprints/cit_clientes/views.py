@@ -7,16 +7,18 @@ from flask import Blueprint, render_template, request, url_for, flash, redirect
 from flask_login import login_required, current_user
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_string, safe_text
+from lib.safe_string import safe_string, safe_text, safe_message, safe_email, safe_curp, safe_tel
 
 from dotenv import load_dotenv
 
 from citas_admin.blueprints.permisos.models import Permiso
+from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitClienteRecuperacion
 
-from citas_admin.blueprints.cit_clientes.forms import ClienteSearchForm
+from citas_admin.blueprints.cit_clientes.forms import ClienteEditForm
 
 MODULO = "CIT CLIENTES"
 
@@ -49,7 +51,7 @@ def datatable_json():
         consulta = consulta.filter(CitCliente.apellido_primero.contains(safe_string(request.form["apellido_primero"])))
     if "curp" in request.form:
         consulta = consulta.filter(CitCliente.curp.contains(safe_string(request.form["curp"])))
-    registros = consulta.order_by(CitCliente.id.desc()).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(CitCliente.modificado.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -62,7 +64,7 @@ def datatable_json():
                 },
                 "nombre": resultado.nombre,
                 "curp": resultado.curp,
-                "telefono": resultado.telefono,
+                "telefono": resultado.telefono_formato,
             }
         )
     # Entregar JSON
@@ -116,42 +118,6 @@ def detail(cit_cliente_id):
     )
 
 
-@cit_clientes.route("/cit_clientes/buscar", methods=["GET", "POST"])
-def search():
-    """Buscar Cliente"""
-    form_search = ClienteSearchForm()
-    if form_search.validate_on_submit():
-        busqueda = {"estatus": "A"}
-        titulos = []
-        if form_search.nombres.data:
-            nombres = safe_string(form_search.nombres.data)
-            if nombres != "":
-                busqueda["nombres"] = nombres
-                titulos.append("nombres: " + nombres)
-        if form_search.email.data:
-            email = safe_text(form_search.email.data, to_uppercase=False)
-            if email != "":
-                busqueda["email"] = email
-                titulos.append("email: " + email)
-        if form_search.apellido_primero.data:
-            apellido_primero = safe_string(form_search.apellido_primero.data)
-            if apellido_primero != "":
-                busqueda["apellido_primero"] = apellido_primero
-                titulos.append("apellido primero: " + apellido_primero)
-        if form_search.curp.data:
-            curp = safe_string(form_search.curp.data)
-            if curp != "":
-                busqueda["curp"] = curp
-                titulos.append("CURP: " + curp)
-        return render_template(
-            "cit_clientes/list.jinja2",
-            filtros=json.dumps(busqueda),
-            titulo="Cliente con " + ", ".join(titulos),
-            estatus="A",
-        )
-    return render_template("cit_clientes/search.jinja2", form=form_search)
-
-
 @cit_clientes.route("/cit_clientes/enviar_recuperacion_contrasena/<int:cit_cliente_recuperacion_id>")
 @permission_required(MODULO, Permiso.MODIFICAR)
 def send_email_recover_password(cit_cliente_recuperacion_id):
@@ -170,3 +136,64 @@ def send_email_recover_password(cit_cliente_recuperacion_id):
         flash("Se está reenviando un correo de recuperación de contraseña al cliente... ", "info")
     # Mostrar detalle del cliente
     return redirect(url_for("cit_clientes.detail", cit_cliente_id=cliente_recuperacion.cit_cliente_id))
+
+
+@cit_clientes.route("/cit_clientes/edicion/<int:cit_cliente_id>", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.MODIFICAR)
+def edit(cit_cliente_id):
+    """Editar Cliente"""
+    cliente = CitCliente.query.get_or_404(cit_cliente_id)
+    form = ClienteEditForm()
+    if form.validate_on_submit():
+        # --- Validaciones ---
+        # Validar CURP repetido
+        curp = safe_curp(form.curp.data)
+        if curp == "" or curp is None:
+            flash("El formato de la CURP no es válido.", "warning")
+            return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
+        curp_repetido = CitCliente.query.filter_by(curp=curp).filter(CitCliente.id != cit_cliente_id).first()
+        if curp_repetido:
+            flash(f'Esta CURP ya se encuentra en uso. La utiliza el cliente: "{curp_repetido.nombre}"', "danger")
+            return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
+        # Validar email repetido
+        email = safe_email(form.email.data)
+        if email == "":
+            flash("El formato del EMAIL no es válido.", "warning")
+            return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
+        email_repetido = CitCliente.query.filter_by(email=email).filter(CitCliente.id != cit_cliente_id).first()
+        if email_repetido:
+            flash(f'Este EMAIL ya se encuentra en uso. La utiliza el cliente: "{email_repetido.nombre}"', "danger")
+            return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
+        # Validar teléfono repetido
+        telefono = safe_tel(form.telefono.data)
+        if telefono == "" or telefono is None or len(telefono) < 10:
+            flash("El formato del TELEFONO no es válido.", "warning")
+            return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
+        telefono_repetido = CitCliente.query.filter_by(telefono=telefono).filter(CitCliente.id != cit_cliente_id).first()
+        if telefono_repetido:
+            flash(f'Este TELEFONO ya se encuentra en uso. La utiliza el cliente: "{telefono_repetido.nombre}"', "danger")
+            return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
+        # --- Fin Validaciones ---
+        cliente.nombres = safe_string(form.nombres.data)
+        cliente.apellido_primero = safe_string(form.apellido_primero.data)
+        cliente.apellido_segundo = safe_string(form.apellido_segundo.data)
+        cliente.curp = curp
+        cliente.email = email
+        cliente.telefono = telefono
+        cliente.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Editado Cliente {cliente.nombre}"),
+            url=url_for("cit_clientes.detail", cit_cliente_id=cliente.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+        return redirect(bitacora.url)
+    form.nombres.data = cliente.nombres
+    form.apellido_primero.data = cliente.apellido_primero
+    form.apellido_segundo.data = cliente.apellido_segundo
+    form.curp.data = cliente.curp
+    form.email.data = cliente.email
+    form.telefono.data = cliente.telefono
+    return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
