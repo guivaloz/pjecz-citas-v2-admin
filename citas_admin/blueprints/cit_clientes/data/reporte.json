@@ -1,0 +1,79 @@
+{
+    "fecha_creacion": "2022/08/11 16:30",
+    "reportes": [
+        {
+            "titulo": "CURP Parecidos",
+            "descripcion": "Se revisaron los CURP y se compararon los primeros 16 caracteres para ver si alguien intento duplicar su registro",
+            "cantidad": 1,
+            "resultados": [
+                "AAA"
+            ]
+        },
+        {
+            "titulo": "Sin Apellido Segundo",
+            "descripcion": "Clientes que no tienen apellido segundo",
+            "cantidad": 0,
+            "resultados": []
+        },
+        {
+            "titulo": "Nombre o Apellidos demasiado cortos",
+            "descripcion": "Los nombres y apellidos demasiado cortos podrían representar un error de captura",
+            "cantidad": 23,
+            "resultados": [
+                "ROSA INES DE SANTIAGO",
+                "ELIZABETH SANCHEZ ES",
+                "DE LA TORRE B. ABOGADOS",
+                "MARCO ANTONIO MASS UC",
+                "JOSE LUIS HERNANDEZ C",
+                "ELIZABETH GARCIA X",
+                "JOSE SILBERIO MORALES XX",
+                "KASANDRA HILARIO X",
+                "ESTANISLAO CERVANTES NA",
+                "JP RH RH",
+                "VERONICA J. TORRES S.",
+                "ARK Q L",
+                "KIMBERLY ANNA DE LA PARRA X",
+                "MARIA GUADALUPE SUMUHANO G.",
+                "FANGFANG DU -",
+                "CELIA LARA .",
+                "BRENDA ESC FA",
+                "JULIO CESAR EK BOJORQUEZ",
+                "FHERNANDO MEDINA J",
+                "LAZARO RODRIGUEZ X",
+                "JESUS FELIPE FL RO",
+                "JUAN ANTONIO SANCHEZ HO",
+                "LUCIA ARANDA ."
+            ]
+        },
+        {
+            "titulo": "Nombre y Apellido Primero Repetidos",
+            "descripcion": "Clientes con el mismo nombre y apellido primero que otro. Posiblemente se registro más de una vez",
+            "cantidad": 0,
+            "resultados": []
+        },
+        {
+            "titulo": "Teléfono Repetido",
+            "descripcion": "Clientes con el mismo número telefónico",
+            "cantidad": 0,
+            "resultados": []
+        },
+        {
+            "titulo": "Sin Teléfono",
+            "descripcion": "El teléfono es un campo opcional, por lo tanto puede estar vacío",
+            "cantidad": 0,
+            "resultados": []
+        },
+        {
+            "titulo": "Formato de Teléfono",
+            "descripcion": "Se incluyó un formato de teléfono en el campo de teléfono. Se recomienda solo almacenar el número de teléfono como 10 dígitos",
+            "cantidad": 0,
+            "resultados": []
+        },
+        {
+            "titulo": "Clientes sin Agendar Citas",
+            "descripcion": "Clientes que no han agendado ninguna cita",
+            "cantidad": 0,
+            "resultados": []
+        }
+    ]
+}

@@ -1,0 +1,74 @@
+{
+    "fecha_creacion": "2022/08/11 14:51:45",
+    "reportes": [
+        {
+            "titulo": "CURP Parecidos",
+            "descripcion": "Se revisaron los CURP y se compararon los primeros 16 caracteres para ver si alguien intento duplicar su registro",
+            "cantidad": 4,
+            "resultados": [
+                "AAA",
+                "BBB",
+                "CCC",
+                "DDD"
+            ]
+        },
+        {
+            "titulo": "Sin Apellido Segundo",
+            "descripcion": "Clientes que no tienen apellido segundo",
+            "cantidad": 3,
+            "resultados": [
+                "Cristina Anguilera",
+                "Tony Stark",
+                "Robin Hood"
+            ]
+        },
+        {
+            "titulo": "Nombre y Apellido Primero Repetidos",
+            "descripcion": "Clientes con el mismo nombre y apellido primero que otro. Posiblemente se registro más de una vez",
+            "cantidad": 0,
+            "resultados": [
+            ]
+        },
+        {
+            "titulo": "Teléfono Repetido",
+            "descripcion": "Clientes con el mismo número telefónico",
+            "cantidad": 1,
+            "resultados": [
+                "Caperucita Roja",
+                "El Lobo Feroz"
+            ]
+        },
+        {
+            "titulo": "Sin Teléfono",
+            "descripcion": "El teléfono es un campo opcional, por lo tanto puede estar vacío",
+            "cantidad": 5,
+            "resultados": [
+                "Oscar Wilde",
+                "Arthur Conan Doyle",
+                "Issac Newton",
+                "Albert Einsten",
+                "Marie Curie"
+            ]
+        },
+        {
+            "titulo": "Formato de Teléfono",
+            "descripcion": "Se incluyó un formato de teléfono en el campo de teléfono. Se recomienda solo almacenar el número de teléfono como 10 dígitos",
+            "cantidad": 4,
+            "resultados": [
+                "Pepe el Toro",
+                "Blanca Nieves",
+                "Peter Pan",
+                "Sherlock Holmes"
+            ]
+        },
+        {
+            "titulo": "Clientes sin Agendar Citas",
+            "descripcion": "Clientes que no han agendado ninguna cita",
+            "cantidad": 2,
+            "resultados": [
+                "Paco Rabana",
+                "Checo Perez"
+            ]
+        }
+    ]
+}

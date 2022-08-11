@@ -3,6 +3,7 @@ Cit Clientes, vistas
 """
 import json
 import os
+from pathlib import Path
 from flask import Blueprint, render_template, request, url_for, flash, redirect
 from flask_login import login_required, current_user
 
@@ -20,6 +21,7 @@ from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitCliente
 
 from citas_admin.blueprints.cit_clientes.forms import ClienteEditForm
 
+FILE_NAME = "citas_admin/blueprints/cit_clientes/data/reporte.json"
 MODULO = "CIT CLIENTES"
 
 cit_clientes = Blueprint("cit_clientes", __name__, template_folder="templates")
@@ -197,3 +199,44 @@ def edit(cit_cliente_id):
     form.email.data = cliente.email
     form.telefono.data = cliente.telefono
     return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
+
+
+@cit_clientes.route("/cit_clientes/avisos")
+def reports():
+    """Lectura y presentación de los reportes creados para Clientes"""
+    # Revisa si existe el archivo de reporte
+    ruta = Path(FILE_NAME)
+    if not ruta.exists():
+        flash(f"AVISO: La ruta '{ruta}' no se encontró.", "danger")
+        return render_template("cit_clientes/reports.jinja2")
+    if not ruta.is_file():
+        flash(f"AVISO: {ruta.name} no es un archivo.", "danger")
+        return render_template("cit_clientes/reports.jinja2")
+    # Abrimos el archivo de reporte JSON
+    archivo = open(FILE_NAME, "r")
+    data = json.load(archivo)
+    archivo.close()
+
+    return render_template(
+        "cit_clientes/reports.jinja2",
+        fecha_creacion=data["fecha_creacion"],
+        reporte=data["reportes"],
+    )
+
+
+@cit_clientes.route("/cit_clientes/actualizar_reporte/")
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def refresh_report():
+    """Actualiza el reporte de avisos de clientes"""
+    # Salir si hay una tarea en el fondo
+    if current_user.get_task_in_progress("cit_clientes.tasks.refresh_report"):
+        flash("Debe esperar porque hay una tarea en el fondo sin terminar.", "warning")
+    else:
+        # Lanzar tarea en el fondo
+        # current_user.launch_task(
+        #     nombre="cit_clientes.tasks.refresh_report",
+        #     descripcion=f"Actualiza el reporte de errores de cit_clientes"
+        # )
+        flash("Se está actualizando el reporte de errores de clientes...", "info")
+    # Mostrar reporte de errores del cliente
+    return redirect(url_for("cit_clientes.reports"))

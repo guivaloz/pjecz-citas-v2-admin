@@ -10,7 +10,7 @@
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_clientes.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_clientes.list_active')) }}{% endif %}
         {% endif %}
-        {{ topbar.button('Avisos', '#', 'mdi:comment-alert-outline') }}
+        {{ topbar.button('Avisos', url_for('cit_clientes.reports'), 'mdi:comment-alert-outline') }}
     {% endcall %}
 {% endblock %}
 
