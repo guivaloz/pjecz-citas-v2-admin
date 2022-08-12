@@ -30,7 +30,7 @@ db.app = app
 
 LIMITE_VERIFICACION = 30
 
-FILE_NAME = "citas_admin/blueprints/cit_clientes/data/reporte.json"
+FILE_NAME = "tmp/clientes_errores_reporte.json"
 
 
 def refresh_report():

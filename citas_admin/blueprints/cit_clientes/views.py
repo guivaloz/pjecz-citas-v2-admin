@@ -21,7 +21,7 @@ from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitCliente
 
 from citas_admin.blueprints.cit_clientes.forms import ClienteEditForm
 
-FILE_NAME = "citas_admin/blueprints/cit_clientes/data/reporte.json"
+FILE_NAME = "tmp/clientes_errores_reporte.json"
 MODULO = "CIT CLIENTES"
 
 cit_clientes = Blueprint("cit_clientes", __name__, template_folder="templates")
