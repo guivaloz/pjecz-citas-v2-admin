@@ -17,8 +17,6 @@ from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 
-from citas_admin.blueprints.oficinas.models import Oficina
-
 MODULO = "CIT SERVICIOS"
 
 cit_servicios = Blueprint("cit_servicios", __name__, template_folder="templates")
@@ -98,7 +96,7 @@ def list_inactive():
 def detail(cit_servicio_id):
     """Detalle de un Servicio"""
     cit_servicio = CitServicio.query.get_or_404(cit_servicio_id)
-
+    # Cuando no hay horario en el servicio
     horario = ""
     if cit_servicio.desde is None and cit_servicio.hasta is None:
         horario = "No se especifica horario, se utilizará el de su oficina."
@@ -109,11 +107,11 @@ def detail(cit_servicio_id):
             horario = f"{cit_servicio.desde.strftime('%H:%M')} hasta hora de cierre de la oficina"
         else:
             horario = f"{cit_servicio.desde.strftime('%H:%M')} hasta {cit_servicio.hasta.strftime('%H:%M')}"
-
+    # Dias habilitados
     dias_habilitados = _conversion_dias_habilitados_numero_letra(cit_servicio.dias_habilitados)
     if dias_habilitados == "LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, ":
         dias_habilitados = "LUNES A VIERNES"
-
+    # Entregar
     return render_template(
         "cit_servicios/detail.jinja2",
         cit_servicio=cit_servicio,
@@ -240,7 +238,7 @@ def _conversion_dias_habilitados_letra_numero(texto: str):
     """Regresa la conversión de días en letra a número"""
     if texto == "" or texto is None:
         return None
-
+    # Elaborar resultado de la conversión
     resultado = ""
     if "LUNES" in texto:
         resultado = "0"
@@ -252,7 +250,7 @@ def _conversion_dias_habilitados_letra_numero(texto: str):
         resultado += "3"
     if "VIERNES" in texto:
         resultado += "4"
-
+    # Entregar
     return resultado
 
 
@@ -260,7 +258,7 @@ def _conversion_dias_habilitados_numero_letra(texto: str):
     """Regresa la conversión de días de número a letra"""
     if texto == "" or texto is None:
         return "LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, "
-
+    # Elaborar resultado de la conversión
     resultado = ""
     if "0" in texto:
         resultado = "LUNES, "
@@ -272,12 +270,13 @@ def _conversion_dias_habilitados_numero_letra(texto: str):
         resultado += "JUEVES, "
     if "4" in texto:
         resultado += "VIERNES, "
-
+    # Entregar
     return resultado
 
 
 def _conversion_dias_habilitados_numero_letra_abreviada(texto: str):
     """Regresa la conversión de días de número a letra abreviadas"""
+    # Elaborar resultado de la conversión
     resultado = ""
     if "0" in texto:
         resultado = "Lun, "
@@ -289,7 +288,7 @@ def _conversion_dias_habilitados_numero_letra_abreviada(texto: str):
         resultado += "Jue, "
     if "4" in texto:
         resultado += "Vie, "
-
+    # Entregar
     return resultado[:-2]
 
 

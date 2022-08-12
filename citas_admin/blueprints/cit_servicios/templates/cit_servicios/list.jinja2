@@ -10,6 +10,9 @@
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_servicios.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_servicios.list_active')) }}{% endif %}
         {% endif %}
+        {% if current_user.can_insert('CIT SERVICIOS') %}
+            {{ topbar.button_new('Nuevo Servicio', url_for('cit_servicios.new')) }}
+        {% endif %}
     {% endcall %}
 {% endblock %}
 
