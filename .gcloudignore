@@ -2,7 +2,6 @@
 .directory
 .env
 .gcloudignore
-.github
 .gitignore
 .DS_Store
 .~lock.*
@@ -16,6 +15,7 @@
 
 __pycache__/
 /.git
+/.github
 /.vscode
 /cli
 /instance/settings.py
