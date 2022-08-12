@@ -81,6 +81,7 @@ def list_active():
         filtros=json.dumps({"estatus": "A"}),
         titulo="Clientes",
         estatus="A",
+        reporte_nuevo=_leer_estado_reporte(),
     )
 
 
@@ -93,6 +94,7 @@ def list_inactive():
         filtros=json.dumps({"estatus": "B"}),
         titulo="Clientes inactivos",
         estatus="B",
+        reporte_nuevo=_leer_estado_reporte(),
     )
 
 
@@ -201,9 +203,8 @@ def edit(cit_cliente_id):
     return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
 
 
-@cit_clientes.route("/cit_clientes/avisos")
-def reports():
-    """Lectura y presentación de los reportes creados para Clientes"""
+def _read_file_report():
+    """Rutina para abrir y leer el archivo de reportes"""
     # Revisa si existe el archivo de reporte
     ruta = Path(FILE_NAME)
     if not ruta.exists():
@@ -217,10 +218,60 @@ def reports():
     data = json.load(archivo)
     archivo.close()
 
+    return data
+
+
+def _leer_estado_reporte():
+    """Lee el estado del reporte"""
+    data = _read_file_report()
+    return data["consultado"]
+
+
+def _escribir_estado_reporte():
+    """Escribe el estado del reporte"""
+    data = _read_file_report()
+    data["consultado"] = True
+    with open(FILE_NAME, "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+@cit_clientes.route("/cit_clientes/avisos")
+def report_list():
+    """Lectura y presentación de los reportes creados para Clientes"""
+    data = _read_file_report()
+
+    if data["consultado"] == False:
+        _escribir_estado_reporte()
+
     return render_template(
-        "cit_clientes/reports.jinja2",
+        "cit_clientes/report_list.jinja2",
         fecha_creacion=data["fecha_creacion"],
         reporte=data["reportes"],
+    )
+
+
+@cit_clientes.route("/cit_clientes/aviso/<int:reporte_id>", methods=["GET", "POST"])
+def report_detail(reporte_id):
+    """Lectura a detalle del reporte"""
+    data = _read_file_report()
+    # Construir tabla de resultados
+    resultados = []
+    renglon = {}
+    for resultado in data["reportes"][reporte_id]["resultados"]:
+        renglon = {}
+        renglon["valor"] = ""
+        for llave, valor in resultado.items():
+            if llave == "id":
+                renglon["id"] = valor
+            else:
+                renglon["valor"] += '<strong>' + str(llave) + ':</strong> ' + str(valor) + '<br/>'
+        resultados.append(renglon)
+
+    return render_template(
+        "cit_clientes/report_detail.jinja2",
+        fecha_creacion=data["fecha_creacion"],
+        reporte=data["reportes"][reporte_id],
+        resultados=resultados,
     )
 
 

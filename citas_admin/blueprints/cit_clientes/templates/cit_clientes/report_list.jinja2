@@ -14,9 +14,9 @@
 
 {% block content %}
     {% call detail.card('Reporte hecho el ' + fecha_creacion ) %}
-    <ol class="list-group list-group-numbered">
+    <div class="list-group list-group-numbered">
         {% for aviso in reporte %}
-            <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+            <a href="{{url_for('cit_clientes.report_detail', reporte_id=reporte.index(aviso))}}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
                 <div class="ms-2 me-auto">
                 <div class="fw-bold">{{aviso.titulo}}
                     {% if aviso.cantidad == 0 %}
@@ -29,9 +29,9 @@
                 </div>
                 {{aviso.descripcion}}
                 </div>
-            </li>
+            </a>
         {% endfor %}
-    </ol>
+    </div>
     {% if current_user.can_admin('CIT CLIENTES')%}
         <a href="{{ url_for('cit_clientes.refresh_report') }}" role="button" class="btn btn-primary m-2 ms-0 mt-3"><span class="iconify me-1" data-icon="mdi:refresh"></span>Actualizar Reporte</a>
     {% endif %}

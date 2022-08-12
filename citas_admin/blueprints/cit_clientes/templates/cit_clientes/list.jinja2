@@ -10,7 +10,15 @@
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_clientes.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_clientes.list_active')) }}{% endif %}
         {% endif %}
-        {{ topbar.button('Avisos', url_for('cit_clientes.reports'), 'mdi:comment-alert-outline') }}
+        
+        <a class="btn btn-sm btn-outline-secondary" href="{{url_for('cit_clientes.report_list')}}"><span class="iconify" data-icon="mdi:comment-alert-outline"></span>
+        Avisos
+        {% if not reporte_nuevo %}
+            <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+            <span class="visually-hidden">New alerts</span>
+        </span>
+        {% endif %}
+        </a>
     {% endcall %}
 {% endblock %}
 
