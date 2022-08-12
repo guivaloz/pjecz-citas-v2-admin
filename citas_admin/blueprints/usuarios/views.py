@@ -294,8 +294,8 @@ def new():
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
-    distritos = Distrito.query.filter_by(estatus="A").order_by(Distrito.nombre).all()
-    autoridades = Autoridad.query.filter_by(estatus="A").order_by(Autoridad.clave).all()
+    distritos = Distrito.query.order_by(Distrito.nombre).all()  # Todos los distritos, inclusive los eliminados
+    autoridades = Autoridad.query.order_by(Autoridad.clave).all()  # Todas las autoridades, inclusive las eliminadas
     return render_template("usuarios/new.jinja2", form=form, distritos=distritos, autoridades=autoridades)
 
 
@@ -382,8 +382,8 @@ def edit_admin(usuario_id):
     form.puesto.data = usuario.puesto
     form.email.data = usuario.email
     form.oficina.data = usuario.oficina
-    distritos = Distrito.query.filter_by(estatus="A").order_by(Distrito.nombre).all()
-    autoridades = Autoridad.query.filter_by(estatus="A").order_by(Autoridad.clave).all()
+    distritos = Distrito.query.order_by(Distrito.nombre).all()  # Todos los distritos, inclusive los eliminados
+    autoridades = Autoridad.query.order_by(Autoridad.clave).all()  # Todos los distritos, inclusive los eliminados
     return render_template(
         "usuarios/edit_admin.jinja2",
         form=form,
