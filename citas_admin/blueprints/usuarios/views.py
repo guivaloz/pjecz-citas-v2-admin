@@ -282,7 +282,6 @@ def new():
                 curp=safe_string(form.curp.data),
                 puesto=safe_string(form.puesto.data),
                 email=email,
-                puesto=form.puesto.data,
                 contrasena=contrasena,
             )
             usuario.save()
