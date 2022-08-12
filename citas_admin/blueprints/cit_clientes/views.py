@@ -284,10 +284,10 @@ def refresh_report():
         flash("Debe esperar porque hay una tarea en el fondo sin terminar.", "warning")
     else:
         # Lanzar tarea en el fondo
-        # current_user.launch_task(
-        #     nombre="cit_clientes.tasks.refresh_report",
-        #     descripcion=f"Actualiza el reporte de errores de cit_clientes"
-        # )
+        current_user.launch_task(
+            nombre="cit_clientes.tasks.refresh_report",
+            descripcion=f"Actualiza el reporte de errores de cit_clientes"
+        )
         flash("Se está actualizando el reporte de errores de clientes...", "info")
     # Mostrar reporte de errores del cliente
-    return redirect(url_for("cit_clientes.reports"))
+    return redirect(url_for("cit_clientes.report_list"))
