@@ -20,9 +20,11 @@
                 <div class="ms-2 me-auto">
                 <div class="fw-bold">{{aviso.titulo}}
                     {% if aviso.cantidad == 0 %}
-                        <span class="badge bg-secondary rounded-pill">0</span>
+                        <span class="badge bg-success rounded-pill"><span class="iconify me-1" data-icon="mdi:check-bold"></span>OK</span>
+                    {% elif aviso.cantidad >= 30 %}
+                        <span class="badge bg-danger rounded-pill"><span class="iconify me-1" data-icon="mdi:alert-octagon"></span>{{aviso.cantidad}}+</span>
                     {% else %}
-                        <span class="badge bg-primary rounded-pill">{{aviso.cantidad}}</span>
+                        <span class="badge bg-warning text-dark rounded-pill"><span class="iconify me-1" data-icon="mdi:alert"></span>{{aviso.cantidad}}</span>
                     {% endif %}
                 </div>
                 {{aviso.descripcion}}

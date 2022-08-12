@@ -4,6 +4,7 @@ Cit Clientes, tareas para ejecutar en el fondo
 import json
 import locale
 import logging
+import re
 from datetime import datetime
 from sqlalchemy import func, or_
 
@@ -13,6 +14,7 @@ from citas_admin.app import create_app
 from citas_admin.extensions import db
 
 from citas_admin.blueprints.cit_clientes.models import CitCliente
+from citas_admin.blueprints.cit_citas.models import CitCita
 
 locale.setlocale(locale.LC_TIME, "es_MX.utf8")
 
@@ -26,37 +28,32 @@ bitacora.addHandler(empunadura)
 app = create_app()
 db.app = app
 
+LIMITE_VERIFICACION = 30
 
 FILE_NAME = "citas_admin/blueprints/cit_clientes/data/reporte.json"
 
 
 def refresh_report():
     """Actualiza el reporte de avisos de clientes"""
-    
+
     # Creación del contenido del reporte JSON general
     data = {
         "fecha_creacion": "2022.08.01 13:00",
-        "reportes": []
+        "consultado": False,
+        "total_errores": 0,
+        "reportes": [],
     }
 
     # Momento en que se elabora este mensaje
     momento = datetime.now()
     data["fecha_creacion"] = momento.strftime("%Y/%m/%d %H:%M")
 
-    # --- Llamadas a los reportes ---
-    data["reportes"].append(reporte_curp_parecidos())
-    data["reportes"].append(reporte_sin_apellido_segundo())
-    data["reportes"].append(reporte_nombre_apellidos_cortos())
-    data["reportes"].append(reporte_nombre_apellido_repetidos())
-    data["reportes"].append(reporte_telefono_repetido())
-    data["reportes"].append(reporte_sin_telefono())
-    data["reportes"].append(reporte_formato_telefono())
-    data["reportes"].append(reporte_clientes_sin_citas())
-    # --- Fin de llamadas a los reportes ---
+    # Llamar a los reportes por recorrido
+    data["total_errores"], data["reportes"] = recorrer_registros()
 
     # Abrimos el archivo de reporte JSON
-    with open(FILE_NAME, "w", encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+    with open(FILE_NAME, "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
 
     # Terminar tarea
     set_task_progress(100)
@@ -65,157 +62,254 @@ def refresh_report():
     return mensaje_final
 
 
-def reporte_curp_parecidos():
-    """Revisa si los primeros 16 dígitos son iguales"""
-    # Estructura de reporte
-    reporte = {
-        "titulo": "CURP Parecidos",
-        "descripcion": "Se revisaron los CURP y se compararon los primeros 16 caracteres para ver si alguien intento duplicar su registro",
-        "cantidad": 0,
-        "resultados": []
-    }
-
-    reporte["cantidad"] = 1
-    reporte["resultados"] = ["AAA"]
-
-    # regresa una sección JSON del reporte generado
-    return reporte
-
-
-def reporte_sin_apellido_segundo():
-    """Revisa si esta vacío el apellido segundos de los clientes"""
-    # Estructura de reporte
-    reporte = {
-        "titulo": "Sin Apellido Segundo",
-        "descripcion": "Clientes que no tienen apellido segundo",
-        "cantidad": 0,
-        "resultados": []
-    }
-
+def recorrer_registros():
+    """Recorre uno aun todos los registros de la tabla cit_clientes"""
     # Query de consulta
-    registros = CitCliente.query.filter_by(apellido_segundo="").all()
-
-    count = 0
+    registros = CitCliente.query.order_by(CitCliente.id).all()
+    # Arreglo con todos lo reportes a consultar
+    reportes = []
+    reportes.append(Reporte_CURP_parecidos())
+    reportes.append(Reporte_apellido_segundo_vacio())
+    reportes.append(Reporte_nombre_apellidos_cortos())
+    reportes.append(Reporte_nombre_apellido_repetidos())
+    reportes.append(Reporte_telefono_repetido())
+    reportes.append(Reporte_telefono_vacio())
+    reportes.append(Reporte_telefono_formato())
+    reportes.append(Reporte_clientes_sin_citas())
+    # Revisamos registro por registro todos lo posibles errores
     for registro in registros:
-        reporte["resultados"].append(registro.nombre)
-        count += 1
-    reporte["cantidad"] = count
-
-    # regresa una sección JSON del reporte generado
-    return reporte
-
-
-def reporte_nombre_apellidos_cortos():
-    """Revisa si el Nombre o Apellidos son demasiado cortos"""
-    # Estructura de reporte
-    reporte = {
-        "titulo": "Nombre o Apellidos demasiado cortos",
-        "descripcion": "Los nombres y apellidos demasiado cortos podrían representar un error de captura",
-        "cantidad": 0,
-        "resultados": []
-    }
-
-    # Query de consulta
-    registros = CitCliente.query.filter(or_(
-            func.length(CitCliente.nombres) < 3,
-            func.length(CitCliente.apellido_primero) < 3,
-            func.length(CitCliente.apellido_segundo) < 3,
-        )).all()
-
-    count = 0
-    for registro in registros:
-        reporte["resultados"].append(registro.nombre)
-        count += 1
-    reporte["cantidad"] = count
-
-    # regresa una sección JSON del reporte generado
-    return reporte
+        for reporte in reportes:
+            if reporte.cantidad < LIMITE_VERIFICACION:
+                reporte.check(registro)
+    # Regresamos la cantidad total de errores
+    data_reportes = []
+    count_errores_totales = 0
+    for reporte in reportes:
+        data_reportes.append(reporte.entregar_reporte())
+        count_errores_totales += reporte.cantidad
+    return count_errores_totales, data_reportes
 
 
+class Reporte:
+    """Clase padre para Reportes"""
 
-def reporte_nombre_apellido_repetidos():
-    """Revisa si el nombre y apellido primero esta repetido"""
-    # Estructura de reporte
-    reporte = {
-        "titulo": "Nombre y Apellido Primero Repetidos",
-        "descripcion": "Clientes con el mismo nombre y apellido primero que otro. Posiblemente se registro más de una vez",
-        "cantidad": 0,
-        "resultados": []
-    }
+    def __init__(self, titulo, descripcion):
+        """Constructor"""
+        self.titulo = titulo
+        self.descripcion = descripcion
+        self.cantidad = 0
+        self.resultados = []
 
-    reporte["cantidad"] = 0
-    reporte["resultados"] = []
+    def check(self, registro):
+        """Verifica la condición del reporte"""
+        pass
 
-    # regresa una sección JSON del reporte generado
-    return reporte
-
-
-def reporte_telefono_repetido():
-    """Revisa si el teléfono esta repetido"""
-    # Estructura de reporte
-    reporte = {
-        "titulo": "Teléfono Repetido",
-        "descripcion": "Clientes con el mismo número telefónico",
-        "cantidad": 0,
-        "resultados": []
-    }
-
-    reporte["cantidad"] = 0
-    reporte["resultados"] = []
-
-    # regresa una sección JSON del reporte generado
-    return reporte
+    def entregar_reporte(self):
+        """Entrega el resultado del reporte"""
+        reporte = {
+            "titulo": self.titulo,
+            "descripcion": self.descripcion,
+            "cantidad": self.cantidad,
+            "resultados": self.resultados,
+        }
+        return reporte
 
 
-def reporte_sin_telefono():
-    """Revisa si el nombre y apellido primero esta repetido"""
-    # Estructura de reporte
-    reporte = {
-        "titulo": "Sin Teléfono",
-        "descripcion": "El teléfono es un campo opcional, por lo tanto puede estar vacío",
-        "cantidad": 0,
-        "resultados": []
-    }
+class Reporte_CURP_parecidos(Reporte):
+    """Clase para reporte - CURPS parecidos"""
 
-    reporte["cantidad"] = 0
-    reporte["resultados"] = []
+    def __init__(self):
+        """Constructor"""
+        Reporte.__init__(
+            self,
+            "CURP Parecidos",
+            "Se revisaron los CURP y se compararon los primeros 16 caracteres para ver si alguien intento duplicar su registro",
+        )
 
-    # regresa una sección JSON del reporte generado
-    return reporte
-
-
-def reporte_formato_telefono():
-    """Revisa el formato del teléfono"""
-    # Estructura de reporte
-    reporte = {
-        "titulo": "Formato de Teléfono",
-        "descripcion": "Se incluyó un formato de teléfono en el campo de teléfono. Se recomienda solo almacenar el número de teléfono como 10 dígitos",
-        "cantidad": 0,
-        "resultados": []
-    }
-
-    reporte["cantidad"] = 0
-    reporte["resultados"] = []
-
-    # regresa una sección JSON del reporte generado
-    return reporte
+    def check(self, registro):
+        """Valida si los primeros 16 caracteres son iguales a otro registro"""
+        if len(registro.curp) < 18:
+            self.cantidad += 1
+            result = {
+                "id": registro.id,
+                "nombre": registro.nombre,
+            }
+            self.resultados.append(result)
 
 
-def reporte_clientes_sin_citas():
-    """Revisa si hay clientes sin citas"""
-    # Estructura de reporte
-    reporte = {
-        "titulo": "Clientes sin Agendar Citas",
-        "descripcion": "Clientes que no han agendado ninguna cita",
-        "cantidad": 0,
-        "resultados": []
-    }
+class Reporte_apellido_segundo_vacio(Reporte):
+    """Clase para reporte - sin apellido segundo"""
 
-    reporte["cantidad"] = 0
-    reporte["resultados"] = []
+    def __init__(self):
+        """Constructor"""
+        Reporte.__init__(
+            self,
+            "Sin Apellido Segundo",
+            "Clientes que no tienen apellido segundo",
+        )
 
-    # regresa una sección JSON del reporte generado
-    return reporte
+    def check(self, registro):
+        """Valida si el apellido segundo en vacío o Nulo"""
+        if registro.apellido_segundo == '' or registro.apellido_segundo is None:
+            self.cantidad += 1
+            result = {
+                "id": registro.id,
+                "nombre": registro.nombre,
+            }
+            self.resultados.append(result)
+
+
+class Reporte_nombre_apellidos_cortos(Reporte):
+    """Clase para reporte - Nombres o Apellidos demasiado cortos"""
+
+    def __init__(self):
+        """Constructor"""
+        Reporte.__init__(
+            self,
+            "Nombre o Apellidos demasiado cortos",
+            "Los nombres y apellidos demasiado cortos podrían representar un error de captura",
+        )
+
+    def check(self, registro):
+        """Valida si el apellido segundo en vacío o Nulo"""
+        if len(registro.nombres) < 3 or len(registro.apellido_primero) < 3 or len(registro.apellido_segundo) < 3:
+            self.cantidad += 1
+            result = {
+                "id": registro.id,
+                "nombre": registro.nombre,
+            }
+            self.resultados.append(result)
+
+
+class Reporte_nombre_apellido_repetidos(Reporte):
+    """Clase para reporte - Nombres y Apellidos repetidos"""
+
+    def __init__(self):
+        """Constructor"""
+        Reporte.__init__(
+            self,
+            "Nombre y Apellido Primero Repetidos",
+            "Clientes con el mismo nombre y apellido primero que otro. Posiblemente se registro más de una vez",
+        )
+
+    def check(self, registro):
+        """Valida si el apellido segundo en vacío o Nulo"""
+        # Query de consulta
+        consulta = CitCliente.query
+        consulta = consulta.filter(CitCliente.nombres == registro.nombres).filter(CitCliente.apellido_primero == registro.apellido_primero)
+        consulta = consulta.filter(CitCliente.id > registro.id).first()
+        if consulta:
+            self.cantidad += 1
+            result = {
+                "id": registro.id,
+                "nombre": registro.nombre,
+                "id_copia": consulta.id,
+                "nombre_parecido": consulta.nombre
+            }
+            self.resultados.append(result)
+
+
+class Reporte_telefono_repetido(Reporte):
+    """Clase para reporte - Teléfono repetido"""
+
+    def __init__(self):
+        """Constructor"""
+        Reporte.__init__(
+            self,
+            "Teléfono Repetido",
+            "Clientes con el mismo número telefónico",
+        )
+
+    def check(self, registro):
+        """Valida si el apellido segundo en vacío o Nulo"""
+        # Query de consulta
+        consulta = CitCliente.query
+        consulta = consulta.filter(CitCliente.telefono == registro.telefono)
+        consulta = consulta.filter(CitCliente.id > registro.id).first()
+        if consulta:
+            self.cantidad += 1
+            result = {
+                "id": registro.id,
+                "nombre": registro.nombre,
+                "telefono": registro.telefono,
+                "id_copia": consulta.id,
+                "nombre_copia": consulta.nombre,
+                "telefono_copia": consulta.telefono,
+            }
+            self.resultados.append(result)
+
+
+class Reporte_telefono_vacio(Reporte):
+    """Clase para reporte - Teléfono repetido"""
+
+    def __init__(self):
+        """Constructor"""
+        Reporte.__init__(
+            self,
+            "Sin Teléfono",
+            "El teléfono es un campo opcional, por lo tanto puede estar vacío",
+        )
+
+    def check(self, registro):
+        """Valida si el apellido segundo en vacío o Nulo"""
+        if registro.telefono == '' or registro.telefono is None:
+            self.cantidad += 1
+            result = {
+                "id": registro.id,
+                "nombre": registro.nombre,
+                "telefono": registro.telefono,
+            }
+            self.resultados.append(result)
+
+
+class Reporte_telefono_formato(Reporte):
+    """Clase para reporte - Teléfono Formato incorrecto"""
+
+    def __init__(self):
+        """Constructor"""
+        Reporte.__init__(
+            self,
+            "Formato de Teléfono",
+            "Se incluyó un formato de teléfono en el campo de teléfono. Se recomienda solo almacenar el número de teléfono como 10 dígitos",
+        )
+
+    def check(self, registro):
+        """Valida si el apellido segundo en vacío o Nulo"""
+        if re.sub(r"\([0-9]{3}\) [0-9]{3}\-[0-9]{4}", '', registro.telefono) == '':
+            return
+        if not registro.telefono.isnumeric():
+            self.cantidad += 1
+            result = {
+                "id": registro.id,
+                "nombre": registro.nombre,
+                "telefono": registro.telefono,
+            }
+            self.resultados.append(result)
+
+
+class Reporte_clientes_sin_citas(Reporte):
+    """Clase para reporte - Clientes sin Citas"""
+
+    def __init__(self):
+        """Constructor"""
+        Reporte.__init__(
+            self,
+            "Clientes sin Agendar Citas",
+            "Clientes que no han agendado ninguna cita",
+        )
+
+    def check(self, registro):
+        """Valida si el apellido segundo en vacío o Nulo"""
+        # Query de consulta
+        consulta = CitCita.query
+        consulta = consulta.filter(CitCita.cit_cliente_id == registro.id).first()
+        if consulta is None:
+            self.cantidad += 1
+            result = {
+                "id": registro.id,
+                "nombre": registro.nombre,
+            }
+            self.resultados.append(result)
 
 
 if __name__ == "__main__":
