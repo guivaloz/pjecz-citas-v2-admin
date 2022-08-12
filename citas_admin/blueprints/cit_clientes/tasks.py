@@ -30,7 +30,7 @@ db.app = app
 
 LIMITE_VERIFICACION = 30
 
-FILE_NAME = "tmp/clientes_errores_reporte.json"
+FILE_NAME = "/tmp/clientes_errores_reporte.json"
 
 
 def refresh_report():
@@ -68,14 +68,14 @@ def recorrer_registros():
     registros = CitCliente.query.order_by(CitCliente.id).all()
     # Arreglo con todos lo reportes a consultar
     reportes = []
-    reportes.append(Reporte_CURP_parecidos())
-    reportes.append(Reporte_apellido_segundo_vacio())
-    reportes.append(Reporte_nombre_apellidos_cortos())
-    reportes.append(Reporte_nombre_apellido_repetidos())
-    reportes.append(Reporte_telefono_repetido())
-    reportes.append(Reporte_telefono_vacio())
-    reportes.append(Reporte_telefono_formato())
-    reportes.append(Reporte_clientes_sin_citas())
+    reportes.append(ReporteCurpParecidos())
+    reportes.append(ReporteApellidoSegundoVacio())
+    reportes.append(ReporteNombreApellidosCortos())
+    reportes.append(ReporteNombreApellidoRepetidos())
+    reportes.append(ReporteTelefonoRepetido())
+    reportes.append(ReporteTelefonoVacio())
+    reportes.append(ReporteTelefonoFormato())
+    reportes.append(ReporteClientesSinCitas())
     # Revisamos registro por registro todos lo posibles errores
     for registro in registros:
         for reporte in reportes:
@@ -115,16 +115,12 @@ class Reporte:
         return reporte
 
 
-class Reporte_CURP_parecidos(Reporte):
+class ReporteCurpParecidos(Reporte):
     """Clase para reporte - CURPS parecidos"""
 
     def __init__(self):
         """Constructor"""
-        Reporte.__init__(
-            self,
-            "CURP Parecidos",
-            "Se revisaron los CURP y se compararon los primeros 16 caracteres para ver si alguien intento duplicar su registro",
-        )
+        super().__init__("CURP Parecidos", "Se revisaron los CURP y se compararon los primeros 16 caracteres para ver si alguien intento duplicar su registro")
 
     def check(self, registro):
         """Valida si los primeros 16 caracteres son iguales a otro registro"""
@@ -137,13 +133,12 @@ class Reporte_CURP_parecidos(Reporte):
             self.resultados.append(result)
 
 
-class Reporte_apellido_segundo_vacio(Reporte):
+class ReporteApellidoSegundoVacio(Reporte):
     """Clase para reporte - sin apellido segundo"""
 
     def __init__(self):
         """Constructor"""
-        Reporte.__init__(
-            self,
+        super().__init__(
             "Sin Apellido Segundo",
             "Clientes que no tienen apellido segundo",
         )
@@ -159,13 +154,12 @@ class Reporte_apellido_segundo_vacio(Reporte):
             self.resultados.append(result)
 
 
-class Reporte_nombre_apellidos_cortos(Reporte):
+class ReporteNombreApellidosCortos(Reporte):
     """Clase para reporte - Nombres o Apellidos demasiado cortos"""
 
     def __init__(self):
         """Constructor"""
-        Reporte.__init__(
-            self,
+        super().__init__(
             "Nombre o Apellidos demasiado cortos",
             "Los nombres y apellidos demasiado cortos podrían representar un error de captura",
         )
@@ -181,13 +175,12 @@ class Reporte_nombre_apellidos_cortos(Reporte):
             self.resultados.append(result)
 
 
-class Reporte_nombre_apellido_repetidos(Reporte):
+class ReporteNombreApellidoRepetidos(Reporte):
     """Clase para reporte - Nombres y Apellidos repetidos"""
 
     def __init__(self):
         """Constructor"""
-        Reporte.__init__(
-            self,
+        super().__init__(
             "Nombre y Apellido Primero Repetidos",
             "Clientes con el mismo nombre y apellido primero que otro. Posiblemente se registro más de una vez",
         )
@@ -204,13 +197,12 @@ class Reporte_nombre_apellido_repetidos(Reporte):
             self.resultados.append(result)
 
 
-class Reporte_telefono_repetido(Reporte):
+class ReporteTelefonoRepetido(Reporte):
     """Clase para reporte - Teléfono repetido"""
 
     def __init__(self):
         """Constructor"""
-        Reporte.__init__(
-            self,
+        super().__init__(
             "Teléfono Repetido",
             "Clientes con el mismo número telefónico",
         )
@@ -234,13 +226,12 @@ class Reporte_telefono_repetido(Reporte):
             self.resultados.append(result)
 
 
-class Reporte_telefono_vacio(Reporte):
+class ReporteTelefonoVacio(Reporte):
     """Clase para reporte - Teléfono repetido"""
 
     def __init__(self):
         """Constructor"""
-        Reporte.__init__(
-            self,
+        super().__init__(
             "Sin Teléfono",
             "El teléfono es un campo opcional, por lo tanto puede estar vacío",
         )
@@ -257,13 +248,12 @@ class Reporte_telefono_vacio(Reporte):
             self.resultados.append(result)
 
 
-class Reporte_telefono_formato(Reporte):
+class ReporteTelefonoFormato(Reporte):
     """Clase para reporte - Teléfono Formato incorrecto"""
 
     def __init__(self):
         """Constructor"""
-        Reporte.__init__(
-            self,
+        super().__init__(
             "Formato de Teléfono",
             "Se incluyó un formato de teléfono en el campo de teléfono. Se recomienda solo almacenar el número de teléfono como 10 dígitos",
         )
@@ -282,13 +272,12 @@ class Reporte_telefono_formato(Reporte):
             self.resultados.append(result)
 
 
-class Reporte_clientes_sin_citas(Reporte):
+class ReporteClientesSinCitas(Reporte):
     """Clase para reporte - Clientes sin Citas"""
 
     def __init__(self):
         """Constructor"""
-        Reporte.__init__(
-            self,
+        super().__init__(
             "Clientes sin Agendar Citas",
             "Clientes que no han agendado ninguna cita",
         )

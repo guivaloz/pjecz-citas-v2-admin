@@ -21,7 +21,7 @@ from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitCliente
 
 from citas_admin.blueprints.cit_clientes.forms import ClienteEditForm
 
-FILE_NAME = "tmp/clientes_errores_reporte.json"
+FILE_NAME = "/tmp/clientes_errores_reporte.json"
 MODULO = "CIT CLIENTES"
 
 cit_clientes = Blueprint("cit_clientes", __name__, template_folder="templates")
@@ -215,11 +215,9 @@ def _read_file_report():
     # Revisa si existe el archivo de reporte
     ruta = Path(FILE_NAME)
     if not ruta.exists():
-        flash(f"AVISO: La ruta '{ruta}' no se encontró.", "danger")
-        return render_template("cit_clientes/reports.jinja2")
+        return None
     if not ruta.is_file():
-        flash(f"AVISO: {ruta.name} no es un archivo.", "danger")
-        return render_template("cit_clientes/reports.jinja2")
+        return None
     # Abrimos el archivo de reporte JSON
     archivo = open(FILE_NAME, "r")
     data = json.load(archivo)
@@ -231,7 +229,9 @@ def _read_file_report():
 def _leer_estado_reporte():
     """Lee el estado del reporte"""
     data = _read_file_report()
-    return data["consultado"]
+    if data is None:
+        return None
+    return not data["consultado"]
 
 
 def _escribir_estado_reporte():
@@ -246,6 +246,12 @@ def _escribir_estado_reporte():
 def report_list():
     """Lectura y presentación de los reportes creados para Clientes"""
     data = _read_file_report()
+    if data is None:
+        flash(f"AVISO: {FILE_NAME} no es un archivo.", "danger")
+        return render_template(
+            "cit_clientes/report_list.jinja2",
+            fecha_creacion="",
+        )
 
     if data["consultado"] == False:
         _escribir_estado_reporte()
