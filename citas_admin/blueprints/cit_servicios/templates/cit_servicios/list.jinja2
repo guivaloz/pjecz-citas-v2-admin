@@ -6,6 +6,9 @@
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
+        {% if current_user.can_view('CIT CATEGORIAS') %}
+            {{ topbar.button('Categorias', url_for('cit_categorias.list_active'), 'mdi:label') }}
+        {% endif %}
         {% if current_user.can_edit('CIT SERVICIOS') %}
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_servicios.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_servicios.list_active')) }}{% endif %}
