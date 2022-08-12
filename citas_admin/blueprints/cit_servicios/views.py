@@ -127,21 +127,32 @@ def new(cit_categoria_id):
     cit_categoria = CitCategoria.query.get_or_404(cit_categoria_id)
     form = CitServicioForm()
     if form.validate_on_submit():
+        es_valido = True
         # Validar que la clave no se repita
         clave = safe_clave(form.clave.data)
         if CitServicio.query.filter_by(clave=clave).first():
+            es_valido = False
             flash("La clave ya está en uso. Debe de ser única.", "warning")
+        # Validar horario
+        if not _validar_horario(form.desde.data, form.hasta.data):
+            flash("El horario no es válido", "warning")
+            es_valido = False
+        # Si no de define el limite de documentos, se deja en cero
+        if form.documentos_limite.data:
+            documentos_limite = form.documentos_limite.data
         else:
-            if form.documentos_limite.data:
-                documentos_limite = int(form.documentos_limite.data)
-            else:
-                documentos_limite = 0
+            documentos_limite = 0
+        # Si es válido, guardar
+        if es_valido:
             cit_servicio = CitServicio(
                 cit_categoria=cit_categoria,
                 clave=clave,
                 descripcion=safe_string(form.descripcion.data, max_len=64),
                 duracion=form.duracion.data,
                 documentos_limite=documentos_limite,
+                desde=form.desde.data,
+                hasta=form.hasta.data,
+                dias_habilitados=_conversion_dias_habilitados_letra_numero(form.dias_habilitados.data),
             )
             cit_servicio.save()
             bitacora = Bitacora(
@@ -153,7 +164,9 @@ def new(cit_categoria_id):
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
+    # Llenar el campo con el nombre de la categoria
     form.cit_categoria_nombre.data = cit_categoria.nombre
+    # Entregar
     return render_template(
         "cit_servicios/new.jinja2",
         form=form,
@@ -176,18 +189,21 @@ def edit(cit_servicio_id):
             if cit_servicio_existente and cit_servicio_existente.id != cit_servicio.id:
                 es_valido = False
                 flash("La clave ya está en uso. Debe de ser única.", "warning")
-        if _validar_horario(form.desde.data, form.hasta.data) == False:
+        # Validar horario
+        if not _validar_horario(form.desde.data, form.hasta.data):
             flash("El horario no es válido", "warning")
             es_valido = False
+        # Si no de define el limite de documentos, se deja en cero
+        if form.documentos_limite.data:
+            documentos_limite = form.documentos_limite.data
+        else:
+            documentos_limite = 0
         # Si es valido actualizar
         if es_valido:
             cit_servicio.clave = clave
             cit_servicio.descripcion = safe_string(form.descripcion.data, max_len=64)
             cit_servicio.duracion = form.duracion.data
-            if form.documentos_limite.data:
-                cit_servicio.documentos_limite = int(form.documentos_limite.data)
-            else:
-                cit_servicio.documentos_limite = 0
+            cit_servicio.documentos_limite = documentos_limite
             cit_servicio.desde = form.desde.data
             cit_servicio.hasta = form.hasta.data
             dias_habilitados = _conversion_dias_habilitados_letra_numero(form.dias_habilitados.data)
@@ -237,7 +253,7 @@ def _validar_horario(inicio, termino):
 def _conversion_dias_habilitados_letra_numero(texto: str):
     """Regresa la conversión de días en letra a número"""
     if texto == "" or texto is None:
-        return None
+        return ""
     # Elaborar resultado de la conversión
     resultado = ""
     if "LUNES" in texto:
