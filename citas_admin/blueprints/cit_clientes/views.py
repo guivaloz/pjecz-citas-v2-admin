@@ -177,6 +177,9 @@ def edit(cit_cliente_id):
         if telefono_repetido:
             flash(f'Este TELEFONO ya se encuentra en uso. La utiliza el cliente: "{telefono_repetido.nombre}"', "danger")
             return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
+        if form.limite_citas.data is None or form.limite_citas.data > 500 or form.limite_citas.data < 0:
+            flash("El límite de citas esta fuera de rango.", "warning")
+            return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
         # --- Fin Validaciones ---
         cliente.nombres = safe_string(form.nombres.data)
         cliente.apellido_primero = safe_string(form.apellido_primero.data)
@@ -184,6 +187,8 @@ def edit(cit_cliente_id):
         cliente.curp = curp
         cliente.email = email
         cliente.telefono = telefono
+        cliente.limite_citas_pendientes = form.limite_citas.data
+        cliente.enviar_boletin = form.recibir_boletin.data
         cliente.save()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
@@ -200,6 +205,8 @@ def edit(cit_cliente_id):
     form.curp.data = cliente.curp
     form.email.data = cliente.email
     form.telefono.data = cliente.telefono
+    form.limite_citas.data = cliente.limite_citas_pendientes
+    form.recibir_boletin.data = cliente.enviar_boletin
     return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
 
 
@@ -264,7 +271,7 @@ def report_detail(reporte_id):
             if llave == "id":
                 renglon["id"] = valor
             else:
-                renglon["valor"] += '<strong>' + str(llave) + ':</strong> ' + str(valor) + '<br/>'
+                renglon["valor"] += "<strong>" + str(llave) + ":</strong> " + str(valor) + "<br/>"
         resultados.append(renglon)
 
     return render_template(
@@ -284,10 +291,7 @@ def refresh_report():
         flash("Debe esperar porque hay una tarea en el fondo sin terminar.", "warning")
     else:
         # Lanzar tarea en el fondo
-        current_user.launch_task(
-            nombre="cit_clientes.tasks.refresh_report",
-            descripcion=f"Actualiza el reporte de errores de cit_clientes"
-        )
+        current_user.launch_task(nombre="cit_clientes.tasks.refresh_report", descripcion=f"Actualiza el reporte de errores de cit_clientes")
         flash("Se está actualizando el reporte de errores de clientes...", "info")
     # Mostrar reporte de errores del cliente
     return redirect(url_for("cit_clientes.report_list"))

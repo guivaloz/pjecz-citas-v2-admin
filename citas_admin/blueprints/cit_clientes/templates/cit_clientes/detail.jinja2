@@ -18,10 +18,18 @@
 {% block content %}
     {% call detail.card(estatus=cit_cliente.estatus) %}
         {{ detail.label_value_big('Nombre', cit_cliente.nombre) }}
+        {{ detail.label_value('Email', cit_cliente.email) }}
         {{ detail.label_value('CURP', cit_cliente.curp) }}
         {{ detail.label_value('Teléfono', cit_cliente.telefono_formato) }}
         {{ detail.label_value('Renovación', moment(cit_cliente.renovacion).format('ll')) }}
         {{ detail.label_value('Creado', moment(cit_cliente.creado).format('llll')) }}
+        {% if cit_cliente.limite_citas_pendientes == 0 %}
+            {{ detail.label_value('Límite de Citas', 'Por defecto') }}
+        {% else %}
+            {{ detail.label_value('Límite de Citas', cit_cliente.limite_citas_pendientes) }}
+        {% endif %}
+        {{ detail.label_value('Recibir Boletín', cit_cliente.enviar_boletin) }}
+
     {% endcall %}
     {% if current_user.can_view('CIT CITAS') %}
         {% if recuperacion %}

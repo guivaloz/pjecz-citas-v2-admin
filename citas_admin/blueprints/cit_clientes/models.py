@@ -24,8 +24,8 @@ class CitCliente(db.Model, UniversalMixin):
     contrasena_md5 = db.Column(db.String(256), nullable=False)
     contrasena_sha256 = db.Column(db.String(256), nullable=False)
     renovacion = db.Column(db.Date(), nullable=False)
-    # limite_citas_pendientes = Column(Integer(), nullable=False)
-    # recibir_boletin = db.Column(db.Boolean())
+    limite_citas_pendientes = db.Column(db.Integer(), nullable=True)
+    enviar_boletin = db.Column(db.Boolean(), nullable=False, default=True)
 
     # Hijos
     cit_citas = db.relationship("CitCita", back_populates="cit_cliente")

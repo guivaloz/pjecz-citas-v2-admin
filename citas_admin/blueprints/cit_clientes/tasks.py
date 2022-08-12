@@ -150,7 +150,7 @@ class Reporte_apellido_segundo_vacio(Reporte):
 
     def check(self, registro):
         """Valida si el apellido segundo en vacío o Nulo"""
-        if registro.apellido_segundo == '' or registro.apellido_segundo is None:
+        if registro.apellido_segundo == "" or registro.apellido_segundo is None:
             self.cantidad += 1
             result = {
                 "id": registro.id,
@@ -200,12 +200,7 @@ class Reporte_nombre_apellido_repetidos(Reporte):
         consulta = consulta.filter(CitCliente.id > registro.id).first()
         if consulta:
             self.cantidad += 1
-            result = {
-                "id": registro.id,
-                "nombre": registro.nombre,
-                "id_copia": consulta.id,
-                "nombre_parecido": consulta.nombre
-            }
+            result = {"id": registro.id, "nombre": registro.nombre, "id_copia": consulta.id, "nombre_parecido": consulta.nombre}
             self.resultados.append(result)
 
 
@@ -252,7 +247,7 @@ class Reporte_telefono_vacio(Reporte):
 
     def check(self, registro):
         """Valida si el apellido segundo en vacío o Nulo"""
-        if registro.telefono == '' or registro.telefono is None:
+        if registro.telefono == "" or registro.telefono is None:
             self.cantidad += 1
             result = {
                 "id": registro.id,
@@ -275,7 +270,7 @@ class Reporte_telefono_formato(Reporte):
 
     def check(self, registro):
         """Valida si el apellido segundo en vacío o Nulo"""
-        if re.sub(r"\([0-9]{3}\) [0-9]{3}\-[0-9]{4}", '', registro.telefono) == '':
+        if re.sub(r"\([0-9]{3}\) [0-9]{3}\-[0-9]{4}", "", registro.telefono) == "":
             return
         if not registro.telefono.isnumeric():
             self.cantidad += 1
