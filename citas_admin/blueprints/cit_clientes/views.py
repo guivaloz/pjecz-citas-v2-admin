@@ -3,6 +3,7 @@ Cit Clientes, vistas
 """
 import json
 import os
+from pathlib import Path
 from flask import Blueprint, render_template, request, url_for, flash, redirect
 from flask_login import login_required, current_user
 
@@ -20,6 +21,7 @@ from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitCliente
 
 from citas_admin.blueprints.cit_clientes.forms import ClienteEditForm
 
+FILE_NAME = "/tmp/clientes_errores_reporte.json"
 MODULO = "CIT CLIENTES"
 
 cit_clientes = Blueprint("cit_clientes", __name__, template_folder="templates")
@@ -79,6 +81,7 @@ def list_active():
         filtros=json.dumps({"estatus": "A"}),
         titulo="Clientes",
         estatus="A",
+        reporte_nuevo=_leer_estado_reporte(),
     )
 
 
@@ -91,6 +94,7 @@ def list_inactive():
         filtros=json.dumps({"estatus": "B"}),
         titulo="Clientes inactivos",
         estatus="B",
+        reporte_nuevo=_leer_estado_reporte(),
     )
 
 
@@ -173,6 +177,9 @@ def edit(cit_cliente_id):
         if telefono_repetido:
             flash(f'Este TELEFONO ya se encuentra en uso. La utiliza el cliente: "{telefono_repetido.nombre}"', "danger")
             return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
+        if form.limite_citas.data is None or form.limite_citas.data > 500 or form.limite_citas.data < 0:
+            flash("El límite de citas esta fuera de rango.", "warning")
+            return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
         # --- Fin Validaciones ---
         cliente.nombres = safe_string(form.nombres.data)
         cliente.apellido_primero = safe_string(form.apellido_primero.data)
@@ -180,6 +187,8 @@ def edit(cit_cliente_id):
         cliente.curp = curp
         cliente.email = email
         cliente.telefono = telefono
+        cliente.limite_citas_pendientes = form.limite_citas.data
+        cliente.enviar_boletin = form.recibir_boletin.data
         cliente.save()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
@@ -196,4 +205,99 @@ def edit(cit_cliente_id):
     form.curp.data = cliente.curp
     form.email.data = cliente.email
     form.telefono.data = cliente.telefono
+    form.limite_citas.data = cliente.limite_citas_pendientes
+    form.recibir_boletin.data = cliente.enviar_boletin
     return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
+
+
+def _read_file_report():
+    """Rutina para abrir y leer el archivo de reportes"""
+    # Revisa si existe el archivo de reporte
+    ruta = Path(FILE_NAME)
+    if not ruta.exists():
+        return None
+    if not ruta.is_file():
+        return None
+    # Abrimos el archivo de reporte JSON
+    archivo = open(FILE_NAME, "r")
+    data = json.load(archivo)
+    archivo.close()
+
+    return data
+
+
+def _leer_estado_reporte():
+    """Lee el estado del reporte"""
+    data = _read_file_report()
+    if data is None:
+        return None
+    return not data["consultado"]
+
+
+def _escribir_estado_reporte():
+    """Escribe el estado del reporte"""
+    data = _read_file_report()
+    data["consultado"] = True
+    with open(FILE_NAME, "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+@cit_clientes.route("/cit_clientes/avisos")
+def report_list():
+    """Lectura y presentación de los reportes creados para Clientes"""
+    data = _read_file_report()
+    if data is None:
+        flash(f"AVISO: {FILE_NAME} no es un archivo.", "danger")
+        return render_template(
+            "cit_clientes/report_list.jinja2",
+            fecha_creacion="",
+        )
+
+    if data["consultado"] == False:
+        _escribir_estado_reporte()
+
+    return render_template(
+        "cit_clientes/report_list.jinja2",
+        fecha_creacion=data["fecha_creacion"],
+        reporte=data["reportes"],
+    )
+
+
+@cit_clientes.route("/cit_clientes/aviso/<int:reporte_id>", methods=["GET", "POST"])
+def report_detail(reporte_id):
+    """Lectura a detalle del reporte"""
+    data = _read_file_report()
+    # Construir tabla de resultados
+    resultados = []
+    renglon = {}
+    for resultado in data["reportes"][reporte_id]["resultados"]:
+        renglon = {}
+        renglon["valor"] = ""
+        for llave, valor in resultado.items():
+            if llave == "id":
+                renglon["id"] = valor
+            else:
+                renglon["valor"] += "<strong>" + str(llave) + ":</strong> " + str(valor) + "<br/>"
+        resultados.append(renglon)
+
+    return render_template(
+        "cit_clientes/report_detail.jinja2",
+        fecha_creacion=data["fecha_creacion"],
+        reporte=data["reportes"][reporte_id],
+        resultados=resultados,
+    )
+
+
+@cit_clientes.route("/cit_clientes/actualizar_reporte/")
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def refresh_report():
+    """Actualiza el reporte de avisos de clientes"""
+    # Salir si hay una tarea en el fondo
+    if current_user.get_task_in_progress("cit_clientes.tasks.refresh_report"):
+        flash("Debe esperar porque hay una tarea en el fondo sin terminar.", "warning")
+    else:
+        # Lanzar tarea en el fondo
+        current_user.launch_task(nombre="cit_clientes.tasks.refresh_report", descripcion=f"Actualiza el reporte de errores de cit_clientes")
+        flash("Se está actualizando el reporte de errores de clientes...", "info")
+    # Mostrar reporte de errores del cliente
+    return redirect(url_for("cit_clientes.report_list"))

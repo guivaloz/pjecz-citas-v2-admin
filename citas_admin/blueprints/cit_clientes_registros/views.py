@@ -2,6 +2,9 @@
 Cit Clientes Registros, vistas
 """
 import json
+import os
+
+from dotenv import load_dotenv
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
@@ -96,7 +99,10 @@ def list_inactive():
 def detail(cit_cliente_registro_id):
     """Detalle de un Cliente Registro"""
     cit_cliente_registro = CitClienteRegistro.query.get_or_404(cit_cliente_registro_id)
-    return render_template("cit_clientes_registros/detail.jinja2", cit_cliente_registro=cit_cliente_registro)
+    load_dotenv()  # Take environment variables from .env
+    NEW_ACCOUNT_CONFIRM_URL = os.getenv("NEW_ACCOUNT_CONFIRM_URL", "")
+    url_confirmacion = f"{NEW_ACCOUNT_CONFIRM_URL}?hashid={cit_cliente_registro.encode_id()}&cadena_validar={cit_cliente_registro.cadena_validar}"
+    return render_template("cit_clientes_registros/detail.jinja2", cit_cliente_registro=cit_cliente_registro, url_confirmacion=url_confirmacion)
 
 
 @cit_clientes_registros.route("/cit_clientes_registros/eliminar/<int:cit_cliente_registro_id>")
