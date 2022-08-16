@@ -3,7 +3,6 @@ Cit Citas, vistas
 """
 from datetime import datetime, timedelta
 import json
-from tarfile import REGTYPE
 from flask import Blueprint, flash, redirect, render_template, request, url_for, abort
 from flask_login import current_user, login_required
 
@@ -371,7 +370,7 @@ def search():
 
 @cit_citas.route("/cit_citas/asistencia/<string:cit_cita_id_encode>")
 def assistance_qr(cit_cita_id_encode):
-    """Marcado de asistencia a una cita direccionado vía código QR"""
+    """Marcado de asistencia a una cita direccionando vía código QR"""
     # Se descodifica el hash para saber que cita_id se trata
     cit_cita_id = CitCita.decode_id(cit_cita_id_encode)
     if cit_cita_id is None or cit_cita_id == "":
@@ -381,9 +380,12 @@ def assistance_qr(cit_cita_id_encode):
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
     if cit_cita.estado == "ASISTIO":
         return render_template("cit_citas/assistance.jinja2", cit_cita=cit_cita, asistencia=True)
-    if cit_cita.inicio <= datetime.now():
+    # rango de aceptación para dar asistencia a una cita
+    if datetime.now() - timedelta(hours=24) <= cit_cita.inicio <= datetime.now() + timedelta(hours=8):
         if cit_cita.estado == "PENDIENTE":
             assistance(cit_cita.id, True)
             return render_template("cit_citas/assistance.jinja2", cit_cita=cit_cita, asistencia=True)
+    else:
+        flash("El rango aceptable para dar una asistencia ha sido superado.", "warning")
 
     return render_template("cit_citas/assistance.jinja2", cit_cita=cit_cita, asistencia=False)
