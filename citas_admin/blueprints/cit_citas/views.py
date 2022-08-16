@@ -260,7 +260,7 @@ def recover(cit_cita_id):
 
 @cit_citas.route("/cit_citas/aistencia/<int:cit_cita_id>")
 @permission_required(MODULO, Permiso.MODIFICAR)
-def assistance(cit_cita_id):
+def assistance(cit_cita_id, qr=False):
     """Marcar Asistencia a una Cita"""
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
     # Si no es administrador, no puede marcar Asistencia a una cita de otra oficina
@@ -286,7 +286,8 @@ def assistance(cit_cita_id):
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
-    return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
+    if qr is False:
+        return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
 
 
 @cit_citas.route("/cit_citas/pendiente/<int:cit_cita_id>")
@@ -366,3 +367,23 @@ def search():
         )
 
     return render_template("cit_citas/search.jinja2", form=form_search)
+
+
+@cit_citas.route("/cit_citas/asistencia/<string:cit_cita_id_encode>")
+def assistance_qr(cit_cita_id_encode):
+    """Marcado de asistencia a una cita direccionado vía código QR"""
+    # Se descodifica el hash para saber que cita_id se trata
+    cit_cita_id = CitCita.decode_id(cit_cita_id_encode)
+    if cit_cita_id is None or cit_cita_id == "":
+        flash("!ERROR: La cita que busca no se encuentra", "danger")
+        return render_template("cit_citas/assistance.jinja2", cit_cita=0, asistencia=False)
+    # Identificamos la cita correspondiente
+    cit_cita = CitCita.query.get_or_404(cit_cita_id)
+    if cit_cita.estado == "ASISTIO":
+        return render_template("cit_citas/assistance.jinja2", cit_cita=cit_cita, asistencia=True)
+    if cit_cita.inicio <= datetime.now():
+        if cit_cita.estado == "PENDIENTE":
+            assistance(cit_cita.id, True)
+            return render_template("cit_citas/assistance.jinja2", cit_cita=cit_cita, asistencia=True)
+
+    return render_template("cit_citas/assistance.jinja2", cit_cita=cit_cita, asistencia=False)
