@@ -33,7 +33,7 @@ load_dotenv()  # Take environment variables from .env
 
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "")
-ASISTENCIA_URL = os.getenv("HOST", "http://citas-admin.justiciadigital.gob.mx")
+HOST = os.getenv("HOST", "")
 
 
 def enviar(cit_cita_id):
@@ -53,8 +53,13 @@ def enviar(cit_cita_id):
     # Momento en que se elabora este mensaje
     momento = datetime.now()
 
-    # Data para codificar en el QR
-    data = ASISTENCIA_URL + "/cit_citas/asistencia/" + cit_cita.encode_id()
+    if cit_cita.oficina.enviar_qr is True:
+        # Dirección URL de asistencia para codificar dentro del QR
+        asistencia_url = HOST + "/cit_citas/asistencia/" + cit_cita.encode_id()
+        if HOST == "":
+            bitacora.warning("Variable HOST no definida.")
+            set_task_progress(100)
+            return "No se a podido enviar el email, hubo un error. Verifique el Log."
 
     # Contenidos
     contenidos = []
@@ -67,11 +72,13 @@ def enviar(cit_cita_id):
     contenidos.append(f"<li><strong>Oficina</strong>: {cit_cita.oficina.descripcion}</li>")
     contenidos.append(f"<li><strong>Servicio</strong>: {cit_cita.cit_servicio.descripcion}</li>")
     contenidos.append(f"<li><strong>Fecha y hora</strong>: {cit_cita.inicio.strftime('%d de %B de %Y a las %I:%M %p')}</li>")
+    contenidos.append(f"<li><strong>Notas</strong>: {cit_cita.notas}</li>")
     contenidos.append("</ul>")
-    contenidos.append("<small>Por favor llegue cinco minutos antes de la fecha y hora mencionados.</small>")
-    contenidos.append("<h3>Código QR para asistencia de la cita</h3>")
-    contenidos.append("<p>Por favor, muestre este código QR en la recepción para marcar su asistencia a la cita.</p>")
-    contenidos.append(f'<img src="https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl={data}" alt="[ERROR_EN_QR]">')
+    contenidos.append("<small>Por favor llegue diez minutos antes de la fecha y hora mencionados.</small>")
+    if cit_cita.oficina.enviar_qr is True:
+        contenidos.append("<h3>Código QR para asistencia de la cita</h3>")
+        contenidos.append("<p>Por favor, muestre este código QR en la recepción para marcar su asistencia a la cita.</p>")
+        contenidos.append(f'<img src="https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl={asistencia_url}" alt="[ERROR_EN_QR]">')
     contenidos.append("<p><strong>ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></p>")
     content = Content("text/html", "\n".join(contenidos))
 
@@ -86,7 +93,7 @@ def enviar(cit_cita_id):
     to_email = To(cit_cita.cit_cliente.email)
 
     # Asunto
-    subject = "Información de la cita"
+    subject = "Cita Agendada - PJECZ"
 
     # SendGrid
     sendgrid_client = None
@@ -100,10 +107,16 @@ def enviar(cit_cita_id):
         mail = Mail(from_email, to_email, subject, content)
         sendgrid_client.client.mail.send.post(request_body=mail.get())
     else:
-        bitacora.warning("Se omite el envio a %s por que faltan elementos", cit_cita.cit_cliente.email)
+        mensaje_error = f"Se omite el envío a {cit_cita.cit_cliente.email} por que faltan elementos"
+        set_task_error(mensaje_error)
+        bitacora.error(mensaje_error)
+        return mensaje_error
 
     # Terminar tarea
     set_task_progress(100)
-    mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}, a la URL: {data}"
+    if cit_cita.oficina.enviar_qr is True:
+        mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}, a la URL: {asistencia_url}"
+    else:
+        mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}, sin QR"
     bitacora.info(mensaje_final)
     return mensaje_final

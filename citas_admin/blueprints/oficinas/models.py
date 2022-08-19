@@ -29,6 +29,7 @@ class Oficina(db.Model, UniversalMixin):
     apertura = db.Column(db.Time(), nullable=False)
     cierre = db.Column(db.Time(), nullable=False)
     limite_personas = db.Column(db.Integer(), nullable=False)
+    enviar_qr = db.Column(db.Boolean(), nullable=False, default=False)
 
     # Hijos
     usuarios = db.relationship("Usuario", back_populates="oficina")
