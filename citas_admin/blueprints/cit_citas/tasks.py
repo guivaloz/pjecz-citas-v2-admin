@@ -53,7 +53,7 @@ def enviar(cit_cita_id):
     # Momento en que se elabora este mensaje
     momento = datetime.now()
 
-    if cit_cita.oficina.enviar_qr is True:
+    if cit_cita.oficina.puede_enviar_qr is True:
         # Dirección URL de asistencia para codificar dentro del QR
         asistencia_url = HOST + "/cit_citas/asistencia/" + cit_cita.encode_id()
         if HOST == "":
@@ -75,7 +75,7 @@ def enviar(cit_cita_id):
     contenidos.append(f"<li><strong>Notas</strong>: {cit_cita.notas}</li>")
     contenidos.append("</ul>")
     contenidos.append("<small>Por favor llegue diez minutos antes de la fecha y hora mencionados.</small>")
-    if cit_cita.oficina.enviar_qr is True:
+    if cit_cita.oficina.puede_enviar_qr is True:
         contenidos.append("<h3>Código QR para asistencia de la cita</h3>")
         contenidos.append("<p>Por favor, muestre este código QR en la recepción para marcar su asistencia a la cita.</p>")
         contenidos.append(f'<img src="https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl={asistencia_url}" alt="[ERROR_EN_QR]">')
@@ -114,7 +114,7 @@ def enviar(cit_cita_id):
 
     # Terminar tarea
     set_task_progress(100)
-    if cit_cita.oficina.enviar_qr is True:
+    if cit_cita.oficina.puede_enviar_qr is True:
         mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}, a la URL: {asistencia_url}"
     else:
         mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}, sin QR"
