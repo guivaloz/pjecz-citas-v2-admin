@@ -47,19 +47,27 @@ def enviar(cit_cita_id):
         bitacora.error(mensaje_error)
         return mensaje_error
 
-    # Bandera para saber si se tienen todos los elementos necesarios
-    bandera = True
+    # Esta completo para enviar el mensaje por correo electronico
+    esta_completo_para_enviar_mensaje = True
+
+    # Si la oficina tiene palomeado Puede enviar codigos QR
+    va_a_incluir_qr = False
+    if cit_cita.oficina.puede_enviar_qr is True:  # Esta propuedad puede ser NULA
+        va_a_incluir_qr = True
 
     # Momento en que se elabora este mensaje
     momento = datetime.now()
 
-    if cit_cita.oficina.puede_enviar_qr is True:
-        # Dirección URL de asistencia para codificar dentro del QR
-        asistencia_url = HOST + "/cit_citas/asistencia/" + cit_cita.encode_id()
+    # Si puede enviar codigos QR
+    asistencia_url = None
+    if va_a_incluir_qr:
+        # Validar que este definido el HOST
         if HOST == "":
-            bitacora.warning("Variable HOST no definida.")
-            set_task_progress(100)
-            return "No se a podido enviar el email, hubo un error. Verifique el Log."
+            va_a_incluir_qr = False
+            bitacora.warning("No se incluye el codigo QR porque la variable HOST no esta definida.")
+        else:
+            # Definir el URL para marcar asistencia
+            asistencia_url = HOST + "/cit_citas/asistencia/" + cit_cita.encode_id()
 
     # Contenidos
     contenidos = []
@@ -75,19 +83,20 @@ def enviar(cit_cita_id):
     contenidos.append(f"<li><strong>Notas</strong>: {cit_cita.notas}</li>")
     contenidos.append("</ul>")
     contenidos.append("<small>Por favor llegue diez minutos antes de la fecha y hora mencionados.</small>")
-    if cit_cita.oficina.puede_enviar_qr is True:
-        contenidos.append("<h3>Código QR para asistencia de la cita</h3>")
-        contenidos.append("<p>Por favor, muestre este código QR en la recepción para marcar su asistencia a la cita.</p>")
+    if va_a_incluir_qr:
+        contenidos.append("<h3>Código QR para marcar asistencia</h3>")
         contenidos.append(f'<img src="https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl={asistencia_url}" alt="[ERROR_EN_QR]">')
+        contenidos.append("<p>Si no no se ve el QR, active la opción para mostrar las imágenes.</p>")
+        contenidos.append("<p>Por favor, al llegar exija que le escaneen este QR, para que se refleje en su historial de asistencia.</p>")
     contenidos.append("<p><strong>ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></p>")
     content = Content("text/html", "\n".join(contenidos))
 
-    # Remitente
+    # Validar remitente
     from_email = None
     if SENDGRID_FROM_EMAIL != "":
         from_email = Email(SENDGRID_FROM_EMAIL)
     else:
-        bandera = False
+        esta_completo_para_enviar_mensaje = False
 
     # Destinatario
     to_email = To(cit_cita.cit_cliente.email)
@@ -95,15 +104,15 @@ def enviar(cit_cita_id):
     # Asunto
     subject = "Cita Agendada - PJECZ"
 
-    # SendGrid
+    # Validar SendGrid
     sendgrid_client = None
     if SENDGRID_API_KEY != "":
         sendgrid_client = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
     else:
-        bandera = False
+        esta_completo_para_enviar_mensaje = False
 
     # Enviar mensaje
-    if bandera:
+    if esta_completo_para_enviar_mensaje:
         mail = Mail(from_email, to_email, subject, content)
         sendgrid_client.client.mail.send.post(request_body=mail.get())
     else:
@@ -114,9 +123,9 @@ def enviar(cit_cita_id):
 
     # Terminar tarea
     set_task_progress(100)
-    if cit_cita.oficina.puede_enviar_qr is True:
-        mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}, a la URL: {asistencia_url}"
+    if va_a_incluir_qr:
+        mensaje_final = f"Se ha enviado un mensaje con QR a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}, URL: {asistencia_url}"
     else:
-        mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}, sin QR"
+        mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}"
     bitacora.info(mensaje_final)
     return mensaje_final
