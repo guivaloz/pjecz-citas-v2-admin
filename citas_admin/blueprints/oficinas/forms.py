@@ -33,6 +33,7 @@ class OficinaForm(FlaskForm):
     limite_personas = IntegerField("Límite de personas", validators=[DataRequired()])
     es_jurisdiccional = BooleanField("Es Jurisdiccional", validators=[Optional()])
     puede_agendar_citas = BooleanField("Puede agendar citas", validators=[Optional()])
+    enviar_qr = BooleanField("Enviar códigos QR", validators=[Optional()])
     guardar = SubmitField("Guardar")
 
 
