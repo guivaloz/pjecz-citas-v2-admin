@@ -5,8 +5,8 @@ from datetime import datetime
 import locale
 import logging
 import os
-
 import sendgrid
+
 from dotenv import load_dotenv
 from sendgrid.helpers.mail import Email, To, Content, Mail
 
@@ -33,10 +33,11 @@ load_dotenv()  # Take environment variables from .env
 
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "")
+ASISTENCIA_URL = os.getenv("HOST", "http://citas-admin.justiciadigital.gob.mx")
 
 
 def enviar(cit_cita_id):
-    """Enviar mensaje con datos de la cita agendaada"""
+    """Enviar mensaje con datos de la cita agendada"""
 
     # Consultar
     cit_cita = CitCita.query.get(cit_cita_id)
@@ -51,22 +52,28 @@ def enviar(cit_cita_id):
 
     # Momento en que se elabora este mensaje
     momento = datetime.now()
-    momento_str = momento.strftime("%d/%B/%Y %I:%M%p")
+
+    # Data para codificar en el QR
+    data = ASISTENCIA_URL + "/cit_citas/asistencia/" + cit_cita.encode_id()
 
     # Contenidos
     contenidos = []
     contenidos.append("<h1>Sistema de Citas</h1>")
     contenidos.append("<h2>PODER JUDICIAL DEL ESTADO DE COAHUILA DE ZARAGOZA</h2>")
-    contenidos.append(f"<p>Fecha de elaboración: {momento_str}.</p>")
-    contenidos.append("<p>Le proporcionamos la informacion detalla de la cita que agendó en este sistema:</p>")
+    contenidos.append(f"<p>Fecha de elaboración: {momento.strftime('%Y.%m.%d - %I:%M %p')}.</p>")
+    contenidos.append("<p>Le proporcionamos la información detalla de la cita que agendó en este sistema:</p>")
     contenidos.append("<ul>")
-    contenidos.append(f"<li>Oficina: {cit_cita.oficina.descripcion}</li>")
-    contenidos.append(f"<li>Servicio: {cit_cita.cit_servicio.descripcion}</li>")
-    contenidos.append(f"<li>Fecha y hora: {cit_cita.inicio.strftime('%d/%B/%Y %I:%M%p')}</li>")
+    contenidos.append(f"<li><strong>Nombre</strong>: {cit_cita.cit_cliente.nombre}</li>")
+    contenidos.append(f"<li><strong>Oficina</strong>: {cit_cita.oficina.descripcion}</li>")
+    contenidos.append(f"<li><strong>Servicio</strong>: {cit_cita.cit_servicio.descripcion}</li>")
+    contenidos.append(f"<li><strong>Fecha y hora</strong>: {cit_cita.inicio.strftime('%d de %B de %Y a las %I:%M %p')}</li>")
     contenidos.append("</ul>")
-    contenidos.append("<p>Por favor llegue cinco minutos antes de la fecha y hora mencionados.</p>")
-    contenidos.append("<p>ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</p>")
-    content = Content("text/html", "<br>".join(contenidos))
+    contenidos.append("<small>Por favor llegue cinco minutos antes de la fecha y hora mencionados.</small>")
+    contenidos.append("<h3>Código QR para asistencia de la cita</h3>")
+    contenidos.append("<p>Por favor, muestre este código QR en la recepción para marcar su asistencia a la cita.</p>")
+    contenidos.append(f'<img src="https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl={data}" alt="[ERROR_EN_QR]">')
+    contenidos.append("<p><strong>ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></p>")
+    content = Content("text/html", "\n".join(contenidos))
 
     # Remitente
     from_email = None
@@ -97,6 +104,6 @@ def enviar(cit_cita_id):
 
     # Terminar tarea
     set_task_progress(100)
-    mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}"
+    mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}, a la URL: {data}"
     bitacora.info(mensaje_final)
     return mensaje_final
