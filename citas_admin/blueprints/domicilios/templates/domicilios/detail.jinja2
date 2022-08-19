@@ -32,12 +32,15 @@
             <table id="oficinas_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
-                        <th>Claves</th>
-                        <th>Descripciones</th>
-                        <th>Distritos</th>
-                        <th>Aperturas</th>
-                        <th>Cierres</th>
-                        <th>L. P.</th>
+                        <th>Clave</th>
+                        <th>Descripción corta</th>
+                        <th>Distrito</th>
+                        <th><span title="Es Juridiccional">Es J.</span></th>
+                        <th>Apertura</th>
+                        <th>Cierre</th>
+                        <th><span title="Límite de personas">L.P.</span></th>
+                        <th><span title="Puede agendar citas">P.A.C.</span></th>
+                        <th><span title="Puede enviar QR">QR</span></th>
                     </tr>
                 </thead>
             </table>
@@ -59,36 +62,49 @@
                 { data: "detalle" },
                 { data: "descripcion_corta" },
                 { data: "distrito" },
+                { data: "es_jurisdiccional" },
                 { data: "apertura" },
                 { data: "cierre" },
-                { data: "limite_personas" }
+                { data: "limite_personas" },
+                { data: "puede_agendar_citas" },
+                { data: "puede_enviar_qr" }
             ];
             configDataTable['columnDefs'] = [
-                {
-                    targets: 0, // detalle
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        return '<a href="' + data.url + '">' + data.clave + '</a>';
-                    }
-                },
-                {
-                    targets: 1, // descripcion_corta
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        return (data.length > 48 ? data.substr(0, 48) + '…' : data);
-                    }
-                },
-                {
-                    targets: 2, // distrito
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        if (data.url == '') {
-                            return data.nombre_corto;
-                        } else {
-                            return '<a href="' + data.url + '">' + data.nombre_corto + '</a>';
-                        }
+            {
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: 1, // descripcion_corta
+                data: null,
+                render: function(data, type, row, meta) {
+                    return (data.length > 32 ? data.substr(0, 32) + '…' : data);
+                }
+            },
+            {
+                targets: 2, // distrito
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.url == '') {
+                        return data.nombre_corto;
+                    } else {
+                        return '<a href="' + data.url + '">' + data.nombre_corto + '</a>';
                     }
                 }
+            },
+            {
+                targets: [3, 7, 8], // es_jurisdiccional, puede_agendar_citas, puede_enviar_qr
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data) {
+                        return 'SI';
+                    }
+                    return '';
+                }
+            }
             ];
             $('#oficinas_datatable').DataTable(configDataTable);
         </script>
