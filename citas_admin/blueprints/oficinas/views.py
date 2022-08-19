@@ -73,6 +73,7 @@ def datatable_json():
                 "limite_personas": resultado.limite_personas,
                 "es_jurisdiccional": resultado.es_jurisdiccional,
                 "puede_agendar_citas": resultado.puede_agendar_citas,
+                "puede_enviar_qr": resultado.puede_enviar_qr,
             }
         )
     # Entregar JSON
