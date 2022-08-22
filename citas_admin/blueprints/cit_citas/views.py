@@ -345,7 +345,7 @@ def search():
             if fecha != "":
                 busqueda["fecha"] = fecha.strftime("%Y-%m-%d")
                 titulos.append("fecha " + fecha.strftime("%Y-%m-%d"))
-        if "oficina" in request.form and  form_search.oficina.data:
+        if "oficina" in request.form and form_search.oficina.data:
             oficina_id = form_search.oficina.data
             if oficina_id != "":
                 busqueda["oficina_id"] = oficina_id
