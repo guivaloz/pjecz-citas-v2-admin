@@ -13,6 +13,11 @@ from citas_admin.extensions import db
 from citas_admin.blueprints.encuestas.models import EncuestaSistema
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 
+ESTADOS = [
+    "PENDIENTE",
+    "CANCELADO",
+    "CONTESTADO",
+]
 
 def main():
     """Main function"""
@@ -74,7 +79,6 @@ def responder_encuesta_sistema(num_respuestas):
         "Tiene pocas opciones",
         "Difícil, batalle un poco al principio",
         "Funciona bien",
-        "",
     ]
     respuestas_03 = [
         "Nada",
@@ -84,14 +88,20 @@ def responder_encuesta_sistema(num_respuestas):
         "Me gustaría ...",
     ]
     for i in range(num):
-        cliente_id = _seleccionar_cliente()
+        # Seleccionar un cliente que no haya participado en la encuesta
+        while True:
+            cliente_id = _seleccionar_cliente()
+            cliente_en_encuesta = EncuestaSistema.query.filter_by(cit_cliente_id=cliente_id).first()
+            if cliente_en_encuesta is None:
+                break
         respuesta_01 = random.randint(1, 5)
         respuesta_02 = random.choice(respuestas_02)
         respuesta_03 = random.choice(respuestas_03)
+        estado = random.choice(ESTADOS)
 
         # Impresión en pantalla de muestras
-        if i % 50 == 0:
-            print(f"{i+1} - c_id: {cliente_id}, r01: {respuesta_01}, r02: {respuesta_02}, r03: {respuesta_03}")
+        if i % 25 == 0:
+            print(f"{i+1} - c_id: {cliente_id}, r01: {respuesta_01}, r02: {respuesta_02}, r03: {respuesta_03}, estado: {estado}")
 
         # Inserción en la BD
         EncuestaSistema(
@@ -99,6 +109,7 @@ def responder_encuesta_sistema(num_respuestas):
             respuesta_01=respuesta_01,
             respuesta_02=respuesta_02,
             respuesta_03=respuesta_03,
+            estado=estado,
         ).save()
 
 
