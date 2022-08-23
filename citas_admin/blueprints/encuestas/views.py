@@ -6,6 +6,8 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from lib.datatables import get_datatable_parameters, output_datatable_json
+
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
@@ -25,6 +27,40 @@ def before_request():
     """Permiso por defecto"""
 
 
+@encuestas.route("/encuesta/sistema/datatable_json", methods=["GET", "POST"])
+def datatable_json_sistema():
+    """DataTable JSON para listado de respuestas de la encuesta de sistema"""
+    # Tomar parámetros de Datatables
+    draw, start, rows_per_page = get_datatable_parameters()
+    # Consultar
+    consulta = EncuestaSistema.query
+    if "estatus" in request.form:
+        consulta = consulta.filter_by(estatus=request.form["estatus"])
+    else:
+        consulta = consulta.filter_by(estatus="A")
+    # Hace el query de listado
+    registros = consulta.order_by(EncuestaSistema.id.desc()).offset(start).limit(rows_per_page).all()
+    total = consulta.count()
+    # Elaborar datos para DataTable
+    data = []
+    for registro in registros:
+        data.append(
+            {
+                "id": {
+                    "id": registro.id,
+                    "url": "#",#url_for("cit_citas.detail", cit_cita_id=cita.id),
+                },
+                "creado": registro.creado.strftime("%Y-%m-%d %H:%M"),
+                "respuesta_01": registro.respuesta_01,
+                "respuesta_02": registro.respuesta_02,
+                "respuesta_03": registro.respuesta_03,
+                "estado": registro.estado,
+            }
+        )
+    # Entregar JSON
+    return output_datatable_json(draw, total, data)
+
+
 @encuestas.route("/encuestas")
 def list_active():
     """Listado de Modulo activos"""
@@ -42,4 +78,5 @@ def detail_sistema():
         "encuestas/detail_sistema.jinja2",
         filtros=json.dumps({"estatus": "A"}),
         titulo="Encuesta del Sistema",
+        resultado="BIEN",
     )
