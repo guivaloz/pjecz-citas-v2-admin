@@ -146,6 +146,7 @@ class GoogleCloudStorage:
         "xls": "xapplication/vnd.ms-excel",
         "jpg": "image/jpeg",
         "png": "image/png",
+        "json": "application/json",
     }
 
     def __init__(self, base_directory: str, upload_date: date = None, allowed_extensions: list = None, month_in_word: bool = False):
@@ -234,3 +235,24 @@ class GoogleCloudStorage:
         blob.upload_from_string(data, self.content_type)
         self.url = blob.public_url
         return self.url
+
+    def upload_from_filename(self, bucket_name, destination_blob_name, source_file_name, content_type):
+        """Upload to the cloud, returns the public URL"""
+        self.url = None
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(destination_blob_name)
+        blob.upload_from_filename(filename=source_file_name, content_type=content_type)
+        self.url = blob.public_url
+        return self.url
+
+    def download_as_string(self, blob_name):
+        """Descarga un archivo como string"""
+        try:
+            bucket_name = current_app.config["CLOUD_STORAGE_DEPOSITO"]
+        except KeyError as error:
+            raise NotConfiguredError from error
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+        return blob.download_as_string()

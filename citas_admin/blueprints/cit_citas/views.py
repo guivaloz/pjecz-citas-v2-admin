@@ -340,19 +340,19 @@ def search():
             if email != "":
                 busqueda["cit_cliente_email"] = email
                 titulos.append("email " + email)
-        if form_search.fecha.data:
+        if "fecha" in request.form and form_search.fecha.data:
             fecha = form_search.fecha.data
             if fecha != "":
                 busqueda["fecha"] = fecha.strftime("%Y-%m-%d")
                 titulos.append("fecha " + fecha.strftime("%Y-%m-%d"))
-        if form_search.oficina.data:
+        if "oficina" in request.form and form_search.oficina.data:
             oficina_id = form_search.oficina.data
             if oficina_id != "":
                 busqueda["oficina_id"] = oficina_id
                 oficina = Oficina.query.get_or_404(oficina_id)
                 titulos.append("oficina " + oficina.clave)
         else:
-            if form_search.distrito.data:
+            if "distrito" in request.form and form_search.distrito.data:
                 distrito = form_search.distrito.data
                 if distrito != "":
                     busqueda["distrito_id"] = distrito.id

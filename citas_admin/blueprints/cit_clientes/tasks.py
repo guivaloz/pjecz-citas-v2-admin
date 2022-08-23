@@ -6,9 +6,10 @@ import locale
 import logging
 import re
 from datetime import datetime
-from sqlalchemy import func, or_
 
 from lib.tasks import set_task_progress, set_task_error
+from lib.storage import GoogleCloudStorage, NotAllowedExtesionError, UnknownExtesionError, NotConfiguredError
+from google.cloud.storage import Blob
 
 from citas_admin.app import create_app
 from citas_admin.extensions import db
@@ -30,7 +31,7 @@ db.app = app
 
 LIMITE_VERIFICACION = 30
 
-FILE_NAME = "/tmp/clientes_errores_reporte.json"
+FILE_NAME = "cit_clientes_reporte.json"
 
 
 def refresh_report():
@@ -52,12 +53,23 @@ def refresh_report():
     data["total_errores"], data["reportes"] = recorrer_registros()
 
     # Abrimos el archivo de reporte JSON
-    with open(FILE_NAME, "w", encoding="utf-8") as file:
+    with open("/tmp/" + FILE_NAME, "w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
+
+    # Preparar Google Storage
+    storage = GoogleCloudStorage("/")
+    url = None
+    # Subir el archivo a la nube (Google Storage)
+    try:
+        url = storage.upload_from_filename("pjecz-informatica", "json/" + FILE_NAME, "/tmp/" + FILE_NAME, "application/json")
+    except NotConfiguredError:
+        bitacora.warning("No se ha configurado el almacenamiento en la nube.")
+    except Exception:
+        bitacora.warning("Error al subir el archivo.")
 
     # Terminar tarea
     set_task_progress(100)
-    mensaje_final = "Se ha actualizado el reporte de errores de cit_clientes"
+    mensaje_final = f"Se ha actualizado el reporte de errores de cit_clientes en: {url}"
     bitacora.info(mensaje_final)
     return mensaje_final
 
@@ -297,4 +309,4 @@ class ReporteClientesSinCitas(Reporte):
 
 
 if __name__ == "__main__":
-    refresh_report()
+    print(refresh_report())

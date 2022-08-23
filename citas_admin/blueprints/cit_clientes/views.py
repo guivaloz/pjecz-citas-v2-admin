@@ -21,7 +21,9 @@ from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitCliente
 
 from citas_admin.blueprints.cit_clientes.forms import ClienteEditForm
 
-FILE_NAME = "/tmp/clientes_errores_reporte.json"
+from lib.storage import GoogleCloudStorage, NotAllowedExtesionError, UnknownExtesionError, NotConfiguredError
+
+FILE_NAME = "cit_clientes_reporte.json"
 MODULO = "CIT CLIENTES"
 
 cit_clientes = Blueprint("cit_clientes", __name__, template_folder="templates")
@@ -81,7 +83,6 @@ def list_active():
         filtros=json.dumps({"estatus": "A"}),
         titulo="Clientes",
         estatus="A",
-        reporte_nuevo=_leer_estado_reporte(),
     )
 
 
@@ -94,7 +95,6 @@ def list_inactive():
         filtros=json.dumps({"estatus": "B"}),
         titulo="Clientes inactivos",
         estatus="B",
-        reporte_nuevo=_leer_estado_reporte(),
     )
 
 
@@ -212,34 +212,20 @@ def edit(cit_cliente_id):
 
 def _read_file_report():
     """Rutina para abrir y leer el archivo de reportes"""
-    # Revisa si existe el archivo de reporte
-    ruta = Path(FILE_NAME)
-    if not ruta.exists():
+    # Preparar Google Storage
+    storage = GoogleCloudStorage("/")
+    contenido_json = ""
+    # Subir el archivo a la nube (Google Storage)
+    try:
+        contenido_json = storage.download_as_string("json/" + FILE_NAME)
+    except NotConfiguredError:
+        flash("No se ha configurado el almacenamiento en la nube.", "warning")
         return None
-    if not ruta.is_file():
+    except Exception:
+        flash("Error al leer el archivo.", "warning")
         return None
     # Abrimos el archivo de reporte JSON
-    archivo = open(FILE_NAME, "r")
-    data = json.load(archivo)
-    archivo.close()
-
-    return data
-
-
-def _leer_estado_reporte():
-    """Lee el estado del reporte"""
-    data = _read_file_report()
-    if data is None:
-        return None
-    return not data["consultado"]
-
-
-def _escribir_estado_reporte():
-    """Escribe el estado del reporte"""
-    data = _read_file_report()
-    data["consultado"] = True
-    with open(FILE_NAME, "w", encoding="utf-8") as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
+    return json.loads(contenido_json)
 
 
 @cit_clientes.route("/cit_clientes/avisos")
@@ -252,9 +238,6 @@ def report_list():
             "cit_clientes/report_list.jinja2",
             fecha_creacion="",
         )
-
-    if data["consultado"] == False:
-        _escribir_estado_reporte()
 
     return render_template(
         "cit_clientes/report_list.jinja2",
@@ -300,4 +283,4 @@ def refresh_report():
         current_user.launch_task(nombre="cit_clientes.tasks.refresh_report", descripcion=f"Actualiza el reporte de errores de cit_clientes")
         flash("Se está actualizando el reporte de errores de clientes...", "info")
     # Mostrar reporte de errores del cliente
-    return redirect(url_for("cit_clientes.report_list"))
+    return redirect(url_for("cit_clientes.list_active"))
