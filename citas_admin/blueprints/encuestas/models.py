@@ -5,7 +5,7 @@ from citas_admin.extensions import db
 from lib.universal_mixin import UniversalMixin
 
 
-class Encuesta_Sistema(db.Model, UniversalMixin):
+class EncuestaSistema(db.Model, UniversalMixin):
     """Encuesta del Sistema"""
 
     # Nombre de la tabla
@@ -15,8 +15,8 @@ class Encuesta_Sistema(db.Model, UniversalMixin):
     id = db.Column(db.Integer, primary_key=True)
 
     # Clave foránea
-    cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), index=True, nullable=False)
-    cliente = db.relationship("Cliente", back_populates="encuesta_sistema")
+    cit_cliente_id = db.Column(db.Integer, db.ForeignKey("cit_clientes.id"), nullable=False)
+    cit_cliente = db.relationship("CitCliente", back_populates="encuesta_sistema")
 
     # Columnas
     respuesta_01 = db.Column(db.Integer(), nullable=False)

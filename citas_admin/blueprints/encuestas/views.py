@@ -11,6 +11,8 @@ from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 
+from citas_admin.blueprints.encuestas.models import EncuestaSistema
+
 MODULO = "ENCUESTAS"
 
 encuestas = Blueprint("encuestas", __name__, template_folder="templates")
