@@ -48,7 +48,7 @@ def datatable_json_sistema():
             {
                 "id": {
                     "id": registro.id,
-                    "url": "#",#url_for("cit_citas.detail", cit_cita_id=cita.id),
+                    "url": "#",  # url_for("cit_citas.detail", cit_cita_id=cita.id),
                 },
                 "creado": registro.creado.strftime("%Y-%m-%d %H:%M"),
                 "respuesta_01": registro.respuesta_01,
@@ -74,9 +74,31 @@ def list_active():
 @encuestas.route("/encuesta/sistema")
 def detail_sistema():
     """Listado de Modulo activos"""
+    encuestados = EncuestaSistema.query.filter_by(estatus="A").count()
+    votos = EncuestaSistema.query.filter_by(estatus="A").filter_by(estado="CONTESTADO")
+    votos_total = votos.count()
+    val_05 = votos.filter_by(respuesta_01=5).count()
+    val_04 = votos.filter_by(respuesta_01=4).count()
+    val_03 = votos.filter_by(respuesta_01=3).count()
+    val_02 = votos.filter_by(respuesta_01=2).count()
+    val_01 = votos.filter_by(respuesta_01=1).count()
+    # Calcular el nivel de satisfacción
+    formula_result = (val_01 * 1) + (val_02 * 2) + (val_03 * 3) + (val_04 * 4) + (val_05 * 5) / votos_total 
+    detalle = {
+        "periodo": "2022/09/01 - 2022/09/30",
+        "encuestados": encuestados,
+        "total_votos": f'{votos_total}, participación del {round((votos_total*100)/encuestados)}%',
+        "resultado": "BIEN",
+        "indice_satisfaccion": round(formula_result, 2),
+        "resp_01_valor_05": val_05,
+        "resp_01_valor_04": val_04,
+        "resp_01_valor_03": val_03,
+        "resp_01_valor_02": val_02,
+        "resp_01_valor_01": val_01,
+    }
     return render_template(
         "encuestas/detail_sistema.jinja2",
         filtros=json.dumps({"estatus": "A"}),
         titulo="Encuesta del Sistema",
-        resultado="BIEN",
+        detalle=detalle,
     )

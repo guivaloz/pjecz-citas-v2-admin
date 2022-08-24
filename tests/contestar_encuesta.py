@@ -94,10 +94,15 @@ def responder_encuesta_sistema(num_respuestas):
             cliente_en_encuesta = EncuestaSistema.query.filter_by(cit_cliente_id=cliente_id).first()
             if cliente_en_encuesta is None:
                 break
-        respuesta_01 = random.randint(1, 5)
-        respuesta_02 = random.choice(respuestas_02)
-        respuesta_03 = random.choice(respuestas_03)
         estado = random.choice(ESTADOS)
+        if estado == 'CONTESTADO':
+            respuesta_01 = random.randint(1, 5)
+            respuesta_02 = random.choice(respuestas_02)
+            respuesta_03 = random.choice(respuestas_03)
+        else:
+            respuesta_01 = None
+            respuesta_02 = None
+            respuesta_03 = None
 
         # Impresión en pantalla de muestras
         if i % 25 == 0:
