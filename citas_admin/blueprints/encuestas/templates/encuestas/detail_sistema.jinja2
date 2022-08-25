@@ -74,7 +74,7 @@
         <div class="col-3"></div>
     </div>
 
-    {% call list.card('Gráfica') %}
+    {% call list.card('Análisis de Respuestas') %}
         <div class="chart-container">
             <canvas id="myChart" style="max-height:200px; text-aling:center;"></canvas>
         </div>
@@ -90,7 +90,7 @@
         </div>
         <div class="col-1"></div>
         </div>
-        <div class="row align-items-center">
+        <div class="row align-items-center mb-3">
         <div class="col"></div>
         <div class="col">
             <span class="badge bg-success">Satisfechos: {{detalle.resp_01_valor_05 + detalle.resp_01_valor_04}}</span>
@@ -99,19 +99,17 @@
         </div>
         <div class="col"></div>
         </div>
-    {% endcall %}
 
-    {% call list.card('Análisis de Respuestas') %}
         {{ detail.label_value('Pregunta 01:', '¿Cómo fue tu interacción con el sistema de citas versión 2?') }}
-        {{ detail.label_value('5 - Muy Satisfecho:', detalle.resp_01_valor_05) }}
-        {{ detail.label_value('4 - Satisfecho:', detalle.resp_01_valor_04) }}
-        {{ detail.label_value('3 - Normal:', detalle.resp_01_valor_03) }}
-        {{ detail.label_value('2 - Insatisfecho:', detalle.resp_01_valor_02) }}
-        {{ detail.label_value('1 - Muy Insatisfecho:', detalle.resp_01_valor_01) }}
+        {{ detail.label_value('Muy Satisfecho:', detalle.resp_01_valor_05) }}
+        {{ detail.label_value('Satisfecho:', detalle.resp_01_valor_04) }}
+        {{ detail.label_value('Normal:', detalle.resp_01_valor_03) }}
+        {{ detail.label_value('Insatisfecho:', detalle.resp_01_valor_02) }}
+        {{ detail.label_value('Muy Insatisfecho:', detalle.resp_01_valor_01) }}
         {{ detail.label_value('Índice de Satisfacción:', detalle.indice_satisfaccion) }}
     {% endcall %}
 
-    {% call list.card('Listado de respuestas') %}
+    {% call list.card('Listado de Respuestas') %}
         <div class="row">
             <div class="col">
             </div>
@@ -293,12 +291,6 @@
                     },
                     legend: {
                         position: 'right',
-                    }
-                },
-                scales: {
-                    x: {
-                        min: 0,
-                        max: 66,
                     }
                 }
             }
