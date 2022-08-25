@@ -15,7 +15,28 @@
     {% call list.card('Información General') %}
         {{ detail.label_value('Período:', detalle.periodo) }}
         {{ detail.label_value('Encuestas envíadas:', detalle.encuestados) }}
-        {{ detail.label_value('Total de Votos:', detalle.total_votos) }}
+        {{ detail.label_value('Total de Votos:', detalle.total_votos ~ ', participación del: ' ~ detalle.total_votos_porcentaje ~ '%') }}
+        <!-- Barra de votaciones -->
+        <div class="row align-items-center mt-2">
+        <div class="col-1"></div>
+        <div class="col-10">
+            <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" aria-label="contestados" style="width: {{detalle.contestados_porcentaje}}%;" aria-valuenow="{{detalle.contestados_porcentaje}}" aria-valuemin="0" aria-valuemax="100">{{detalle.contestados_porcentaje}}%</div>
+                <div class="progress-bar bg-danger" role="progressbar" aria-label="cancelados" style="width: {{detalle.cancelados_porcentaje}}%" aria-valuenow="{{detalle.cancelados_porcentaje}}" aria-valuemin="0" aria-valuemax="100">{{detalle.cancelados_porcentaje}}%</div>
+                <div class="progress-bar bg-warning text-dark" role="progressbar" aria-label="pendientes" style="width: {{detalle.pendientes_porcentaje}}%" aria-valuenow="{{detalle.pendientes_porcentaje}}" aria-valuemin="0" aria-valuemax="100">{{detalle.pendientes_porcentaje}}%</div>
+            </div>
+        </div>
+        <div class="col-1"></div>
+        </div>
+        <div class="row align-items-center">
+        <div class="col"></div>
+        <div class="col">
+            <span class="badge bg-success">Contestados: {{detalle.contestados}}</span>
+            <span class="badge bg-danger">Cancelados: {{detalle.cancelados}}</span>
+            <span class="badge bg-warning text-dark">Pendentes: {{detalle.pendientes}}</span>
+        </div>
+        <div class="col"></div>
+        </div>
     {% endcall %}
 
     <div class="row align-items-center">
@@ -56,6 +77,27 @@
     {% call list.card('Gráfica') %}
         <div class="chart-container">
             <canvas id="myChart" style="max-height:200px; text-aling:center;"></canvas>
+        </div>
+        <!-- Barra de votaciones -->
+        <div class="row align-items-center mt-2">
+        <div class="col-1"></div>
+        <div class="col-10">
+            <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" aria-label="contestados" style="width: {{detalle.votos_bien_porcentaje}}%;" aria-valuenow="{{detalle.votos_bien_porcentaje}}" aria-valuemin="0" aria-valuemax="100">{{detalle.votos_bien_porcentaje}}%</div>
+                <div class="progress-bar bg-warning text-dark" role="progressbar" aria-label="pendientes" style="width: {{detalle.votos_normal_porcentaje}}%" aria-valuenow="{{detalle.votos_normal_porcentaje}}" aria-valuemin="0" aria-valuemax="100">{{detalle.votos_normal_porcentaje}}%</div>
+                <div class="progress-bar bg-danger" role="progressbar" aria-label="cancelados" style="width: {{detalle.votos_mal_porcentaje}}%" aria-valuenow="{{detalle.votos_mal_porcentaje}}" aria-valuemin="0" aria-valuemax="100">{{detalle.votos_mal_porcentaje}}%</div>
+            </div>
+        </div>
+        <div class="col-1"></div>
+        </div>
+        <div class="row align-items-center">
+        <div class="col"></div>
+        <div class="col">
+            <span class="badge bg-success">Satisfechos: {{detalle.resp_01_valor_05 + detalle.resp_01_valor_04}}</span>
+            <span class="badge bg-warning text-dark">Normal: {{detalle.resp_01_valor_03}}</span>
+            <span class="badge bg-danger">Insatisfecho: {{detalle.resp_01_valor_02 + detalle.resp_01_valor_01}}</span>
+        </div>
+        <div class="col"></div>
         </div>
     {% endcall %}
 
@@ -135,6 +177,20 @@
                 }
             },
             {
+                targets: 1, // respuesta_01
+                data: null,
+                render: function(data, type, row, meta) {
+                    switch (data)    {
+                        case 5:  return '<span class="badge rounded-pill bg-success px-3 ms-3">Muy Satisfecho</span>';   break;
+                        case 4:  return '<span class="badge rounded-pill bg-success px-3 ms-3">Satisfecho</span>';   break;
+                        case 3:   return '<span class="badge rounded-pill bg-warning px-3 ms-3 text-dark">Normal</span>';   break;
+                        case 2:   return '<span class="badge rounded-pill bg-danger px-3 ms-3">Insatisfecho</span>';   break;
+                        case 1:   return '<span class="badge rounded-pill bg-danger px-3 ms-3">Muy Insatisfecho</span>';   break;
+                    }
+                    return data;
+                }
+            },
+            {
                 targets: [2, 3], // Respuesta 02 y 03
                 data: null,
                 render: function(data, type, row, meta) {
@@ -147,7 +203,6 @@
                 targets: 4, // Estado
                 data: null,
                 render: function(data, type, row, meta) {
-
                     switch (data)    {
                         case "PENDIENTE":   return '<span class="badge rounded-pill bg-warning px-3 ms-3 text-dark">Pendiente</span>';   break;
                         case "CANCELADO":   return '<span class="badge rounded-pill bg-danger px-3 ms-3">Cancelado</span>';   break;
@@ -165,48 +220,36 @@
             let resp01Select = document.getElementById('resp01Select').value;
             let estadoSelect = document.getElementById('estadoSelect').value;
 
-            if( configDataTable['ajax']['data']['apellido_primero'] === undefined && apellidoPrimeroBuscar === '' &&
-                configDataTable['ajax']['data']['ya_registrado'] === undefined && yaRegistradoBuscar === ''
+            if( configDataTable['ajax']['data']['respuesta_01'] === undefined && resp01Select === '' &&
+                configDataTable['ajax']['data']['estado'] === undefined && estadoSelect === ''
             )
                 return false;
 
-            $('#cit_clientes_registros_datatable').DataTable().destroy();
+            $('#respuestas_datatable').DataTable().destroy();
 
-            if(nombreBuscar == '')
-                delete configDataTable['ajax']['data']['nombres'];
+            if(resp01Select == '')
+                delete configDataTable['ajax']['data']['respuesta_01'];
             else
-                configDataTable['ajax']['data']['nombres'] = nombreBuscar;
-            if(apellidoPrimeroBuscar == '')
-                delete configDataTable['ajax']['data']['apellido_primero'];
+                configDataTable['ajax']['data']['respuesta_01'] = resp01Select;
+            if(estadoSelect == '')
+                delete configDataTable['ajax']['data']['estado'];
             else
-                configDataTable['ajax']['data']['apellido_primero'] = apellidoPrimeroBuscar;
-            if(emailBuscar == '')
-                delete configDataTable['ajax']['data']['email'];
-            else
-                configDataTable['ajax']['data']['email'] = emailBuscar;
-            if(yaRegistradoBuscar == '')
-                delete configDataTable['ajax']['data']['ya_registrado'];
-            else
-                configDataTable['ajax']['data']['ya_registrado'] = yaRegistradoBuscar;
+                configDataTable['ajax']['data']['estado'] = estadoSelect;
 
-            $('#cit_clientes_registros_datatable').DataTable(configDataTable);
+            $('#respuestas_datatable').DataTable(configDataTable);
         };
 
         function limpiar()  {
-            if( configDataTable['ajax']['data']['email'] === undefined &&
-                configDataTable['ajax']['data']['nombres'] === undefined &&
-                configDataTable['ajax']['data']['apellido_primero'] === undefined &&
-                configDataTable['ajax']['data']['ya_registrado'] === undefined
+            if( configDataTable['ajax']['data']['respuesta_01'] === undefined &&
+                configDataTable['ajax']['data']['estado'] === undefined
             )
                 return false;
             
-            delete configDataTable['ajax']['data']['nombres'];
-            delete configDataTable['ajax']['data']['apellido_primero'];
-            delete configDataTable['ajax']['data']['email'];
-            delete configDataTable['ajax']['data']['ya_registrado'];
+            delete configDataTable['ajax']['data']['respuesta_01'];
+            delete configDataTable['ajax']['data']['estado'];
 
-            $('#cit_clientes_registros_datatable').DataTable().destroy();
-            $('#cit_clientes_registros_datatable').DataTable(configDataTable);
+            $('#respuestas_datatable').DataTable().destroy();
+            $('#respuestas_datatable').DataTable(configDataTable);
         };
     </script>
     <!-- Gráfica -->
@@ -219,12 +262,12 @@
             datasets: [{
                 label: 'Votos',
                 backgroundColor: [
-                    "#c2d5a8",
-                    "#cfe2ff",
-                    "#f0d5ba",
-                    "#cff4fc",
-                    "#e3a7c0",
-                ],
+                    "#198754",
+                    "#198754",
+                    "#ffc107",
+                    "#dc3545",
+                    "#dc3545",
+                    ],
                 data: [
                     {{detalle.resp_01_valor_05}},
                     {{detalle.resp_01_valor_04}},
@@ -243,7 +286,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Satisfacción',
+                        text: 'Satisfacción con el sistema',
                         font: {
                             size: 18
                         }

@@ -38,6 +38,10 @@ def datatable_json_sistema():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
+    if "respuesta_01" in request.form:
+        consulta = consulta.filter_by(respuesta_01=request.form["respuesta_01"])
+    if "estado" in request.form:
+        consulta = consulta.filter_by(estado=request.form["estado"])
     # Hace el query de listado
     registros = consulta.order_by(EncuestaSistema.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
@@ -75,6 +79,10 @@ def list_active():
 def detail_sistema():
     """Listado de Modulo activos"""
     encuestados = EncuestaSistema.query.filter_by(estatus="A").count()
+    votos_contestados = EncuestaSistema.query.filter_by(estatus="A").filter_by(estado="CONTESTADO").count()
+    votos_cancelados = EncuestaSistema.query.filter_by(estatus="A").filter_by(estado="CANCELADO").count()
+    votos_pendientes = EncuestaSistema.query.filter_by(estatus="A").filter_by(estado="PENDIENTE").count()
+
     votos = EncuestaSistema.query.filter_by(estatus="A").filter_by(estado="CONTESTADO")
     votos_total = votos.count()
     val_05 = votos.filter_by(respuesta_01=5).count()
@@ -83,11 +91,21 @@ def detail_sistema():
     val_02 = votos.filter_by(respuesta_01=2).count()
     val_01 = votos.filter_by(respuesta_01=1).count()
     # Calcular el nivel de satisfacción
-    formula_result = (val_01 * 1) + (val_02 * 2) + (val_03 * 3) + (val_04 * 4) + (val_05 * 5) / votos_total 
+    formula_result = (val_01 * 1) + (val_02 * 2) + (val_03 * 3) + (val_04 * 4) + (val_05 * 5) / votos_total
     detalle = {
         "periodo": "2022/09/01 - 2022/09/30",
         "encuestados": encuestados,
-        "total_votos": f'{votos_total}, participación del {round((votos_total*100)/encuestados)}%',
+        "contestados": votos_contestados,
+        "cancelados": votos_cancelados,
+        "pendientes": votos_pendientes,
+        "contestados_porcentaje": (votos_contestados * 100) / encuestados,
+        "cancelados_porcentaje": (votos_cancelados * 100) / encuestados,
+        "pendientes_porcentaje": (votos_pendientes * 100) / encuestados,
+        "total_votos": votos_total,
+        "total_votos_porcentaje": round((votos_total*100)/encuestados),
+        "votos_bien_porcentaje": round(((val_05+val_04)*100)/votos_total),
+        "votos_normal_porcentaje": round((val_03*100)/votos_total),
+        "votos_mal_porcentaje": round(((val_02+val_01)*100)/votos_total),
         "resultado": "BIEN",
         "indice_satisfaccion": round(formula_result, 2),
         "resp_01_valor_05": val_05,
