@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from citas_admin.app import create_app
 from citas_admin.extensions import db
 
-from citas_admin.blueprints.encuestas.models import EncuestaSistema
+from citas_admin.blueprints.enc_sistemas.models import EncSistema
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 
 ESTADOS = [
@@ -55,7 +55,7 @@ def main():
         print("-----------------------------")
         if args.enc == "sistema":
             responder_encuesta_sistema(args.n)
-            bitacora.info(f"Se insertaron en la encuesta '{EncuestaSistema.__tablename__}', {args.n} registros nuevos")
+            bitacora.info(f"Se insertaron en la encuesta '{EncSistema.__tablename__}', {args.n} registros nuevos")
         return 0
     
     parser.print_help()
@@ -91,7 +91,7 @@ def responder_encuesta_sistema(num_respuestas):
         # Seleccionar un cliente que no haya participado en la encuesta
         while True:
             cliente_id = _seleccionar_cliente()
-            cliente_en_encuesta = EncuestaSistema.query.filter_by(cit_cliente_id=cliente_id).first()
+            cliente_en_encuesta = EncSistema.query.filter_by(cit_cliente_id=cliente_id).first()
             if cliente_en_encuesta is None:
                 break
         estado = random.choice(ESTADOS)
@@ -109,7 +109,7 @@ def responder_encuesta_sistema(num_respuestas):
             print(f"{i+1} - c_id: {cliente_id}, r01: {respuesta_01}, r02: {respuesta_02}, r03: {respuesta_03}, estado: {estado}")
 
         # Inserción en la BD
-        EncuestaSistema(
+        EncSistema(
             cit_cliente_id=cliente_id,
             respuesta_01=respuesta_01,
             respuesta_02=respuesta_02,

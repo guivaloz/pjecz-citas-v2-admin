@@ -7,7 +7,7 @@
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
-        {{ topbar.button_previous('Encuestas', url_for('encuestas.list_active')) }}
+        {{ topbar.button_previous('Encuestas', url_for('enc_encuestas.list_active')) }}
     {% endcall %}
 {% endblock %}
 
@@ -51,7 +51,7 @@
                     <h5>¡Bien!</h5> Se está haciendo un buen trabajo. Sigamos así.
                 </div>
             </div>
-        {% elif resultado == "NORMAL" %}
+        {% elif detalle.resultado == "NORMAL" %}
             <div class="alert alert-warning d-flex align-items-center" role="alert">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
                     <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
@@ -60,7 +60,7 @@
                     <h5>Normal</h5> Se considera neutro el trabajo realizado. Podemos mejorar.
                 </div>
             </div>
-        {% elif resultado == "MALO" %}
+        {% elif detalle.resultado == "MALO" %}
             <div class="alert alert-danger d-flex align-items-center" role="alert">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
                     <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
@@ -93,19 +93,19 @@
         <div class="row align-items-center mb-3">
         <div class="col"></div>
         <div class="col">
-            <span class="badge bg-success">Satisfechos: {{detalle.resp_01_valor_05 + detalle.resp_01_valor_04}}</span>
+            <span class="badge bg-success">Fácil: {{detalle.resp_01_valor_05 + detalle.resp_01_valor_04}}</span>
             <span class="badge bg-warning text-dark">Normal: {{detalle.resp_01_valor_03}}</span>
-            <span class="badge bg-danger">Insatisfecho: {{detalle.resp_01_valor_02 + detalle.resp_01_valor_01}}</span>
+            <span class="badge bg-danger">Difícil: {{detalle.resp_01_valor_02 + detalle.resp_01_valor_01}}</span>
         </div>
         <div class="col"></div>
         </div>
 
         {{ detail.label_value('Pregunta 01:', '¿Cómo fue tu interacción con el sistema de citas versión 2?') }}
-        {{ detail.label_value('Muy Satisfecho:', detalle.resp_01_valor_05) }}
-        {{ detail.label_value('Satisfecho:', detalle.resp_01_valor_04) }}
-        {{ detail.label_value('Normal:', detalle.resp_01_valor_03) }}
-        {{ detail.label_value('Insatisfecho:', detalle.resp_01_valor_02) }}
-        {{ detail.label_value('Muy Insatisfecho:', detalle.resp_01_valor_01) }}
+        {{ detail.label_value('Muy Difícil:', detalle.resp_01_valor_01) }}
+        {{ detail.label_value('Difícil:', detalle.resp_01_valor_02) }}
+        {{ detail.label_value('Neutro:', detalle.resp_01_valor_03) }}
+        {{ detail.label_value('Fácil:', detalle.resp_01_valor_04) }}
+        {{ detail.label_value('Muy Fácil:', detalle.resp_01_valor_05) }}
         {{ detail.label_value('Índice de Satisfacción:', detalle.indice_satisfaccion) }}
     {% endcall %}
 
@@ -118,11 +118,11 @@
                     <div class="form-floating">
                         <select class="form-select" id="resp01Select" aria-label="Default select example" onchange="buscar(); return false;" style="width: 200px; flex: inherit;">
                             <option selected value="">Todas</option>
-                            <option value="5">Muy Satisfecho</option>
-                            <option value="4">Satisfecho</option>
+                            <option value="1">Muy Difícil</option>
+                            <option value="2">Difícil</option>
                             <option value="3">Normal</option>
-                            <option value="2">Insatisfecho</option>
-                            <option value="1">Muy Insatisfecho</option>
+                            <option value="4">Fácil</option>
+                            <option value="5">Muy Fácil</option>
                         </select>
                         <label for="resp01Select">Respuesta 01</label>
                     </div>
@@ -144,7 +144,7 @@
             <thead>
                 <tr>
                     <th>IDs</th>
-                    <th>Resp 01</th>
+                    <th>Respuesta 01</th>
                     <th>Respuesta 02</th>
                     <th>Respuesta 03</th>
                     <th>Estado</th>
@@ -157,7 +157,7 @@
 {% block custom_javascript %}
     {{ list.config_datatable() }}
     <script>
-        configDataTable['ajax']['url'] = '/encuesta/sistema/datatable_json';
+        configDataTable['ajax']['url'] = '/encuestas/sistemas/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
             { data: "id" },
@@ -179,11 +179,11 @@
                 data: null,
                 render: function(data, type, row, meta) {
                     switch (data)    {
-                        case 5:  return '<span class="badge rounded-pill bg-success px-3 ms-3">Muy Satisfecho</span>';   break;
-                        case 4:  return '<span class="badge rounded-pill bg-success px-3 ms-3">Satisfecho</span>';   break;
-                        case 3:   return '<span class="badge rounded-pill bg-warning px-3 ms-3 text-dark">Normal</span>';   break;
-                        case 2:   return '<span class="badge rounded-pill bg-danger px-3 ms-3">Insatisfecho</span>';   break;
-                        case 1:   return '<span class="badge rounded-pill bg-danger px-3 ms-3">Muy Insatisfecho</span>';   break;
+                        case 1:  return '<span class="badge rounded-pill bg-danger px-3 ms-3">Muy Difícil</span>';   break;
+                        case 2:  return '<span class="badge rounded-pill bg-danger px-3 ms-3">Difícil</span>';   break;
+                        case 3:   return '<span class="badge rounded-pill bg-warning px-3 ms-3 text-dark">Neutro</span>';   break;
+                        case 4:   return '<span class="badge rounded-pill bg-success px-3 ms-3">Fácil</span>';   break;
+                        case 5:   return '<span class="badge rounded-pill bg-success px-3 ms-3">Muy Fácil</span>';   break;
                     }
                     return data;
                 }
@@ -256,22 +256,22 @@
         let myChart;
 
         const data_chart = {
-            labels: ['Muy Satisfecho', 'Satisfecho', 'Normal', 'Insatisfecho', 'Muy Insatisfecho'],
+            labels: ['Muy Difícil', 'Difícil', 'Neutro', 'Fácil', 'Muy Fácil'],
             datasets: [{
                 label: 'Votos',
                 backgroundColor: [
-                    "#198754",
-                    "#198754",
+                    "#dc3545",
+                    "#dc3545",
                     "#ffc107",
-                    "#dc3545",
-                    "#dc3545",
+                    "#198754",
+                    "#198754",
                     ],
                 data: [
-                    {{detalle.resp_01_valor_05}},
-                    {{detalle.resp_01_valor_04}},
-                    {{detalle.resp_01_valor_03}},
-                    {{detalle.resp_01_valor_02}},
                     {{detalle.resp_01_valor_01}},
+                    {{detalle.resp_01_valor_02}},
+                    {{detalle.resp_01_valor_03}},
+                    {{detalle.resp_01_valor_04}},
+                    {{detalle.resp_01_valor_05}},
                 ],
             }]
         };
@@ -284,7 +284,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Satisfacción con el sistema',
+                        text: 'Facilidad con el sistema',
                         font: {
                             size: 18
                         }
