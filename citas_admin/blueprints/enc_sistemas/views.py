@@ -105,10 +105,10 @@ def list_active():
         "cancelados_porcentaje": round((votos_cancelados * 100) / encuestados, 2),
         "pendientes_porcentaje": round((votos_pendientes * 100) / encuestados, 2),
         "total_votos": votos_total,
-        "total_votos_porcentaje": round((votos_total*100)/encuestados),
-        "votos_bien_porcentaje": round(((val_05+val_04)*100)/votos_total),
-        "votos_normal_porcentaje": round((val_03*100)/votos_total),
-        "votos_mal_porcentaje": round(((val_02+val_01)*100)/votos_total),
+        "total_votos_porcentaje": round((votos_total * 100) / encuestados),
+        "votos_bien_porcentaje": round(((val_05 + val_04) * 100) / votos_total),
+        "votos_normal_porcentaje": round((val_03 * 100) / votos_total),
+        "votos_mal_porcentaje": round(((val_02 + val_01) * 100) / votos_total),
         "resultado": resultado,
         "indice_satisfaccion": round(formula_result, 2),
         "resp_01_valor_05": val_05,
@@ -135,5 +135,3 @@ def detail(respuesta_id):
         titulo="Encuesta del Sistema",
         detalle=detalle,
     )
-
-

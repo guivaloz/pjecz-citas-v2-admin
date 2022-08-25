@@ -19,6 +19,7 @@ ESTADOS = [
     "CONTESTADO",
 ]
 
+
 def main():
     """Main function"""
 
@@ -37,9 +38,9 @@ def main():
     bitacora.addHandler(empunadura)
 
     # Selección de Opciones
-    parser = argparse.ArgumentParser(description='Inserta respuestas aleatorias en la encuesta elegida.')
+    parser = argparse.ArgumentParser(description="Inserta respuestas aleatorias en la encuesta elegida.")
     parser.add_argument("-l", "--list", help="Listado de encuestas disponibles")
-    parser.add_argument("-enc", help="Selección de la encuesta", choices=["sistema","servicio"])
+    parser.add_argument("-enc", help="Selección de la encuesta", choices=["sistema", "servicio"])
     parser.add_argument("-n", help="Número de respuestas (default=100)", default=100)
     args = parser.parse_args()
     # Mostrar el listado de encuestas
@@ -57,7 +58,7 @@ def main():
             responder_encuesta_sistema(args.n)
             bitacora.info(f"Se insertaron en la encuesta '{EncSistema.__tablename__}', {args.n} registros nuevos")
         return 0
-    
+
     parser.print_help()
 
 
@@ -67,7 +68,7 @@ def listado_encuestas():
     encuestas.append("sistema - Encuesta del Sistema")
     encuestas.append("servicio - Encuesta de Servicio")
     # Regresa el listado
-    return encuestas 
+    return encuestas
 
 
 def responder_encuesta_sistema(num_respuestas):
@@ -95,7 +96,7 @@ def responder_encuesta_sistema(num_respuestas):
             if cliente_en_encuesta is None:
                 break
         estado = random.choice(ESTADOS)
-        if estado == 'CONTESTADO':
+        if estado == "CONTESTADO":
             respuesta_01 = random.randint(1, 5)
             respuesta_02 = random.choice(respuestas_02)
             respuesta_03 = random.choice(respuestas_03)
@@ -122,7 +123,7 @@ def _seleccionar_cliente():
     """Regresa un cliente id al asar"""
     while True:
         id_random = random.randint(1, 13000)
-        cliente = CitCliente.query.filter_by(estatus='A').filter_by(id=id_random).first()
+        cliente = CitCliente.query.filter_by(estatus="A").filter_by(id=id_random).first()
         if cliente:
             return cliente.id
 
