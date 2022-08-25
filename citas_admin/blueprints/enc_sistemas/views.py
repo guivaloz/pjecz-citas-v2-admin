@@ -52,7 +52,7 @@ def datatable_json():
             {
                 "id": {
                     "id": registro.id,
-                    "url": "#",  # url_for("cit_citas.detail", cit_cita_id=cita.id),
+                    "url": url_for("enc_sistemas.detail", respuesta_id=registro.id),
                 },
                 "creado": registro.creado.strftime("%Y-%m-%d %H:%M"),
                 "respuesta_01": registro.respuesta_01,
@@ -128,9 +128,12 @@ def list_active():
 @enc_sistemas.route("/encuestas/sistemas/<int:respuesta_id>", methods=["GET", "POST"])
 def detail(respuesta_id):
     """Detalle de una respuesta"""
+    detalle = EncSistema.query.get_or_404(respuesta_id)
     return render_template(
-        "enc_encuestas/detail.jinja2",
+        "enc_sistemas/detail.jinja2",
         filtros=json.dumps({"estatus": "A"}),
         titulo="Encuesta del Sistema",
         detalle=detalle,
     )
+
+

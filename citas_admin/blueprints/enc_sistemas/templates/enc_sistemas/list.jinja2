@@ -194,7 +194,9 @@
                 render: function(data, type, row, meta) {
                     if (data == null)
                         return '-';
-                    return data.length > 16 ? data.substr(0, 16) + '…' : data;
+                    if (data.length > 16)
+                        return '<span title="' + data + '">' + data.substr(0, 16) + '…</span>';
+                    return data;
                 }
             },
             {
