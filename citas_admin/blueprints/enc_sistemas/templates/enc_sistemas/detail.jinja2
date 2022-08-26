@@ -1,0 +1,66 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Detalle de Respuesta{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Respuesta ' + detalle.id | string + ' a la ecuesta del sistema') %}
+        {{ topbar.button_previous('Encuesta del Sistema', url_for('enc_sistemas.list_active')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card('Detalle de las Respuestas') %}
+        {{ detail.label_value('Creado', moment(detalle.creado, local=True).format('DD MMM YYYY H:mm')) }}
+        {{ detail.label_value('Modificado', moment(detalle.modificado, local=True).format('DD MMM YYYY H:mm')) }}
+        <hr>
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-auto"><strong>¿Cómo fue tu interacción con el sistema de citas versión 2?</strong></div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-1"></div>
+            <div class="col-md-11">
+                {% if detalle.respuesta_01 == 1 %}
+                    <h5 class="badge bg-danger">Muy Difícil</h5>
+                {% elif detalle.respuesta_01 == 2 %}
+                    <span class="badge bg-danger">Difícil</span>
+                {% elif detalle.respuesta_01 == 3 %}
+                    <span class="badge bg-warning text-dark">Neutro</span>
+                {% elif detalle.respuesta_01 == 4 %}
+                    <h3 class="badge bg-success">Fácil</h3>
+                {% elif detalle.respuesta_01 == 5 %}
+                    <span class="badge bg-success">Muy Fácil</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-auto"><strong>¿Por qué?</strong></div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <div class="control-form">
+                    <textarea class="form-control" placeholder="Leave a comment here" id="textarea02" style="height: 100px">{{detalle.respuesta_02}}</textarea>
+                </div>
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+        {{ detail.label_value('', '¿Tienes algún comentario para nosotros?') }}
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-11">
+                <div class="control-form">
+                    <textarea class="form-control" placeholder="Leave a comment here" id="textarea03" style="height: 100px">{{detalle.respuesta_03}}</textarea>
+                </div>
+            </div>
+        </div>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {{ detail.moment_js(moment) }}
+{% endblock %}
