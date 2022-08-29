@@ -6,13 +6,13 @@
 {% block title %}Detalle de Respuesta{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons('Respuesta ' + detalle.id | string + ' a la ecuesta del sistema') %}
+    {% call topbar.page_buttons('Encuesta del Sistema - Respuesta ' + detalle.id | string) %}
         {{ topbar.button_previous('Encuesta del Sistema', url_for('enc_sistemas.list_active')) }}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
-    {% call detail.card('Detalle de las Respuestas') %}
+    {% call detail.card('Detalle de la Respuesta') %}
         {{ detail.label_value('Creado', moment(detalle.creado, local=True).format('DD MMM YYYY H:mm')) }}
         {{ detail.label_value('Modificado', moment(detalle.modificado, local=True).format('DD MMM YYYY H:mm')) }}
         <hr>
@@ -24,18 +24,19 @@
             <div class="col-md-1"></div>
             <div class="col-md-11">
                 {% if detalle.respuesta_01 == 1 %}
-                    <h5 class="badge bg-danger">Muy Difícil</h5>
+                    <h4><span class="badge bg-danger">Muy Difícil</span></h4>
                 {% elif detalle.respuesta_01 == 2 %}
-                    <span class="badge bg-danger">Difícil</span>
+                    <h4><span class="badge bg-danger">Difícil</span></h4>
                 {% elif detalle.respuesta_01 == 3 %}
-                    <span class="badge bg-warning text-dark">Neutro</span>
+                    <h4><span class="badge bg-warning text-dark">Neutro</span></h4>
                 {% elif detalle.respuesta_01 == 4 %}
-                    <h3 class="badge bg-success">Fácil</h3>
+                    <h4><span class="badge bg-success">Fácil</span></h4>
                 {% elif detalle.respuesta_01 == 5 %}
-                    <span class="badge bg-success">Muy Fácil</span>
+                    <h4><span class="badge bg-success">Muy Fácil</span></h4>
                 {% endif %}
             </div>
         </div>
+
         <div class="row">
             <div class="col-md-1"></div>
             <div class="col-auto"><strong>¿Por qué?</strong></div>
@@ -44,17 +45,21 @@
             <div class="col-md-1"></div>
             <div class="col-md-10">
                 <div class="control-form">
-                    <textarea class="form-control" placeholder="Leave a comment here" id="textarea02" style="height: 100px">{{detalle.respuesta_02}}</textarea>
+                    <textarea class="form-control" placeholder="Leave a comment here" id="textarea02" style="height: 100px" readonly>{{detalle.respuesta_02}}</textarea>
                 </div>
             </div>
             <div class="col-md-1"></div>
         </div>
-        {{ detail.label_value('', '¿Tienes algún comentario para nosotros?') }}
+
         <div class="row">
             <div class="col-md-1"></div>
-            <div class="col-md-11">
+            <div class="col-auto"><strong>¿Tienes algún comentario para nosotros?</strong></div>
+        </div>
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
                 <div class="control-form">
-                    <textarea class="form-control" placeholder="Leave a comment here" id="textarea03" style="height: 100px">{{detalle.respuesta_03}}</textarea>
+                    <textarea class="form-control" placeholder="Leave a comment here" id="textarea03" style="height: 150px" readonly>{{detalle.respuesta_03}}</textarea>
                 </div>
             </div>
         </div>

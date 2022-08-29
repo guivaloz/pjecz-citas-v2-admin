@@ -25,7 +25,7 @@ class EncSistema(db.Model, UniversalMixin):
 
     # Clave foránea
     cit_cliente_id = db.Column(db.Integer, db.ForeignKey("cit_clientes.id"), nullable=False)
-    cit_cliente = db.relationship("CitCliente", back_populates="enc_sistema")
+    cit_cliente = db.relationship("CitCliente", back_populates="enc_sistemas")
 
     # Columnas
     respuesta_01 = db.Column(db.Integer(), nullable=True)
