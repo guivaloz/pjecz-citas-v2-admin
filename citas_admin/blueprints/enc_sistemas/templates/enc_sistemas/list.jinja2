@@ -8,8 +8,22 @@
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
         {{ topbar.button_previous('Encuestas', url_for('enc_encuestas.list_active')) }}
-        {{ topbar.button('Reporte', url_for('enc_sistemas.report'), 'mdi:chart-box-outline') }}
     {% endcall %}
+    <div class="row align-items-end mb-3">
+        <div class="col text-end">
+        <h6>Reportes:</h6>
+        </div>
+        <div class="col-auto text-end">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                {{ topbar.button('Últimos 7 Días', url_for('enc_sistemas.report', desde=reportes.desde_siete_dias), 'mdi:chart-box-outline') }}
+                {{ topbar.button('Último Mes', url_for('enc_sistemas.report', desde=reportes.desde_un_mes), 'mdi:chart-box-outline') }}
+                {{ topbar.button('Último Trimestre', url_for('enc_sistemas.report', desde=reportes.desde_tres_meses), 'mdi:chart-box-outline') }}
+                {{ topbar.button('Último Semestre', url_for('enc_sistemas.report', desde=reportes.desde_seis_meses), 'mdi:chart-box-outline') }}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block content %}
@@ -19,6 +33,14 @@
             </div>
             <div class="col-auto text-end">
                 <form class="input-group mb-3" id="buscadorForm" onsubmit="buscar(); return false;">
+                    <div class="form-floating">
+                        <input id="desdeInput" type="date" class="form-control" placeholder="desde" aria-label="desde" aria-describedby="button-buscar" onchange="buscar(); return false;">
+                        <label for="desdeInput">Desde</label>
+                    </div>
+                    <div class="form-floating">
+                        <input id="hastaInput" type="date" class="form-control" placeholder="hasta" aria-label="hasta" aria-describedby="button-buscar" onchange="buscar(); return false;">
+                        <label for="hastaInput">Hasta</label>
+                    </div>
                     <div class="form-floating">
                         <select class="form-select" id="resp01Select" aria-label="Default select example" onchange="buscar(); return false;" style="width: 200px; flex: inherit;">
                             <option selected value="">Todas</option>
@@ -117,9 +139,15 @@
             }
         ];
 
+        let desde = document.getElementById('desde')?.value;
+        let hasta = document.getElementById('hasta')?.value;
         let resp01Select = document.getElementById('resp01Select').value;
         let estadoSelect = document.getElementById('estadoSelect').value;
 
+        if(desde != '')
+            configDataTable['ajax']['data']['desde'] = desde;
+        if(hasta != '')
+            configDataTable['ajax']['data']['hasta'] = hasta;
         if(resp01Select != '')
             configDataTable['ajax']['data']['respuesta_01'] = resp01Select;
         if(estadoSelect != '')
@@ -130,16 +158,28 @@
     <!-- Función de buscador -->
     <script type="text/javascript">
         function buscar() {
+            let desde = document.getElementById('desdeInput').value;
+            let hasta = document.getElementById('hastaInput').value;
             let resp01Select = document.getElementById('resp01Select').value;
             let estadoSelect = document.getElementById('estadoSelect').value;
 
-            if( configDataTable['ajax']['data']['respuesta_01'] === undefined && resp01Select === '' &&
+            if( configDataTable['ajax']['data']['desde'] === undefined && desde === '' &&
+                configDataTable['ajax']['data']['hasta'] === undefined && hasta === '' &&
+                configDataTable['ajax']['data']['respuesta_01'] === undefined && resp01Select === '' &&
                 configDataTable['ajax']['data']['estado'] === undefined && estadoSelect === ''
             )
                 return false;
 
             $('#respuestas_datatable').DataTable().destroy();
 
+            if(desde == '')
+                delete configDataTable['ajax']['data']['desde'];
+            else
+                configDataTable['ajax']['data']['desde'] = desde;
+            if(hasta == '')
+                delete configDataTable['ajax']['data']['hasta'];
+            else
+                configDataTable['ajax']['data']['hasta'] = hasta;
             if(resp01Select == '')
                 delete configDataTable['ajax']['data']['respuesta_01'];
             else
@@ -153,11 +193,15 @@
         };
 
         function limpiar()  {
-            if( configDataTable['ajax']['data']['respuesta_01'] === undefined &&
+            if( configDataTable['ajax']['data']['desde'] === undefined &&
+                configDataTable['ajax']['data']['hasta'] === undefined &&
+                configDataTable['ajax']['data']['respuesta_01'] === undefined &&
                 configDataTable['ajax']['data']['estado'] === undefined
             )
                 return false;
             
+            delete configDataTable['ajax']['data']['desde'];
+            delete configDataTable['ajax']['data']['hasta'];
             delete configDataTable['ajax']['data']['respuesta_01'];
             delete configDataTable['ajax']['data']['estado'];
 

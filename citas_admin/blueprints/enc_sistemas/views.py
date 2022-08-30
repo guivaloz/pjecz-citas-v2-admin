@@ -1,7 +1,10 @@
 """
 Encuestas, vistas
 """
+from calendar import month
 import json
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -41,6 +44,10 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
+    if "desde" in request.form:
+        consulta = consulta.filter(EncSistema.modificado >= request.form["desde"])
+    if "hasta" in request.form:
+        consulta = consulta.filter(EncSistema.modificado <= request.form["hasta"])
     if "respuesta_01" in request.form:
         consulta = consulta.filter_by(respuesta_01=request.form["respuesta_01"])
     if "estado" in request.form:
@@ -71,10 +78,18 @@ def datatable_json():
 @enc_sistemas.route("/encuestas/sistemas")
 def list_active():
     """Listado de respuestas dela encuesta del sistema"""
+    fecha_actual = datetime.now()
+    reportes = {
+        "desde_siete_dias": (fecha_actual - timedelta(days=7)).strftime("%Y-%m-%d"),
+        "desde_un_mes": (fecha_actual - relativedelta(months=1)).strftime("%Y-%m-%d"),
+        "desde_tres_meses": (fecha_actual - relativedelta(months=3)).strftime("%Y-%m-%d"),
+        "desde_seis_meses": (fecha_actual - relativedelta(months=6)).strftime("%Y-%m-%d"),
+    }
     return render_template(
         "enc_sistemas/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
         titulo="Encuesta del Sistema",
+        reportes=reportes,
     )
 
 
@@ -90,14 +105,26 @@ def detail(respuesta_id):
     )
 
 
-@enc_sistemas.route("/encuestas/sistemas/reporte")
-def report():
+@enc_sistemas.route("/encuestas/sistemas/reporte?desde=<desde>")
+def report(desde):
     """Reporte de la encuesta en un período de tiempo dado"""
+    # Validar parámetros de entrada
+    desde_date = None
+    try:
+        desde_date = datetime.strptime(desde, "%Y-%m-%d")
+    except ValueError:
+        flash("Error en el formato de la fecha de entrada", "danger")
+        return redirect(url_for("enc_sistemas.list_active"))
+    # Query de consulta de cantidad de encuestados
     db = SessionLocal()
-    enc_sistemas_cantidades = db.query(
-        EncSistema.estado.label("estado"),
-        func.count("*").label("cantidad"),
-    ).group_by(EncSistema.estado)
+    enc_sistemas_cantidades = (
+        db.query(
+            EncSistema.estado.label("estado"),
+            func.count("*").label("cantidad"),
+        )
+        .filter(EncSistema.modificado >= desde_date)
+        .group_by(EncSistema.estado)
+    )
 
     encuestados_cantidad = 0
     encuestados_contestados = 0
@@ -122,6 +149,7 @@ def report():
             func.count("*").label("cantidad"),
         )
         .filter(EncSistema.estado == "CONTESTADO")
+        .filter(EncSistema.modificado >= desde_date)
         .group_by(EncSistema.respuesta_01)
     )
 
@@ -148,7 +176,7 @@ def report():
     else:
         formula_result = ((val_01 * 1) + (val_02 * 2) + (val_03 * 3) + (val_04 * 4) + (val_05 * 5)) / votos_total
     detalle = {
-        "periodo": "2022/09/01 - 2022/09/30",
+        "periodo": f"{desde_date.strftime('%Y/%m/%d')} - {datetime.now().strftime('%Y/%m/%d')}",  # "2022/09/01 - 2022/09/30",
         "encuestados": encuestados_cantidad,
         "contestados": encuestados_contestados,
         "cancelados": encuestados_cancelados,
