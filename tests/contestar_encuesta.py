@@ -10,8 +10,10 @@ from datetime import datetime, timedelta
 from citas_admin.app import create_app
 from citas_admin.extensions import db
 
+from citas_admin.blueprints.enc_servicios.models import EncServicio
 from citas_admin.blueprints.enc_sistemas.models import EncSistema
 from citas_admin.blueprints.cit_clientes.models import CitCliente
+from citas_admin.blueprints.oficinas.models import Oficina
 
 ESTADOS = [
     "PENDIENTE",
@@ -57,6 +59,9 @@ def main():
         if args.enc == "sistemas":
             responder_encuesta_sistema(args.n)
             bitacora.info(f"Se insertaron en la encuesta '{EncSistema.__tablename__}', {args.n} registros nuevos")
+        elif args.enc == "servicios":
+            responder_encuesta_servicios(args.n)
+            bitacora.info(f"Se insertaron en la encuesta '{EncServicio.__tablename__}', {args.n} registros nuevos")
         return 0
 
     parser.print_help()
@@ -83,10 +88,15 @@ def responder_encuesta_sistema(num_respuestas):
     ]
     respuestas_03 = [
         "Nada",
-        "Todo bien",
+        "Excelente!",
         "Gracias",
+        "Me gustaría poder ver mi historial de citas pasadas.",
+        "En mi iPhone a veces no se puede acceder del todo.",
+        "Creo que los colores no son muy adecuados",
+        "Quisiera acceder con la contraseña de mi teléfono.",
+        "Podrían integrarlo todo a un solo sitio, es complicado tener tantos sitios e usuarios y contraseñas.",
         "",
-        "Me gustaría ...",
+        "Todo bien, funciona muy bien.",
     ]
     for i in range(num):
         # Seleccionar un cliente que no haya participado en la encuesta
@@ -119,6 +129,61 @@ def responder_encuesta_sistema(num_respuestas):
         ).save()
 
 
+def responder_encuesta_servicios(num_respuestas):
+    """Genera las respuestas para la encuesta de Servicio"""
+    num = int(num_respuestas)
+    # Grupo de respuestas
+    respuestas_04 = [
+        "",
+        "El sistema para marcar la asistencia no suele ser muy efectivo.",
+        "Deberían poder adelantar citas si los demás no llegan.",
+        "No sé por qué piden cita, si no te atienden a tiempo.",
+        "Deberían poder enviar los documento vía email.",
+        "Podrían ampliar los horarios.",
+        "Se tardan mucho.",
+        "Deberían ser más ágiles.",
+        "No hay muchas citas.",
+        "El tiempo de espera es mucho.",
+        "Su servicio es pésimo.",
+        "Me parece perfecto.",
+    ]
+    # Crea el número de respuestas elegido
+    for i in range(num):
+        # Seleccionar un cliente que no haya participado en la encuesta
+        while True:
+            cliente_id = _seleccionar_cliente()
+            cliente_en_encuesta = EncServicio.query.filter_by(cit_cliente_id=cliente_id).first()
+            if cliente_en_encuesta is None:
+                break
+        oficina_id = _seleccionar_oficina()
+        estado = random.choice(ESTADOS)
+        if estado == "CONTESTADO":
+            respuesta_01 = random.randint(1, 5)
+            respuesta_02 = random.randint(1, 5)
+            respuesta_03 = random.randint(1, 5)
+            respuesta_04 = random.choice(respuestas_04)
+        else:
+            respuesta_01 = None
+            respuesta_02 = None
+            respuesta_03 = None
+            respuesta_04 = None
+
+        # Impresión en pantalla de muestras
+        if i % 25 == 0:
+            print(f"{i+1} - cli_id: {cliente_id}, ofi_id: {oficina_id} | r01: {respuesta_01}, r02: {respuesta_02}, r03: {respuesta_03}, r04: {respuesta_04}, estado: {estado}")
+
+        # Inserción en la BD
+        EncServicio(
+            cit_cliente_id=cliente_id,
+            oficina_id=oficina_id,
+            respuesta_01=respuesta_01,
+            respuesta_02=respuesta_02,
+            respuesta_03=respuesta_03,
+            respuesta_04=respuesta_04,
+            estado=estado,
+        ).save()
+
+
 def _seleccionar_cliente():
     """Regresa un cliente id al asar"""
     while True:
@@ -126,6 +191,15 @@ def _seleccionar_cliente():
         cliente = CitCliente.query.filter_by(estatus="A").filter_by(id=id_random).first()
         if cliente:
             return cliente.id
+
+
+def _seleccionar_oficina():
+    """Regresa una Oficina id al asar"""
+    while True:
+        id_random = random.randint(1, 200)
+        oficina = Oficina.query.filter_by(estatus="A").filter_by(id=id_random).first()
+        if oficina:
+            return oficina.id
 
 
 if __name__ == "__main__":
