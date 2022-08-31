@@ -31,6 +31,7 @@ class CitCliente(db.Model, UniversalMixin):
     cit_citas = db.relationship("CitCita", back_populates="cit_cliente")
     cit_clientes_recuperaciones = db.relationship("CitClienteRecuperacion", back_populates="cit_cliente")
     cit_pagos = db.relationship("CitPago", back_populates="cit_cliente")
+    enc_servicios = db.relationship("EncServicio", back_populates="cit_cliente")
     enc_sistemas = db.relationship("EncSistema", back_populates="cit_cliente")
 
     @property

@@ -40,7 +40,7 @@ def main():
     # Selección de Opciones
     parser = argparse.ArgumentParser(description="Inserta respuestas aleatorias en la encuesta elegida.")
     parser.add_argument("-l", "--list", help="Listado de encuestas disponibles")
-    parser.add_argument("-enc", help="Selección de la encuesta", choices=["sistema", "servicio"])
+    parser.add_argument("-enc", help="Selección de la encuesta", choices=["sistemas", "servicios"])
     parser.add_argument("-n", help="Número de respuestas (default=100)", default=100)
     args = parser.parse_args()
     # Mostrar el listado de encuestas
@@ -54,7 +54,7 @@ def main():
         print(f"Responder la encuesta: {args.enc}")
         print(f"Cantidad de respuestas: {args.n}")
         print("-----------------------------")
-        if args.enc == "sistema":
+        if args.enc == "sistemas":
             responder_encuesta_sistema(args.n)
             bitacora.info(f"Se insertaron en la encuesta '{EncSistema.__tablename__}', {args.n} registros nuevos")
         return 0
@@ -65,8 +65,8 @@ def main():
 def listado_encuestas():
     """Listado de encuestas disponibles"""
     encuestas = []
-    encuestas.append("sistema - Encuesta del Sistema")
-    encuestas.append("servicio - Encuesta de Servicio")
+    encuestas.append("sistemas - Encuesta del Sistema")
+    encuestas.append("servicios - Encuesta de Servicio")
     # Regresa el listado
     return encuestas
 
