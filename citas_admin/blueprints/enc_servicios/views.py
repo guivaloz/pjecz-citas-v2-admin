@@ -19,41 +19,41 @@ from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 
-from citas_admin.blueprints.enc_sistemas.models import EncSistema
+from citas_admin.blueprints.enc_servicios.models import EncServicio
 
-MODULO = "ENC SISTEMAS"
+MODULO = "ENC SERVICIOS"
 
-enc_sistemas = Blueprint("enc_sistemas", __name__, template_folder="templates")
+enc_servicios = Blueprint("enc_servicios", __name__, template_folder="templates")
 
 
-@enc_sistemas.before_request
+@enc_servicios.before_request
 @login_required
 @permission_required(MODULO, Permiso.VER)
 def before_request():
     """Permiso por defecto"""
 
 
-@enc_sistemas.route("/encuestas/sistemas/datatable_json", methods=["GET", "POST"])
+@enc_servicios.route("/encuestas/servicios/datatable_json", methods=["GET", "POST"])
 def datatable_json():
     """DataTable JSON para listado de respuestas de la encuesta de sistema"""
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
-    consulta = EncSistema.query
+    consulta = EncServicio.query
     if "estatus" in request.form:
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
     if "desde" in request.form:
-        consulta = consulta.filter(EncSistema.modificado >= request.form["desde"])
+        consulta = consulta.filter(EncServicio.modificado >= request.form["desde"])
     if "hasta" in request.form:
-        consulta = consulta.filter(EncSistema.modificado <= request.form["hasta"])
+        consulta = consulta.filter(EncServicio.modificado <= request.form["hasta"])
     if "respuesta_01" in request.form:
         consulta = consulta.filter_by(respuesta_01=request.form["respuesta_01"])
     if "estado" in request.form:
         consulta = consulta.filter_by(estado=request.form["estado"])
     # Hace el query de listado
-    registros = consulta.order_by(EncSistema.id.desc()).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(EncServicio.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -62,7 +62,7 @@ def datatable_json():
             {
                 "id": {
                     "id": registro.id,
-                    "url": url_for("enc_sistemas.detail", respuesta_id=registro.id),
+                    "url": url_for("enc_servicios.detail", respuesta_id=registro.id),
                 },
                 "creado": registro.creado.strftime("%Y-%m-%d %H:%M"),
                 "respuesta_01": registro.respuesta_01,
@@ -75,9 +75,9 @@ def datatable_json():
     return output_datatable_json(draw, total, data)
 
 
-@enc_sistemas.route("/encuestas/sistemas")
+@enc_servicios.route("/encuestas/servicios")
 def list_active():
-    """Listado de respuestas dela encuesta del sistema"""
+    """Listado de respuestas de la encuesta de servicios"""
     fecha_actual = datetime.now()
     reportes = {
         "desde_siete_dias": (fecha_actual - timedelta(days=7)).strftime("%Y-%m-%d"),
@@ -86,26 +86,26 @@ def list_active():
         "desde_seis_meses": (fecha_actual - relativedelta(months=6)).strftime("%Y-%m-%d"),
     }
     return render_template(
-        "enc_sistemas/list.jinja2",
+        "enc_servicios/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Encuesta del Sistema",
+        titulo="Encuesta de Servicio",
         reportes=reportes,
     )
 
 
-@enc_sistemas.route("/encuestas/sistemas/<int:respuesta_id>", methods=["GET", "POST"])
+@enc_servicios.route("/encuestas/servicios/<int:respuesta_id>", methods=["GET", "POST"])
 def detail(respuesta_id):
     """Detalle de una respuesta"""
-    detalle = EncSistema.query.get_or_404(respuesta_id)
+    detalle = EncServicio.query.get_or_404(respuesta_id)
     return render_template(
-        "enc_sistemas/detail.jinja2",
+        "enc_servicios/detail.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Encuesta del Sistema",
+        titulo="Encuesta de Servicio",
         detalle=detalle,
     )
 
 
-@enc_sistemas.route("/encuestas/sistemas/reporte?desde=<desde>")
+@enc_servicios.route("/encuestas/servicios/reporte?desde=<desde>")
 def report(desde):
     """Reporte de la encuesta en un período de tiempo dado"""
     # Validar parámetros de entrada
@@ -114,16 +114,16 @@ def report(desde):
         desde_date = datetime.strptime(desde, "%Y-%m-%d")
     except ValueError:
         flash("Error en el formato de la fecha de entrada", "danger")
-        return redirect(url_for("enc_sistemas.list_active"))
+        return redirect(url_for("enc_servicios.list_active"))
     # Query de consulta de cantidad de encuestados
     db = SessionLocal()
-    enc_sistemas_cantidades = (
+    enc_servicios_cantidades = (
         db.query(
-            EncSistema.estado.label("estado"),
+            EncServicio.estado.label("estado"),
             func.count("*").label("cantidad"),
         )
-        .filter(EncSistema.modificado >= desde_date)
-        .group_by(EncSistema.estado)
+        .filter(EncServicio.modificado >= desde_date)
+        .group_by(EncServicio.estado)
     )
 
     encuestados_cantidad = 0
@@ -131,7 +131,7 @@ def report(desde):
     encuestados_cancelados = 0
     encuestados_pendientes = 0
 
-    for estado, cantidad in enc_sistemas_cantidades:
+    for estado, cantidad in enc_servicios_cantidades:
         if estado == "CONTESTADO":
             encuestados_contestados = cantidad
         elif estado == "CANCELADO":
@@ -143,19 +143,19 @@ def report(desde):
     # Cuenta de votos de la respuesta 01 ---
     votos_total = encuestados_contestados
 
-    enc_sistemas_cantidades = (
+    enc_servicios_cantidades = (
         db.query(
-            EncSistema.respuesta_01,
+            EncServicio.respuesta_01,
             func.count("*").label("cantidad"),
         )
-        .filter(EncSistema.estado == "CONTESTADO")
-        .filter(EncSistema.modificado >= desde_date)
-        .group_by(EncSistema.respuesta_01)
+        .filter(EncServicio.estado == "CONTESTADO")
+        .filter(EncServicio.modificado >= desde_date)
+        .group_by(EncServicio.respuesta_01)
     )
 
     val_01, val_02, val_03, val_04, val_05 = (0, 0, 0, 0, 0)
 
-    for opcion, cantidad in enc_sistemas_cantidades.all():
+    for opcion, cantidad in enc_servicios_cantidades.all():
         if opcion == 1:
             val_01 = cantidad
         elif opcion == 2:
@@ -197,8 +197,8 @@ def report(desde):
         "resp_01_valor_01": val_01,
     }
     return render_template(
-        "enc_sistemas/report.jinja2",
+        "enc_servicios/report.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Reporte de la Encuesta del Sistema",
+        titulo="Reporte de la Encuesta de Servicio",
         detalle=detalle,
     )

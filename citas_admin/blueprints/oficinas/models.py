@@ -36,6 +36,7 @@ class Oficina(db.Model, UniversalMixin):
     cit_citas = db.relationship("CitCita", back_populates="oficina")
     cit_horas_bloqueadas = db.relationship("CitHoraBloqueada", back_populates="oficina")
     cit_oficinas_servicios = db.relationship("CitOficinaServicio", back_populates="oficina")
+    enc_servicios = db.relationship("EncServicio", back_populates="oficina")
 
     @property
     def compuesto(self):

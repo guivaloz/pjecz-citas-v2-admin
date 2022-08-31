@@ -73,6 +73,7 @@
                     <th>Respuesta 01</th>
                     <th>Respuesta 02</th>
                     <th>Respuesta 03</th>
+                    <th>Respuesta 04</th>
                     <th>Estado</th>
                 </tr>
             </thead>
@@ -83,13 +84,14 @@
 {% block custom_javascript %}
     {{ list.config_datatable() }}
     <script>
-        configDataTable['ajax']['url'] = '/encuestas/sistemas/datatable_json';
+        configDataTable['ajax']['url'] = '/encuestas/servicios/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
             { data: "id" },
             { data: "respuesta_01" },
             { data: "respuesta_02" },
             { data: "respuesta_03" },
+            { data: "respuesta_04" },
             { data: "estado" },
         ];
         configDataTable['columnDefs'] = [
@@ -126,7 +128,7 @@
                 }
             },
             {
-                targets: 4, // Estado
+                targets: 5, // Estado
                 data: null,
                 render: function(data, type, row, meta) {
                     switch (data)    {
