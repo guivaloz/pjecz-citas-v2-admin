@@ -50,6 +50,10 @@ def datatable_json():
         consulta = consulta.filter(EncServicio.modificado <= request.form["hasta"])
     if "respuesta_01" in request.form:
         consulta = consulta.filter_by(respuesta_01=request.form["respuesta_01"])
+    if "respuesta_02" in request.form:
+        consulta = consulta.filter_by(respuesta_02=request.form["respuesta_02"])
+    if "respuesta_03" in request.form:
+        consulta = consulta.filter_by(respuesta_03=request.form["respuesta_03"])
     if "estado" in request.form:
         consulta = consulta.filter_by(estado=request.form["estado"])
     # Hace el query de listado
@@ -68,6 +72,12 @@ def datatable_json():
                 "respuesta_01": registro.respuesta_01,
                 "respuesta_02": registro.respuesta_02,
                 "respuesta_03": registro.respuesta_03,
+                "respuesta_04": registro.respuesta_04,
+                "oficina": {
+                    "clave": registro.oficina.clave,
+                    "descripcion": registro.oficina.descripcion_corta,
+                    "url": url_for("oficinas.detail", oficina_id=registro.oficina.id),
+                },
                 "estado": registro.estado,
             }
         )

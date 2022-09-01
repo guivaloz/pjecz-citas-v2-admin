@@ -9,6 +9,7 @@
     {% call topbar.page_buttons(titulo) %}
         {{ topbar.button_previous('Encuestas', url_for('enc_encuestas.list_active')) }}
     {% endcall %}
+    <!--
     <div class="row align-items-end mb-3">
         <div class="col text-end">
         <h6>Reportes:</h6>
@@ -16,64 +17,122 @@
         <div class="col-auto text-end">
             <div class="btn-toolbar mb-2 mb-md-0">
                 <div class="btn-group me-2">
-                {{ topbar.button('Últimos 7 Días', url_for('enc_sistemas.report', desde=reportes.desde_siete_dias), 'mdi:chart-box-outline') }}
-                {{ topbar.button('Último Mes', url_for('enc_sistemas.report', desde=reportes.desde_un_mes), 'mdi:chart-box-outline') }}
-                {{ topbar.button('Último Trimestre', url_for('enc_sistemas.report', desde=reportes.desde_tres_meses), 'mdi:chart-box-outline') }}
-                {{ topbar.button('Último Semestre', url_for('enc_sistemas.report', desde=reportes.desde_seis_meses), 'mdi:chart-box-outline') }}
+                {{ topbar.button('Últimos 7 Días', url_for('enc_servicios.report', desde=reportes.desde_siete_dias), 'mdi:chart-box-outline') }}
+                {{ topbar.button('Último Mes', url_for('enc_servicios.report', desde=reportes.desde_un_mes), 'mdi:chart-box-outline') }}
+                {{ topbar.button('Último Trimestre', url_for('enc_servicios.report', desde=reportes.desde_tres_meses), 'mdi:chart-box-outline') }}
+                {{ topbar.button('Último Semestre', url_for('enc_servicios.report', desde=reportes.desde_seis_meses), 'mdi:chart-box-outline') }}
                 </div>
             </div>
         </div>
     </div>
+    -->
 {% endblock %}
 
 {% block content %}
+    {% call detail.card('Preguntas de la Encuesta') %}
+        {{ detail.label_value('Pregunta 01:', '¿Cómo te sientes con la atención que recibiste para realizar tu trámite?') }}
+        {{ detail.label_value('Pregunta 02:', '¿Cómo calificarías el tiempo de atención para realizar tu trámite?') }}
+        {{ detail.label_value('Pregunta 03:', '¿Cómo calificarías tu experiencia con el servicio brindado?') }}
+        {{ detail.label_value('Pregunta 04:', '¿Cómo podemos mejorar tu experiencia en el PJECZ?') }}
+    {% endcall %}
+        
     {% call list.card() %}
-        <div class="row align-items-end">
-            <div class="col">
+        <form class="row g-1 mb-3" id="buscadorForm" onsubmit="buscar(); return false;">
+            <div class="col-4">
+                <div class="form-floating">
+                    <input id="desdeInput" type="date" class="form-control" placeholder="desde" aria-label="desde" aria-describedby="button-buscar" onchange="buscar(); return false;">
+                    <label for="desdeInput">Desde</label>
+                </div>
             </div>
-            <div class="col-auto text-end">
-                <form class="input-group mb-3" id="buscadorForm" onsubmit="buscar(); return false;">
-                    <div class="form-floating">
-                        <input id="desdeInput" type="date" class="form-control" placeholder="desde" aria-label="desde" aria-describedby="button-buscar" onchange="buscar(); return false;">
-                        <label for="desdeInput">Desde</label>
-                    </div>
-                    <div class="form-floating">
-                        <input id="hastaInput" type="date" class="form-control" placeholder="hasta" aria-label="hasta" aria-describedby="button-buscar" onchange="buscar(); return false;">
-                        <label for="hastaInput">Hasta</label>
-                    </div>
-                    <div class="form-floating">
-                        <select class="form-select" id="resp01Select" aria-label="Default select example" onchange="buscar(); return false;" style="width: 200px; flex: inherit;">
-                            <option selected value="">Todas</option>
-                            <option value="1">Muy Difícil</option>
-                            <option value="2">Difícil</option>
-                            <option value="3">Normal</option>
-                            <option value="4">Fácil</option>
-                            <option value="5">Muy Fácil</option>
-                        </select>
-                        <label for="resp01Select">Respuesta 01</label>
-                    </div>
-                    <div class="form-floating">
-                        <select class="form-select" id="estadoSelect" aria-label="Default select example" onchange="buscar(); return false;" style="width: 150px; flex: inherit;">
-                            <option selected value="">Todos</option>
-                            <option value="PENDIENTE">Pendiente</option>
-                            <option value="CANCELADO">Cancelado</option>
-                            <option value="CONTESTADO">Contestado</option>
-                        </select>
-                        <label for="estadoSelect">Estado</label>
-                    </div>
-                    <button class="btn btn-primary" type="submit" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span> Buscar</button>
-                    <button class="btn btn-warning" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
-                </form>
+            <div class="col-4">
+                <div class="form-floating">
+                    <input id="hastaInput" type="date" class="form-control" placeholder="hasta" aria-label="hasta" aria-describedby="button-buscar" onchange="buscar(); return false;">
+                    <label for="hastaInput">Hasta</label>
+                </div>
             </div>
-        </div>
+            <div class="col-4">
+                <div class="form-floating">
+                    <select class="form-select" id="estadoSelect" aria-label="Todos" onchange="buscar(); return false;" style="flex: inherit;">
+                        <option selected value="">Todos</option>
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="CANCELADO">Cancelado</option>
+                        <option value="CONTESTADO">Contestado</option>
+                    </select>
+                    <label for="estadoSelect">Estado</label>
+                </div>
+            </div>
+            <!-- Distrito y Oficina -->
+            <div class="col-6">
+                <div class="form-floating">
+                    <select class="form-select" id="distritos_Select" aria-label="Todos" onchange="buscar(); return false;" style="flex: inherit;" disabled>
+                        <option selected value="">Todos</option>
+                    </select>
+                    <label for="distritos_Select">Distritos</label>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-floating">
+                    <select class="form-select" id="oficinas_Select" aria-label="Todas" onchange="buscar(); return false;" style="flex: inherit;" disabled>
+                        <option selected value="">Todas</option>
+                    </select>
+                    <label for="oficinas_Select">Oficinas</label>
+                </div>
+            </div>
+            <!-- Respuestas -->
+            <div class="col-2">
+                <div class="form-floating">
+                    <select class="form-select" id="resp01Select" aria-label="Todas" onchange="buscar(); return false;" style="flex: inherit;">
+                        <option selected value="">Todas</option>
+                        <option value="1">😡 - Muy Insatisfecho</option>
+                        <option value="2">🙁 - Insatisfecho</option>
+                        <option value="3">😐 - Neutral</option>
+                        <option value="4">🙂 - Satisfecho</option>
+                        <option value="5">😍 - Muy Satisfecho</option>
+                    </select>
+                    <label for="resp01Select">Respuesta 01</label>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="form-floating">
+                    <select class="form-select" id="resp02Select" aria-label="Todas" onchange="buscar(); return false;" style="flex: inherit;">
+                        <option selected value="">Todas</option>
+                        <option value="1">😡 - Muy Insatisfecho</option>
+                        <option value="2">🙁 - Insatisfecho</option>
+                        <option value="3">😐 - Neutral</option>
+                        <option value="4">🙂 - Satisfecho</option>
+                        <option value="5">😍 - Muy Satisfecho</option>
+                    </select>
+                    <label for="resp02Select">Respuesta 02</label>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="form-floating">
+                    <select class="form-select" id="resp03Select" aria-label="Todas" onchange="buscar(); return false;" style="flex: inherit;">
+                        <option selected value="">Todas</option>
+                        <option value="1">😡 - Muy Insatisfecho</option>
+                        <option value="2">🙁 - Insatisfecho</option>
+                        <option value="3">😐 - Neutral</option>
+                        <option value="4">🙂 - Satisfecho</option>
+                        <option value="5">😍 - Muy Satisfecho</option>
+                    </select>
+                    <label for="resp03Select">Respuesta 03</label>
+                </div>
+            </div>
+            <div class="col-6 text-end">
+                <button title="Buscar" class="btn btn-primary btn-lg" type="submit" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span> Buscar</button>
+                <button title="Reporte" class="btn btn-info btn-lg" type="submit" onclick="reporte();" id="button-reporte" disabled><span class="iconify" data-icon="mdi:chart-box"></span> Reporte</button>
+                <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+            </div>
+        </form>
         <table id="respuestas_datatable" class="table display nowrap" style="width:100%">
             <thead>
                 <tr>
-                    <th>IDs</th>
-                    <th>Respuesta 01</th>
-                    <th>Respuesta 02</th>
-                    <th>Respuesta 03</th>
+                    <th>ID</th>
+                    <th>Res 01</th>
+                    <th>Res 02</th>
+                    <th>Res 03</th>
                     <th>Respuesta 04</th>
+                    <th>Oficina</th>
                     <th>Estado</th>
                 </tr>
             </thead>
@@ -92,6 +151,7 @@
             { data: "respuesta_02" },
             { data: "respuesta_03" },
             { data: "respuesta_04" },
+            { data: "oficina" },
             { data: "estado" },
         ];
         configDataTable['columnDefs'] = [
@@ -103,32 +163,39 @@
                 }
             },
             {
-                targets: 1, // respuesta_01
+                targets: [1,2,3], // respuesta 01, 02 y 03
                 data: null,
                 render: function(data, type, row, meta) {
                     switch (data)    {
-                        case 1:  return '<span class="badge rounded-pill bg-danger px-3 ms-3">Muy Difícil</span>';   break;
-                        case 2:  return '<span class="badge rounded-pill bg-danger px-3 ms-3">Difícil</span>';   break;
-                        case 3:   return '<span class="badge rounded-pill bg-warning px-3 ms-3 text-dark">Neutro</span>';   break;
-                        case 4:   return '<span class="badge rounded-pill bg-success px-3 ms-3">Fácil</span>';   break;
-                        case 5:   return '<span class="badge rounded-pill bg-success px-3 ms-3">Muy Fácil</span>';   break;
+                        case 1:  return '<h5 title="Muy Insatisfecho" style="cursor:default"><span class="badge rounded-pill bg-danger">😡</span></h5>';
+                        case 2:  return '<h5 title="Insatisfecho" style="cursor:default"><span class="badge rounded-pill bg-danger">🙁</span></h5>';
+                        case 3:  return '<h5 title="Neutral" style="cursor:default"><span class="badge rounded-pill bg-warning">😐</span></h5>';
+                        case 4:  return '<h5 title="Satisfecho" style="cursor:default"><span class="badge rounded-pill bg-success">🙂</span></h5>';
+                        case 5:  return '<h5 title="Muy Satisfecho" style="cursor:default"><span class="badge rounded-pill bg-success">😍</span></h5>';
                     }
                     return data;
                 }
             },
             {
-                targets: [2, 3], // Respuesta 02 y 03
+                targets: 4, // Respuesta 04
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data == null)
-                        return '-';
-                    if (data.length > 16)
-                        return '<span title="' + data + '">' + data.substr(0, 16) + '…</span>';
+                        return '';
+                    if (data.length > 32)
+                        return '<span title="' + data + '">' + data.substr(0, 32) + '…</span>';
                     return data;
                 }
             },
             {
-                targets: 5, // Estado
+                targets: 5, // Oficina
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '"><span title="' + data.descripcion + '">' + data.clave + '</span></a>';
+                }
+            },
+            {
+                targets: 6, // Estado
                 data: null,
                 render: function(data, type, row, meta) {
                     switch (data)    {
@@ -144,6 +211,8 @@
         let desde = document.getElementById('desde')?.value;
         let hasta = document.getElementById('hasta')?.value;
         let resp01Select = document.getElementById('resp01Select').value;
+        let resp02Select = document.getElementById('resp02Select').value;
+        let resp03Select = document.getElementById('resp03Select').value;
         let estadoSelect = document.getElementById('estadoSelect').value;
 
         if(desde != '')
@@ -152,6 +221,10 @@
             configDataTable['ajax']['data']['hasta'] = hasta;
         if(resp01Select != '')
             configDataTable['ajax']['data']['respuesta_01'] = resp01Select;
+        if(resp02Select != '')
+            configDataTable['ajax']['data']['respuesta_02'] = resp02Select;
+        if(resp03Select != '')
+            configDataTable['ajax']['data']['respuesta_03'] = resp03Select;
         if(estadoSelect != '')
             configDataTable['ajax']['data']['estado'] = estadoSelect;
         
@@ -163,11 +236,15 @@
             let desde = document.getElementById('desdeInput').value;
             let hasta = document.getElementById('hastaInput').value;
             let resp01Select = document.getElementById('resp01Select').value;
+            let resp02Select = document.getElementById('resp02Select').value;
+            let resp03Select = document.getElementById('resp03Select').value;
             let estadoSelect = document.getElementById('estadoSelect').value;
 
             if( configDataTable['ajax']['data']['desde'] === undefined && desde === '' &&
                 configDataTable['ajax']['data']['hasta'] === undefined && hasta === '' &&
                 configDataTable['ajax']['data']['respuesta_01'] === undefined && resp01Select === '' &&
+                configDataTable['ajax']['data']['respuesta_02'] === undefined && resp02Select === '' &&
+                configDataTable['ajax']['data']['respuesta_03'] === undefined && resp03Select === '' &&
                 configDataTable['ajax']['data']['estado'] === undefined && estadoSelect === ''
             )
                 return false;
@@ -186,6 +263,14 @@
                 delete configDataTable['ajax']['data']['respuesta_01'];
             else
                 configDataTable['ajax']['data']['respuesta_01'] = resp01Select;
+            if(resp02Select == '')
+                delete configDataTable['ajax']['data']['respuesta_02'];
+            else
+                configDataTable['ajax']['data']['respuesta_02'] = resp02Select;
+            if(resp03Select == '')
+                delete configDataTable['ajax']['data']['respuesta_03'];
+            else
+                configDataTable['ajax']['data']['respuesta_03'] = resp03Select;
             if(estadoSelect == '')
                 delete configDataTable['ajax']['data']['estado'];
             else
@@ -198,6 +283,8 @@
             if( configDataTable['ajax']['data']['desde'] === undefined &&
                 configDataTable['ajax']['data']['hasta'] === undefined &&
                 configDataTable['ajax']['data']['respuesta_01'] === undefined &&
+                configDataTable['ajax']['data']['respuesta_02'] === undefined &&
+                configDataTable['ajax']['data']['respuesta_03'] === undefined &&
                 configDataTable['ajax']['data']['estado'] === undefined
             )
                 return false;
@@ -205,6 +292,8 @@
             delete configDataTable['ajax']['data']['desde'];
             delete configDataTable['ajax']['data']['hasta'];
             delete configDataTable['ajax']['data']['respuesta_01'];
+            delete configDataTable['ajax']['data']['respuesta_02'];
+            delete configDataTable['ajax']['data']['respuesta_03'];
             delete configDataTable['ajax']['data']['estado'];
 
             $('#respuestas_datatable').DataTable().destroy();
