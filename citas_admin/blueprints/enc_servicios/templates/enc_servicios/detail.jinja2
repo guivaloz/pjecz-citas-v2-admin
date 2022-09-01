@@ -6,60 +6,102 @@
 {% block title %}Detalle de Respuesta{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons('Encuesta del Sistema - Respuesta ' + detalle.id | string) %}
-        {{ topbar.button_previous('Encuesta del Sistema', url_for('enc_sistemas.list_active')) }}
+    {% call topbar.page_buttons('Encuesta de Servicio - Respuesta ' + detalle.id | string) %}
+        {{ topbar.button_previous('Encuesta de Servicio', url_for('enc_servicios.list_active')) }}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
     {% call detail.card('Detalle de la Respuesta') %}
-        {{ detail.label_value('Creado', moment(detalle.creado, local=True).format('DD MMM YYYY H:mm')) }}
-        {{ detail.label_value('Modificado', moment(detalle.modificado, local=True).format('DD MMM YYYY H:mm')) }}
-        <hr>
+        {{ detail.label_value('Recibió:', moment(detalle.creado, local=True).format('DD MMM YYYY H:mm')) }}
+        {{ detail.label_value('Contestó:', moment(detalle.modificado, local=True).format('DD MMM YYYY H:mm')) }}
+        {{ detail.label_value('Oficina:', detalle.oficina.clave ~ ' : ' ~ detalle.oficina.descripcion_corta, url_for('oficinas.detail', oficina_id=detalle.oficina.id)) }}
         <div class="row">
-            <div class="col-md-1"></div>
-            <div class="col-auto"><strong>¿Cómo fue tu interacción con el sistema de citas versión 2?</strong></div>
-        </div>
-        <div class="row mb-4">
-            <div class="col-md-1"></div>
-            <div class="col-md-11">
-                {% if detalle.respuesta_01 == 1 %}
-                    <h4><span class="badge bg-danger">Muy Difícil</span></h4>
-                {% elif detalle.respuesta_01 == 2 %}
-                    <h4><span class="badge bg-danger">Difícil</span></h4>
-                {% elif detalle.respuesta_01 == 3 %}
-                    <h4><span class="badge bg-warning text-dark">Neutro</span></h4>
-                {% elif detalle.respuesta_01 == 4 %}
-                    <h4><span class="badge bg-success">Fácil</span></h4>
-                {% elif detalle.respuesta_01 == 5 %}
-                    <h4><span class="badge bg-success">Muy Fácil</span></h4>
+            <div class="col-md-3 text-end">Estado:</div>
+            <div class="col-auto">
+                {% if detalle.estado == "PENDIENTE" %}
+                    <span class="badge bg-warning text-dark">PENDIENTE</span>
+                {% elif detalle.estado == "CANCELADO" %}
+                    <span class="badge bg-danger">CANCELADO</span>
+                {% elif detalle.estado == "CONTESTADO" %}
+                    <span class="badge bg-success">CONTESTADO</span>
                 {% endif %}
             </div>
         </div>
-
+        <hr>
+        <!-- Respuesta 01 -->
         <div class="row">
             <div class="col-md-1"></div>
-            <div class="col-auto"><strong>¿Por qué?</strong></div>
+            <div class="col-auto"><strong>¿Cómo te sientes con la atención que recibiste para realizar tu trámite?</strong></div>
         </div>
-        <div class="row mb-4">
+        <div class="row mb-3">
             <div class="col-md-1"></div>
-            <div class="col-md-10">
-                <div class="control-form">
-                    <textarea class="form-control" placeholder="Leave a comment here" id="textarea02" style="height: 100px" readonly>{{detalle.respuesta_02}}</textarea>
-                </div>
+            <div class="col-md-11">
+                {% if detalle.respuesta_01 == 1 %}
+                    <h4><span class="badge bg-danger">Muy Insatisfecho</span></h4>
+                {% elif detalle.respuesta_01 == 2 %}
+                    <h4><span class="badge bg-danger">Insatisfecho</span></h4>
+                {% elif detalle.respuesta_01 == 3 %}
+                    <h4><span class="badge bg-warning text-dark">Neutral</span></h4>
+                {% elif detalle.respuesta_01 == 4 %}
+                    <h4><span class="badge bg-success">Satisfecho</span></h4>
+                {% elif detalle.respuesta_01 == 5 %}
+                    <h4><span class="badge bg-success">Muy Satisfecho</span></h4>
+                {% endif %}
             </div>
-            <div class="col-md-1"></div>
         </div>
-
+        <!-- Respuesta 02 -->
         <div class="row">
             <div class="col-md-1"></div>
-            <div class="col-auto"><strong>¿Tienes algún comentario para nosotros?</strong></div>
+            <div class="col-auto"><strong>¿Cómo calificarías el tiempo de atención para realizar tu trámite?</strong></div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-1"></div>
+            <div class="col-md-11">
+                {% if detalle.respuesta_02 == 1 %}
+                    <h4><span class="badge bg-danger">Muy Insatisfecho</span></h4>
+                {% elif detalle.respuesta_02 == 2 %}
+                    <h4><span class="badge bg-danger">Insatisfecho</span></h4>
+                {% elif detalle.respuesta_02 == 3 %}
+                    <h4><span class="badge bg-warning text-dark">Neutral</span></h4>
+                {% elif detalle.respuesta_02 == 4 %}
+                    <h4><span class="badge bg-success">Satisfecho</span></h4>
+                {% elif detalle.respuesta_02 == 5 %}
+                    <h4><span class="badge bg-success">Muy Satisfecho</span></h4>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Respuesta 03 -->
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-auto"><strong>¿Cómo calificarías tu experiencia con el servicio brindado?</strong></div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-1"></div>
+            <div class="col-md-11">
+                {% if detalle.respuesta_03 == 1 %}
+                    <h4><span class="badge bg-danger">Muy Insatisfecho</span></h4>
+                {% elif detalle.respuesta_03 == 2 %}
+                    <h4><span class="badge bg-danger">Insatisfecho</span></h4>
+                {% elif detalle.respuesta_03 == 3 %}
+                    <h4><span class="badge bg-warning text-dark">Neutral</span></h4>
+                {% elif detalle.respuesta_03 == 4 %}
+                    <h4><span class="badge bg-success">Satisfecho</span></h4>
+                {% elif detalle.respuesta_03 == 5 %}
+                    <h4><span class="badge bg-success">Muy Satisfecho</span></h4>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Respuesta 04 -->
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-auto"><strong>¿Cómo podemos mejorar tu experiencia en el PJECZ?</strong></div>
         </div>
         <div class="row">
             <div class="col-md-1"></div>
             <div class="col-md-10">
                 <div class="control-form">
-                    <textarea class="form-control" placeholder="Leave a comment here" id="textarea03" style="height: 150px" readonly>{{detalle.respuesta_03}}</textarea>
+                    <textarea class="form-control" placeholder="Leave a comment here" id="textarea03" style="height: 150px" readonly>{{detalle.respuesta_04}}</textarea>
                 </div>
             </div>
         </div>
