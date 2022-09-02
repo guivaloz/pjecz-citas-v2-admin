@@ -54,13 +54,15 @@ def consultar(id, cit_cliente_id, estado, limit):
             datos.append(
                 [
                     encuesta.id,
+                    encuesta.creado.strftime("%Y/%m/%d - %H:%M %p"),
                     encuesta.cit_cliente.id,
                     encuesta.cit_cliente.nombre,
                 ]
             )
-        click.echo(tabulate(datos, headers=["ID", "ID del Cliente", "Nombre del Cliente"]))
+        click.echo(tabulate(datos, headers=["ID", "Creado", "ID Cliente", "Nombre del Cliente"]))
         click.echo("------------------------------")
         click.echo(f"Cantidad de encuestas: {len(datos)}")
+        return 1
 
     # Si viene el ID, se muestran los datos de esa encuesta
     if id is not None and id > 0:
@@ -138,10 +140,10 @@ def enviar(id):
         return 0
 
     # Agregar tarea en el fondo para enviar el mensaje
-    # app.task_queue.enqueue(
-    #     "citas_admin.blueprints.enc_sistemas.tasks.enviar",
-    #     cit_cliente_recuperacion_id=cit_cliente_recuperacion.id,
-    # )
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.enc_sistemas.tasks.enviar",
+        enc_sistemas_id=encuesta.id,
+    )
 
     # Mostrar mensaje de termino
     url = f"{POLL_SYSTEM_URL}?hashid={encuesta.encode_id()}"
