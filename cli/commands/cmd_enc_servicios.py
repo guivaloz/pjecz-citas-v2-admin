@@ -189,10 +189,10 @@ def enviar(id):
         return 0
 
     # Agregar tarea en el fondo para enviar el mensaje
-    # app.task_queue.enqueue(
-    #     "citas_admin.blueprints.enc_servicios.tasks.enviar",
-    #     enc_servicios_id=encuesta.id,
-    # )
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.enc_servicios.tasks.enviar",
+        enc_servicios_id=encuesta.id,
+    )
 
     # Mostrar mensaje de termino
     url = f"{POLL_SERVICE_URL}?hashid={encuesta.encode_id()}"
