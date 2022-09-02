@@ -23,6 +23,7 @@ db.app = app
 load_dotenv()  # Take environment variables from .env
 
 POLL_SYSTEM_URL = os.getenv("POLL_SYSTEM_URL", "")
+SAFE_LIMIT = 30
 
 
 @click.group()
@@ -34,28 +35,34 @@ def cli():
 @click.option("--id", default=None, help="El id de una encuesta en particular.", type=int)
 @click.option("--cit_cliente_id", default=None, help="El id del cliente que desea consultar.", type=int)
 @click.option("--estado", show_choices=True, type=click.Choice(["pendiente", "cancelado", "contestado"], case_sensitive=False))
-def consultar(id, cit_cliente_id, estado):
+@click.option("--limit", default=None, help="límite de registros a mostrar.", type=int)
+def consultar(id, cit_cliente_id, estado, limit):
     """Consultar encuestas de sistemas"""
     click.echo("Listado de encuestas de sistemas")
 
     # Si solo viene el estado, mostrar una tabla
     if estado is not None and id is None and cit_cliente_id is None:
-        encuestas = EncSistema.query.filter_by(estatus="A").filter_by(estado=estado.upper()).order_by(EncSistema.id).all()
+        encuestas = EncSistema.query.filter_by(estatus="A").filter_by(estado=estado.upper())
+        # Se establece el limite de registros a mostrar
+        limite = limit if limit is not None and limit > 0 else SAFE_LIMIT
+        encuestas = encuestas.order_by(EncSistema.id.desc()).limit(limite).all()
         if len(encuestas) == 0:
             click.echo("No hay registros")
-            return
+            return 1
         datos = []
         for encuesta in encuestas:
             datos.append(
                 [
                     encuesta.id,
+                    encuesta.creado.strftime("%Y/%m/%d - %H:%M %p"),
                     encuesta.cit_cliente.id,
                     encuesta.cit_cliente.nombre,
                 ]
             )
-        click.echo(tabulate(datos, headers=["ID", "ID del Cliente", "Nombre del Cliente"]))
+        click.echo(tabulate(datos, headers=["ID", "Creado", "ID Cliente", "Nombre del Cliente"]))
         click.echo("------------------------------")
         click.echo(f"Cantidad de encuestas: {len(datos)}")
+        return 1
 
     # Si viene el ID, se muestran los datos de esa encuesta
     if id is not None and id > 0:
@@ -118,7 +125,7 @@ def _respuesta_int_to_string(respuesta: int):
 @click.command()
 @click.argument("id", type=int)
 def enviar(id):
-    """Enviar mensaje por correo electronico con el URL para abrir la encuesta"""
+    """Enviar mensaje por correo electrónico con el URL para abrir la encuesta"""
     click.echo(f"Por enviar mensaje al cliente con ID {id}")
 
     # Consultar la encuesta
@@ -133,10 +140,10 @@ def enviar(id):
         return 0
 
     # Agregar tarea en el fondo para enviar el mensaje
-    # app.task_queue.enqueue(
-    #     "citas_admin.blueprints.enc_sistemas.tasks.enviar",
-    #     cit_cliente_recuperacion_id=cit_cliente_recuperacion.id,
-    # )
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.enc_sistemas.tasks.enviar",
+        enc_sistemas_id=encuesta.id,
+    )
 
     # Mostrar mensaje de termino
     url = f"{POLL_SYSTEM_URL}?hashid={encuesta.encode_id()}"
@@ -166,6 +173,7 @@ def crear(cit_cliente_id):
     click.echo(f"Se ha creado la encuesta de sistemas con el id: {encuesta.id}")
 
 
+# Añadir comandos al comando cli - citas enc_sistemas consultar | enviar | crear
 cli.add_command(consultar)
 cli.add_command(enviar)
 cli.add_command(crear)
