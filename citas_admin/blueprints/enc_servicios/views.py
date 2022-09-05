@@ -58,10 +58,13 @@ def datatable_json():
         consulta = consulta.filter_by(respuesta_03=request.form["respuesta_03"])
     if "estado" in request.form:
         consulta = consulta.filter_by(estado=request.form["estado"])
-    if "distrito_id" in request.form:
-        consulta = consulta.join(Oficina)
-        consulta = consulta.join(Distrito)
-        consulta = consulta.filter(Distrito.id == request.form["distrito_id"])
+    if "oficina_id" in request.form:
+        consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
+    else:
+        if "distrito_id" in request.form:
+            consulta = consulta.join(Oficina)
+            consulta = consulta.join(Distrito)
+            consulta = consulta.filter(Distrito.id == request.form["distrito_id"])
     # Hace el query de listado
     registros = consulta.order_by(EncServicio.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
