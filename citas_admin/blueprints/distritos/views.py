@@ -16,6 +16,8 @@ from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 
+from citas_admin.blueprints.oficinas.models import Oficina
+
 MODULO = "DISTRITOS"
 
 distritos = Blueprint("distritos", __name__, template_folder="templates")
@@ -189,3 +191,19 @@ def recover(distrito_id):
         flash(bitacora.descripcion, "success")
         return redirect(bitacora.url)
     return redirect(url_for("distritos.detail", distrito_id=distrito.id))
+
+
+@distritos.route("/distritos/select", methods=["GET", "POST"])
+def select():
+    """Regresa las opciones para añadir a un select"""
+    # Consultar
+    consulta = Distrito.query.filter_by(estatus="A")
+    consulta = consulta.join(Oficina)
+    consulta = consulta.filter(Oficina.estatus == "A").filter(Oficina.puede_agendar_citas == True)
+    registros = consulta.order_by(Distrito.nombre).all()
+    # Elaborar datos
+    results = {}
+    for registro in registros:
+        results[registro.id] = registro.nombre_corto
+    # Entregar el json resultante
+    return {"data": results}
