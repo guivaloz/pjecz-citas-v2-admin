@@ -53,6 +53,9 @@ def consultar(ctx, id, cit_cliente_id, oficina_id, estado, limit):
     # Si viene el ID, se muestran los datos de esa encuesta
     if id is not None and id > 0:
         encuesta = EncServicio.query.get(id)
+        if encuesta is None:
+            click.echo(click.style(f"La encuesta con el id '{id}' no existe.", fg="red"))
+            ctx.exit(1)
         click.echo(f"Enviada: {encuesta.creado.strftime('%Y/%m/%d - %H:%M %p')}")
         click.echo(f"Contestada: {encuesta.modificado.strftime('%Y/%m/%d - %H:%M %p')}")
         click.echo(f"Cliente: {encuesta.cit_cliente_id} - {encuesta.cit_cliente.nombre}")
