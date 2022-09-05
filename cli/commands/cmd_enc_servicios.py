@@ -8,7 +8,6 @@ Enc Servicios
 import os
 import click
 from dotenv import load_dotenv
-from datetime import datetime
 from tabulate import tabulate
 
 from citas_admin.app import create_app
@@ -48,7 +47,7 @@ def cli(ctx):
 @click.pass_context
 def consultar(ctx, id, cit_cliente_id, oficina_id, estado, limit):
     """Consultar encuestas de servicios"""
-    click.echo("Listado de encuestas de servicios")
+    click.echo("Consultar encuestas de servicios")
 
     # Si viene el ID, se muestran los datos de esa encuesta
     if id is not None and id > 0:
@@ -66,7 +65,7 @@ def consultar(ctx, id, cit_cliente_id, oficina_id, estado, limit):
         click.echo(f"URL: {url}")
         ctx.exit(0)
 
-    # Imprime todas las respuestas a encuestas que a hecho el cliente indicado
+    # Si viene el cit_cliente_id, se muestran TODOS los datos de sus encuestas
     if cit_cliente_id is not None and cit_cliente_id > 0:
         cliente = CitCliente.query.get(cit_cliente_id)
         if cliente is None:
@@ -94,7 +93,7 @@ def consultar(ctx, id, cit_cliente_id, oficina_id, estado, limit):
         click.echo(f"Cantidad de respuestas: {len(encuestas)}")
         ctx.exit(1)
 
-    # Imprime todas las respuestas a encuestas que se le han hecho a clientes de esta oficina
+    # Si viene el oficina_id, se muestran sus encuestas
     if oficina_id is not None and oficina_id > 0:
         # Validar Oficina
         oficina = Oficina.query.get(oficina_id)
@@ -135,7 +134,6 @@ def consultar(ctx, id, cit_cliente_id, oficina_id, estado, limit):
     encuestas = EncServicio.query.filter_by(estatus="A")
     if estado is not None:
         encuestas = EncServicio.query.filter_by(estatus="A").filter_by(estado=estado.upper())
-    # Se establece el limite de registros a mostrar
     limite = limit if limit is not None and limit > 0 else SAFE_LIMIT
     encuestas = encuestas.order_by(EncServicio.id.desc()).limit(limite).all()
     if len(encuestas) == 0:
@@ -203,7 +201,7 @@ def enviar(ctx, id):
 
 
 @click.command()
-@click.option("--cit_cita_id", help="El id de la cita.", type=int)
+@click.argument("--cit_cita_id", type=int)
 @click.pass_context
 def crear(ctx, cit_cita_id):
     """Crear una nueva encuesta de sistemas"""
