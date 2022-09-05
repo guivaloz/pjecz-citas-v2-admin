@@ -64,18 +64,18 @@
             <!-- Distrito y Oficina -->
             <div class="col-6">
                 <div class="form-floating">
-                    <select class="form-select" id="distritos_Select" aria-label="Todos" onchange="buscar(); return false;" style="flex: inherit;" disabled>
+                    <select class="form-select" id="distritosSelect" aria-label="Todos" onchange="buscar(); return false;" style="flex: inherit;">
                         <option selected value="">Todos</option>
                     </select>
-                    <label for="distritos_Select">Distritos</label>
+                    <label for="distritosSelect">Distritos</label>
                 </div>
             </div>
             <div class="col-6">
                 <div class="form-floating">
-                    <select class="form-select" id="oficinas_Select" aria-label="Todas" onchange="buscar(); return false;" style="flex: inherit;" disabled>
+                    <select class="form-select" id="oficinasSelect" aria-label="Todas" onchange="buscar(); return false;" style="flex: inherit;" disabled>
                         <option selected value="">Todas</option>
                     </select>
-                    <label for="oficinas_Select">Oficinas</label>
+                    <label for="oficinasSelect">Oficinas</label>
                 </div>
             </div>
             <!-- Respuestas -->
@@ -210,6 +210,7 @@
 
         let desde = document.getElementById('desde')?.value;
         let hasta = document.getElementById('hasta')?.value;
+        let distritoSelect = document.getElementById('distritosSelect').value;
         let resp01Select = document.getElementById('resp01Select').value;
         let resp02Select = document.getElementById('resp02Select').value;
         let resp03Select = document.getElementById('resp03Select').value;
@@ -219,6 +220,8 @@
             configDataTable['ajax']['data']['desde'] = desde;
         if(hasta != '')
             configDataTable['ajax']['data']['hasta'] = hasta;
+        if(distritoSelect != '')
+            configDataTable['ajax']['data']['distrito_id'] = distritoSelect;
         if(resp01Select != '')
             configDataTable['ajax']['data']['respuesta_01'] = resp01Select;
         if(resp02Select != '')
@@ -235,6 +238,7 @@
         function buscar() {
             let desde = document.getElementById('desdeInput').value;
             let hasta = document.getElementById('hastaInput').value;
+            let distritoSelect = document.getElementById('distritosSelect').value;
             let resp01Select = document.getElementById('resp01Select').value;
             let resp02Select = document.getElementById('resp02Select').value;
             let resp03Select = document.getElementById('resp03Select').value;
@@ -242,6 +246,7 @@
 
             if( configDataTable['ajax']['data']['desde'] === undefined && desde === '' &&
                 configDataTable['ajax']['data']['hasta'] === undefined && hasta === '' &&
+                configDataTable['ajax']['data']['distrito_id'] === undefined && distritoSelect === '' &&
                 configDataTable['ajax']['data']['respuesta_01'] === undefined && resp01Select === '' &&
                 configDataTable['ajax']['data']['respuesta_02'] === undefined && resp02Select === '' &&
                 configDataTable['ajax']['data']['respuesta_03'] === undefined && resp03Select === '' &&
@@ -259,6 +264,10 @@
                 delete configDataTable['ajax']['data']['hasta'];
             else
                 configDataTable['ajax']['data']['hasta'] = hasta;
+            if(distritoSelect == '')
+                delete configDataTable['ajax']['data']['distrito_id'];
+            else
+                configDataTable['ajax']['data']['distrito_id'] = distritoSelect;
             if(resp01Select == '')
                 delete configDataTable['ajax']['data']['respuesta_01'];
             else
@@ -282,6 +291,7 @@
         function limpiar()  {
             if( configDataTable['ajax']['data']['desde'] === undefined &&
                 configDataTable['ajax']['data']['hasta'] === undefined &&
+                configDataTable['ajax']['data']['distrito_id'] === undefined &&
                 configDataTable['ajax']['data']['respuesta_01'] === undefined &&
                 configDataTable['ajax']['data']['respuesta_02'] === undefined &&
                 configDataTable['ajax']['data']['respuesta_03'] === undefined &&
@@ -291,6 +301,7 @@
             
             delete configDataTable['ajax']['data']['desde'];
             delete configDataTable['ajax']['data']['hasta'];
+            delete configDataTable['ajax']['data']['distrito_id'];
             delete configDataTable['ajax']['data']['respuesta_01'];
             delete configDataTable['ajax']['data']['respuesta_02'];
             delete configDataTable['ajax']['data']['respuesta_03'];
@@ -299,5 +310,27 @@
             $('#respuestas_datatable').DataTable().destroy();
             $('#respuestas_datatable').DataTable(configDataTable);
         };
+    </script>
+    <!-- Función relleno de selects -->
+    <script type="text/javascript">
+        $(document).ready(function() {
+            //Make an Ajax request to a PHP script called car-models.php
+            //This will return the data that we can add to our Select element.
+            $.ajax({
+                url: '/distritos/select',
+                type: 'get',
+                success: function(data){
+                    //you can get a better view of what the script is returning.
+                    $.each(data['data'], function(key, distrito){
+                        //Use the Option() constructor to create a new HTMLOptionElement.
+                        var option = new Option(distrito, key);
+                        //Convert the HTMLOptionElement into a JQuery object that can be used with the append method.
+                        $(option).html(distrito);
+                        //Append the option to our Select element.
+                        $("#distritosSelect").append(option);
+                    });
+                }
+            });
+        });
     </script>
 {% endblock %}
