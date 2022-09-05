@@ -20,11 +20,11 @@
             <div class="col-md-3 text-end">Estado:</div>
             <div class="col-auto">
                 {% if detalle.estado == "PENDIENTE" %}
-                    <span class="badge bg-warning text-dark">PENDIENTE</span>
+                    <span class="badge bg-warning text-dark">PENDIENTE</span> ✏️
                 {% elif detalle.estado == "CANCELADO" %}
-                    <span class="badge bg-danger">CANCELADO</span>
+                    <span class="badge bg-danger">CANCELADO</span> 🛑
                 {% elif detalle.estado == "CONTESTADO" %}
-                    <span class="badge bg-success">CONTESTADO</span>
+                    <span class="badge bg-success">CONTESTADO</span> ✅
                 {% endif %}
             </div>
         </div>
@@ -38,15 +38,15 @@
             <div class="col-md-1"></div>
             <div class="col-md-11">
                 {% if detalle.respuesta_01 == 1 %}
-                    <h4><span class="badge bg-danger">Muy Insatisfecho</span></h4>
+                    <h4><span class="badge bg-danger">Muy Insatisfecho 😡</span></h4>
                 {% elif detalle.respuesta_01 == 2 %}
-                    <h4><span class="badge bg-danger">Insatisfecho</span></h4>
+                    <h4><span class="badge bg-danger">Insatisfecho 🙁</span></h4>
                 {% elif detalle.respuesta_01 == 3 %}
-                    <h4><span class="badge bg-warning text-dark">Neutral</span></h4>
+                    <h4><span class="badge bg-warning text-dark">Neutral 😐</span></h4>
                 {% elif detalle.respuesta_01 == 4 %}
-                    <h4><span class="badge bg-success">Satisfecho</span></h4>
+                    <h4><span class="badge bg-success">Satisfecho 🙂</span></h4>
                 {% elif detalle.respuesta_01 == 5 %}
-                    <h4><span class="badge bg-success">Muy Satisfecho</span></h4>
+                    <h4><span class="badge bg-success">Muy Satisfecho 😍</span></h4>
                 {% endif %}
             </div>
         </div>
@@ -59,15 +59,15 @@
             <div class="col-md-1"></div>
             <div class="col-md-11">
                 {% if detalle.respuesta_02 == 1 %}
-                    <h4><span class="badge bg-danger">Muy Insatisfecho</span></h4>
+                    <h4><span class="badge bg-danger">Muy Insatisfecho 😡</span></h4>
                 {% elif detalle.respuesta_02 == 2 %}
-                    <h4><span class="badge bg-danger">Insatisfecho</span></h4>
+                    <h4><span class="badge bg-danger">Insatisfecho 🙁</span></h4>
                 {% elif detalle.respuesta_02 == 3 %}
-                    <h4><span class="badge bg-warning text-dark">Neutral</span></h4>
+                    <h4><span class="badge bg-warning text-dark">Neutral 😐</span></h4>
                 {% elif detalle.respuesta_02 == 4 %}
-                    <h4><span class="badge bg-success">Satisfecho</span></h4>
+                    <h4><span class="badge bg-success">Satisfecho 🙂</span></h4>
                 {% elif detalle.respuesta_02 == 5 %}
-                    <h4><span class="badge bg-success">Muy Satisfecho</span></h4>
+                    <h4><span class="badge bg-success">Muy Satisfecho 😍</span></h4>
                 {% endif %}
             </div>
         </div>
@@ -80,15 +80,15 @@
             <div class="col-md-1"></div>
             <div class="col-md-11">
                 {% if detalle.respuesta_03 == 1 %}
-                    <h4><span class="badge bg-danger">Muy Insatisfecho</span></h4>
+                    <h4><span class="badge bg-danger">Muy Insatisfecho 😡</span></h4>
                 {% elif detalle.respuesta_03 == 2 %}
-                    <h4><span class="badge bg-danger">Insatisfecho</span></h4>
+                    <h4><span class="badge bg-danger">Insatisfecho 🙁</span></h4>
                 {% elif detalle.respuesta_03 == 3 %}
-                    <h4><span class="badge bg-warning text-dark">Neutral</span></h4>
+                    <h4><span class="badge bg-warning text-dark">Neutral 😐</span></h4>
                 {% elif detalle.respuesta_03 == 4 %}
-                    <h4><span class="badge bg-success">Satisfecho</span></h4>
+                    <h4><span class="badge bg-success">Satisfecho 🙂</span></h4>
                 {% elif detalle.respuesta_03 == 5 %}
-                    <h4><span class="badge bg-success">Muy Satisfecho</span></h4>
+                    <h4><span class="badge bg-success">Muy Satisfecho 😍</span></h4>
                 {% endif %}
             </div>
         </div>

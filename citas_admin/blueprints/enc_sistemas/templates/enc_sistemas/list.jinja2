@@ -44,11 +44,11 @@
                     <div class="form-floating">
                         <select class="form-select" id="resp01Select" aria-label="Default select example" onchange="buscar(); return false;" style="width: 200px; flex: inherit;">
                             <option selected value="">Todas</option>
-                            <option value="1">Muy Difícil</option>
-                            <option value="2">Difícil</option>
-                            <option value="3">Normal</option>
-                            <option value="4">Fácil</option>
-                            <option value="5">Muy Fácil</option>
+                            <option value="1">😡 - Muy Difícil</option>
+                            <option value="2">🙁 - Difícil</option>
+                            <option value="3">😐 - Normal</option>
+                            <option value="4">🙂 - Fácil</option>
+                            <option value="5">😍 - Muy Fácil</option>
                         </select>
                         <label for="resp01Select">Respuesta 01</label>
                     </div>
@@ -70,7 +70,7 @@
             <thead>
                 <tr>
                     <th>IDs</th>
-                    <th>Respuesta 01</th>
+                    <th>Res 01</th>
                     <th>Respuesta 02</th>
                     <th>Respuesta 03</th>
                     <th>Estado</th>
@@ -105,11 +105,11 @@
                 data: null,
                 render: function(data, type, row, meta) {
                     switch (data)    {
-                        case 1:  return '<span class="badge rounded-pill bg-danger px-3 ms-3">Muy Difícil</span>';   break;
-                        case 2:  return '<span class="badge rounded-pill bg-danger px-3 ms-3">Difícil</span>';   break;
-                        case 3:   return '<span class="badge rounded-pill bg-warning px-3 ms-3 text-dark">Neutro</span>';   break;
-                        case 4:   return '<span class="badge rounded-pill bg-success px-3 ms-3">Fácil</span>';   break;
-                        case 5:   return '<span class="badge rounded-pill bg-success px-3 ms-3">Muy Fácil</span>';   break;
+                        case 1:  return '<h5 title="Muy Difícil" style="cursor:default"><span class="badge rounded-pill bg-danger">😡</span></h5>';
+                        case 2:  return '<h5 title="Difícil" style="cursor:default"><span class="badge rounded-pill bg-danger">🙁</span></h5>';
+                        case 3:   return '<h5 title="Neutral" style="cursor:default"><span class="badge rounded-pill bg-warning">😐</span></h5>';
+                        case 4:   return '<h5 title="Fácil" style="cursor:default"><span class="badge rounded-pill bg-success">🙂</span></h5>';
+                        case 5:   return '<h5 title="Muy Fácil" style="cursor:default"><span class="badge rounded-pill bg-success">😍</span></h5>';
                     }
                     return data;
                 }
@@ -120,8 +120,8 @@
                 render: function(data, type, row, meta) {
                     if (data == null)
                         return '-';
-                    if (data.length > 16)
-                        return '<span title="' + data + '">' + data.substr(0, 16) + '…</span>';
+                    if (data.length > 24)
+                        return '<span title="' + data + '">' + data.substr(0, 24) + '…</span>';
                     return data;
                 }
             },

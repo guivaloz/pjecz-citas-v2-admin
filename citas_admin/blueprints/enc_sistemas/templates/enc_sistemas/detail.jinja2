@@ -13,8 +13,20 @@
 
 {% block content %}
     {% call detail.card('Detalle de la Respuesta') %}
-        {{ detail.label_value('Creado', moment(detalle.creado, local=True).format('DD MMM YYYY H:mm')) }}
-        {{ detail.label_value('Modificado', moment(detalle.modificado, local=True).format('DD MMM YYYY H:mm')) }}
+        {{ detail.label_value('Recibió:', moment(detalle.creado, local=True).format('DD MMM YYYY H:mm')) }}
+        {{ detail.label_value('Contestó:', moment(detalle.modificado, local=True).format('DD MMM YYYY H:mm')) }}
+        <div class="row">
+            <div class="col-md-3 text-end">Estado:</div>
+            <div class="col-auto">
+                {% if detalle.estado == "PENDIENTE" %}
+                    <span class="badge bg-warning text-dark">PENDIENTE</span> ✏️
+                {% elif detalle.estado == "CANCELADO" %}
+                    <span class="badge bg-danger">CANCELADO</span> 🛑
+                {% elif detalle.estado == "CONTESTADO" %}
+                    <span class="badge bg-success">CONTESTADO</span> ✅
+                {% endif %}
+            </div>
+        </div>
         <hr>
         <div class="row">
             <div class="col-md-1"></div>
@@ -24,15 +36,15 @@
             <div class="col-md-1"></div>
             <div class="col-md-11">
                 {% if detalle.respuesta_01 == 1 %}
-                    <h4><span class="badge bg-danger">Muy Difícil</span></h4>
+                    <h4><span class="badge bg-danger">Muy Difícil 😡</span></h4>
                 {% elif detalle.respuesta_01 == 2 %}
-                    <h4><span class="badge bg-danger">Difícil</span></h4>
+                    <h4><span class="badge bg-danger">Difícil 🙁</span></h4>
                 {% elif detalle.respuesta_01 == 3 %}
-                    <h4><span class="badge bg-warning text-dark">Neutro</span></h4>
+                    <h4><span class="badge bg-warning text-dark">Neutro 😐</span></h4>
                 {% elif detalle.respuesta_01 == 4 %}
-                    <h4><span class="badge bg-success">Fácil</span></h4>
+                    <h4><span class="badge bg-success">Fácil 🙂</span></h4>
                 {% elif detalle.respuesta_01 == 5 %}
-                    <h4><span class="badge bg-success">Muy Fácil</span></h4>
+                    <h4><span class="badge bg-success">Muy Fácil 😍</span></h4>
                 {% endif %}
             </div>
         </div>
