@@ -25,6 +25,7 @@ from lib.storage import GoogleCloudStorage, NotAllowedExtesionError, UnknownExte
 
 FILE_NAME = "cit_clientes_reporte.json"
 MODULO = "CIT CLIENTES"
+RECOVER_ACCOUNT_CONFIRM_URL = os.getenv("RECOVER_ACCOUNT_CONFIRM_URL", "")
 
 cit_clientes = Blueprint("cit_clientes", __name__, template_folder="templates")
 
@@ -104,23 +105,22 @@ def list_inactive():
 def detail(cit_cliente_id):
     """Detalle de un Cliente"""
     cit_cliente = CitCliente.query.get_or_404(cit_cliente_id)
-    # Revisar si el cliente está en estado de recuperación
+
+    # Si el cliente ha solicitado recuperar su contrasena, definir url_recuperacion
+    url_recuperacion = None
     recuperacion = CitClienteRecuperacion.query
     recuperacion = recuperacion.filter_by(estatus="A").filter_by(cit_cliente_id=cit_cliente_id)
     recuperacion = recuperacion.filter_by(ya_recuperado=False)
     recuperacion = recuperacion.first()
+    if recuperacion and RECOVER_ACCOUNT_CONFIRM_URL != "":
+        url_recuperacion = f"{RECOVER_ACCOUNT_CONFIRM_URL}?hashid={recuperacion.encode_id()}&cadena_validar={recuperacion.cadena_validar}"
 
-    url = None
-    if recuperacion:
-        load_dotenv()  # Take environment variables from .env
-        RECOVER_ACCOUNT_CONFIRM_URL = os.getenv("RECOVER_ACCOUNT_CONFIRM_URL", "https://citas.justiciadigital.gob.mx/recover_account_confirm")
-        url = f"{RECOVER_ACCOUNT_CONFIRM_URL}?hashid={recuperacion.encode_id()}&cadena_validar={recuperacion.cadena_validar}"
-
+    # Entregar
     return render_template(
         "cit_clientes/detail.jinja2",
         cit_cliente=cit_cliente,
         recuperacion=recuperacion,
-        url_recuperacion=url,
+        url_recuperacion=url_recuperacion,
     )
 
 
@@ -129,6 +129,7 @@ def detail(cit_cliente_id):
 def send_email_recover_password(cit_cliente_recuperacion_id):
     """Envía el correo de recuperación de contraseña"""
     cliente_recuperacion = CitClienteRecuperacion.query.get_or_404(cit_cliente_recuperacion_id)
+
     # Salir si hay una tarea en el fondo
     if current_user.get_task_in_progress("cit_clientes_recuperaciones.tasks.enviar"):
         flash("Debe esperar porque hay una tarea en el fondo sin terminar.", "warning")
@@ -140,7 +141,8 @@ def send_email_recover_password(cit_cliente_recuperacion_id):
             cit_cliente_recuperacion_id=cliente_recuperacion.id,
         )
         flash("Se está reenviando un correo de recuperación de contraseña al cliente... ", "info")
-    # Mostrar detalle del cliente
+
+    # Redirigir al detalle
     return redirect(url_for("cit_clientes.detail", cit_cliente_id=cliente_recuperacion.cit_cliente_id))
 
 
@@ -151,8 +153,8 @@ def edit(cit_cliente_id):
     cliente = CitCliente.query.get_or_404(cit_cliente_id)
     form = ClienteEditForm()
     if form.validate_on_submit():
-        # --- Validaciones ---
-        # Validar CURP repetido
+
+        # Validar que el CURP no se repita
         curp = safe_curp(form.curp.data)
         if curp == "" or curp is None:
             flash("El formato de la CURP no es válido.", "warning")
@@ -161,7 +163,8 @@ def edit(cit_cliente_id):
         if curp_repetido:
             flash(f'Esta CURP ya se encuentra en uso. La utiliza el cliente: "{curp_repetido.nombre}"', "danger")
             return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
-        # Validar email repetido
+
+        # Validar que el e-mail no se repita
         email = safe_email(form.email.data)
         if email == "":
             flash("El formato del EMAIL no es válido.", "warning")
@@ -170,25 +173,20 @@ def edit(cit_cliente_id):
         if email_repetido:
             flash(f'Este EMAIL ya se encuentra en uso. La utiliza el cliente: "{email_repetido.nombre}"', "danger")
             return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
-        # Validar teléfono repetido
-        telefono = safe_tel(form.telefono.data)
-        if telefono == "" or telefono is None or len(telefono) < 10:
-            flash("El formato del TELEFONO no es válido.", "warning")
-            return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
-        telefono_repetido = CitCliente.query.filter_by(telefono=telefono).filter(CitCliente.id != cit_cliente_id).first()
-        if telefono_repetido:
-            flash(f'Este TELEFONO ya se encuentra en uso. La utiliza el cliente: "{telefono_repetido.nombre}"', "danger")
-            return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
-        if form.limite_citas.data is None or form.limite_citas.data > 500 or form.limite_citas.data < 0:
+
+        # Validar limite de citas
+        limite_citas = form.limite_citas.data
+        if limite_citas is None or limite_citas > 500 or limite_citas < 0:
             flash("El límite de citas esta fuera de rango.", "warning")
             return render_template("cit_clientes/edit.jinja2", form=form, cit_cliente=cliente)
-        # --- Fin Validaciones ---
+
+        # Actualizar
         cliente.nombres = safe_string(form.nombres.data)
         cliente.apellido_primero = safe_string(form.apellido_primero.data)
         cliente.apellido_segundo = safe_string(form.apellido_segundo.data)
         cliente.curp = curp
         cliente.email = email
-        cliente.telefono = telefono
+        cliente.telefono = safe_tel(form.telefono.data)
         cliente.limite_citas_pendientes = form.limite_citas.data
         cliente.enviar_boletin = form.recibir_boletin.data
         cliente.save()
@@ -201,6 +199,8 @@ def edit(cit_cliente_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
         return redirect(bitacora.url)
+
+    # Entregar
     form.nombres.data = cliente.nombres
     form.apellido_primero.data = cliente.apellido_primero
     form.apellido_segundo.data = cliente.apellido_segundo
@@ -240,7 +240,6 @@ def report_list():
             "cit_clientes/report_list.jinja2",
             fecha_creacion="",
         )
-
     return render_template(
         "cit_clientes/report_list.jinja2",
         fecha_creacion=data["fecha_creacion"],
@@ -264,7 +263,6 @@ def report_detail(reporte_id):
             else:
                 renglon["valor"] += "<strong>" + str(llave) + ":</strong> " + str(valor) + "<br/>"
         resultados.append(renglon)
-
     return render_template(
         "cit_clientes/report_detail.jinja2",
         fecha_creacion=data["fecha_creacion"],
