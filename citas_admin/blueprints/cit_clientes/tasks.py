@@ -76,8 +76,10 @@ def refresh_report():
 
 def recorrer_registros():
     """Recorre uno aun todos los registros de la tabla cit_clientes"""
+
     # Query de consulta
     registros = CitCliente.query.order_by(CitCliente.id).all()
+
     # Arreglo con todos lo reportes a consultar
     reportes = []
     reportes.append(ReporteCurpParecidos())
@@ -88,11 +90,13 @@ def recorrer_registros():
     reportes.append(ReporteTelefonoVacio())
     reportes.append(ReporteTelefonoFormato())
     reportes.append(ReporteClientesSinCitas())
+
     # Revisamos registro por registro todos lo posibles errores
     for registro in registros:
         for reporte in reportes:
             if reporte.cantidad < LIMITE_VERIFICACION:
                 reporte.check(registro)
+
     # Regresamos la cantidad total de errores
     data_reportes = []
     count_errores_totales = 0
