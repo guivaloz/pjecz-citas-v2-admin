@@ -114,3 +114,22 @@ def enviar(cit_cliente_registro_id):
     mensaje_final = f"Se ha enviado el mensaje {cit_cliente_registro.mensajes_cantidad} a {cit_cliente_registro.email}"
     bitacora.info(mensaje_final)
     return mensaje_final
+
+
+def reenviar():
+    """Reenviar mensajes a quienes no han terminado su registro"""
+
+    # Consultar los registros pendientes
+
+    # Bucle para enviar los mensajes
+    cantidad = 0
+
+    # Si ya expiró, no se envía y de da de baja
+
+    # Enviar el mensaje
+
+    # Terminar tarea
+    set_task_progress(100)
+    mensaje_final = f"Se han reenviado {cantidad} mensajes de registros"
+    bitacora.info(mensaje_final)
+    return mensaje_final
