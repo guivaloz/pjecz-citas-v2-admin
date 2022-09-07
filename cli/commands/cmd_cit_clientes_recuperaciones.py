@@ -1,9 +1,10 @@
 """
 Cit Clientes Recuperaciones
 
-- ver: Ver recuperaciones
-- enviar: Enviar mensaje con URL para definir contrasena
+- consultar: Ver recuperaciones
 - eliminar: Eliminar recuperaciones
+- enviar: Enviar mensaje con URL para definir contrasena
+- reenviar: Reenviar mensajes a quienes no han terminado su recuperacion
 """
 import os
 import click
@@ -30,8 +31,8 @@ def cli():
 
 @click.command()
 @click.option("--id", default=None, help="Number of greetings.")
-def ver(id):
-    """Ver recuperaciones"""
+def consultar(id):
+    """Consultar recuperaciones"""
     if id is None:
         cit_clientes_recuperaciones = CitClienteRecuperacion.query.filter_by(estatus="A").filter_by(ya_recuperado=False).order_by(CitClienteRecuperacion.id).all()
         if len(cit_clientes_recuperaciones) == 0:
@@ -64,6 +65,21 @@ def ver(id):
 
 
 @click.command()
+def eliminar():
+    """Eliminar recuperaciones"""
+    cit_clientes_recuperaciones = CitClienteRecuperacion.query.filter_by(estatus="A").filter_by(ya_recuperado=False).all()
+    if len(cit_clientes_recuperaciones) == 0:
+        click.echo("No hay recuperaciones")
+        return
+    contador = 0
+    for cit_cliente_recuperacion in cit_clientes_recuperaciones:
+        cit_cliente_recuperacion.estatus = "B"
+        cit_cliente_recuperacion.save()
+        contador += 1
+    click.echo(f"Se eliminaron {contador} recuperaciones")
+
+
+@click.command()
 @click.argument("id", type=int)
 def enviar(id):
     """Enviar mensaje con URL para definir contrasena"""
@@ -79,20 +95,15 @@ def enviar(id):
 
 
 @click.command()
-def eliminar():
-    """Eliminar recuperaciones"""
-    cit_clientes_recuperaciones = CitClienteRecuperacion.query.filter_by(estatus="A").filter_by(ya_recuperado=False).all()
-    if len(cit_clientes_recuperaciones) == 0:
-        click.echo("No hay recuperaciones")
-        return
-    contador = 0
-    for cit_cliente_recuperacion in cit_clientes_recuperaciones:
-        cit_cliente_recuperacion.estatus = "B"
-        cit_cliente_recuperacion.save()
-        contador += 1
-    click.echo(f"Se eliminaron {contador} recuperaciones")
+def reenviar():
+    """Reenviar mensajes a quienes no han terminado su recuperacion"""
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.cit_clientes_recuperaciones.tasks.reenviar",
+    )
+    click.echo("Reenviar se está ejecutando en el fondo.")
 
 
-cli.add_command(ver)
+cli.add_command(consultar)
 cli.add_command(enviar)
+cli.add_command(reenviar)
 cli.add_command(eliminar)

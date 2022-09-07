@@ -114,3 +114,41 @@ def enviar(cit_cliente_recuperacion_id):
     mensaje_final = f"Se ha enviado el mensaje {cit_cliente_recuperacion.mensajes_cantidad} a {cit_cliente_recuperacion.cit_cliente.email}"
     bitacora.info(mensaje_final)
     return mensaje_final
+
+
+def reenviar():
+    """Reenviar mensajes a quienes no han terminado su recuperacion"""
+
+    # Consultar las recuperaciones pendientes
+    consulta = CitClienteRecuperacion.filter_by(ya_recuperado=False).filter_by(estatus="A").all()
+
+    # Si la consulta no arrojo resultados, terminar
+    if len(consulta) == 0:
+        set_task_progress(100)
+        mensaje_final = "No hay recuperaciones pendientes, no se reenviaron mensajes"
+        bitacora.info(mensaje_final)
+        return mensaje_final
+
+    # Bucle para enviar los mensajes
+    bajas_cantidad = 0
+    envios_cantidad = 0
+    for recuperacion in consulta:
+
+        # Si ya expiró, no se envía y de da de baja
+        if recuperacion.expiracion <= datetime.now():
+            recuperacion.estatus = "B"
+            recuperacion.save()
+            bajas_cantidad += 1
+            continue
+
+        # Enviar el mensaje
+        enviar(recuperacion.id)
+
+        # Incrementar
+        envios_cantidad += 1
+
+    # Terminar tarea
+    set_task_progress(100)
+    mensaje_final = f"Se han reenviado {envios_cantidad} mensajes de recuperaciones y se dieron de baja {bajas_cantidad}"
+    bitacora.info(mensaje_final)
+    return mensaje_final

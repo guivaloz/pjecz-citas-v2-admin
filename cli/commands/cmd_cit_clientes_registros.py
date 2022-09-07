@@ -1,9 +1,10 @@
 """
 Cit Clientes Registros
 
-- ver: Ver registros
-- enviar: Enviar mensaje con URL de confirmacion
+- consultar: Ver registros
 - eliminar: Eliminar registros
+- enviar: Enviar mensaje con URL de confirmacion
+- reenviar: Reenviar mensajes a quienes no han terminado su registro
 """
 import os
 import click
@@ -30,8 +31,8 @@ def cli():
 
 @click.command()
 @click.option("--id", default=None, help="Number of greetings.")
-def ver(id):
-    """Ver registros"""
+def consultar(id):
+    """Consultar registros"""
     if id is None:
         cit_clientes_registros = CitClienteRegistro.query.filter_by(estatus="A").filter_by(ya_registrado=False).order_by(CitClienteRegistro.id).all()
         if len(cit_clientes_registros) == 0:
@@ -64,6 +65,21 @@ def ver(id):
 
 
 @click.command()
+def eliminar():
+    """Eliminar registros"""
+    cit_clientes_registros = CitClienteRegistro.query.filter_by(estatus="A").filter_by(ya_registrado=False).all()
+    if len(cit_clientes_registros) == 0:
+        click.echo("No hay registros")
+        return
+    contador = 0
+    for cit_cliente_registro in cit_clientes_registros:
+        cit_cliente_registro.estatus = "B"
+        cit_cliente_registro.save()
+        contador += 1
+    click.echo(f"Se eliminaron {contador} registros")
+
+
+@click.command()
 @click.argument("id", type=int)
 def enviar(id):
     """Enviar mensaje con URL de confirmacion"""
@@ -79,20 +95,15 @@ def enviar(id):
 
 
 @click.command()
-def eliminar():
-    """Eliminar registros"""
-    cit_clientes_registros = CitClienteRegistro.query.filter_by(estatus="A").filter_by(ya_registrado=False).all()
-    if len(cit_clientes_registros) == 0:
-        click.echo("No hay registros")
-        return
-    contador = 0
-    for cit_cliente_registro in cit_clientes_registros:
-        cit_cliente_registro.estatus = "B"
-        cit_cliente_registro.save()
-        contador += 1
-    click.echo(f"Se eliminaron {contador} registros")
+def reenviar():
+    """Reenviar mensajes a quienes no han terminado su registro"""
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.cit_clientes_registros.tasks.reenviar",
+    )
+    click.echo("Reenviar se está ejecutando en el fondo.")
 
 
-cli.add_command(ver)
-cli.add_command(enviar)
+cli.add_command(consultar)
 cli.add_command(eliminar)
+cli.add_command(enviar)
+cli.add_command(reenviar)
