@@ -113,7 +113,7 @@ def enviar(enc_sistemas_id):
     to_email = To(cliente.email)
 
     # Asunto
-    subject = "Encuesta de satisfacción del Sistema de Citas"
+    subject = "Encuesta de Sistema de Citas"
 
     # SendGrid
     sendgrid_client = None
