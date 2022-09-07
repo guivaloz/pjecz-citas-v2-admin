@@ -49,6 +49,9 @@ def consultar(ctx, id, cit_cliente_id, estado, limit):
     # Si viene el ID, se muestran los datos de esa encuesta
     if id is not None and id > 0:
         encuesta = EncSistema.query.get(id)
+        if encuesta is None:
+            click.echo(click.style(f"No existe la encuesta de sistemas con ID {id}", fg="red"))
+            ctx.exit(1)
         click.echo(f"Enviada: {encuesta.creado.strftime('%Y/%m/%d - %H:%M %p')}")
         click.echo(f"Contestada: {encuesta.modificado.strftime('%Y/%m/%d - %H:%M %p')}")
         click.echo(f"Cliente: {encuesta.cit_cliente_id} - {encuesta.cit_cliente.nombre}")
