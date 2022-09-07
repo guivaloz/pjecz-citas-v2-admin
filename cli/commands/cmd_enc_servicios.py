@@ -52,13 +52,16 @@ def consultar(ctx, id, cit_cliente_id, oficina_id, estado, limit):
     # Si viene el ID, se muestran los datos de esa encuesta
     if id is not None and id > 0:
         encuesta = EncServicio.query.get(id)
+        if encuesta is None:
+            click.echo(click.style(f"No existe la encuesta de servicios con ID {id}", fg="red"))
+            ctx.exit(1)
         click.echo(f"Enviada: {encuesta.creado.strftime('%Y/%m/%d - %H:%M %p')}")
         click.echo(f"Contestada: {encuesta.modificado.strftime('%Y/%m/%d - %H:%M %p')}")
         click.echo(f"Cliente: {encuesta.cit_cliente_id} - {encuesta.cit_cliente.nombre}")
         click.echo(f"Oficina: {encuesta.oficina.id} - {encuesta.oficina.clave} : {encuesta.oficina.descripcion_corta}")
         click.echo(f"Respuesta_01: {encuesta.respuesta_01} - {_respuesta_int_to_string(encuesta.respuesta_01)}")
-        click.echo(f"Respuesta_02: {encuesta.respuesta_02} - {_respuesta_int_to_string(encuesta.respuesta_01)}")
-        click.echo(f"Respuesta_03: {encuesta.respuesta_03} - {_respuesta_int_to_string(encuesta.respuesta_01)}")
+        click.echo(f"Respuesta_02: {encuesta.respuesta_02} - {_respuesta_int_to_string(encuesta.respuesta_02)}")
+        click.echo(f"Respuesta_03: {encuesta.respuesta_03} - {_respuesta_int_to_string(encuesta.respuesta_03)}")
         click.echo(f"Respuesta_03: {encuesta.respuesta_04}")
         click.echo(f"Estado: {encuesta.estado}")
         url = f"{POLL_SERVICE_URL}?hashid={encuesta.encode_id()}"
@@ -85,8 +88,8 @@ def consultar(ctx, id, cit_cliente_id, oficina_id, estado, limit):
             click.echo(f"Contestada: {encuesta.modificado.strftime('%Y/%m/%d - %H:%M %p')}")
             click.echo(f"Oficina: {encuesta.oficina.id} - {encuesta.oficina.clave} : {encuesta.oficina.descripcion_corta}")
             click.echo(f"Respuesta_01: {encuesta.respuesta_01} - {_respuesta_int_to_string(encuesta.respuesta_01)}")
-            click.echo(f"Respuesta_02: {encuesta.respuesta_02} - {_respuesta_int_to_string(encuesta.respuesta_01)}")
-            click.echo(f"Respuesta_03: {encuesta.respuesta_03} - {_respuesta_int_to_string(encuesta.respuesta_01)}")
+            click.echo(f"Respuesta_02: {encuesta.respuesta_02} - {_respuesta_int_to_string(encuesta.respuesta_02)}")
+            click.echo(f"Respuesta_03: {encuesta.respuesta_03} - {_respuesta_int_to_string(encuesta.respuesta_03)}")
             click.echo(f"Respuesta_03: {encuesta.respuesta_04}")
             click.echo(f"Estado: {encuesta.estado}")
         click.echo("------------------------------")
@@ -201,7 +204,7 @@ def enviar(ctx, id):
 
 
 @click.command()
-@click.argument("--cit_cita_id", type=int)
+@click.argument("cit_cita_id", type=int)
 @click.pass_context
 def crear(ctx, cit_cita_id):
     """Crear una nueva encuesta de sistemas"""
