@@ -120,16 +120,35 @@ def reenviar():
     """Reenviar mensajes a quienes no han terminado su registro"""
 
     # Consultar los registros pendientes
+    consulta = CitClienteRegistro.filter_by(ya_registrado=False).filter_by(estatus="A").all()
+
+    # Si la consulta no arrojo resultados, terminar
+    if len(consulta) == 0:
+        set_task_progress(100)
+        mensaje_final = "No hay registros pendientes, no se reenviaron mensajes"
+        bitacora.info(mensaje_final)
+        return mensaje_final
 
     # Bucle para enviar los mensajes
-    cantidad = 0
+    bajas_cantidad = 0
+    envios_cantidad = 0
+    for registro in consulta:
 
-    # Si ya expiró, no se envía y de da de baja
+        # Si ya expiró, no se envía y de da de baja
+        if registro.expiracion <= datetime.now():
+            registro.estatus = "B"
+            registro.save()
+            bajas_cantidad += 1
+            continue
 
-    # Enviar el mensaje
+        # Enviar el mensaje
+        enviar(registro.id)
+
+        # Incrementar
+        envios_cantidad += 1
 
     # Terminar tarea
     set_task_progress(100)
-    mensaje_final = f"Se han reenviado {cantidad} mensajes de registros"
+    mensaje_final = f"Se han reenviado {envios_cantidad} mensajes de registros y se dieron de baja {bajas_cantidad}"
     bitacora.info(mensaje_final)
     return mensaje_final
