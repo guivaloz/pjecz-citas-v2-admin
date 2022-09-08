@@ -3,6 +3,8 @@ Cit Clientes
 
 - agregar: Agregar un nuevo cliente
 - cambiar_contrasena: Cambiar contraseña de un cliente
+- eliminar_abandonados: Eliminar los clientes que han abandonado su cuenta
+- definir_booleanos: Define los booleanos es_adulto_mayor, es_mujer, etc
 """
 from datetime import datetime, timedelta
 import click
@@ -77,5 +79,32 @@ def cambiar_contrasena(email):
     click.echo(f"Se ha cambiado la contraseña de {email} en usuarios")
 
 
+@click.command()
+@click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
+def eliminar_abandonados(test):
+    """Eliminar los clientes que han abandonado su cuenta"""
+
+
+@click.command()
+@click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
+def definir_boleanos(test):
+    """Define los booleanos es_adulto_mayor, es_mujer, etc"""
+
+    # Consultar los clientes con estatus A y con SHA256
+
+    # Si es adulto mayor
+    contador_es_adulto_mayor = 0
+    contador_no_es_adulto_mayor = 0
+
+    # Si es mujer
+    contador_es_mujer = 0
+    contador_no_es_mujer = 0
+
+    # Terminar mostrando las cantidades de actualizaciones
+    click.echo(f"Se han actualizado {contador_es_adulto_mayor} registros con es_adulto mayor.")
+    click.echo(f"Se han actualizado {contador_no_es_adulto_mayor} registros con NO es_adulto mayor.")
+
+
 cli.add_command(agregar)
 cli.add_command(cambiar_contrasena)
+cli.add_command(definir_boleanos)

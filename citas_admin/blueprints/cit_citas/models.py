@@ -14,6 +14,7 @@ class CitCita(db.Model, UniversalMixin):
             ("ASISTIO", "Asistió"),
             ("CANCELO", "Canceló"),
             ("PENDIENTE", "Pendiente"),
+            ("INASISTENCIA", "Inasistencia"),
         ]
     )
 
@@ -37,6 +38,7 @@ class CitCita(db.Model, UniversalMixin):
     notas = db.Column(db.Text(), nullable=False, default="", server_default="")
     estado = db.Column(db.Enum(*ESTADOS, name="estados", native_enum=False))
     asistencia = db.Column(db.Boolean, nullable=False, default=False)
+    codigo_asistencia = db.Column(db.String(4))
 
     # Hijos
     cit_citas_documentos = db.relationship("CitCitaDocumento", back_populates="cit_cita")
