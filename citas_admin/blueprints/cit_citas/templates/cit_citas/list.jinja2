@@ -16,6 +16,9 @@
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_citas.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_citas.list_active')) }}{% endif %}
         {% endif %}
+        {% if current_user.can_insert('CIT CITAS') %}
+            {{ topbar.button_new('Nueva Cita Inmediata', url_for('cit_clientes.list_active')) }}
+        {% endif %}
     {% endcall %}
 {% endblock %}
 

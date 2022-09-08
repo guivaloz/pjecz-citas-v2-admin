@@ -12,6 +12,9 @@
         {% if current_user.can_edit('CIT CLIENTES') %}
             {{ topbar.button_edit('Editar', url_for('cit_clientes.edit', cit_cliente_id=cit_cliente.id)) }}
         {% endif %}
+        {% if current_user.can_insert('CIT CITAS') %}
+            {{ topbar.button_new('Nueva Cita Inmediata', url_for('cit_citas.new', cit_cliente_id=cit_cliente.id)) }}
+        {% endif %}
     {% endcall %}
 {% endblock %}
 

@@ -18,7 +18,7 @@ from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.oficinas.models import Oficina
 
-from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm, CitCitaSearchAdminForm
+from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm, CitCitaSearchAdminForm, CitCitaAssistance
 
 MODULO = "CIT CITAS"
 
@@ -257,36 +257,43 @@ def recover(cit_cita_id):
     return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
 
 
-@cit_citas.route("/cit_citas/aistencia/<int:cit_cita_id>")
+@cit_citas.route("/cit_citas/asistencia/<int:cit_cita_id>", methods=["GET", "POST"])
 @permission_required(MODULO, Permiso.MODIFICAR)
 def assistance(cit_cita_id, qr=False):
     """Marcar Asistencia a una Cita"""
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
-    # Si no es administrador, no puede marcar Asistencia a una cita de otra oficina
-    if not current_user.can_admin(MODULO) and cit_cita.oficina != current_user.oficina:
-        abort(403)
-    if cit_cita.estado != "PENDIENTE":
-        flash("No puede marcar la asistencia de una cita que no tenga estado de PENDIENTE.", "warning")
-        return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
-    # No se puede marcar la asistencia de una cita a futuro
-    if cit_cita.inicio > datetime.now():
-        flash("No puede marcar la asistencia de una cita que aún no ha pasado.", "warning")
-        return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
+    form = CitCitaAssistance()
+    if form.validate_on_submit():
+        if cit_cita.estado != "PENDIENTE":
+            flash("No puede marcar la asistencia de una cita que no tenga estado de PENDIENTE.", "warning")
+            return redirect(url_for("cit_citas.assistance", cit_cita_id=cit_cita.id))
+        # No se puede marcar la asistencia de una cita a futuro
+        if cit_cita.inicio > datetime.now():
+            flash("No puede marcar la asistencia de una cita que aún no ha pasado.", "warning")
+            return redirect(url_for("cit_citas.assistance", cit_cita_id=cit_cita.id))
+        # Revisar el código de verificación
+        if cit_cita.codigo_asistencia != form.codigo.data:
+            flash("El código de verificación es incorrecto", "danger")
+            return redirect(url_for("cit_citas.assistance", cit_cita_id=cit_cita.id))
 
-    if cit_cita.estatus == "A":
-        cit_cita.estado = "ASISTIO"
-        cit_cita.asistencia = True
-        cit_cita.save()
-        bitacora = Bitacora(
-            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-            usuario=current_user,
-            descripcion=safe_message(f"Agregadó Asistencia a la Cita {cit_cita.id}"),
-            url=url_for("cit_citas.detail", cit_cita_id=cit_cita.id),
-        )
-        bitacora.save()
-        flash(bitacora.descripcion, "success")
-    if qr is False:
-        return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
+        if cit_cita.estatus == "A":
+            cit_cita.estado = "ASISTIO"
+            cit_cita.asistencia = True
+            cit_cita.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Asistencia correcta en la Cita {cit_cita.id}"),
+                url=url_for("cit_citas.detail", cit_cita_id=cit_cita.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+        if qr is False:
+            return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
+    # Vista de formulario
+    form.cita_id.data = cit_cita_id
+    form.cliente.data = cit_cita.cit_cliente.nombre
+    return render_template("cit_citas/assistance.jinja2", form=form, cit_cita_id=cit_cita.id)
 
 
 @cit_citas.route("/cit_citas/pendiente/<int:cit_cita_id>")
@@ -375,17 +382,29 @@ def assistance_qr(cit_cita_id_encode):
     cit_cita_id = CitCita.decode_id(cit_cita_id_encode)
     if cit_cita_id is None or cit_cita_id == "":
         flash("!ERROR: La cita que busca no se encuentra", "danger")
-        return render_template("cit_citas/assistance.jinja2", cit_cita=0, asistencia=False)
+        return render_template("cit_citas/assistance_qr.jinja2", cit_cita=0, asistencia=False)
     # Identificamos la cita correspondiente
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
     if cit_cita.estado == "ASISTIO":
-        return render_template("cit_citas/assistance.jinja2", cit_cita=cit_cita, asistencia=True)
+        return render_template("cit_citas/assistance_qr.jinja2", cit_cita=cit_cita, asistencia=True)
     # rango de aceptación para dar asistencia a una cita
     if datetime.now() - timedelta(hours=24) <= cit_cita.inicio <= datetime.now() + timedelta(hours=8):
         if cit_cita.estado == "PENDIENTE":
             assistance(cit_cita.id, True)
-            return render_template("cit_citas/assistance.jinja2", cit_cita=cit_cita, asistencia=True)
+            return render_template("cit_citas/assistance_qr.jinja2", cit_cita=cit_cita, asistencia=True)
     else:
-        flash("El rango aceptable para dar una asistencia ha sido superado.", "warning")
+        flash("El rango de horario aceptable para dar asistencia ha sido superado.", "warning")
 
-    return render_template("cit_citas/assistance.jinja2", cit_cita=cit_cita, asistencia=False)
+    return render_template("cit_citas/assistance_qr.jinja2", cit_cita=cit_cita, asistencia=False)
+
+
+@cit_citas.route("/cit_citas/nueva/<int:cit_cliente_id>")
+def new(cit_cliente_id):
+    """Nueva Cita"""
+
+    cliente = CitCliente.query.get_or_404(cit_cliente_id)
+
+    return render_template(
+        "cit_citas/new.jinja2",
+        cit_cliente=cliente,
+    )

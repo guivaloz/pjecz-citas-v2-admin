@@ -12,6 +12,13 @@
     {% call start.card() %}
         <h1 class="text-center">Citas v2 admin</h1>
     {% endcall %}
+    {# Botón para añadir citas instanteanas #}
+    {% if current_user.can_insert('CIT CITAS') %}
+        {% call start.card('Opciones Rápidas') %}
+            <a href="{{ url_for('cit_citas.list_active') }}" class="btn bnt-lg btn-primary me-4 mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;">Ver Citas del Día</a>
+            <a href="{{ url_for('cit_clientes.list_active') }}" class="btn bnt-lg btn-success mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;">Agendar Cita Inmediata</a>
+        {% endcall %}
+    {% endif %}
     {# Versiones #}
     {% call start.card('Versiones') %}
         <div id="versiones_container">
