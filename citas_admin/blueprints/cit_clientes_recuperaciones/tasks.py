@@ -45,12 +45,12 @@ def enviar(cit_cliente_recuperacion_id):
     if cit_cliente_recuperacion.estatus != "A":
         mensaje_error = f"El ID {cit_cliente_recuperacion.id} NO tiene estatus activo"
         set_task_error(mensaje_error)
-        bitacora.error(mensaje_error)
+        bitacora.warning(mensaje_error)
         return mensaje_error
     if cit_cliente_recuperacion.ya_recuperado is True:
         mensaje_error = f"El ID {cit_cliente_recuperacion.id} YA fue recuperado"
         set_task_error(mensaje_error)
-        bitacora.error(mensaje_error)
+        bitacora.warning(mensaje_error)
         return mensaje_error
 
     # Bandera para saber si se tienen todos los elementos necesarios
@@ -99,20 +99,23 @@ def enviar(cit_cliente_recuperacion_id):
         bandera = False
 
     # Enviar mensaje
+    mensaje_final = ""
     if bandera:
         mail = Mail(from_email, to_email, subject, content)
         sendgrid_client.client.mail.send.post(request_body=mail.get())
+        mensaje_final = f"Se ha enviado el mensaje {cit_cliente_recuperacion.mensajes_cantidad} a {cit_cliente_recuperacion.cit_cliente.email}"
+        bitacora.info(mensaje_final)
     else:
-        bitacora.warning("Se omite el envio a %s por que faltan elementos", cit_cliente_recuperacion.cit_cliente.email)
+        mensaje_final = f"Se omite el envio a {cit_cliente_recuperacion.cit_cliente.email} por que faltan elementos"
+        bitacora.warning(mensaje_final)
 
     # Incrementar contador
-    cit_cliente_recuperacion.mensajes_cantidad += 1
-    cit_cliente_recuperacion.save()
+    if bandera:
+        cit_cliente_recuperacion.mensajes_cantidad += 1
+        cit_cliente_recuperacion.save()
 
     # Terminar tarea
     set_task_progress(100)
-    mensaje_final = f"Se ha enviado el mensaje {cit_cliente_recuperacion.mensajes_cantidad} a {cit_cliente_recuperacion.cit_cliente.email}"
-    bitacora.info(mensaje_final)
     return mensaje_final
 
 
@@ -120,7 +123,7 @@ def reenviar():
     """Reenviar mensajes a quienes no han terminado su recuperacion"""
 
     # Consultar las recuperaciones pendientes
-    consulta = CitClienteRecuperacion.filter_by(ya_recuperado=False).filter_by(estatus="A").all()
+    consulta = CitClienteRecuperacion.query.filter_by(ya_recuperado=False).filter_by(estatus="A").all()
 
     # Si la consulta no arrojo resultados, terminar
     if len(consulta) == 0:

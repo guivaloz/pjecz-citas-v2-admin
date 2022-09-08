@@ -84,6 +84,9 @@ def eliminar():
 def enviar(id):
     """Enviar mensaje con URL para definir contrasena"""
     cit_cliente_recuperacion = CitClienteRecuperacion.query.get(id)
+    if cit_cliente_recuperacion is None:
+        click.echo(f"No existe la recuperacion {id}")
+        return
     click.echo(f"Por enviar un mensaje a: {cit_cliente_recuperacion.cit_cliente.email}")
     click.echo(f"Con este URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_recuperacion.cadena_validar}")
     click.echo(f"El contador de mensajes sera: {cit_cliente_recuperacion.mensajes_cantidad + 1}")

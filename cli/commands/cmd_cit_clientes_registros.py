@@ -84,6 +84,9 @@ def eliminar():
 def enviar(id):
     """Enviar mensaje con URL de confirmacion"""
     cit_cliente_registro = CitClienteRegistro.query.get(id)
+    if cit_cliente_registro is None:
+        click.echo(f"No existe el registro {id}")
+        return
     click.echo(f"Por enviar un mensaje a: {cit_cliente_registro.email}")
     click.echo(f"Con este URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_registro.cadena_validar}")
     click.echo(f"El contador de mensajes sera: {cit_cliente_registro.mensajes_cantidad}")
