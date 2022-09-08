@@ -10,7 +10,6 @@
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_clientes.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_clientes.list_active')) }}{% endif %}
         {% endif %}
-        
         <a class="btn btn-sm btn-outline-secondary" href="{{url_for('cit_clientes.report_list')}}"><span class="iconify" data-icon="mdi:comment-alert-outline"></span>
         Avisos
         </a>
@@ -26,6 +25,7 @@
                     <input id="nombreInput" type="text" class="form-control text-primary" placeholder="nombres" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
                     <input id="apellidoPrimeroInput" type="text" class="form-control text-primary" placeholder="apellido Primero" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
                     <input id="curpInput" type="text" class="form-control text-primary" placeholder="CURP" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
+                    <input id="telefonoInput" type="text" class="form-control text-primary" placeholder="telefono" aria-label="text" aria-describedby="button-buscar">
                     <button class="btn btn-primary" type="submit" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
                     <button class="btn btn-warning" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
                 </form>
@@ -47,6 +47,8 @@
 {% block custom_javascript %}
     {{ list.config_datatable() }}
     <script>
+
+        // Datatable
         configDataTable['ajax']['url'] = '/cit_clientes/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
@@ -57,14 +59,14 @@
         ];
         configDataTable['columnDefs'] = [
             {
-                targets: 0,     // detalle (email)
+                targets: 0, // detalle (email)
                 data: null,
                 render: function(data, type, row, meta) {
                     return '<a href="' + data.url + '">' + data.email + '</a>';
                 }
             },
             {
-                targets: [2, 3],     // CURP
+                targets: [2, 3], // curp y telefono
                 data: null,
                 render: function(data, type, row, meta) {
                     return '<span class="font-monospace">' + data + '</span>';
@@ -72,12 +74,12 @@
             }
         ];
 
-        // --- Búsqueda --- //
+        // Búsqueda
         let emailBuscar = document.getElementById('emailInput').value.toLowerCase();
         let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
         let apellidoPrimeroBuscar = document.getElementById('apellidoPrimeroInput').value.toUpperCase();
         let curpBuscar = document.getElementById('curpInput').value.toUpperCase();
-
+        let telefonoBuscar = document.getElementById('telefonoInput').value;
         if(emailBuscar != '')
             configDataTable['ajax']['data']['email'] = emailBuscar;
         if(nombreBuscar != '')
@@ -86,26 +88,29 @@
             configDataTable['ajax']['data']['apellido_primero'] = apellidoPrimeroBuscar;
         if(curpBuscar != '')
             configDataTable['ajax']['data']['curp'] = curpBuscar;
-            
+        if(telefonoBuscar != '')
+            configDataTable['ajax']['data']['telefono'] = telefonoBuscar;
+
+        // Datatable
         $('#cit_clientes_datatable').DataTable(configDataTable);
+
     </script>
     <!-- Función de buscador -->
     <script type="text/javascript">
+
         function buscar() {
             let emailBuscar = document.getElementById('emailInput').value.toLowerCase();
             let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
             let apellidoPrimeroBuscar = document.getElementById('apellidoPrimeroInput').value.toUpperCase();
             let curpBuscar = document.getElementById('curpInput').value.toUpperCase();
-
+            let telefonoBuscar = document.getElementById('telefonoInput').value.toUpperCase();
             if( configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' &&
                 configDataTable['ajax']['data']['nombres'] === undefined && nombreBuscar === '' &&
                 configDataTable['ajax']['data']['apellido_primero'] === undefined && apellidoPrimeroBuscar === '' &&
-                configDataTable['ajax']['data']['curp'] === undefined && curpBuscar === ''
-            )
-                return false;
-
+                configDataTable['ajax']['data']['curp'] === undefined && curpBuscar === '' &&
+                configDataTable['ajax']['data']['telefono'] === undefined && telefonoBuscar === ''
+            ) return false;
             $('#cit_clientes_datatable').DataTable().destroy();
-
             if(nombreBuscar == '')
                 delete configDataTable['ajax']['data']['nombres'];
             else
@@ -122,7 +127,10 @@
                 delete configDataTable['ajax']['data']['curp'];
             else
                 configDataTable['ajax']['data']['curp'] = curpBuscar;
-
+            if(telefonoBuscar == '')
+                delete configDataTable['ajax']['data']['telefono'];
+            else
+                configDataTable['ajax']['data']['telefono'] = telefonoBuscar;
             $('#cit_clientes_datatable').DataTable(configDataTable);
         };
 
@@ -130,17 +138,17 @@
             if( configDataTable['ajax']['data']['email'] === undefined &&
                 configDataTable['ajax']['data']['nombres'] === undefined &&
                 configDataTable['ajax']['data']['apellido_primero'] === undefined &&
-                configDataTable['ajax']['data']['curp'] === undefined
-            )
-                return false;
-            
+                configDataTable['ajax']['data']['curp'] === undefined &&
+                configDataTable['ajax']['data']['telefono'] === undefined
+            ) return false;
             delete configDataTable['ajax']['data']['email'];
             delete configDataTable['ajax']['data']['nombres'];
             delete configDataTable['ajax']['data']['apellido_primero'];
             delete configDataTable['ajax']['data']['curp'];
-
+            delete configDataTable['ajax']['data']['telefono'];
             $('#cit_clientes_datatable').DataTable().destroy();
             $('#cit_clientes_datatable').DataTable(configDataTable);
         };
+
     </script>
 {% endblock %}

@@ -1,9 +1,10 @@
 """
 Cit Clientes Registros
 
-- ver: Ver registros
-- enviar: Enviar mensaje con URL de confirmacion
+- consultar: Ver registros
 - eliminar: Eliminar registros
+- enviar: Enviar mensaje con URL de confirmacion
+- reenviar: Reenviar mensajes a quienes no han terminado su registro
 """
 import os
 import click
@@ -30,8 +31,8 @@ def cli():
 
 @click.command()
 @click.option("--id", default=None, help="Number of greetings.")
-def ver(id):
-    """Ver registros"""
+def consultar(id):
+    """Consultar registros"""
     if id is None:
         cit_clientes_registros = CitClienteRegistro.query.filter_by(estatus="A").filter_by(ya_registrado=False).order_by(CitClienteRegistro.id).all()
         if len(cit_clientes_registros) == 0:
@@ -64,21 +65,6 @@ def ver(id):
 
 
 @click.command()
-@click.argument("id", type=int)
-def enviar(id):
-    """Enviar mensaje con URL de confirmacion"""
-    cit_cliente_registro = CitClienteRegistro.query.get(id)
-    click.echo(f"Por enviar un mensaje a: {cit_cliente_registro.email}")
-    click.echo(f"Con este URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_registro.cadena_validar}")
-    click.echo(f"El contador de mensajes sera: {cit_cliente_registro.mensajes_cantidad}")
-    app.task_queue.enqueue(
-        "citas_admin.blueprints.cit_clientes_registros.tasks.enviar",
-        cit_cliente_registro_id=cit_cliente_registro.id,
-    )
-    click.echo("Enviar se está ejecutando en el fondo.")
-
-
-@click.command()
 def eliminar():
     """Eliminar registros"""
     cit_clientes_registros = CitClienteRegistro.query.filter_by(estatus="A").filter_by(ya_registrado=False).all()
@@ -93,6 +79,34 @@ def eliminar():
     click.echo(f"Se eliminaron {contador} registros")
 
 
-cli.add_command(ver)
-cli.add_command(enviar)
+@click.command()
+@click.argument("id", type=int)
+def enviar(id):
+    """Enviar mensaje con URL de confirmacion"""
+    cit_cliente_registro = CitClienteRegistro.query.get(id)
+    if cit_cliente_registro is None:
+        click.echo(f"No existe el registro {id}")
+        return
+    click.echo(f"Por enviar un mensaje a: {cit_cliente_registro.email}")
+    click.echo(f"Con este URL para confirmar: {NEW_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_registro.cadena_validar}")
+    click.echo(f"El contador de mensajes sera: {cit_cliente_registro.mensajes_cantidad}")
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.cit_clientes_registros.tasks.enviar",
+        cit_cliente_registro_id=cit_cliente_registro.id,
+    )
+    click.echo("Enviar se está ejecutando en el fondo.")
+
+
+@click.command()
+def reenviar():
+    """Reenviar mensajes a quienes no han terminado su registro"""
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.cit_clientes_registros.tasks.reenviar",
+    )
+    click.echo("Reenviar se está ejecutando en el fondo.")
+
+
+cli.add_command(consultar)
 cli.add_command(eliminar)
+cli.add_command(enviar)
+cli.add_command(reenviar)

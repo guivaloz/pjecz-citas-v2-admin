@@ -1,9 +1,10 @@
 """
 Cit Clientes Recuperaciones
 
-- ver: Ver recuperaciones
-- enviar: Enviar mensaje con URL para definir contrasena
+- consultar: Ver recuperaciones
 - eliminar: Eliminar recuperaciones
+- enviar: Enviar mensaje con URL para definir contrasena
+- reenviar: Reenviar mensajes a quienes no han terminado su recuperacion
 """
 import os
 import click
@@ -30,8 +31,8 @@ def cli():
 
 @click.command()
 @click.option("--id", default=None, help="Number of greetings.")
-def ver(id):
-    """Ver recuperaciones"""
+def consultar(id):
+    """Consultar recuperaciones"""
     if id is None:
         cit_clientes_recuperaciones = CitClienteRecuperacion.query.filter_by(estatus="A").filter_by(ya_recuperado=False).order_by(CitClienteRecuperacion.id).all()
         if len(cit_clientes_recuperaciones) == 0:
@@ -64,21 +65,6 @@ def ver(id):
 
 
 @click.command()
-@click.argument("id", type=int)
-def enviar(id):
-    """Enviar mensaje con URL para definir contrasena"""
-    cit_cliente_recuperacion = CitClienteRecuperacion.query.get(id)
-    click.echo(f"Por enviar un mensaje a: {cit_cliente_recuperacion.cit_cliente.email}")
-    click.echo(f"Con este URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_recuperacion.cadena_validar}")
-    click.echo(f"El contador de mensajes sera: {cit_cliente_recuperacion.mensajes_cantidad + 1}")
-    app.task_queue.enqueue(
-        "citas_admin.blueprints.cit_clientes_recuperaciones.tasks.enviar",
-        cit_cliente_recuperacion_id=cit_cliente_recuperacion.id,
-    )
-    click.echo("Enviar se está ejecutando en el fondo.")
-
-
-@click.command()
 def eliminar():
     """Eliminar recuperaciones"""
     cit_clientes_recuperaciones = CitClienteRecuperacion.query.filter_by(estatus="A").filter_by(ya_recuperado=False).all()
@@ -93,6 +79,34 @@ def eliminar():
     click.echo(f"Se eliminaron {contador} recuperaciones")
 
 
-cli.add_command(ver)
+@click.command()
+@click.argument("id", type=int)
+def enviar(id):
+    """Enviar mensaje con URL para definir contrasena"""
+    cit_cliente_recuperacion = CitClienteRecuperacion.query.get(id)
+    if cit_cliente_recuperacion is None:
+        click.echo(f"No existe la recuperacion {id}")
+        return
+    click.echo(f"Por enviar un mensaje a: {cit_cliente_recuperacion.cit_cliente.email}")
+    click.echo(f"Con este URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_recuperacion.cadena_validar}")
+    click.echo(f"El contador de mensajes sera: {cit_cliente_recuperacion.mensajes_cantidad + 1}")
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.cit_clientes_recuperaciones.tasks.enviar",
+        cit_cliente_recuperacion_id=cit_cliente_recuperacion.id,
+    )
+    click.echo("Enviar se está ejecutando en el fondo.")
+
+
+@click.command()
+def reenviar():
+    """Reenviar mensajes a quienes no han terminado su recuperacion"""
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.cit_clientes_recuperaciones.tasks.reenviar",
+    )
+    click.echo("Reenviar se está ejecutando en el fondo.")
+
+
+cli.add_command(consultar)
 cli.add_command(enviar)
+cli.add_command(reenviar)
 cli.add_command(eliminar)
