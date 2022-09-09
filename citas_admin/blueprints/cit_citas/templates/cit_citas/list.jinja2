@@ -32,9 +32,20 @@
                 {% endif %}
                 </div>
                 <div class="col-4">
-                {% if fecha_actual %}
-                    <input id="fecha_actual" class="form-control" type="date" value="{{fecha_actual}}"/>
-                {% endif %}
+                    {% if oficinas %}
+                    <div>
+                        <select class="form-select mb-2" id="oficinas" aria-label="Oficinas" onchange="actualizar_listado();">
+                        {% for oficina in oficinas %}
+                            <option value="{{ oficina.oficina.id }}">{{ oficina.oficina.clave }}</option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    <div>
+                    {% if fecha_actual %}
+                        <input id="fecha_actual" class="form-control" type="date" value="{{fecha_actual}}" onchange="actualizar_listado();">
+                    {% endif %}
+                    </div>
                 </div>
                 <div class="col-2">
                 {% if fecha_siguiente %}
@@ -128,6 +139,8 @@
         };
     
         // --- Btn para imprimir pdf del listado datatable
+        configDataTable['ajax']['data']['fecha'] =  document.getElementById('fecha_actual').value;
+        configDataTable['ajax']['data']['oficina_id'] = document.getElementById('oficinas').value;
         configDataTable['responsive'] = false;
         configDataTable['paging'] = false;
         configDataTable['dom'] = 'B<clear>frtip';
@@ -143,7 +156,7 @@
         $('#cit_citas_datatable').DataTable().buttons().container().appendTo( '#example_wrapper .col-md-6:eq(0)' );
     </script>
     <script>
-        $('#fecha_actual').change(function() {
+        function actualizar_listado() {
             let fecha_actual = $('#fecha_actual').val();
             if(fecha_actual == '') {
                 const date = new Date();
@@ -155,6 +168,8 @@
             };
             $('#cit_citas_datatable').DataTable().destroy();
             configDataTable['ajax']['data']['fecha'] = fecha_actual;
+            configDataTable['ajax']['data']['oficina_id'] = document.getElementById('oficinas').value;
+            let oficina_clave = document.getElementById('oficinas').options[document.getElementById('oficinas').selectedIndex].text;
             // --- Imprimir tiutlo del pdf --- //
             configDataTable['responsive'] = false;
             configDataTable['paging'] = false;
@@ -162,13 +177,13 @@
             configDataTable['buttons'] = [
                 {
                     extend: 'pdf',
-                    title: 'Listado de {{ titulo }} : ' + fecha_actual,
+                    title: 'Listado de ' + oficina_clave + ' : ' + fecha_actual,
                     buttonText: 'jajajaj',
                 }
             ];
             $('#cit_citas_datatable').DataTable(configDataTable);
             $('#cit_citas_datatable').DataTable().button(0).text('Convertir a PDF');
-        });
+        };
         function cambiar_fecha(fecha) {
             $('#fecha_actual').val(fecha);
             $('#fecha_actual').text(fecha);

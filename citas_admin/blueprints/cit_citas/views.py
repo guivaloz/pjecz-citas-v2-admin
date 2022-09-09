@@ -137,6 +137,9 @@ def list_active():
         fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
         fecha_anterior_str = (fecha - timedelta(days=1)).strftime("%Y-%m-%d")
         fecha_siguiente_str = (fecha + timedelta(days=1)).strftime("%Y-%m-%d")
+    # Verificamos si tiene asignadas varias oficinas
+    oficinas = UsuarioOficina.query.filter_by(usuario_id=current_user.id).filter_by(estatus="A").all()
+
     # Si es administrador, puede ver las citas de todas las oficinas
     if current_user.can_admin(MODULO):
         return render_template(
@@ -157,6 +160,7 @@ def list_active():
         fecha_actual=fecha_str,
         fecha_anterior=fecha_anterior_str,
         fecha_siguiente=fecha_siguiente_str,
+        oficinas=oficinas,
     )
 
 
@@ -217,6 +221,10 @@ def detail(cit_cita_id):
         return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
     # Si no es administrador, solo puede ver los detalles de una cita de su propia oficina
     if cit_cita.oficina == current_user.oficina:
+        return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
+    # Si tiene acceso a varias oficinas
+    oficinas = UsuarioOficina.query.filter_by(usuario=current_user).filter_by(oficina=current_user.oficina).filter_by(estatus="A").first()
+    if oficinas is not None:
         return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
     # Si no es administrador, no puede ver los detalles de una cita de otra oficina, lo reenviamos al listado
     abort(403)
