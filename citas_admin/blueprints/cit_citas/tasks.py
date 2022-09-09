@@ -109,8 +109,7 @@ def enviar(cit_cita_id):
         esta_completo_para_enviar_mensaje = False
 
     # Destinatario
-    # to_email = To(cit_cita.cit_cliente.email)
-    to_email = To("ricardo.valdes@pjecz.gob.mx")
+    to_email = To(cit_cita.cit_cliente.email)
 
     # Asunto
     subject = "Cita Agendada - PJECZ"
@@ -140,7 +139,3 @@ def enviar(cit_cita_id):
         mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}"
     bitacora.info(mensaje_final)
     return mensaje_final
-
-
-if __name__ == "__main__":
-    enviar(22402)
