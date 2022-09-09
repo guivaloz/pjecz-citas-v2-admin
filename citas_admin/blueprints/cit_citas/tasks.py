@@ -9,6 +9,7 @@ import sendgrid
 
 from dotenv import load_dotenv
 from sendgrid.helpers.mail import Email, To, Content, Mail
+from jinja2 import Environment, FileSystemLoader
 
 from lib.tasks import set_task_progress, set_task_error
 
@@ -16,6 +17,7 @@ from citas_admin.app import create_app
 from citas_admin.extensions import db
 
 from citas_admin.blueprints.cit_citas.models import CitCita
+from citas_admin.blueprints.cit_clientes.models import CitCliente
 
 locale.setlocale(locale.LC_TIME, "es_MX.utf8")
 
@@ -47,6 +49,19 @@ def enviar(cit_cita_id):
         bitacora.error(mensaje_error)
         return mensaje_error
 
+    # Validar el cliente
+    cliente = CitCliente.query.get(cit_cita.cit_cliente_id)
+    if cliente is None:
+        mensaje_error = f"El ID del cliente '{cit_cita.cit_cliente_id}' NO existe dentro la tabla cit_clientes"
+        set_task_error(mensaje_error)
+        bitacora.error(mensaje_error)
+        return mensaje_error
+    if cliente.estatus != "A":
+        mensaje_error = f"El ID del cliente {cliente.id} NO tiene estatus activo"
+        set_task_error(mensaje_error)
+        bitacora.error(mensaje_error)
+        return mensaje_error
+
     # Esta completo para enviar el mensaje por correo electronico
     esta_completo_para_enviar_mensaje = True
 
@@ -57,6 +72,7 @@ def enviar(cit_cita_id):
 
     # Momento en que se elabora este mensaje
     momento = datetime.now()
+    momento_str = momento.strftime("%d/%b/%Y %I:%M %p")
 
     # Si puede enviar codigos QR
     asistencia_url = None
@@ -69,27 +85,21 @@ def enviar(cit_cita_id):
             # Definir el URL para marcar asistencia
             asistencia_url = HOST + "/cit_citas/asistencia/" + cit_cita.encode_id()
 
-    # Contenidos
-    contenidos = []
-    contenidos.append("<h1>Sistema de Citas</h1>")
-    contenidos.append("<h2>PODER JUDICIAL DEL ESTADO DE COAHUILA DE ZARAGOZA</h2>")
-    contenidos.append(f"<p>Fecha de elaboración: {momento.strftime('%Y/%m/%d - %I:%M %p')}.</p>")
-    contenidos.append("<p>Le proporcionamos la información detalla de la cita que agendó en este sistema:</p>")
-    contenidos.append("<ul>")
-    contenidos.append(f"<li><strong>Nombre</strong>: {cit_cita.cit_cliente.nombre}</li>")
-    contenidos.append(f"<li><strong>Oficina</strong>: {cit_cita.oficina.descripcion}</li>")
-    contenidos.append(f"<li><strong>Servicio</strong>: {cit_cita.cit_servicio.descripcion}</li>")
-    contenidos.append(f"<li><strong>Fecha y hora</strong>: {cit_cita.inicio.strftime('%d de %B de %Y a las %I:%M %p')}</li>")
-    contenidos.append(f"<li><strong>Notas</strong>: {cit_cita.notas}</li>")
-    contenidos.append("</ul>")
-    contenidos.append("<small>Por favor llegue diez minutos antes de la fecha y hora mencionados.</small>")
-    if va_a_incluir_qr:
-        contenidos.append("<h3>Código QR para marcar asistencia</h3>")
-        contenidos.append(f'<img src="https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl={asistencia_url}" alt="[ERROR_EN_QR]">')
-        contenidos.append("<p>Si no no se ve el QR, active la opción para mostrar las imágenes.</p>")
-        contenidos.append("<p>Por favor, al llegar exija que le escaneen este QR, para que se refleje en su historial de asistencia.</p>")
-    contenidos.append("<p><strong>ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></p>")
-    content = Content("text/html", "\n".join(contenidos))
+    # Importar plantilla Jinja2
+    entorno = Environment(
+        loader=FileSystemLoader("citas_admin/blueprints/cit_citas/templates/cit_citas"),
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
+    plantilla = entorno.get_template("email.jinja2")
+    contenidos = plantilla.render(
+        fecha_elaboracion=momento_str,
+        cliente_nombre=cliente.nombre,
+        cit_cita=cit_cita,
+        va_a_incluir_qr=va_a_incluir_qr,
+        asistencia_url=asistencia_url,
+    )
+    content = Content("text/html", contenidos)
 
     # Validar remitente
     from_email = None
@@ -99,7 +109,8 @@ def enviar(cit_cita_id):
         esta_completo_para_enviar_mensaje = False
 
     # Destinatario
-    to_email = To(cit_cita.cit_cliente.email)
+    # to_email = To(cit_cita.cit_cliente.email)
+    to_email = To("ricardo.valdes@pjecz.gob.mx")
 
     # Asunto
     subject = "Cita Agendada - PJECZ"
@@ -129,3 +140,7 @@ def enviar(cit_cita_id):
         mensaje_final = f"Se ha enviado un mensaje a {cit_cita.cit_cliente.email} de la cita {cit_cita.id}"
     bitacora.info(mensaje_final)
     return mensaje_final
+
+
+if __name__ == "__main__":
+    enviar(22402)
