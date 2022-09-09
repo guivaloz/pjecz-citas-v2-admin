@@ -8,6 +8,8 @@ Cit Clientes
 """
 from datetime import datetime, timedelta
 import click
+from sqlalchemy import delete
+from citas_admin.blueprints.cit_citas.models import CitCita
 
 from lib.pwgen import generar_contrasena
 from lib.safe_string import safe_string
@@ -83,6 +85,18 @@ def cambiar_contrasena(email):
 @click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
 def eliminar_abandonados(test):
     """Eliminar los clientes que han abandonado su cuenta"""
+    click.echo("Eliminación de cuentas de Clientes abandonados")
+    count_cit_clientes = CitCliente.query.outerjoin(CitCita).filter(CitCliente.contrasena_sha256 == "").filter(CitCita.cit_cliente == None).count()
+    click.echo(f"Se encontraron {count_cit_clientes} cuentas de clientes sin contraseña SHA256 y sin citas agendadas, posiblemente son cuentas abandonadas.")
+
+    if test == False:
+        borrado = delete(CitCliente).join(CitCita).where(CitCliente.contrasena_sha256 == "").where(CitCita.cit_cliente == None)
+        # engine = db.engine
+        # engine.execute(borrado)
+        print(borrado)
+        click.echo("¡Eliminación de registros correctamente!")
+    else:
+        click.echo("Para eliminar permanentemente los registros, utilize el parámetro --test false")
 
 
 @click.command()
@@ -107,4 +121,5 @@ def definir_boleanos(test):
 
 cli.add_command(agregar)
 cli.add_command(cambiar_contrasena)
+cli.add_command(eliminar_abandonados)
 cli.add_command(definir_boleanos)
