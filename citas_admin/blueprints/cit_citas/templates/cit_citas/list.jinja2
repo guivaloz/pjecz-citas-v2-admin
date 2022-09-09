@@ -36,7 +36,7 @@
                     <div>
                         <select class="form-select mb-2" id="oficinas" aria-label="Oficinas" onchange="actualizar_listado();">
                         {% for oficina in oficinas %}
-                            <option value="{{ oficina.oficina.id }}">{{ oficina.oficina.clave }}</option>
+                            <option value="{{ oficina.oficina.id }}">{{ oficina.oficina.descripcion_corta }}</option>
                         {% endfor %}
                         </select>
                     </div>
