@@ -17,6 +17,6 @@ def oficinas_opciones():
 class UsuarioOficinaWithUsuarioForm(FlaskForm):
     """Formulario UsuarioOficina"""
 
-    oficina = QuerySelectField(query_factory=oficinas_opciones, get_label="compuesto", validators=[DataRequired()])
+    oficina = QuerySelectField("Oficina", query_factory=oficinas_opciones, get_label="compuesto")
     usuario = StringField("Usuario")  # Read only
     guardar = SubmitField("Guardar")
