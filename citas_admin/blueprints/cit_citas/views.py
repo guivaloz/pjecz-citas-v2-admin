@@ -17,10 +17,16 @@ from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.oficinas.models import Oficina
+from citas_admin.blueprints.usuarios_oficinas.models import UsuarioOficina
+from citas_admin.blueprints.cit_oficinas_servicios.models import CitOficinaServicio
+from citas_admin.blueprints.cit_servicios.models import CitServicio
+from citas_admin.blueprints.cit_horas_bloqueadas.models import CitHoraBloqueada
 
-from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm, CitCitaSearchAdminForm, CitCitaAssistance
+from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm, CitCitaSearchAdminForm, CitCitaAssistance, CitCitaNew
 
 MODULO = "CIT CITAS"
+LIMITE_EXTRA_PERSONAS = 2
+MINUTOS_MARGEN = 5
 
 cit_citas = Blueprint("cit_citas", __name__, template_folder="templates")
 
@@ -402,9 +408,179 @@ def assistance_qr(cit_cita_id_encode):
 def new(cit_cliente_id):
     """Nueva Cita"""
 
+    # Consultar cliente
     cliente = CitCliente.query.get_or_404(cit_cliente_id)
+
+    # Listado de Oficinas donde puede agendar citas
+    oficinas = UsuarioOficina.query.filter_by(usuario_id=current_user.id).filter_by(estatus="A").all()
+
+    form = CitCitaNew()
+    if form.validate_on_submit():
+        pass
 
     return render_template(
         "cit_citas/new.jinja2",
         cit_cliente=cliente,
+        oficinas=oficinas,
+        form=form,
     )
+
+
+@cit_citas.route("/cit_citas/servicios/<int:oficina_id>", methods=["GET", "POST"])
+def servicios_json(oficina_id):
+    """Entrega los servicios de una oficina"""
+
+    servicios = CitServicio.query.join(CitOficinaServicio).filter(CitOficinaServicio.oficina_id == oficina_id).all()
+
+    # Elaborar datos para el Select2
+    results = []
+    for servicio in servicios:
+        results.append({"value": servicio.id, "text": servicio.clave + " : " + servicio.descripcion})
+
+    return {"results": results}
+
+
+@cit_citas.route("/cit_citas/horarios/<int:oficina_id>/<int:servicio_id>", methods=["GET", "POST"])
+def horarios_json(oficina_id, servicio_id):
+    """Entrega los horarios disponibles para agendar"""
+
+    # Validar oficina
+    oficina = Oficina.query.get_or_404(oficina_id)
+    if oficina is None:
+        return {"results": []}
+
+    # Validar Servicio
+    cit_servicio = CitServicio.query.get_or_404(servicio_id)
+    if cit_servicio is None:
+        return {"results": []}
+
+    # Tomar tiempos de inicio y termino de la oficina
+    apertura = oficina.apertura
+    cierre = oficina.cierre
+
+    # Si el servicio tiene un tiempo desde
+    if cit_servicio.desde and apertura < cit_servicio.desde:
+        apertura = cit_servicio.desde
+    # Si el cit_servicio tiene un tiempo hasta
+    if cit_servicio.hasta and cierre > cit_servicio.hasta:
+        cierre = cit_servicio.hasta
+
+    # Definimos la hora actual y damos este momento como el inicio
+    fecha = datetime.now()
+
+    # Definir los tiempos de inicio, de final y el timedelta de la duración
+    tiempo_inicial = datetime(
+        year=fecha.year,
+        month=fecha.month,
+        day=fecha.day,
+        hour=apertura.hour,
+        minute=apertura.minute,
+        second=0,
+    )
+    tiempo_final = datetime(
+        year=fecha.year,
+        month=fecha.month,
+        day=fecha.day,
+        hour=cierre.hour,
+        minute=cierre.minute,
+        second=0,
+    )
+    duracion = timedelta(
+        hours=cit_servicio.duracion.hour,
+        minutes=cit_servicio.duracion.minute,
+    )
+
+    # Consultar las horas bloqueadas y convertirlas a datetime para compararlas
+    tiempos_bloqueados = []
+    cit_horas_bloqueadas = CitHoraBloqueada.query.filter_by(oficina_id=oficina.id).filter_by(fecha=fecha).filter_by(estatus="A")
+    #
+    for cit_hora_bloqueada in cit_horas_bloqueadas:
+        tiempo_bloquedo_inicia = datetime(
+            year=fecha.year,
+            month=fecha.month,
+            day=fecha.day,
+            hour=cit_hora_bloqueada.inicio.hour,
+            minute=cit_hora_bloqueada.inicio.minute,
+            second=0,
+        )
+        tiempo_bloquedo_termina = datetime(
+            year=fecha.year,
+            month=fecha.month,
+            day=fecha.day,
+            hour=cit_hora_bloqueada.termino.hour,
+            minute=cit_hora_bloqueada.termino.minute,
+            second=0,
+        ) - timedelta(minutes=1)
+        tiempos_bloqueados.append((tiempo_bloquedo_inicia, tiempo_bloquedo_termina))
+
+    # Acumular las citas agendadas en un diccionario de tiempos y cantidad de citas, para la oficina en la fecha
+    # { 08:30: 2, 08:45: 1, 10:00: 2,... }
+    citas_ya_agendadas = {}
+    cit_citas_anonimas = CitCita.query.filter_by(oficina_id=oficina.id)
+    #
+    inicio_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=0, minute=0, second=0)
+    termino_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=23, minute=59, second=59)
+    cit_citas_anonimas = cit_citas_anonimas.filter(CitCita.inicio >= inicio_dt).filter(CitCita.inicio <= termino_dt)
+    # Filtro por tiempo de termino
+    hasta_tiempo = datetime(
+        year=fecha.year,
+        month=fecha.month,
+        day=fecha.day,
+        hour=23,
+        minute=59,
+        second=59,
+    )
+    cit_citas_anonimas = cit_citas_anonimas.filter(CitCita.termino <= hasta_tiempo).filter(CitCita.estado != "CANCELO")
+    #
+    cit_citas_anonimas = cit_citas_anonimas.filter_by(estatus="A").order_by(CitCita.id).all()
+    for cit_cita in cit_citas_anonimas:
+        if cit_cita.inicio not in citas_ya_agendadas:
+            citas_ya_agendadas[cit_cita.inicio] = 1
+        else:
+            citas_ya_agendadas[cit_cita.inicio] += 1
+
+    # Bucle por los intervalos
+    horas_minutos_disponibles = []
+    tiempo = tiempo_inicial
+
+    while tiempo < tiempo_final:
+        # Bandera
+        es_hora_disponible = True
+        citas_agendadas = 0
+        disabled = False
+        # Quitar las horas bloqueadas
+        for tiempo_bloqueado in tiempos_bloqueados:
+            if tiempo_bloqueado[0] <= tiempo <= tiempo_bloqueado[1]:
+                # es_hora_disponible = False
+                break
+        # Quitar las horas ocupadas
+        if tiempo in citas_ya_agendadas:
+            citas_agendadas = citas_ya_agendadas[tiempo]
+            if citas_ya_agendadas[tiempo] >= oficina.limite_personas + LIMITE_EXTRA_PERSONAS:
+                # es_hora_disponible = False
+                disabled = True
+        # Acumular si es hora disponible
+        if es_hora_disponible:
+            if tiempo > fecha - timedelta(minutes=MINUTOS_MARGEN):
+                horas_minutos_disponibles.append(
+                    {
+                        "value": tiempo.time().strftime("%H:%M"),
+                        "text": f"{tiempo.time().strftime('%H:%M')} - {citas_agendadas} personas",
+                        "disabled": disabled,
+                    }
+                )
+        # Siguiente intervalo
+        tiempo = tiempo + duracion
+
+    return {"results": horas_minutos_disponibles}
+
+
+def _round_time(hora, minutos):
+    """Redondea la hora hacia abajo"""
+    tiempo_acutal = datetime.now()
+
+    hora = tiempo_acutal.hour
+    minutos = tiempo_acutal.minutos
+
+
+    return hora, minutos

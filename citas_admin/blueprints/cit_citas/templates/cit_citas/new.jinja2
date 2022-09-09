@@ -1,13 +1,13 @@
 {% extends 'layouts/app.jinja2' %}
 {% import 'macros/detail.jinja2' as detail %}
-{% import 'macros/modals.jinja2' as modals %}
 {% import 'macros/topbar.jinja2' as topbar %}
 {% import 'macros/list.jinja2' as list %}
+{% import 'macros/form.jinja2' as f with context %}
 
-{% block title %}Nueva Cita{% endblock %}
+{% block title %}Nueva Cita Inmediata{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons('Nueva Cita') %}
+    {% call topbar.page_buttons('Nueva Cita Inmediata') %}
         {{ topbar.button_previous('Clientes', url_for('cit_clientes.list_active')) }}
     {% endcall %}
 {% endblock %}
@@ -19,8 +19,128 @@
         {{ detail.label_value('CURP', cit_cliente.curp) }}
         {{ detail.label_value('Teléfono', cit_cliente.telefono_formato) }}
     {% endcall %}
+
+    {% call detail.card('Detalles de la Cita') %}
+        <label class="form-label" for="oficinas_list">Oficina:</label>
+        <ul class="list-group" name="oficinas_list" id="oficinas_list">
+        {% for oficina in oficinas %}
+            <li class="list-group-item">
+                <input class="form-check-input me-1" type="radio" name="oficina" value="{{ oficina.oficina.id }}" id="radioBtn_{{ oficina.oficina.id }}" onchange="listar_servicios({{ oficina.oficina.id }});">
+                <label class="form-check-label" for="firstRadio">{{ oficina.oficina.clave }} : {{ oficina.oficina.descripcion_corta }}</label>
+            </li>
+        {% endfor %}
+        </ul>
+
+        <label class="form-label mt-3" for="serviciosSelect">Servicio:</label>
+        <select class="form-select" aria-label="servicios" name="serviciosSelect" id="serviciosSelect" onchange="listar_horarios();">
+        </select>
+
+        <label class="form-label mt-3" for="horarios_list">Horarios disponibles:</label>
+        <ul class="list-group" name="horarios_list" id="horarios_list" onchange="hablitar_envio();">
+        {% for horario in horarios %}
+            <li class="list-group-item">
+                <input class="form-check-input me-1" type="radio" name="horario" value="{{ horario }}" id="radioBtn_{{ horario }}">
+                <label class="form-check-label" for="radioBtn_{{ horario }}">{{ horario }}</label>
+            </li>
+        {% endfor %}
+        </ul>
+
+        <form class="row g-1 mb-3" id="buscadorForm" onsubmit="buscar(); return false;">
+            <button type="button" class="btn btn-success mt-3" id="btnEnviar" name="btnEnviar" disabled>Agendar Cita Inmediata</button>
+        </form>
+    {% endcall %}
+
 {% endblock %}
 
 {% block custom_javascript %}
     {{ detail.moment_js(moment) }}
+    <script>
+        let g_oficina_id = 0;
+        let g_servicio_id = 0;
+
+        function listar_servicios(oficina_id) {
+            g_oficina_id = oficina_id;
+            document.getElementById("btnEnviar").disabled = true;
+
+            $.ajax({
+                url: '/cit_citas/servicios/' + oficina_id,
+                type: 'get',
+                success: function(data){
+                    // Vaciar listado del select
+                    let select = document.getElementById('serviciosSelect');
+                    while (select.hasChildNodes()) {
+                        select.removeChild(select.firstChild);
+                    }
+                    // Vaciar el listado <ul>
+                    let ul = document.getElementById('horarios_list');
+                    while (ul.hasChildNodes()) {
+                        ul.removeChild(ul.firstChild);
+                    }
+                    // Añadir la primer selección por defecto.
+                    let option = new Option('Seleccione un servicio...', '');
+                    $(option).html('Seleccione un servicio...');
+                    $("#serviciosSelect").append(option);
+                    // Añadir nueva lista de servicios al select.
+                    $.each(data['results'], function(key, servcio){
+                        let option = new Option(servcio['text'], servcio['value']);
+                        $(option).html(servcio['text']);
+                        $("#serviciosSelect").append(option);
+                    });
+                }
+            });
+        };
+
+        function listar_horarios() {
+            g_servicio_id = document.getElementById('serviciosSelect').value
+            document.getElementById("btnEnviar").disabled = true;
+
+            if(g_servicio_id == '') {
+                // Vaciar el listado <ul>
+                let ul = document.getElementById('horarios_list');
+                while (ul.hasChildNodes()) {
+                    ul.removeChild(ul.firstChild);
+                }
+                return;
+            }
+
+            $.ajax({
+                url: '/cit_citas/horarios/' + g_oficina_id + '/' + g_servicio_id,
+                type: 'get',
+                success: function(data) {
+                    // Vaciar el listado <ul>
+                    let ul = document.getElementById('horarios_list');
+                    while (ul.hasChildNodes()) {
+                        ul.removeChild(ul.firstChild);
+                    }
+                    // Añadir nueva lista de horarios al lista <ul>.
+                    $.each(data['results'], function(key, horario)  {
+                        let li = document.createElement("li");
+                        let radio = document.createElement("input");
+                        let label = document.createElement("label");
+                        // radio
+                        radio.classList.add('form-check-input');
+                        radio.classList.add('me-1');
+                        radio.type = "radio";
+                        radio.name = "horario";
+                        radio.value = horario['value'];
+                        // label
+                        label.classList.add('form-check-label');
+                        label.for = "radioBtn_" + horario['value'];
+                        label.appendChild(radio);
+                        label.appendChild(document.createTextNode(horario['text']))
+                        // li
+                        li.classList.add('list-group-item');
+                        li.appendChild(label);
+                        // Añadir al listado <ul>
+                        document.getElementById("horarios_list").appendChild(li);
+                    });
+                }
+            });
+        };
+
+        function hablitar_envio()   {
+            let boton_enviar = document.getElementById("btnEnviar");
+            boton_enviar.disabled = false;
+        };
+    </script>
 {% endblock %}
