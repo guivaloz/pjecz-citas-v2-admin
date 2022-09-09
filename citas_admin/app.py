@@ -35,6 +35,7 @@ from citas_admin.blueprints.roles.views import roles
 from citas_admin.blueprints.sistemas.views import sistemas
 from citas_admin.blueprints.tareas.views import tareas
 from citas_admin.blueprints.usuarios.views import usuarios
+from citas_admin.blueprints.usuarios_oficinas.views import usuarios_oficinas
 from citas_admin.blueprints.usuarios_roles.views import usuarios_roles
 
 from citas_admin.blueprints.usuarios.models import Usuario
@@ -81,6 +82,7 @@ def create_app():
     app.register_blueprint(sistemas)
     app.register_blueprint(tareas)
     app.register_blueprint(usuarios)
+    app.register_blueprint(usuarios_oficinas)
     app.register_blueprint(usuarios_roles)
     # Cargar las extensiones
     extensions(app)

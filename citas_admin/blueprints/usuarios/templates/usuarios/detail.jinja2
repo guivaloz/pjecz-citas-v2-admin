@@ -59,6 +59,26 @@
             {% endif %}
         {% endcall %}
     {% endif %}
+    {# Oficinas del usuario #}
+    {% if current_user.can_view('USUARIOS OFICINAS') %}
+        {% call detail.card('Oficinas que se van a mostrar en Cita Inmediata') %}
+            <table id="usuarios_oficinas_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Clave</th>
+                        <th>Descripcion Corta</th>
+                        <th><span title="Límite de personas">L.P.</span></th>
+                        <th><span title="Puede agendar citas">P.A.C.</span></th>
+                        <th><span title="Puede enviar QR">QR</span></th>
+                    </tr>
+                </thead>
+            </table>
+            {% if current_user.can_insert('USUARIOS OFICINAS') %}
+                <a href="{{ url_for('usuarios_oficinas.new_with_usuario', usuario_id=usuario.id) }}" class="btn btn-primary">Agregar</a>
+            {% endif %}
+        {% endcall %}
+    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
@@ -96,6 +116,51 @@
                 }
             ];
             $('#usuarios_roles_datatable').DataTable(configDataTable);
+        </script>
+    {% endif %}
+    {% if current_user.can_view('USUARIOS OFICINAS') %}
+        <script>
+            configDataTable['ajax']['url'] = '/usuarios_oficinas/datatable_json';
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'usuario_id': {{ usuario.id }} };
+            configDataTable['columns'] = [
+                { data: 'detalle' },
+                { data: 'oficina' },
+                { data: 'oficina_descripcion_corta' },
+                { data: 'oficina_limite_personas' },
+                { data: 'oficina_puede_agendar_citas' },
+                { data: 'oficina_puede_enviar_qr' },
+            ];
+            configDataTable['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.id + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // oficina
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url == '') {
+                            return data.clave;
+                        } else {
+                            return '<a href="' + data.url + '">' + data.clave + '</a>';
+                        }
+                    }
+                },
+                {
+                    targets: [4, 5], // puede_agendar_citas, puede_enviar_qr
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data) {
+                            return 'SI';
+                        }
+                        return '';
+                    }
+                }
+            ];
+            $('#usuarios_oficinas_datatable').DataTable(configDataTable);
         </script>
     {% endif %}
     {{ detail.moment_js(moment) }}

@@ -41,6 +41,7 @@ class Usuario(db.Model, UserMixin, UniversalMixin):
     entradas_salidas = db.relationship("EntradaSalida", back_populates="usuario")
     tareas = db.relationship("Tarea", back_populates="usuario")
     usuarios_roles = db.relationship("UsuarioRol", back_populates="usuario")  # Sin lazy="noload" para que funcione el menu
+    usuarios_oficinas = db.relationship("UsuarioOficina", back_populates="usuario")
 
     # Propiedades
     modulos_menu_principal_consultados = []

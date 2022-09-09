@@ -75,16 +75,30 @@
             {% endif %}
         {% endcall %}
     {% endif %}
-    {# Usuarios en esta oficina #}
+    {# Usuarios en esta oficina que reciben la agenda por e-mail #}
     {% if current_user.can_view('USUARIOS') %}
-        {% call detail.card('Usuarios en esta oficina') %}
+        {% call detail.card('Usuarios en esta oficina que reciben la agenda por e-mail') %}
             <table id="usuarios_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>e-mail</th>
-                        <th>Nombres Completos</th>
+                        <th>Nombre</th>
                         <th>Puesto</th>
                         <th>Autoridad</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
+    {# Usuarios que pueden agendar citas inmediatas #}
+    {% if current_user.can_view('USUARIOS OFICINAS') %}
+        {% call detail.card('Usuarios que pueden agendar citas inmediatas') %}
+            <table id="usuarios_oficinas_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>e-mail</th>
+                        <th>Nombre</th>
                     </tr>
                 </thead>
             </table>
@@ -246,6 +260,38 @@
                 }
             ];
             $('#usuarios_datatable').DataTable(configDataTable);
+        </script>
+    {% endif %}
+    {% if current_user.can_view('USUARIOS OFICINAS') %}
+        <script>
+            configDataTable['ajax']['url'] = '/usuarios_oficinas/datatable_json';
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'oficina_id': {{ oficina.id }} };
+            configDataTable['columns'] = [
+                { data: 'detalle' },
+                { data: 'usuario' },
+                { data: 'usuario_nombre' },
+            ];
+            configDataTable['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.id + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // usuario
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url == '') {
+                            return data.email;
+                        } else {
+                            return '<a href="' + data.url + '">' + data.email + '</a>';
+                        }
+                    }
+                }
+            ];
+            $('#usuarios_oficinas_datatable').DataTable(configDataTable);
         </script>
     {% endif %}
     {{ detail.moment_js(moment) }}
