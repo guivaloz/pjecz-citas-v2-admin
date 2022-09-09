@@ -223,7 +223,7 @@ def detail(cit_cita_id):
     if cit_cita.oficina == current_user.oficina:
         return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
     # Si tiene acceso a varias oficinas
-    oficinas = UsuarioOficina.query.filter_by(usuario=current_user).filter_by(oficina=current_user.oficina).filter_by(estatus="A").first()
+    oficinas = UsuarioOficina.query.filter_by(usuario=current_user).filter_by(oficina=cit_cita.oficina).filter_by(estatus="A").first()
     if oficinas is not None:
         return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
     # Si no es administrador, no puede ver los detalles de una cita de otra oficina, lo reenviamos al listado

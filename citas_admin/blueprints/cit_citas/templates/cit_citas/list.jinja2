@@ -140,7 +140,9 @@
     
         // --- Btn para imprimir pdf del listado datatable
         configDataTable['ajax']['data']['fecha'] =  document.getElementById('fecha_actual').value;
-        configDataTable['ajax']['data']['oficina_id'] = document.getElementById('oficinas').value;
+        {% if oficinas %}
+            configDataTable['ajax']['data']['oficina_id'] = document.getElementById('oficinas').value;
+        {% endif %}
         configDataTable['responsive'] = false;
         configDataTable['paging'] = false;
         configDataTable['dom'] = 'B<clear>frtip';
@@ -168,8 +170,12 @@
             };
             $('#cit_citas_datatable').DataTable().destroy();
             configDataTable['ajax']['data']['fecha'] = fecha_actual;
-            configDataTable['ajax']['data']['oficina_id'] = document.getElementById('oficinas').value;
-            let oficina_clave = document.getElementById('oficinas').options[document.getElementById('oficinas').selectedIndex].text;
+            {% if oficinas %}
+                configDataTable['ajax']['data']['oficina_id'] = document.getElementById('oficinas').value;
+                let oficina_clave = document.getElementById('oficinas').options[document.getElementById('oficinas').selectedIndex].text;
+            {% else %}
+                let oficina_clave = "{{ current_user.oficina.descripcion_corta }}";
+            {% endif %}
             // --- Imprimir tiutlo del pdf --- //
             configDataTable['responsive'] = false;
             configDataTable['paging'] = false;
