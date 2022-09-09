@@ -21,6 +21,7 @@ from citas_admin.blueprints.usuarios_oficinas.models import UsuarioOficina
 from citas_admin.blueprints.cit_oficinas_servicios.models import CitOficinaServicio
 from citas_admin.blueprints.cit_servicios.models import CitServicio
 from citas_admin.blueprints.cit_horas_bloqueadas.models import CitHoraBloqueada
+from citas_admin.blueprints.oficinas.models import Oficina
 
 from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm, CitCitaSearchAdminForm, CitCitaAssistance, CitCitaNew
 
@@ -410,13 +411,46 @@ def new(cit_cliente_id):
 
     # Consultar cliente
     cliente = CitCliente.query.get_or_404(cit_cliente_id)
+    if cliente is None:
+        flash(f"Error: el ID del cliente {cit_cliente_id} no existe.", "danger")
 
     # Listado de Oficinas donde puede agendar citas
     oficinas = UsuarioOficina.query.filter_by(usuario_id=current_user.id).filter_by(estatus="A").all()
 
     form = CitCitaNew()
     if form.validate_on_submit():
-        pass
+        # Validar datos
+        if "oficina_id" not in request.form['oficina_id']:
+            flash("Error: Faltó indicar la oficina", "danger")
+            return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
+        oficina = Oficina.query.get_or_404(request.form['oficina_id'])
+        if oficina is None:
+            flash(f"Error: el ID de la Oficina {request.form['oficina_id']} no existe.", "danger")
+            return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
+        oficina_user = UsuarioOficina.query.filter_by(usuario_id=current_user.id).filter_by(oficina=oficina).filter_by(estatus="A").first()
+        if oficina_user is None:
+            flash(f"Error: Usted no tiene acceso a agendar citas en esta oficina {oficina.clave}.", "warning")
+            return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
+        if "servicio_id" not in request.form['servicio_id']:
+            flash("Error: Faltó indicar el servicio", "danger")
+            return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
+        servicio = CitServicio.query.get_or_404(request.form['servicio_id'])
+        if servicio is None:
+            flash(f"Error: el ID del Servicio {request.form['servicio_id']} no existe.", "danger")
+            return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
+        oficina_servicio = CitOficinaServicio.query.filter_by(oficina=oficina).filter_by(servicio=servicio).filter_by(estatus="A").first()
+        if oficina_servicio is None:
+            flash(f"Error: Este servicio {servicio.clave} no se atiende en la oficina {oficina.clave}.", "warning")
+            return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
+        if "horario" not in request.form['horario']:
+            flash("Error: Faltó indicar el horario", "danger")
+            return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
+        # Validar si se puede agendar la cita
+        # Hacer el insert en la tabla
+        # Mostrar resultado
+        flash("Se a agendado la cita con éxito", "success")
+        return redirect(url_for("cit_citas.list_active"))
+
 
     return render_template(
         "cit_citas/new.jinja2",
@@ -573,14 +607,3 @@ def horarios_json(oficina_id, servicio_id):
         tiempo = tiempo + duracion
 
     return {"results": horas_minutos_disponibles}
-
-
-def _round_time(hora, minutos):
-    """Redondea la hora hacia abajo"""
-    tiempo_acutal = datetime.now()
-
-    hora = tiempo_acutal.hour
-    minutos = tiempo_acutal.minutos
-
-
-    return hora, minutos

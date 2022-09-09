@@ -45,7 +45,11 @@
         {% endfor %}
         </ul>
 
-        <form class="row g-1 mb-3" id="buscadorForm" onsubmit="buscar(); return false;">
+        <form class="row g-1 mb-3" id="agendarCitaForm" method="POST" action="{{url_for('cit_citas.new', cit_cliente_id=cit_cliente.id)}}">
+            <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+            <input id="oficina_id" name="oficina_id" type="hidden" value="">
+            <input id="servicio_id" name="servicio_id" type="hidden" value="">
+            <input id="horario" name="horario" type="hidden" value="">
             <button type="button" class="btn btn-success mt-3" id="btnEnviar" name="btnEnviar" disabled>Agendar Cita Inmediata</button>
         </form>
     {% endcall %}
