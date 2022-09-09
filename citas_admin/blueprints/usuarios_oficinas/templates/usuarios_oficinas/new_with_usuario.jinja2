@@ -2,7 +2,12 @@
 {% import 'macros/form.jinja2' as f with context %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Agregar oficinas al usuario{% endblock %}
+{% block title %}Agregar oficina al usuario{% endblock %}
+
+{% block custom_head %}
+    <!-- Select2 bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+{% endblock %}
 
 {% block topbar_actions %}
     {{ topbar.page(titulo) }}
@@ -17,4 +22,20 @@
             {% call f.form_group(form.guardar) %}{% endcall %}
         {% endcall %}
     {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    <!-- Select2 bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Select2 bootstrap oficinas -->
+    <script>
+        $(document).ready(function(){
+            $('#oficina').addClass('js-example-placeholder-single js-states form-control');
+            $("#oficina").prop("selectedIndex", -1);
+            $(".js-example-placeholder-single").select2({
+                placeholder: "Oficina",
+                allowClear: true
+            });
+        });
+    </script>
 {% endblock %}

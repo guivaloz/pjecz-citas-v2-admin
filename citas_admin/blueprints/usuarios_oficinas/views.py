@@ -113,9 +113,10 @@ def new_with_usuario(usuario_id):
     if form.validate_on_submit():
         oficina = form.oficina.data
         descripcion = f"{usuario.email} en {oficina.descripcion_corta}"
-        if UsuarioOficina.query.filter(UsuarioOficina.oficina == oficina).filter(UsuarioOficina.usuario == usuario).first() is not None:
-            flash(f"CONFLICTO: Ya existe {descripcion}. Mejor recupere el registro.", "warning")
-            return redirect(url_for("usuarios_oficinas.list_inactive"))
+        puede_existir = UsuarioOficina.query.filter(UsuarioOficina.oficina == oficina).filter(UsuarioOficina.usuario == usuario).first()
+        if puede_existir is not None:
+            flash(f"CONFLICTO: Ya existe {descripcion}. Si aparece eliminado (oscuro), recupérelo.", "warning")
+            return redirect(url_for("usuarios_oficinas.detail", usuario_oficina_id=puede_existir.id))
         usuario_oficina = UsuarioOficina(
             oficina=oficina,
             usuario=usuario,
@@ -129,7 +130,7 @@ def new_with_usuario(usuario_id):
         "usuarios_oficinas/new_with_usuario.jinja2",
         form=form,
         usuario=usuario,
-        titulo=f"Agregar rol al usuario {usuario.email}",
+        titulo=f"Agregar oficina al usuario {usuario.email} para citas inmediatas",
     )
 
 
