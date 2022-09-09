@@ -8,7 +8,7 @@ Cit Clientes
 """
 from datetime import datetime, timedelta
 import click
-from sqlalchemy import delete
+from sqlalchemy import delete, text
 from citas_admin.blueprints.cit_citas.models import CitCita
 
 from lib.pwgen import generar_contrasena
@@ -89,11 +89,17 @@ def eliminar_abandonados(test):
     count_cit_clientes = CitCliente.query.outerjoin(CitCita).filter(CitCliente.contrasena_sha256 == "").filter(CitCita.cit_cliente == None).count()
     click.echo(f"Se encontraron {count_cit_clientes} cuentas de clientes sin contraseña SHA256 y sin citas agendadas, posiblemente son cuentas abandonadas.")
 
-    if test == False:
-        borrado = delete(CitCliente).join(CitCita).where(CitCliente.contrasena_sha256 == "").where(CitCita.cit_cliente == None)
-        # engine = db.engine
-        # engine.execute(borrado)
-        print(borrado)
+    if test is False:
+        engine = db.engine
+        borrado = text(
+            "DELETE \
+                FROM cit_clientes AS cli \
+                LEFT JOIN cit_citas AS cit ON cli.id = cit.cit_cliente_id \
+                WHERE cli.contrasena_sha256 = '' AND cit.cit_cliente_id IS NULL"
+        )
+        res = engine.execute(borrado)
+        for row in res:
+            print(row)
         click.echo("¡Eliminación de registros correctamente!")
     else:
         click.echo("Para eliminar permanentemente los registros, utilize el parámetro --test false")

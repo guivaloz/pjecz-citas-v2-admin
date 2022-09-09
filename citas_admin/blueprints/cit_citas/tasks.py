@@ -73,7 +73,7 @@ def enviar(cit_cita_id):
     contenidos = []
     contenidos.append("<h1>Sistema de Citas</h1>")
     contenidos.append("<h2>PODER JUDICIAL DEL ESTADO DE COAHUILA DE ZARAGOZA</h2>")
-    contenidos.append(f"<p>Fecha de elaboración: {momento.strftime('%Y.%m.%d - %I:%M %p')}.</p>")
+    contenidos.append(f"<p>Fecha de elaboración: {momento.strftime('%Y/%m/%d - %I:%M %p')}.</p>")
     contenidos.append("<p>Le proporcionamos la información detalla de la cita que agendó en este sistema:</p>")
     contenidos.append("<ul>")
     contenidos.append(f"<li><strong>Nombre</strong>: {cit_cita.cit_cliente.nombre}</li>")
