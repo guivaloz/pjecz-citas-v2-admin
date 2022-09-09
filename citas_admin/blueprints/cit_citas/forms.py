@@ -46,8 +46,8 @@ class CitCitaAssistance(FlaskForm):
 class CitCitaNew(FlaskForm):
     """Nueva cita inmediata"""
 
-    #cliente_id = IntegerField("Cliente ID", validators=[Required()])
+    # cliente_id = IntegerField("Cliente ID", validators=[Required()])
     oficina_id = IntegerField("Oficina ID", validators=[Required()])
+    servicio_id = IntegerField("Servicio ID", validators=[Required()])
     horario = TimeField("Horario", validators=[Required()])
-    notas = StringField("Notas", validators=[Optional()])
-    crear = SubmitField("Crear")
+    btnEnviar = SubmitField("Crear")

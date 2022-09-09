@@ -8,6 +8,7 @@ from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message, safe_string, safe_email, safe_text
+from lib.pwgen import generar_codigo_asistencia
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
@@ -28,6 +29,7 @@ from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm, CitCitaSea
 MODULO = "CIT CITAS"
 LIMITE_EXTRA_PERSONAS = 2
 MINUTOS_MARGEN = 5
+LIMITE_CITAS = 5
 
 cit_citas = Blueprint("cit_citas", __name__, template_folder="templates")
 
@@ -405,7 +407,7 @@ def assistance_qr(cit_cita_id_encode):
     return render_template("cit_citas/assistance_qr.jinja2", cit_cita=cit_cita, asistencia=False)
 
 
-@cit_citas.route("/cit_citas/nueva/<int:cit_cliente_id>")
+@cit_citas.route("/cit_citas/nueva/<int:cit_cliente_id>", methods=["GET", "POST"])
 def new(cit_cliente_id):
     """Nueva Cita"""
 
@@ -420,10 +422,10 @@ def new(cit_cliente_id):
     form = CitCitaNew()
     if form.validate_on_submit():
         # Validar datos
-        if "oficina_id" not in request.form['oficina_id']:
+        if "oficina_id" not in request.form:
             flash("Error: Faltó indicar la oficina", "danger")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
-        oficina = Oficina.query.get_or_404(request.form['oficina_id'])
+        oficina = Oficina.query.get_or_404(request.form["oficina_id"])
         if oficina is None:
             flash(f"Error: el ID de la Oficina {request.form['oficina_id']} no existe.", "danger")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
@@ -431,26 +433,66 @@ def new(cit_cliente_id):
         if oficina_user is None:
             flash(f"Error: Usted no tiene acceso a agendar citas en esta oficina {oficina.clave}.", "warning")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
-        if "servicio_id" not in request.form['servicio_id']:
+        if "servicio_id" not in request.form:
             flash("Error: Faltó indicar el servicio", "danger")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
-        servicio = CitServicio.query.get_or_404(request.form['servicio_id'])
+        servicio = CitServicio.query.get_or_404(request.form["servicio_id"])
         if servicio is None:
             flash(f"Error: el ID del Servicio {request.form['servicio_id']} no existe.", "danger")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
-        oficina_servicio = CitOficinaServicio.query.filter_by(oficina=oficina).filter_by(servicio=servicio).filter_by(estatus="A").first()
+        oficina_servicio = CitOficinaServicio.query.filter_by(oficina=oficina).filter_by(cit_servicio=servicio).filter_by(estatus="A").first()
         if oficina_servicio is None:
             flash(f"Error: Este servicio {servicio.clave} no se atiende en la oficina {oficina.clave}.", "warning")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
-        if "horario" not in request.form['horario']:
+        if "horario" not in request.form:
             flash("Error: Faltó indicar el horario", "danger")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
+        fecha = datetime.now()
+        hora_minutos = datetime.strptime(request.form["horario"], "%H:%M")
+        horario = datetime(
+            year=fecha.year,
+            month=fecha.month,
+            day=fecha.day,
+            hour=hora_minutos.hour,
+            minute=hora_minutos.minute,
+            second=0,
+        )
         # Validar si se puede agendar la cita
+        count_citas = CitCita.query.filter_by(oficina=oficina).filter_by(inicio=horario).filter(CitCita.estado != "CANCELO").filter_by(estatus="A").count()
+        if count_citas >= LIMITE_CITAS:
+            flash(f"Error: Ya se alcanzó el límite de citas para ese horario. Límite: {LIMITE_CITAS}", "warning")
+            return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
         # Hacer el insert en la tabla
+        cit_cita = CitCita(
+            cit_cliente_id=cliente.id,
+            cit_servicio_id=servicio.id,
+            oficina_id=oficina.id,
+            inicio=horario,
+            termino=horario + timedelta(minutes=servicio.duracion.minute),
+            notas="",
+            estado="PENDIENTE",
+            asistencia=False,
+            codigo_asistencia=generar_codigo_asistencia(),
+        )
+        cit_cita.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Cita Inmediata Creada {cit_cita.id}"),
+            url=url_for("cit_citas.detail", cit_cita_id=cit_cita.id),
+        )
+        bitacora.save()
         # Mostrar resultado
-        flash("Se a agendado la cita con éxito", "success")
+        flash(
+            f"Cita agendada con éxito: {cit_cita.id}<br>\
+            <strong>Cliente</strong>: {cliente.nombre}<br>\
+            <strong>Oficina</strong>: {oficina.clave} : {oficina.descripcion_corta}<br>\
+            <strong>Servicio</strong>: {servicio.clave} : {servicio.descripcion}<br>\
+            <strong>Horario</strong>: {horario}<br>\
+            <h5>Código de Asistencia: <pre>{cit_cita.codigo_asistencia}</pre></h5>",
+            "success",
+        )
         return redirect(url_for("cit_citas.list_active"))
-
 
     return render_template(
         "cit_citas/new.jinja2",
@@ -585,13 +627,13 @@ def horarios_json(oficina_id, servicio_id):
         # Quitar las horas bloqueadas
         for tiempo_bloqueado in tiempos_bloqueados:
             if tiempo_bloqueado[0] <= tiempo <= tiempo_bloqueado[1]:
-                # es_hora_disponible = False
+                es_hora_disponible = False
                 break
         # Quitar las horas ocupadas
         if tiempo in citas_ya_agendadas:
             citas_agendadas = citas_ya_agendadas[tiempo]
             if citas_ya_agendadas[tiempo] >= oficina.limite_personas + LIMITE_EXTRA_PERSONAS:
-                # es_hora_disponible = False
+                es_hora_disponible = False
                 disabled = True
         # Acumular si es hora disponible
         if es_hora_disponible:
