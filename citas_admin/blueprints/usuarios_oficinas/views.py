@@ -44,7 +44,7 @@ def datatable_json():
         consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
     if "usuario_id" in request.form:
         consulta = consulta.filter_by(usuario_id=request.form["usuario_id"])
-    registros = consulta.order_by(UsuarioOficina.id.desc()).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(UsuarioOficina.id).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -52,7 +52,7 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "nombre": resultado.nombre,
+                    "id": resultado.id,
                     "url": url_for("usuarios_oficinas.detail", usuario_oficina_id=resultado.id),
                 },
                 "usuario": {
@@ -61,9 +61,13 @@ def datatable_json():
                 },
                 "usuario_nombre": resultado.usuario.nombre,
                 "oficina": {
-                    "nombre": resultado.usuario.oficina.clave,
-                    "url": url_for("oficinas.detail", oficina_id=resultado.usuario.oficina_id) if current_user.can_view("OFICINAS") else "",
+                    "clave": resultado.oficina.clave,
+                    "url": url_for("oficinas.detail", oficina_id=resultado.oficina_id) if current_user.can_view("OFICINAS") else "",
                 },
+                "oficina_descripcion_corta": resultado.oficina.descripcion_corta,
+                "oficina_limite_personas": resultado.oficina.limite_personas,
+                "oficina_puede_agendar_citas": resultado.oficina.puede_agendar_citas,
+                "oficina_puede_enviar_qr": resultado.oficina.puede_enviar_qr,
             }
         )
     # Entregar JSON

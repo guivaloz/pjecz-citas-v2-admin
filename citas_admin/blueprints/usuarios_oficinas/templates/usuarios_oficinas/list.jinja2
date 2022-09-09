@@ -1,0 +1,109 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/list.jinja2' as list %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Usuarios-Oficinas{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(titulo) %}
+        {% if current_user.can_view('MODULOS') %}
+            {{ topbar.button('Módulos', url_for('modulos.list_active'), 'mdi:toy-brick') }}
+        {% endif %}
+        {% if current_user.can_view('ROLES') %}
+            {{ topbar.button('Roles', url_for('roles.list_active'), 'mdi:gamepad') }}
+        {% endif %}
+        {% if current_user.can_view('USUARIOS') %}
+            {{ topbar.button('Usuarios', url_for('usuarios.list_active'), 'mdi:account-key') }}
+        {% endif %}
+        {% if current_user.can_edit('USUARIOS OFICINAS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('usuarios_oficinas.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('usuarios_oficinas.list_active')) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call list.card() %}
+        <table id="usuarios_oficinas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>e-mail</th>
+                    <th>Nombre</th>
+                    <th>Clave</th>
+                    <th>Descripcion Corta</th>
+                    <th><span title="Límite de personas">L.P.</span></th>
+                    <th><span title="Puede agendar citas">P.A.C.</span></th>
+                    <th><span title="Puede enviar QR">QR</span></th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {{ list.config_datatable() }}
+    <script>
+        configDataTable['ajax']['url'] = '/usuarios_oficinas/datatable_json';
+        configDataTable['ajax']['data'] = {{ filtros }};
+        configDataTable['columns'] = [
+            { data: 'detalle' },
+            { data: 'usuario' },
+            { data: 'usuario_nombre' },
+            { data: 'oficina' },
+            { data: 'oficina_descripcion_corta' },
+            { data: 'oficina_limite_personas' },
+            { data: 'oficina_puede_agendar_citas' },
+            { data: 'oficina_puede_enviar_qr' }
+        ];
+        configDataTable['columnDefs'] = [
+            {
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.id + '</a>';
+                }
+            },
+            {
+                targets: 1, // usuario
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.url == '') {
+                        return data.email;
+                    } else {
+                        return '<a href="' + data.url + '">' + data.email + '</a>';
+                    }
+                }
+            },
+            {
+                targets: 2, // usuario_nombre
+                data: null,
+                render: function(data, type, row, meta) {
+                    return (data.length > 24 ? data.substr(0, 24) + '…' : data);
+                }
+            },
+            {
+                targets: 3, // oficina
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.url == '') {
+                        return data.clave;
+                    } else {
+                        return '<a href="' + data.url + '">' + data.clave + '</a>';
+                    }
+                }
+            },
+            {
+                targets: [6, 7], // puede_agendar_citas, puede_enviar_qr
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data) {
+                        return 'SI';
+                    }
+                    return '';
+                }
+            }
+        ];
+        $('#usuarios_oficinas_datatable').DataTable(configDataTable);
+    </script>
+{% endblock %}
