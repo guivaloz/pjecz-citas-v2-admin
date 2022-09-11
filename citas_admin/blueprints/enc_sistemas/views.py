@@ -105,26 +105,38 @@ def detail(respuesta_id):
     )
 
 
-@enc_sistemas.route("/encuestas/sistemas/reporte?desde=<desde>")
-def report(desde):
+@enc_sistemas.route("/encuestas/sistemas/reporte", methods=["GET", "POST"])
+def report():
     """Reporte de la encuesta en un período de tiempo dado"""
-    # Validar parámetros de entrada
+    # Parámetros esperados
     desde_date = None
-    try:
-        desde_date = datetime.strptime(desde, "%Y-%m-%d")
-    except ValueError:
-        flash("Error en el formato de la fecha de entrada", "danger")
-        return redirect(url_for("enc_sistemas.list_active"))
+    hasta_date = None
+    # Validar parámetros de entrada
+    if "desde" in request.form and request.form["desde"] != "":
+        try:
+            desde_date = datetime.strptime(request.form["desde"], "%Y-%m-%d")
+        except ValueError:
+            flash("Error en el formato de la fecha de entrada (desde)", "danger")
+            return redirect(url_for("enc_sistemas.list_active"))
+    if "hasta" in request.form and request.form["hasta"] != "":
+        try:
+            hasta_date = datetime.strptime(request.form["hasta"], "%Y-%m-%d")
+        except ValueError:
+            flash("Error en el formato de la fecha de entrada (hasta)", "danger")
+            return redirect(url_for("enc_servicios.list_active"))
+    else:
+        hasta_date = datetime.now()
     # Query de consulta de cantidad de encuestados
     db = SessionLocal()
-    enc_sistemas_cantidades = (
-        db.query(
-            EncSistema.estado.label("estado"),
-            func.count("*").label("cantidad"),
-        )
-        .filter(EncSistema.modificado >= desde_date)
-        .group_by(EncSistema.estado)
-    )
+    enc_sistemas_cantidades = db.query(
+        EncSistema.estado.label("estado"),
+        func.count("*").label("cantidad"),
+    ).group_by(EncSistema.estado)
+
+    if desde_date is not None:
+        enc_sistemas_cantidades = enc_sistemas_cantidades.filter(EncSistema.modificado >= desde_date)
+    if hasta_date is not None:
+        enc_sistemas_cantidades = enc_sistemas_cantidades.filter(EncSistema.modificado <= hasta_date)
 
     encuestados_cantidad = 0
     encuestados_contestados = 0
@@ -149,9 +161,13 @@ def report(desde):
             func.count("*").label("cantidad"),
         )
         .filter(EncSistema.estado == "CONTESTADO")
-        .filter(EncSistema.modificado >= desde_date)
         .group_by(EncSistema.respuesta_01)
     )
+
+    if desde_date is not None:
+        enc_sistemas_cantidades = enc_sistemas_cantidades.filter(EncSistema.modificado >= desde_date)
+    if hasta_date is not None:
+        enc_sistemas_cantidades = enc_sistemas_cantidades.filter(EncSistema.modificado <= hasta_date)
 
     val_01, val_02, val_03, val_04, val_05 = (0, 0, 0, 0, 0)
 
@@ -175,8 +191,12 @@ def report(desde):
         formula_result = 0
     else:
         formula_result = ((val_01 * 1) + (val_02 * 2) + (val_03 * 3) + (val_04 * 4) + (val_05 * 5)) / votos_total
+
+    desde_str = "2022/09/01" if desde_date is None else desde_date.strftime("%Y/%m/%d")
+    hasta_str = hasta_date.strftime("%Y/%m/%d")
+
     detalle = {
-        "periodo": f"{desde_date.strftime('%Y/%m/%d')} - {datetime.now().strftime('%Y/%m/%d')}",  # "2022/09/01 - 2022/09/30",
+        "periodo": f"{desde_str} - {hasta_str}",
         "encuestados": encuestados_cantidad,
         "contestados": encuestados_contestados,
         "cancelados": encuestados_cancelados,

@@ -9,6 +9,7 @@ import os
 import sendgrid
 from dotenv import load_dotenv
 from sendgrid.helpers.mail import Email, To, Content, Mail
+from jinja2 import Environment, FileSystemLoader
 
 from lib.tasks import set_task_progress, set_task_error
 
@@ -44,17 +45,17 @@ def enviar(enc_servicios_id):
     # Consultar encuesta
     encuesta = EncServicio.query.get(enc_servicios_id)
     if encuesta is None:
-        mensaje_error = f"El ID de la encuesta servicios '{enc_servicios_id}' NO existe dentro la tabla enc_servicios"
+        mensaje_error = f"El ID de la encuesta servicios '{enc_servicios_id}' NO existe"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
     if encuesta.estatus != "A":
-        mensaje_error = f"El ID {encuesta.id} NO tiene estatus activo"
+        mensaje_error = f"El ID {encuesta.id} NO tiene estatus ACTIVO"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
     if encuesta.estado != "PENDIENTE":
-        mensaje_error = "La encuesta tiene un estado diferente de PENDIENTE"
+        mensaje_error = f"La encuesta con ID {encuesta.id} tiene un estado diferente de PENDIENTE"
         set_task_error(mensaje_error)
         bitacora.warning(mensaje_error)
         return mensaje_error
@@ -62,12 +63,12 @@ def enviar(enc_servicios_id):
     # Validar el Cliente
     cliente = CitCliente.query.get(encuesta.cit_cliente_id)
     if cliente is None:
-        mensaje_error = f"El ID del cliente '{encuesta.cit_cliente_id}' NO existe dentro la tabla cit_clientes"
+        mensaje_error = f"El ID del cliente '{encuesta.cit_cliente_id}' NO existe"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
     if cliente.estatus != "A":
-        mensaje_error = f"El ID del cliente {cliente.id} NO tiene estatus activo"
+        mensaje_error = f"El ID del cliente {cliente.id} NO tiene estatus ACTIVO"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
@@ -75,19 +76,19 @@ def enviar(enc_servicios_id):
     # Validar la Oficina
     oficina = Oficina.query.get(encuesta.oficina_id)
     if oficina is None:
-        mensaje_error = f"El ID del oficina '{encuesta.oficina_id}' NO existe dentro la tabla oficinas"
+        mensaje_error = f"El ID de la oficina '{encuesta.oficina_id}' NO existe"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
     if oficina.estatus != "A":
-        mensaje_error = f"El ID del oficina {oficina.id} NO tiene estatus activo"
+        mensaje_error = f"El ID de la oficina {oficina.id} NO tiene estatus ACTIVO"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
 
     # Momento en que se elabora este mensaje
     momento = datetime.now()
-    momento_str = momento.strftime("%d/%B/%Y %I:%M %p")
+    momento_str = momento.strftime("%d/%b/%Y %I:%M %p")
 
     # Validar POLL_SERVICE_URL
     url = None
@@ -98,22 +99,19 @@ def enviar(enc_servicios_id):
         return mensaje_error
     url = f"{POLL_SERVICE_URL}?hashid={encuesta.encode_id()}"
 
-    # Contenidos
-    contenidos = [
-        "<h1>Sistema de Citas - Encuesta de Servicio</h1>",
-        "<h2>PODER JUDICIAL DEL ESTADO DE COAHUILA DE ZARAGOZA</h2>",
-        f"<small>Fecha de elaboración: {momento_str}.</small>",
-        f"<h3>Buen día {cliente.nombre}.</h3>",
-        f"<p>Hemos detectado con nuestro sistema de citas que hizo un trámite en la oficina {oficina.descripcion}.<br>",
-        "Le gustaría contestar una encuesta corta de servicio para conocer su experiencia en esta oficina.<br>",
-        "Sus comentarios nos ayudarían a mejorar nuestros servicios.</p>",
-        "<p>Si desea contestar la encuesta, le invitamos vaya al siguiente enlace:<br>",
-        f"<a href='{url}'>Contestar Encuesta de Servicio</a></p>",
-        "<p>De antemano le agradecemos prestar atención a este mensaje.</p>",
-        "<p>Que tenga un excelente día.</p>",
-        "<small><strong>ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></small>",
-    ]
-    content = Content("text/html", "\n".join(contenidos))
+    # Importar plantilla Jinja2
+    entorno = Environment(
+        loader=FileSystemLoader("citas_admin/blueprints/enc_servicios/templates/enc_servicios"),
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
+    plantilla = entorno.get_template("email.jinja2")
+    contenidos = plantilla.render(
+        fecha_elaboracion=momento_str,
+        cliente_nombre=cliente.nombre,
+        url_encuesta=url,
+    )
+    content = Content("text/html", contenidos)
 
     # Remitente
     if SENDGRID_FROM_EMAIL == "":
@@ -127,7 +125,7 @@ def enviar(enc_servicios_id):
     to_email = To(cliente.email)
 
     # Asunto
-    subject = "Encuesta de satisfacción del servicio otorgado por el PJECZ"
+    subject = "Encuesta de Servicio otorgado por el PJECZ"
 
     # SendGrid
     sendgrid_client = None

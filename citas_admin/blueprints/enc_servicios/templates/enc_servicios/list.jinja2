@@ -9,23 +9,6 @@
     {% call topbar.page_buttons(titulo) %}
         {{ topbar.button_previous('Encuestas', url_for('enc_encuestas.list_active')) }}
     {% endcall %}
-    <!--
-    <div class="row align-items-end mb-3">
-        <div class="col text-end">
-        <h6>Reportes:</h6>
-        </div>
-        <div class="col-auto text-end">
-            <div class="btn-toolbar mb-2 mb-md-0">
-                <div class="btn-group me-2">
-                {{ topbar.button('Últimos 7 Días', url_for('enc_servicios.report', desde=reportes.desde_siete_dias), 'mdi:chart-box-outline') }}
-                {{ topbar.button('Último Mes', url_for('enc_servicios.report', desde=reportes.desde_un_mes), 'mdi:chart-box-outline') }}
-                {{ topbar.button('Último Trimestre', url_for('enc_servicios.report', desde=reportes.desde_tres_meses), 'mdi:chart-box-outline') }}
-                {{ topbar.button('Último Semestre', url_for('enc_servicios.report', desde=reportes.desde_seis_meses), 'mdi:chart-box-outline') }}
-                </div>
-            </div>
-        </div>
-    </div>
-    -->
 {% endblock %}
 
 {% block content %}
@@ -37,16 +20,19 @@
     {% endcall %}
         
     {% call list.card() %}
-        <form class="row g-1 mb-3" id="buscadorForm" onsubmit="buscar(); return false;">
+        <form class="row g-1 mb-3" id="buscadorForm" method="POST" action="{{url_for('enc_servicios.report')}}">
+            <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
+            <input id="distrito_nombre" name="distrito_nombre" type="hidden" value="">
+            <input id="oficina_nombre" name="oficina_nombre" type="hidden" value="">
             <div class="col-4">
                 <div class="form-floating">
-                    <input id="desdeInput" type="date" class="form-control" placeholder="desde" aria-label="desde" aria-describedby="button-buscar" onchange="buscar(); return false;">
+                    <input id="desdeInput" name="desde" type="date" class="form-control" placeholder="desde" aria-label="desde" aria-describedby="button-buscar" onchange="buscar(); return false;">
                     <label for="desdeInput">Desde</label>
                 </div>
             </div>
             <div class="col-4">
                 <div class="form-floating">
-                    <input id="hastaInput" type="date" class="form-control" placeholder="hasta" aria-label="hasta" aria-describedby="button-buscar" onchange="buscar(); return false;">
+                    <input id="hastaInput" name="hasta" type="date" class="form-control" placeholder="hasta" aria-label="hasta" aria-describedby="button-buscar" onchange="buscar(); return false;">
                     <label for="hastaInput">Hasta</label>
                 </div>
             </div>
@@ -64,7 +50,7 @@
             <!-- Distrito y Oficina -->
             <div class="col-6">
                 <div class="form-floating">
-                    <select class="form-select" id="distritosSelect" aria-label="Todos" onchange="buscar(); return false;" style="flex: inherit;">
+                    <select class="form-select" id="distritosSelect" name="distrito_id" aria-label="Todos" onchange="buscar(); return false;" style="flex: inherit;">
                         <option selected value="">Todos</option>
                     </select>
                     <label for="distritosSelect">Distritos</label>
@@ -72,7 +58,7 @@
             </div>
             <div class="col-6">
                 <div class="form-floating">
-                    <select class="form-select" id="oficinasSelect" aria-label="Todas" onchange="buscar(); return false;" style="flex: inherit;" disabled>
+                    <select class="form-select" id="oficinasSelect" name="oficina_id" aria-label="Todas" onchange="buscar(); return false;" style="flex: inherit;" disabled>
                         <option selected value="">Todas</option>
                     </select>
                     <label for="oficinasSelect">Oficinas</label>
@@ -119,8 +105,8 @@
                 </div>
             </div>
             <div class="col-6 text-end">
-                <button title="Buscar" class="btn btn-primary btn-lg" type="submit" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span> Buscar</button>
-                <button title="Reporte" class="btn btn-info btn-lg" type="submit" onclick="reporte();" id="button-reporte" disabled><span class="iconify" data-icon="mdi:chart-box"></span> Reporte</button>
+                <button title="Buscar" class="btn btn-primary btn-lg" onclick="buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span> Buscar</button>
+                <button title="Reporte" class="btn btn-info btn-lg" type="submit" id="button-reporte"><span class="iconify" data-icon="mdi:chart-box"></span> Reporte</button>
                 <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
             </div>
         </form>
@@ -268,6 +254,7 @@
                 configDataTable['ajax']['data']['hasta'] = hasta;
             if(distritoSelect == '') {
                 delete configDataTable['ajax']['data']['distrito_id'];
+                document.getElementById('distrito_nombre').value = "";
                 document.getElementById('oficinasSelect').disabled = true;
                 limpiar_oficinas();
                 oficinaSelect = '';
@@ -279,11 +266,14 @@
                 }
                 configDataTable['ajax']['data']['distrito_id'] = distritoSelect;
                 document.getElementById('oficinasSelect').disabled = false;
+                document.getElementById('distrito_nombre').value = document.getElementById('distritosSelect').options[document.getElementById('distritosSelect').selectedIndex].text;
             }
             if(oficinaSelect == '') {
                 delete configDataTable['ajax']['data']['oficina_id'];
+                document.getElementById('oficina_nombre').value = "";
             } else {
                 configDataTable['ajax']['data']['oficina_id'] = oficinaSelect;
+                document.getElementById('oficina_nombre').value = document.getElementById('oficinasSelect').options[document.getElementById('oficinasSelect').selectedIndex].text;
             }
             if(resp01Select == '')
                 delete configDataTable['ajax']['data']['respuesta_01'];
@@ -326,6 +316,8 @@
             delete configDataTable['ajax']['data']['respuesta_03'];
             delete configDataTable['ajax']['data']['estado'];
 
+            document.getElementById('distrito_nombre').value = "";
+            document.getElementById('oficina_nombre').value = "";
             document.getElementById('oficinasSelect').disabled = true;
             limpiar_oficinas();
 

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body style="margin: 0px;">
+    <table style="width: 700px; border-collapse:collapse;">
+      <tr>
+        <td style="background-color: #004360; height: 10px;"></td>
+      </tr>
+    </table>
+    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; width: 700px;">
+      <tr>
+        <td><h1 style='margin-bottom: 0px;'>Sistema de Citas</h1><h3 style='margin: 0px; font-weight: normal;'>Encuesta de Sistema</h3></td>
+        <td><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px; margin-left: 50px;"></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><small style="color: #657c96; padding-left: 100px;"><i>Fecha de elaboración: {{ fecha_elaboracion }}</i></small></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <hr style="border: 1px solid #004360;">
+          <h3 style='margin-bottom: 0px;'>Hola {{ cliente_nombre }}</h3>
+
+          <p style='margin-top: 0px;'>Te invitamos a contestar esta breve encuesta, no te tomará más de 2 min.</p>
+
+          <p>Tu aportación nos ayudará a garantizar que continuemos mejorando y<br>
+          con ello brindarte un mejor servicio.</p>
+
+          <p>Todas las respuestas serán confidenciales y seguras.</p>
+
+          <p>Por favor da clic en el siguiente enlace para completar la encuesta:<br>
+          <a href='{{ url_encuesta }}' style="color: #72babb; font-weight: bold;">Contestar Encuesta de Sistema</a></p>
+        </td>
+      </tr>
+    </table>
+
+    <table style="width: 700px; text-align: center; border-collapse:collapse;">
+      <tr style="background-color: #004360; color: #daba93;">
+        <td><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-dorado.png" style="height: 40px; margin-left: 20px;"></td>
+        <td><p style="font-size: small;">Blvd. Francisco Coss #945. Zona Centro. Saltillo, Coahuila de Zaragoza, México.<br>
+          Teléfono 844 777 4498</p></td>
+        </tr>
+        <tr>
+          <td colspan="2"><small><strong style="color: #657c96;">ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></small></td>
+        </tr>
+    </table>
+    
+  </body>
+</html>

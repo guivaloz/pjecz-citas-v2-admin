@@ -9,6 +9,7 @@ import os
 import sendgrid
 from dotenv import load_dotenv
 from sendgrid.helpers.mail import Email, To, Content, Mail
+from jinja2 import Environment, FileSystemLoader
 
 from lib.tasks import set_task_progress, set_task_error
 
@@ -73,7 +74,7 @@ def enviar(enc_sistemas_id):
 
     # Momento en que se elabora este mensaje
     momento = datetime.now()
-    momento_str = momento.strftime("%d/%B/%Y %I:%M %p")
+    momento_str = momento.strftime("%d/%b/%Y %I:%M %p")
 
     # Validar POLL_SYSTEM_URL
     url = None
@@ -84,22 +85,19 @@ def enviar(enc_sistemas_id):
         return mensaje_error
     url = f"{POLL_SYSTEM_URL}?hashid={encuesta.encode_id()}"
 
-    # Contenidos
-    contenidos = [
-        "<h1>Sistema de Citas - Encuesta de Satisfacción</h1>",
-        "<h2>PODER JUDICIAL DEL ESTADO DE COAHUILA DE ZARAGOZA</h2>",
-        f"<small>Fecha de elaboración: {momento_str}.</small>",
-        f"<h3>Buen día {cliente.nombre}.</h3>",
-        "<p>Hemos detectado que agendó una cita en nuestro sistema recientemente.<br>",
-        "Le gustaría contestar una encuesta corta de satisfacción para conocer su experiencia con este sistema.<br>",
-        "Sus comentarios nos ayudarían a mejorar nuestro sistema.</p>",
-        "<p>Si desea contestar la encuesta, le invitamos vaya al siguiente enlace:<br>",
-        f"<a href='{url}'>Contestar Encuesta de Satisfacción</a></p>",
-        "<p>De antemano le agradecemos prestar atención a este mensaje.</p>",
-        "<p>Que tenga un excelente día.</p>",
-        "<small><strong>ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></small>",
-    ]
-    content = Content("text/html", "\n".join(contenidos))
+    # Importar plantilla Jinja2
+    entorno = Environment(
+        loader=FileSystemLoader("citas_admin/blueprints/enc_sistemas/templates/enc_sistemas"),
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
+    plantilla = entorno.get_template("email.jinja2")
+    contenidos = plantilla.render(
+        fecha_elaboracion=momento_str,
+        cliente_nombre=cliente.nombre,
+        url_encuesta=url,
+    )
+    content = Content("text/html", contenidos)
 
     # Remitente
     if SENDGRID_FROM_EMAIL == "":
@@ -113,7 +111,7 @@ def enviar(enc_sistemas_id):
     to_email = To(cliente.email)
 
     # Asunto
-    subject = "Encuesta de satisfacción del Sistema de Citas"
+    subject = "Encuesta de Sistema de Citas"
 
     # SendGrid
     sendgrid_client = None
