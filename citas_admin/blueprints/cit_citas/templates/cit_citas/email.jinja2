@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body style="margin: 0px;">
+    <table style="width: 700px; border-collapse:collapse;">
+      <tr>
+        <td style="background-color: #004360; height: 10px;"></td>
+      </tr>
+    </table>
+    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; width: 700px;">
+      <tr>
+        <td><h1 style='margin-bottom: 0px;'>Sistema de Citas</h1><h3 style='margin: 0px; font-weight: normal;'>Cita Agendada</h3></td>
+        <td><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px; margin-left: 50px;"></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><small style="color: #657c96; padding-left: 100px;"><i>Fecha de elaboración: {{ fecha_elaboracion }}</i></small></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <hr style="border: 1px solid #004360;">
+          <h3 style='margin-bottom: 0px;'>Hola {{ cliente_nombre }}</h3>
+
+          <p style='margin-top: 0px;'>Le proporcionamos la información detallada de la cita que agendó en este sistema:</p>
+
+          <p>
+            <strong>Oficina</strong>: {{ cit_cita.oficina.descripcion }}<br>
+            <strong>Servicio</strong>: {{ cit_cita.cit_servicio.descripcion }}<br>
+            <strong>Fecha y hora</strong>: {{ cit_cita.inicio.strftime('%d de %B de %Y a las %I:%M %p') }}<br>
+            <strong>Notas</strong>:<br>
+            {{ cit_cita.notas }}
+          </p>
+
+          <small style="color: #657c96;">Por favor llegue diez minutos antes de la fecha y hora mencionados.</small>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="text-align: center;">
+            <hr style="border: 1px solid #004360;">
+            <h3 style='margin-bottom: 3px;'>Código de verificación de asistencia</h3>
+            <h1 style="margin-top: 3px; margin-left: 33%; padding: 0.2em; background-color: white; font-size: 3em; width: 200px; color: black; display: block; font-family: Consola, Courier, 'MS Courier New', Monaco, Lucinda Console, Menlo;">{{ cit_cita.codigo_asistencia }}</h1>
+        </td>
+      </tr>
+        {% if va_a_incluir_qr %}
+        <tr>
+        <td colspan="2" style="text-align: center;">
+            <hr style="border: 1px solid #004360;">
+            <h3>Código QR para marcar asistencia</h3>
+            <img src="https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl={{ asistencia_url }}" alt="[ERROR_EN_QR]"><br>
+            <small>Si no no se ve el QR, active la opción para mostrar las imágenes.</small>
+            <p>Por favor, al llegar exija que le escaneen este QR, para que se refleje en su historial de asistencia.</p>
+        </td>
+        </tr>
+        {% endif %}
+    </table>
+
+    <table style="width: 700px; text-align: center; border-collapse:collapse;">
+      <tr style="background-color: #004360; color: #daba93;">
+        <td><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-dorado.png" style="height: 40px; margin-left: 20px;"></td>
+        <td><p style="font-size: small;">Blvd. Francisco Coss #945. Zona Centro. Saltillo, Coahuila de Zaragoza, México.<br>
+          Teléfono 844 777 4498</p></td>
+        </tr>
+        <tr>
+          <td colspan="2"><small><strong style="color: #657c96;">ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></small></td>
+        </tr>
+    </table>
+    
+  </body>
+</html>

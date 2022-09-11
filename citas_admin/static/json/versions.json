@@ -1,11 +1,21 @@
 {
     "versiones": [
         {
+            "numero": "1.1",
+            "fecha": "2022-09-12",
+            "novedades": [
+                {
+                    "titulo": "Mayor Acceso",
+                    "descripcion": "Se añadió la posibilidad de agregar citas inmediatas por parte de juzgado."
+                }
+            ]
+        },
+        {
             "numero": "1.0",
             "fecha": "2022-02-24",
             "novedades": [
                 {
-                    "titulo": "En construccion",
+                    "titulo": "En construcción",
                     "descripcion": "Comienza el desarrollo de esta version."
                 }
             ]

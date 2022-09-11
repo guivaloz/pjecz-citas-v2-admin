@@ -10,9 +10,11 @@
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_clientes.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_clientes.list_active')) }}{% endif %}
         {% endif %}
-        <a class="btn btn-sm btn-outline-secondary" href="{{url_for('cit_clientes.report_list')}}"><span class="iconify" data-icon="mdi:comment-alert-outline"></span>
-        Avisos
-        </a>
+        {% if current_user.can_admin('CIT CLIENTES') %}
+            <a class="btn btn-sm btn-outline-secondary" href="{{url_for('cit_clientes.report_list')}}"><span class="iconify" data-icon="mdi:comment-alert-outline"></span>
+            Avisos
+            </a>
+        {% endif %}
     {% endcall %}
 {% endblock %}
 
