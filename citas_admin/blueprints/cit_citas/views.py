@@ -3,8 +3,10 @@ Cit Citas, vistas
 """
 from datetime import datetime, timedelta
 import json
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for, abort
 from flask_login import current_user, login_required
+from pytz import timezone
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message, safe_string, safe_email, safe_text
@@ -26,10 +28,11 @@ from citas_admin.blueprints.oficinas.models import Oficina
 
 from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm, CitCitaSearchAdminForm, CitCitaAssistance, CitCitaNew
 
-MODULO = "CIT CITAS"
-LIMITE_EXTRA_PERSONAS = 2
-MINUTOS_MARGEN = 5
+HUSO_HORARIO = "America/Mexico_City"
 LIMITE_CITAS = 5
+LIMITE_EXTRA_PERSONAS = 2
+MODULO = "CIT CITAS"
+MINUTOS_MARGEN = 5
 
 cit_citas = Blueprint("cit_citas", __name__, template_folder="templates")
 
@@ -502,12 +505,17 @@ def new(cit_cliente_id):
         )
         return redirect(url_for("cit_citas.list_active"))
 
+    # Google App Engine usa tiempo universal, sin esta correccion las fechas de la noche cambian al dia siguiente
+    ahora_utc = datetime.now(timezone("UTC"))
+    ahora_mx_coah = ahora_utc.astimezone(timezone(HUSO_HORARIO))
+
+    # Entregar
     return render_template(
         "cit_citas/new.jinja2",
         cit_cliente=cliente,
         oficinas=oficinas,
         form=form,
-        hora_actual=datetime.now().strftime("%H:%M %p"),
+        hora_actual=ahora_mx_coah.strftime("%H:%M"),
     )
 
 
@@ -528,6 +536,10 @@ def servicios_json(oficina_id):
 @cit_citas.route("/cit_citas/horarios/<int:oficina_id>/<int:servicio_id>", methods=["GET", "POST"])
 def horarios_json(oficina_id, servicio_id):
     """Entrega los horarios disponibles para agendar"""
+
+    # Google App Engine usa tiempo universal, sin esta correccion las fechas de la noche cambian al dia siguiente
+    ahora_utc = datetime.now(timezone("UTC"))
+    ahora_mx_coah = ahora_utc.astimezone(timezone(HUSO_HORARIO))
 
     # Validar oficina
     oficina = Oficina.query.get_or_404(oficina_id)
@@ -551,7 +563,7 @@ def horarios_json(oficina_id, servicio_id):
         cierre = cit_servicio.hasta
 
     # Definimos la hora actual y damos este momento como el inicio
-    fecha = datetime.now()
+    fecha = ahora_mx_coah
 
     # Definir los tiempos de inicio, de final y el timedelta de la duración
     tiempo_inicial = datetime(
@@ -578,7 +590,6 @@ def horarios_json(oficina_id, servicio_id):
     # Consultar las horas bloqueadas y convertirlas a datetime para compararlas
     tiempos_bloqueados = []
     cit_horas_bloqueadas = CitHoraBloqueada.query.filter_by(oficina_id=oficina.id).filter_by(fecha=fecha).filter_by(estatus="A")
-    #
     for cit_hora_bloqueada in cit_horas_bloqueadas:
         tiempo_bloquedo_inicia = datetime(
             year=fecha.year,
@@ -602,10 +613,10 @@ def horarios_json(oficina_id, servicio_id):
     # { 08:30: 2, 08:45: 1, 10:00: 2,... }
     citas_ya_agendadas = {}
     cit_citas_anonimas = CitCita.query.filter_by(oficina_id=oficina.id)
-    #
     inicio_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=0, minute=0, second=0)
     termino_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=23, minute=59, second=59)
     cit_citas_anonimas = cit_citas_anonimas.filter(CitCita.inicio >= inicio_dt).filter(CitCita.inicio <= termino_dt)
+
     # Filtro por tiempo de termino
     hasta_tiempo = datetime(
         year=fecha.year,
@@ -616,7 +627,6 @@ def horarios_json(oficina_id, servicio_id):
         second=59,
     )
     cit_citas_anonimas = cit_citas_anonimas.filter(CitCita.termino <= hasta_tiempo).filter(CitCita.estado != "CANCELO")
-    #
     cit_citas_anonimas = cit_citas_anonimas.filter_by(estatus="A").order_by(CitCita.id).all()
     for cit_cita in cit_citas_anonimas:
         if cit_cita.inicio not in citas_ya_agendadas:
@@ -628,6 +638,7 @@ def horarios_json(oficina_id, servicio_id):
     horas_minutos_disponibles = []
     tiempo = tiempo_inicial
 
+    # Bucle para quitar segmentos de tiempos
     while tiempo < tiempo_final:
         # Bandera
         es_hora_disponible = True
@@ -646,7 +657,7 @@ def horarios_json(oficina_id, servicio_id):
                 disabled = True
         # Acumular si es hora disponible
         if es_hora_disponible:
-            if tiempo > fecha - timedelta(minutes=MINUTOS_MARGEN):
+            if tiempo.astimezone(timezone(HUSO_HORARIO)) > fecha - timedelta(minutes=MINUTOS_MARGEN):
                 horas_minutos_disponibles.append(
                     {
                         "value": tiempo.time().strftime("%H:%M"),
@@ -657,4 +668,5 @@ def horarios_json(oficina_id, servicio_id):
         # Siguiente intervalo
         tiempo = tiempo + duracion
 
+    # Entregar
     return {"results": horas_minutos_disponibles}
