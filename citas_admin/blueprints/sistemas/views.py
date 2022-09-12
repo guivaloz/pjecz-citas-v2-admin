@@ -6,12 +6,21 @@ from flask_login import current_user
 
 sistemas = Blueprint("sistemas", __name__, template_folder="templates")
 
+# Roles que deben estar en la base de datos
+ROL_RECEPCIONISTA = "RECEPCIONISTA"
+
 
 @sistemas.route("/")
 def start():
     """Página inicial"""
     if current_user.is_authenticated:
-        return render_template("sistemas/start.jinja2")
+        # Consultar los roles del usuario
+        current_user_roles = current_user.get_roles()
+        # Crear pagina de inicio
+        return render_template(
+            "sistemas/start.jinja2",
+            show_menu_recepcionista=ROL_RECEPCIONISTA in current_user_roles,
+        )
     return redirect("/login")
 
 
