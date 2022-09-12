@@ -657,7 +657,7 @@ def horarios_json(oficina_id, servicio_id):
                 disabled = True
         # Acumular si es hora disponible
         if es_hora_disponible:
-            if tiempo.astimezone(timezone(HUSO_HORARIO)) > fecha - timedelta(minutes=MINUTOS_MARGEN):
+            if tiempo > fecha.replace(tzinfo=None) - timedelta(minutes=MINUTOS_MARGEN):
                 horas_minutos_disponibles.append(
                     {
                         "value": tiempo.time().strftime("%H:%M"),
