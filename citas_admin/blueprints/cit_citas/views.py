@@ -507,6 +507,7 @@ def new(cit_cliente_id):
         cit_cliente=cliente,
         oficinas=oficinas,
         form=form,
+        hora_actual=datetime.now().strftime("%H:%M %p"),
     )
 
 

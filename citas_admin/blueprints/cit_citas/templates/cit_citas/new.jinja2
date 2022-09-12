@@ -35,7 +35,17 @@
         <select class="form-select" aria-label="servicios" name="serviciosSelect" id="serviciosSelect" onchange="listar_horarios();">
         </select>
 
-        <label class="form-label mt-3" for="horarios_list">Horarios disponibles:</label>
+        <div class="row">
+            <label class="form-label mt-3" for="horarios_list">Horarios disponibles:</label>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <label class="form-label" for="hora_actual">Hora Actual del Servidor:</label>
+            </div>
+            <div class="col-md-9 text-start">
+                {{ hora_actual }}
+            </div>
+        </div>
         <ul class="list-group" id="horarios_list" name="horarios_list">
         {% for horario in horarios %}
             <li class="list-group-item">
