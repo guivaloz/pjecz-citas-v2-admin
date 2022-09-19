@@ -19,8 +19,10 @@ def create_chain_xml(amount, email, description, cit_client_id):
     business = ET.SubElement(root, "business")
     ET.SubElement(business, "id_company").text = "SNBX"
     ET.SubElement(business, "id_branch").text = "01SNBXBRNCH"
-    ET.SubElement(business, "user").text = "SNBXUSR01"
+    ET.SubElement(business, "user").text = "SNBXUSR0123"
     ET.SubElement(business, "pwd").text = "SECRETO"
+
+    ET.SubElement(root, "version").text = "IntegraWPP"
 
     url = ET.SubElement(root, "url")
     ET.SubElement(url, "reference").text = "FACTURA999"
@@ -29,9 +31,8 @@ def create_chain_xml(amount, email, description, cit_client_id):
     ET.SubElement(url, "canal").text = "W"
     ET.SubElement(url, "omitir_notif_default").text = "1"
     ET.SubElement(url, "st_correo").text = "1"
-    ET.SubElement(url, "fh_vigencia").text = "28/07/2022"
+    ET.SubElement(url, "fh_vigencia").text = "30/09/2022"
     ET.SubElement(url, "mail_cliente").text = email
-    ET.SubElement(url, "st_cr").text = "A"
 
     data = ET.SubElement(url, "datos_adicionales")
     data1 = ET.SubElement(data, "data")
@@ -41,8 +42,6 @@ def create_chain_xml(amount, email, description, cit_client_id):
     label1.text = description
     value1 = ET.SubElement(data1, "value")
     value1.text = str(cit_client_id)
-
-    ET.SubElement(url, "version").text = "IntegraWPP"
 
     return ET.tostring(root, encoding="unicode")
 
@@ -87,23 +86,13 @@ async def send_chain(chain: str):
 
     chain_bytes = ET.tostring(root, encoding="unicode")
 
-    # Send the chain
-    try:
-        response = requests.post(
-            url=wpp_url,
-            params={"xml": chain_bytes},
-            timeout=12,
-        )
-    except requests.exceptions.RequestException as error:
-        raise error
-    if response.status_code != 200:
-        raise requests.HTTPError(response.status_code)
-    data_json = response.json()
-    if "items" in data_json:
-        return data_json
+    # Se prepara el envío del xml vía POST a la url de WPP
+    payload = "xml=" + chain_bytes
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    response = requests.request("POST", wpp_url, headers=headers, data=payload)
 
     # Return
-    return None
+    return response.text
 
 
 def get_url_from_xml_encrypt(xml_encrypt: str):

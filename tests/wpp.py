@@ -1,5 +1,5 @@
 """
-WPP Demostracion
+WPP Demostración
 
 """
 import asyncio
@@ -7,14 +7,12 @@ from lib.wpp import create_chain_xml, encrypt_chain, send_chain, get_url_from_xm
 
 
 def main():
-    """
-    Main function
-    """
+    """Main function"""
     chain = create_chain_xml(
         amount=100.0,
         email="guivaloz@gmail.com",
-        description="Servicio Test",
-        client_id="123456789",
+        description="ServicioTest",
+        cit_client_id="123456789",
     )
     chain_encrypt = encrypt_chain(chain).decode()  # bytes
     respuesta = ""
