@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body style="margin: 0px;">
+    <table style="width: 700px; border-collapse:collapse; margin-left:auto; margin-right:auto;">
+      <tr>
+        <td style="background-color: #004360; height: 10px;"></td>
+      </tr>
+    </table>
+    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; width: 700px; margin-left:auto; margin-right:auto;">
+      <tr>
+        <td><h1 style='margin: 0px;'>Sistema de Citas</h1></td>
+        <td><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px; margin-left: 50px;"></td>
+      </tr>
+      <tr>
+        <td><h2 style='margin: 5px; font-weight: normal; color: red; text-align: center;'>Cita Cancelada</h2></td>
+        <td style="color: #657c96; text-align: right;"><small><i>Fecha de elaboración: {{ fecha_elaboracion }}</i></small></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <hr style="border: 1px solid #004360;">
+          <h3 style='margin-bottom: 0px;'>Hola {{ cliente_nombre }}</h3>
+
+          <p style='margin-top: 0px;'>Le proporcionamos la información detallada de la cita que agendó en este sistema:</p>
+
+          <p>
+            <strong>Oficina</strong>: {{ cit_cita.oficina.descripcion }}<br>
+            <strong>Servicio</strong>: {{ cit_cita.cit_servicio.descripcion }}<br>
+            <strong>Fecha y hora</strong>: {{ cit_cita.inicio.strftime('%d de %B de %Y a las %I:%M %p') }}<br>
+            <strong>Notas</strong>:<br>
+            {{ cit_cita.notas }}
+          </p>
+
+          <p>Gracias por cancelar su cita. Recuerde que de no asistir podrá ser penalizado.</p>
+
+          <small style="color: #657c96;">Solo se pueden cancelar citas antes de 24 hrs de su inicio.</small>
+        </td>
+      </tr>
+    </table>
+
+    <table style="width: 700px; text-align: center; border-collapse:collapse; margin-left:auto; margin-right:auto;">
+      <tr style="background-color: #004360; color: #daba93;">
+        <td><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-dorado.png" style="height: 40px; margin-left: 20px;"></td>
+        <td><p style="font-size: small;">Blvd. Francisco Coss #945. Zona Centro. Saltillo, Coahuila de Zaragoza, México.<br>
+          Teléfono 844 777 4498</p></td>
+        </tr>
+        <tr>
+          <td colspan="2"><small><strong style="color: #657c96;">ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></small></td>
+        </tr>
+    </table>
+    
+  </body>
+</html>
