@@ -12,7 +12,7 @@
     </table>
     <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; padding-top:15px; width: 700px; margin-left:auto; margin-right:auto;">
       <tr>
-        <td><h1 style='margin: 0px; color: maroon;'>Cita Cancelada ⛔</h1></td>
+        <td><h1 style='margin: 0px; color: brown;'>Cita Perdida ❌</h1></td>
         <td style="text-align: right;"><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px;"></td>
       </tr>
       <tr>
@@ -27,14 +27,20 @@
           <hr style="border: 1px solid #004360;">
           <h3 style='margin-bottom: 0px;'>Hola {{ cit_cliente.nombre }}</h3>
 
+          <p>Perdiste tu cita agendada el<p>
+
+          <h1>{{ cit_cita.inicio.strftime("%d/%b/%Y %I:%M") }}</h1>
+
           <p>
-            Confirmamos que tu cita se<br>
-            <strong>canceló</strong> correctamente.
+            Recuerda que para <strong>continuar agendando</strong> citas debes de cumplir con<br>
+            el <strong>80% de asistencia</strong> a las citas agendadas.
           </p>
 
-          <p style="font-size: small;">Fecha de cancelación: {{ cit_cita.modificado.strftime("%d/%b/%Y %I:%M") }}</p>
+          <h2 style="margin-bottom: 0px; font-weight: normal;">¿No puedes acudir a tu cita?</h2>
 
-          <h3 style="margin-bottom: 0px;">Agradecemos tu buen uso del Sistema de Citas.</h3>
+          <p style="font-size:small;color:red;margin-top:0px; ">Puedes cancelar tu cita 24 horas antes de la fecha agendada</p>
+
+          <h3 style="margin-bottom: 0px;">Evita penalizaciones por el mal uso del Sistema de Citas</h3>
         </td>
       </tr>
     </table>
