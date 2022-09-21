@@ -257,7 +257,7 @@ def marcar_vencidas(test=True):
                 AND estatus = 'A'"
         )
         res = engine.execute(actualizacion)
-        mensaje_final = f"¡Se pasaron {res.rowcount} citas al estado de INASISTENCIA"
+        mensaje_final = f"Se pasaron {res.rowcount} citas al estado de INASISTENCIA"
         bitacora.info(mensaje_final)
 
     # Se termina la tarea y se envía el mensaje final
