@@ -84,25 +84,33 @@ def cambiar_contrasena(email):
 @click.command()
 @click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
 def eliminar_abandonados(test):
-    """Eliminar los clientes que han abandonado su cuenta"""
-    click.echo("Eliminación de cuentas de Clientes abandonados")
+    """Eliminar clientes que han abandonado su cuenta"""
+    click.echo("Eliminación de Clientes abandonados")
     count_cit_clientes = CitCliente.query.outerjoin(CitCita).filter(CitCliente.contrasena_sha256 == "").filter(CitCita.cit_cliente == None).count()
-    click.echo(f"Se encontraron {count_cit_clientes} cuentas de clientes sin contraseña SHA256 y sin citas agendadas, posiblemente son cuentas abandonadas.")
+    click.echo(f"Se encontraron {count_cit_clientes} cuentas de clientes sin contraseña SHA256 y sin citas agendadas.")
 
     if test is False:
         engine = db.engine
+        # Borrado permanente de clientes_recuperaciones
+        borrado = text(
+            "DELETE \
+                FROM cit_clientes_recuperaciones \
+                WHERE estatus = 'B'"
+        )
+        res = engine.execute(borrado)
+        # Borrado permanente de clientes sin SHA256 y sin Citas
         borrado = text(
             "DELETE \
                 FROM cit_clientes AS cli \
-                LEFT JOIN cit_citas AS cit ON cli.id = cit.cit_cliente_id \
-                WHERE cli.contrasena_sha256 = '' AND cit.cit_cliente_id IS NULL"
+                WHERE cli.id NOT IN (SELECT cit_cliente_id FROM cit_citas WHERE cit_cliente_id = cli.id) \
+                    AND cli.id NOT IN (SELECT cit_cliente_id FROM cit_clientes_recuperaciones WHERE cit_cliente_id = cli.id) \
+                    AND cli.contrasena_sha256 = ''"
         )
         res = engine.execute(borrado)
-        for row in res:
-            print(row)
-        click.echo("¡Eliminación de registros correctamente!")
+        if res:
+            click.echo(f"Se eliminaron {res.rowcount} clientes correctamente")
     else:
-        click.echo("Para eliminar permanentemente los registros, utilize el parámetro --test false")
+        click.echo(f"MODO DE PRUEBA - Se podrían eliminar {count_cit_clientes} clientes")
 
 
 @click.command()
