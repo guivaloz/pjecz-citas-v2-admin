@@ -63,7 +63,7 @@ def consultar(ctx, estado, limit, offset):
 @click.argument("cit_cita_id", type=int)
 @click.option("--to_email", default=None, help="Email del destinatario", type=str)
 @click.pass_context
-def enviar_msg_cita_agendada(ctx, cit_cita_id, to_email):
+def enviar_pendiente(ctx, cit_cita_id, to_email):
     """Envía mensaje vía email para informar de la cita agendada"""
     click.echo("Envío de mensaje de cita agendada")
     # Validar cita
@@ -97,7 +97,7 @@ def enviar_msg_cita_agendada(ctx, cit_cita_id, to_email):
 @click.argument("cit_cita_id", type=int)
 @click.option("--to_email", default=None, help="Email del destinatario", type=str)
 @click.pass_context
-def enviar_msg_cita_cancelada(ctx, cit_cita_id, to_email):
+def enviar_cancelada(ctx, cit_cita_id, to_email):
     """Envía mensaje vía email para informar que se canceló la cita con éxito"""
     click.echo("Envío de mensaje de cita cancelada")
     # Validar cita
@@ -131,7 +131,7 @@ def enviar_msg_cita_cancelada(ctx, cit_cita_id, to_email):
 @click.argument("cit_cita_id", type=int)
 @click.option("--to_email", default=None, help="Email del destinatario", type=str)
 @click.pass_context
-def enviar_msg_cita_asistencia(ctx, cit_cita_id, to_email):
+def enviar_asistio(ctx, cit_cita_id, to_email):
     """Envía mensaje vía email para informar que se marcó la asistencia a la cita con éxito"""
     click.echo("Envío de mensaje de cita asistida")
     # Validar cita
@@ -165,7 +165,7 @@ def enviar_msg_cita_asistencia(ctx, cit_cita_id, to_email):
 @click.argument("cit_cita_id", type=int)
 @click.option("--to_email", default=None, help="Email del destinatario", type=str)
 @click.pass_context
-def enviar_msg_cita_no_asistencia(ctx, cit_cita_id, to_email):
+def enviar_inasistencia(ctx, cit_cita_id, to_email):
     """Envía mensaje vía email para informar que se marcó la asistencia a la cita con éxito"""
     click.echo("Envío de mensaje de cita NO asistida")
     # Validar cita
@@ -195,8 +195,30 @@ def enviar_msg_cita_no_asistencia(ctx, cit_cita_id, to_email):
     ctx.exit(0)
 
 
+@click.command()
+@click.option("--test", default=True, help="Se ejecuta en modo de prueba", type=bool)
+@click.pass_context
+def marcar_vencidas(ctx, test):
+    """Marca las citas pasadas y es estado de pendientes como vencidas (INASISTENCIA)"""
+    click.echo("Marcar las citas viejas y pendientes como vencidas")
+
+    if test:
+        click.echo("MODO DE PRUEBA - No se hará ningún cambio permanente.")
+
+    # Agregar tarea en el fondo para enviar el mensaje
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.cit_citas.tasks.marcar_citas_vencidas",
+        test=test,
+    )
+
+    # Mostrar mensaje de termino
+    click.echo("Se han marcado las citas pasadas y en estado de PENDIENTES como vencidas (INASISTENCIA)")
+    ctx.exit(0)
+
+
 cli.add_command(consultar)
-cli.add_command(enviar_msg_cita_agendada)
-cli.add_command(enviar_msg_cita_cancelada)
-cli.add_command(enviar_msg_cita_asistencia)
-cli.add_command(enviar_msg_cita_no_asistencia)
+cli.add_command(enviar_pendiente)
+cli.add_command(enviar_cancelada)
+cli.add_command(enviar_asistio)
+cli.add_command(enviar_inasistencia)
+cli.add_command(marcar_vencidas)

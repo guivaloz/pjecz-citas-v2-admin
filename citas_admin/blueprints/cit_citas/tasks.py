@@ -231,6 +231,31 @@ def enviar_msg_no_asistencia(cit_cita_id, to_email=None):
     return mensaje_final
 
 
+def marcar_citas_vencidas(test=False):
+    """Actualiza el estado de las citas a INASISTENCIA"""
+
+    citas = CitCita.query.filter_by(estado="PENDIENTE").filter(CitCita.inicio < datetime.now()).filter_by(estatus='A').all()
+    if citas is None:
+        mensaje_error = "No hay citas pendientes para marcar como vencidas (INASISTENCIA)"
+        set_task_error(mensaje_error)
+        bitacora.error(mensaje_error)
+        set_task_progress(100)
+        return mensaje_error
+    
+    if test:
+        for cita in citas:
+            cita.estado = "INASISTENCIA"
+            cita.save()
+        
+    # Mensaje final
+    mensaje_final = f"Se actualizó el estado de {len(citas)} citas a INASISTENCIA"
+    bitacora.info(mensaje_final)
+
+    # Se termina la tarea y se envía el mensaje final
+    set_task_progress(100)
+    return mensaje_final
+
+
 ########################
 ### Métodos Privados ###
 ########################
