@@ -5,8 +5,10 @@ import json
 import locale
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
+from sqlalchemy.sql import func
+from lib.database import SessionLocal
 from lib.tasks import set_task_progress, set_task_error
 from lib.storage import GoogleCloudStorage, NotAllowedExtesionError, UnknownExtesionError, NotConfiguredError
 from google.cloud.storage import Blob
@@ -36,6 +38,10 @@ FILE_NAME = "cit_clientes_reporte.json"
 
 def refresh_report():
     """Actualiza el reporte de avisos de clientes"""
+
+    empunadura = logging.FileHandler("cit_clientes_reportes.log")
+    empunadura.setFormatter(formato)
+    bitacora.addHandler(empunadura)
 
     # Creación del contenido del reporte JSON general
     data = {
@@ -312,5 +318,91 @@ class ReporteClientesSinCitas(Reporte):
             self.resultados.append(result)
 
 
-if __name__ == "__main__":
-    print(refresh_report())
+def evaluar_asistencia(test=True):
+    """Penaliza o Premia al cliente conforme su asistencia"""
+    DIAS_MARGEN = 30
+    LIMITE_SIN_CITAS = 15
+    LIMITE_INASISTENCIA = 2
+    LIMITE_ASISTENCIA = 30
+    PORCENTAJE_ASISTENCIA_ACEPTABLE = 0.8
+
+    # Configuración del LOG
+    empunadura = logging.FileHandler("cit_clientes.log")
+    empunadura.setFormatter(formato)
+    bitacora.addHandler(empunadura)
+
+    # Calcular fecha de vencimiento
+    fecha_actual = datetime.now()
+    fecha_limite = datetime(
+        year=fecha_actual.year,
+        month=fecha_actual.month,
+        day=fecha_actual.day,
+        hour=0,
+        minute=0,
+        second=0,
+    )
+    fecha_limite = fecha_limite - timedelta(days=DIAS_MARGEN)
+
+    # Contadores de cambios realizados
+    count_clientes_ajustados = 0
+    count_clientes_premiados = 0
+    count_clientes_penalizados = 0
+
+    # Revisar los clientes
+    clientes = CitCliente.query.filter_by(estatus="A").all()
+    for cliente in clientes:
+        # variables para contar las citas por cliente
+        count_citas_asistio = 0
+        count_citas_inasistencia = 0
+        # Query para extraer el número de citas por estado
+        db = SessionLocal()
+        citas_cantidades = (
+            db.query(
+                CitCita.estado.label("estado"),
+                func.count("*").label("cantidad"),
+            )
+            .filter_by(cit_cliente_id=cliente.id)
+            .filter_by(estatus="A")
+            .filter(CitCita.creado > fecha_limite)
+            .group_by(CitCita.estado)
+        )
+        # Establecemos las cantidades
+        for estado, cantidad in citas_cantidades.all():
+            if estado == "ASISTIO":
+                count_citas_asistio = cantidad
+            elif estado == "INASISTENCIA":
+                count_citas_inasistencia = cantidad
+        # Calculamos los porcentajes
+        total_citas = count_citas_asistio + count_citas_inasistencia
+        bitacora.info(f"Cliente {cliente.id} citas: {total_citas}, asistio {count_citas_asistio}, faltó {count_citas_inasistencia}")  # DEBUG:
+        if total_citas == 0:
+            if cliente.limite_citas_pendientes == LIMITE_SIN_CITAS:
+                if test is False:
+                    cliente.limite_citas_pendientes = LIMITE_SIN_CITAS
+                    cliente.save()
+                mensaje = f"Cliente {cliente.id} sin citas en los últimos {DIAS_MARGEN} días. Se ajustó su límite de citas a {LIMITE_SIN_CITAS}."
+                bitacora.info(mensaje)
+                count_clientes_ajustados += 1
+        elif (count_citas_asistio * 100) / total_citas >= PORCENTAJE_ASISTENCIA_ACEPTABLE:
+            if cliente.limite_citas_pendientes == LIMITE_ASISTENCIA:
+                if test is False:
+                    cliente.limite_citas_pendientes = LIMITE_ASISTENCIA
+                    cliente.save()
+                mensaje = f"Cliente {cliente.id} con buena asistencia en los últimos {DIAS_MARGEN} días. Se ajustó su límite de citas a {LIMITE_ASISTENCIA}."
+                bitacora.info(mensaje)
+                count_clientes_premiados += 1
+        else:
+            if cliente.limite_citas_pendientes == LIMITE_INASISTENCIA:
+                if test is False:
+                    cliente.limite_citas_pendientes = LIMITE_INASISTENCIA
+                    cliente.save()
+                mensaje = f"Cliente {cliente.id} con mala asistencia en los últimos {DIAS_MARGEN} días. Se ajustó su límite de citas a {LIMITE_INASISTENCIA}."
+                bitacora.info(mensaje)
+                count_clientes_penalizados += 1
+
+    mensaje_final = f"Se premiaron {count_clientes_premiados}, se ajustaron {count_clientes_ajustados}, se penalizaron {count_clientes_penalizados} clientes."
+    bitacora.info(mensaje_final)
+
+    # Se termina la tarea y se envía el mensaje final
+    set_task_progress(100)
+    return mensaje_final

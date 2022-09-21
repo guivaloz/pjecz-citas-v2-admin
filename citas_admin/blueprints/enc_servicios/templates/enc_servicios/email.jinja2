@@ -5,19 +5,18 @@
     <title></title>
   </head>
   <body style="margin: 0px;">
-    <table style="width: 700px; border-collapse:collapse;">
+    <table style="width: 700px; border-collapse:collapse; margin-left:auto; margin-right:auto;">
       <tr>
         <td style="background-color: #004360; height: 10px;"></td>
       </tr>
     </table>
-    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; width: 700px;">
+    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:0px 30px 15px 30px; width: 700px; margin-left:auto; margin-right:auto;">
       <tr>
-        <td><h1 style='margin-bottom: 0px;'>Sistema de Citas</h1><h3 style='margin: 0px; font-weight: normal;'>Encuesta de Servicio</h3></td>
+        <td><h1 style='margin-bottom: 0px;'>Encuesta de Servicio</h1><h3 style='margin: 0px; font-weight: normal;'>Sistema de Citas</h3></td>
         <td><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px; margin-left: 50px;"></td>
       </tr>
-      <tr>
-        <td></td>
-        <td><small style="color: #657c96; padding-left: 100px;"><i>Fecha de elaboración: {{ fecha_elaboracion }}</i></small></td>
+      <tr style="text-align:right;">
+        <td colspan="2"><small style="color: #657c96;"><i>Fecha de elaboración: {{ fecha_elaboracion }}</i></small></td>
       </tr>
       <tr>
         <td colspan="2">
@@ -32,12 +31,12 @@
           <p>Todas las respuestas serán confidenciales y seguras.</p>
 
           <p>Por favor da clic en el siguiente enlace para completar la encuesta:<br>
-          <a href='{{ url_encuesta }}' style="color: #72babb; font-weight: bold;">Contestar Encuesta de Servicio</a></p>
+          <a href='{{ url_encuesta }}' style="color: #20c997; font-weight: bold; font-size:larger;">Contestar Encuesta de Servicio</a></p>
         </td>
       </tr>
     </table>
 
-    <table style="width: 700px; text-align: center; border-collapse:collapse;">
+    <table style="width: 700px; text-align: center; border-collapse:collapse; margin-left:auto; margin-right:auto;">
       <tr style="background-color: #004360; color: #daba93;">
         <td><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-dorado.png" style="height: 40px; margin-left: 20px;"></td>
         <td><p style="font-size: small;">Blvd. Francisco Coss #945. Zona Centro. Saltillo, Coahuila de Zaragoza, México.<br>

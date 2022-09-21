@@ -5,6 +5,8 @@ Enc Servicios
 - enviar: Enviar mensaje con URL para contestar la encuesta
 - crear: Crea una nueva encuesta
 """
+from datetime import datetime, timedelta
+from itertools import count
 import os
 import click
 from dotenv import load_dotenv
@@ -230,7 +232,84 @@ def crear(ctx, cit_cita_id):
     ctx.exit(0)
 
 
+@click.command()
+@click.option("--test", default=True, help="Modo de pruebas en el que no hace envíos")
+@click.pass_context
+def enviar_auto(ctx, test):
+    """Envío de encuestas automático"""
+    click.echo("Envío de encuestas automático, a clientes que asistieron a su cita hace 2 horas, y no tienen pendiente una encuesta previa.")
+
+    # Establecer tiempos de referencia
+    fecha_actual = datetime.now()
+    rango_inicial = fecha_actual - timedelta(hours=2)
+    rango_final = datetime(
+        year=fecha_actual.year,
+        month=fecha_actual.month,
+        day=fecha_actual.day,
+        hour=0,
+        minute=0,
+        second=0,
+    )
+
+    # Contador de encuestas a enviar
+    count_enc_nuevas = 0
+
+    # Revisar citas a las que hayan asistido entre 2 horas y el día de hoy
+    citas = CitCita.query.filter(CitCita.modificado > rango_final).filter(CitCita.modificado < rango_inicial)
+    citas = citas.filter_by(estado="ASISTIO").filter_by(asistencia=True).filter_by(estatus="A").all()
+
+    for cita in citas:
+        # Revisar si esta cita ya tiene una encuesta creada
+        enc_servicio = EncServicio.query.filter_by(cit_cliente_id=cita.cit_cliente_id).filter_by(estado="PENDIENTE").first()
+        if enc_servicio is None:
+            if test is False:
+                enc_servicio = EncServicio(
+                    cit_cliente=cita.cit_cliente,
+                    oficina=cita.oficina,
+                    estado="PENDIENTE",
+                )
+                enc_servicio.save()
+                # Agregar tarea en el fondo para enviar el mensaje
+                app.task_queue.enqueue(
+                    "citas_admin.blueprints.enc_servicios.tasks.enviar",
+                    enc_servicios_id=enc_servicio.id,
+                )
+            count_enc_nuevas += 1
+
+    # Reenvío de encuestas PENDIENTES
+    count_enc_reenviadas = 0
+
+    # Rango de fechas
+    rango_inicial = fecha_actual - timedelta(days=7)
+    rango_final = fecha_actual - timedelta(days=3)
+
+    # Revisar citas a las que hayan asistido entre 2 horas y el día de hoy
+    encuestas = EncServicio.query.filter(EncServicio.modificado > rango_inicial).filter(EncServicio.modificado < rango_final)
+    encuestas = encuestas.filter_by(estado="PENDIENTE").filter_by(estatus="A").all()
+
+    for encuesta in encuestas:
+        if encuesta.modificado == encuesta.creado:
+            if test is False:
+                encuesta.modificado = fecha_actual
+                encuesta.save()
+                # Agregar tarea en el fondo para enviar el mensaje
+                app.task_queue.enqueue(
+                    "citas_admin.blueprints.enc_servicios.tasks.enviar",
+                    enc_servicios_id=encuesta.id,
+                )
+            count_enc_reenviadas += 1
+
+    if test:
+        click.echo("MODO PRUEBA - No se hacen envíos")
+
+    # Entregar resultado final
+    click.echo(f"Se han enviado {count_enc_nuevas} encuestas nuevas.")
+    click.echo(f"Se han reenviado {count_enc_reenviadas} encuestas.")
+    ctx.exit(0)
+
+
 # Añadir comandos al comando cli - citas enc_servicios consultar | enviar | crear
 cli.add_command(consultar)
 cli.add_command(enviar)
 cli.add_command(crear)
+cli.add_command(enviar_auto)
