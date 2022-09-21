@@ -4,6 +4,7 @@ Cit Citas
 - consultar: Ver listado de citas
 """
 import click
+from datetime import datetime, timedelta
 from tabulate import tabulate
 
 from citas_admin.app import create_app
@@ -64,7 +65,7 @@ def consultar(ctx, estado, limit, offset):
 @click.option("--to_email", default=None, help="Email del destinatario", type=str)
 @click.pass_context
 def enviar_pendiente(ctx, cit_cita_id, to_email):
-    """Envía mensaje vía email para informar de la cita agendada"""
+    """Envía mensaje vía email cita agendada"""
     click.echo("Envío de mensaje de cita agendada")
     # Validar cita
     cit_cita = CitCita.query.get(cit_cita_id)
@@ -98,7 +99,7 @@ def enviar_pendiente(ctx, cit_cita_id, to_email):
 @click.option("--to_email", default=None, help="Email del destinatario", type=str)
 @click.pass_context
 def enviar_cancelada(ctx, cit_cita_id, to_email):
-    """Envía mensaje vía email para informar que se canceló la cita con éxito"""
+    """Envía mensaje vía email cita Cancelada"""
     click.echo("Envío de mensaje de cita cancelada")
     # Validar cita
     cit_cita = CitCita.query.get(cit_cita_id)
@@ -132,7 +133,7 @@ def enviar_cancelada(ctx, cit_cita_id, to_email):
 @click.option("--to_email", default=None, help="Email del destinatario", type=str)
 @click.pass_context
 def enviar_asistio(ctx, cit_cita_id, to_email):
-    """Envía mensaje vía email para informar que se marcó la asistencia a la cita con éxito"""
+    """Envía mensaje vía email Asistió"""
     click.echo("Envío de mensaje de cita asistida")
     # Validar cita
     cit_cita = CitCita.query.get(cit_cita_id)
@@ -166,7 +167,7 @@ def enviar_asistio(ctx, cit_cita_id, to_email):
 @click.option("--to_email", default=None, help="Email del destinatario", type=str)
 @click.pass_context
 def enviar_inasistencia(ctx, cit_cita_id, to_email):
-    """Envía mensaje vía email para informar que se marcó la asistencia a la cita con éxito"""
+    """Envía mensaje vía email Inasistencia"""
     click.echo("Envío de mensaje de cita NO asistida")
     # Validar cita
     cit_cita = CitCita.query.get(cit_cita_id)
@@ -199,20 +200,37 @@ def enviar_inasistencia(ctx, cit_cita_id, to_email):
 @click.option("--test", default=True, help="Se ejecuta en modo de prueba", type=bool)
 @click.pass_context
 def marcar_vencidas(ctx, test):
-    """Marca las citas pasadas y es estado de pendientes como vencidas (INASISTENCIA)"""
+    """Marca citas pasadas y PENDIENTES como 'INASISTENCIA'"""
     click.echo("Marcar las citas viejas y pendientes como vencidas")
 
-    if test:
-        click.echo("MODO DE PRUEBA - No se hará ningún cambio permanente.")
-
-    # Agregar tarea en el fondo para enviar el mensaje
-    app.task_queue.enqueue(
-        "citas_admin.blueprints.cit_citas.tasks.marcar_citas_vencidas",
-        test=test,
+    # Calcular fecha de vencimiento
+    fecha_actual = datetime.now()
+    fecha_limite = datetime(
+        year=fecha_actual.year,
+        month=fecha_actual.month,
+        day=fecha_actual.day,
+        hour=23,
+        minute=59,
+        second=59,
     )
 
+    fecha_limite = fecha_limite - timedelta(days=1)
+    click.echo(f"Fecha de Vencimiento: {fecha_limite}, citas anteriores a esta fecha.")
+
+    citas_count = CitCita.query.filter_by(estado="PENDIENTE").filter(CitCita.inicio <= fecha_limite).filter_by(estatus="A").count()
+
+    if citas_count > 0:
+        # Agregar tarea en el fondo para enviar el mensaje
+        app.task_queue.enqueue(
+            "citas_admin.blueprints.cit_citas.tasks.marcar_vencidas",
+            test=test,
+        )
+
     # Mostrar mensaje de termino
-    click.echo("Se han marcado las citas pasadas y en estado de PENDIENTES como vencidas (INASISTENCIA)")
+    if test:
+        click.echo(f"MODO DE PRUEBA - citas a cambiar {citas_count}, No se hizo ningún cambio permanente.")
+    else:
+        click.echo(f"Se han cambiado {citas_count} citas a estado de INASISTENCIA")
     ctx.exit(0)
 
 

@@ -92,9 +92,10 @@
                 render: function(data, type, row, meta) {
 
                     switch (data)    {
-                        case "ASISTIO":     return '<span class="badge rounded-pill bg-success px-3 ms-3">Asistio</span>';   break;
+                        case "ASISTIO":     return '<span class="badge rounded-pill bg-success px-3 ms-3">Asistió</span>';   break;
                         case "PENDIENTE":   return '<span class="badge rounded-pill bg-warning px-3 ms-3 text-dark">Pendiente</span>';   break;
                         case "CANCELO":     return '<span class="badge rounded-pill bg-danger px-3 ms-4">Cancelo</span>';   break;
+                        case "INASISTENCIA":return '<span class="badge rounded-pill bg-secondary px-3 ms-4">NO Asistió</span>';   break;
                     }
                     return data;
                 }
@@ -102,17 +103,10 @@
         ];
         configDataTable['createdRow'] = function( row, data, dataIndex, cells){
             switch (data.estado)    {
-                case "PENDIENTE":
-                    const fecha_cita = new Date(data.fecha);
-                    if(fecha_cita >= fecha_actual)  {
-                        $(row).addClass("table-warning"); 
-                    } else {
-                        cells[7].innerText = 'VENCIDA';
-                        $(row).addClass("table-secondary");
-                    }
-                    break;
-                case "CANCELO":   $(row).addClass("table-danger");      break;
-                case "ASISTIO":   $(row).addClass("table-success");      break;
+                case "PENDIENTE":       $(row).addClass("table-warning");   break;
+                case "CANCELO":         $(row).addClass("table-danger");    break;
+                case "ASISTIO":         $(row).addClass("table-success");   break;
+                case "INASISTENCIA":    $(row).addClass("table-secondary"); break;
             }
         };
         $('#cit_citas_datatable').DataTable(configDataTable);

@@ -1,7 +1,7 @@
 """
 Cit Citas, tareas en el fondo
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 import locale
 import logging
 import os
@@ -10,6 +10,7 @@ import sendgrid
 from dotenv import load_dotenv
 from sendgrid.helpers.mail import Email, To, Content, Mail
 from jinja2 import Environment, FileSystemLoader
+from sqlalchemy import text
 
 from lib.tasks import set_task_progress, set_task_error
 
@@ -231,25 +232,33 @@ def enviar_msg_no_asistencia(cit_cita_id, to_email=None):
     return mensaje_final
 
 
-def marcar_citas_vencidas(test=False):
+def marcar_vencidas(test=True):
     """Actualiza el estado de las citas a INASISTENCIA"""
 
-    citas = CitCita.query.filter_by(estado="PENDIENTE").filter(CitCita.inicio < datetime.now()).filter_by(estatus='A').all()
-    if citas is None:
-        mensaje_error = "No hay citas pendientes para marcar como vencidas (INASISTENCIA)"
-        set_task_error(mensaje_error)
-        bitacora.error(mensaje_error)
-        set_task_progress(100)
-        return mensaje_error
-    
-    if test:
-        for cita in citas:
-            cita.estado = "INASISTENCIA"
-            cita.save()
-        
-    # Mensaje final
-    mensaje_final = f"Se actualizó el estado de {len(citas)} citas a INASISTENCIA"
-    bitacora.info(mensaje_final)
+    # Calcular fecha de vencimiento
+    fecha_actual = datetime.now()
+    fecha_limite = datetime(
+        year=fecha_actual.year,
+        month=fecha_actual.month,
+        day=fecha_actual.day,
+        hour=23,
+        minute=59,
+        second=59,
+    )
+    fecha_limite = fecha_limite - timedelta(days=1)
+
+    # Si no esta en modo prueba, se ejecuta el Query
+    if test is False:
+        engine = db.engine
+        actualizacion = text(
+            f"UPDATE cit_citas \
+                SET estado = 'INASISTENCIA' \
+                WHERE estado = 'PENDIENTE' AND inicio <= '{fecha_limite.strftime('%y%m%d %H:%M')}' \
+                AND estatus = 'A'"
+        )
+        res = engine.execute(actualizacion)
+        mensaje_final = f"¡Se pasaron {res.rowcount} citas al estado de INASISTENCIA"
+        bitacora.info(mensaje_final)
 
     # Se termina la tarea y se envía el mensaje final
     set_task_progress(100)
