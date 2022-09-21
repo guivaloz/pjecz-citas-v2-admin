@@ -5,43 +5,50 @@
     <title></title>
   </head>
   <body style="margin: 0px;">
-    <table style="width: 700px; border-collapse:collapse;">
+    <table style="width: 700px; border-collapse:collapse; margin-left:auto; margin-right:auto;">
       <tr>
         <td style="background-color: #004360; height: 10px;"></td>
       </tr>
     </table>
-    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; width: 700px;">
+    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; padding-top:15px; width: 700px; margin-left:auto; margin-right:auto;">
       <tr>
-        <td><h1 style='margin-bottom: 0px;'>Sistema de Citas</h1><h3 style='margin: 0px; font-weight: normal;'>Cita Agendada</h3></td>
-        <td><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px; margin-left: 50px;"></td>
+        <td><h1 style='margin: 0px;'>Cita Agendada</h1></td>
+        <td style="text-align: right;"><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px;"></td>
       </tr>
       <tr>
-        <td></td>
-        <td><small style="color: #657c96; padding-left: 100px;"><i>Fecha de elaboración: {{ fecha_elaboracion }}</i></small></td>
+        <td>
+          <h2 style='margin: 0px; margin-top: -20px; font-weight: normal;'>Sistema de Citas</h2>
+          <h3>ID: <strong>{{ cit_cita.id }}</strong></h3>
+        </td>
+        <td colspan="2" style="vertical-align: bottom;"><p style="font-size: small; margin: 0px; color: #657c96; text-align: right;"><i>Fecha de elaboración: {{ fecha_elaboracion }}</i></p></td>
       </tr>
       <tr>
         <td colspan="2">
           <hr style="border: 1px solid #004360;">
-          <h3 style='margin-bottom: 0px;'>Hola {{ cliente_nombre }}</h3>
+          <h3 style='margin-bottom: 0px;'>Hola {{ cit_cliente.nombre }}</h3>
 
-          <p style='margin-top: 0px;'>Le proporcionamos la información detallada de la cita que agendó en este sistema:</p>
+          <p style='margin-top: 0px;'>Te mostramos la información detallada de tu cita:</p>
 
           <p>
-            <strong>Oficina</strong>: {{ cit_cita.oficina.descripcion }}<br>
-            <strong>Servicio</strong>: {{ cit_cita.cit_servicio.descripcion }}<br>
-            <strong>Fecha y hora</strong>: {{ cit_cita.inicio.strftime('%d de %B de %Y a las %I:%M %p') }}<br>
-            <strong>Notas</strong>:<br>
-            {{ cit_cita.notas }}
+            Oficina: <strong>{{ cit_cita.oficina.descripcion }}</strong><br>
+            Servicio: <strong>{{ cit_cita.cit_servicio.descripcion }}</strong><br>
+            Fecha: <strong>{{ cit_cita.inicio.strftime('%d de %B de %Y') }}</strong><br>
+            Hora: <strong>{{ cit_cita.inicio.strftime('%I:%M %p') }}</strong><br>
+            Notas: <strong>{{ cit_cita.notas }}</strong>
           </p>
 
-          <small style="color: #657c96;">Por favor llegue diez minutos antes de la fecha y hora mencionados.</small>
+          <p style="text-align: center;"><strong>Por favor se puntual</strong><br>
+          <span style="color: #dc3545; text-align: center; font-size: small;">Puedes cancelar tu cita 24 horas antes de la fecha agendada.</span>
+          </p>
         </td>
       </tr>
       <tr>
         <td colspan="2" style="text-align: center;">
-            <hr style="border: 1px solid #004360;">
-            <h3 style='margin-bottom: 3px;'>Código de verificación de asistencia</h3>
-            <h1 style="margin-top: 3px; margin-left: 33%; padding: 0.2em; background-color: white; font-size: 3em; width: 200px; color: black; display: block; font-family: Consola, Courier, 'MS Courier New', Monaco, Lucinda Console, Menlo;">{{ cit_cita.codigo_asistencia }}</h1>
+          <hr style="border: 1px solid #004360;">
+          <h3 style='margin-bottom: 3px;'>Código de verificación de asistencia</h3>
+          <h1 style="margin-top: 3px; margin-left: 33%; padding: 0.2em; background-color: white; font-size: 3em; width: 200px; color: black; display: block; font-family: monospace, Courier, 'MS Courier New', Monaco, Lucinda Console, Menlo;">{{ cit_cita.codigo_asistencia }}</h1>
+          <p><strong>SOLICITA QUE MARQUEN TU ASISTENCIA</strong></p>
+          <p style="margin-top: -15px; font-size: small;">para hacer un buen uso del Sistema de Citas.</p>
         </td>
       </tr>
         {% if va_a_incluir_qr %}
@@ -57,7 +64,7 @@
         {% endif %}
     </table>
 
-    <table style="width: 700px; text-align: center; border-collapse:collapse;">
+    <table style="width: 700px; text-align: center; border-collapse:collapse; margin-left:auto; margin-right:auto;">
       <tr style="background-color: #004360; color: #daba93;">
         <td><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-dorado.png" style="height: 40px; margin-left: 20px;"></td>
         <td><p style="font-size: small;">Blvd. Francisco Coss #945. Zona Centro. Saltillo, Coahuila de Zaragoza, México.<br>
