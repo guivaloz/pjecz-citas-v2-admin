@@ -85,7 +85,9 @@ def cambiar_contrasena(email):
 @click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
 def eliminar_abandonados(test):
     """Eliminar clientes que han abandonado su cuenta"""
-    click.echo("Eliminación de Clientes abandonados")
+    click.echo("Eliminación de Clientes abandonados - Sin contraseña SHA256 ni citas Agendadas")
+
+    # Conteo de posibles eliminaciones
     count_cit_clientes = CitCliente.query.outerjoin(CitCita).filter(CitCliente.contrasena_sha256 == "").filter(CitCita.cit_cliente == None).count()
     click.echo(f"Se encontraron {count_cit_clientes} cuentas de clientes sin contraseña SHA256 y sin citas agendadas.")
 
