@@ -93,7 +93,6 @@ def eliminar_abandonados(test):
 
     # Si esta en modo EJECUCIÓN, se ejecutan las operaciones en BD.
     if test is False:
-        # engine = db.engine
         # Borrado permanente de clientes_recuperaciones
         borrado = text(
             "DELETE \
