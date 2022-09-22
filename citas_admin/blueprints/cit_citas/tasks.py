@@ -39,7 +39,7 @@ SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "")
 HOST = os.getenv("HOST", "")
 
 
-def enviar_msg_agendada(cit_cita_id, to_email=None):
+def enviar_pendiente(cit_cita_id, to_email=None):
     """Enviar mensaje con datos de la cita agendada"""
 
     cit_cita = _validacion_cita(cit_cita_id)
@@ -103,7 +103,7 @@ def enviar_msg_agendada(cit_cita_id, to_email=None):
     return mensaje_final
 
 
-def enviar_msg_cancelacion(cit_cita_id, to_email=None):
+def enviar_cancelado(cit_cita_id, to_email=None):
     """Enviar mensaje de cita cancelada"""
 
     cit_cita = _validacion_cita(cit_cita_id)
@@ -146,7 +146,7 @@ def enviar_msg_cancelacion(cit_cita_id, to_email=None):
     return mensaje_final
 
 
-def enviar_msg_asistencia(cit_cita_id, to_email=None):
+def enviar_asistio(cit_cita_id, to_email=None):
     """enviar mensaje de cita cancelada"""
 
     cit_cita = _validacion_cita(cit_cita_id)
@@ -189,7 +189,7 @@ def enviar_msg_asistencia(cit_cita_id, to_email=None):
     return mensaje_final
 
 
-def enviar_msg_no_asistencia(cit_cita_id, to_email=None):
+def enviar_inasistencia(cit_cita_id, to_email=None):
     """enviar mensaje de falta a la cita, no asistió"""
 
     cit_cita = _validacion_cita(cit_cita_id)
@@ -232,7 +232,7 @@ def enviar_msg_no_asistencia(cit_cita_id, to_email=None):
     return mensaje_final
 
 
-def marcar_vencidas(test=True):
+def marcar_inasistencia(test=True):
     """Actualiza el estado de las citas a INASISTENCIA"""
 
     # Calcular fecha de vencimiento

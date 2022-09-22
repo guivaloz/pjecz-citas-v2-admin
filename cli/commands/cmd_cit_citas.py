@@ -80,7 +80,7 @@ def enviar_pendiente(ctx, cit_cita_id, to_email):
 
     # Agregar tarea en el fondo para enviar el mensaje
     app.task_queue.enqueue(
-        "citas_admin.blueprints.cit_citas.tasks.enviar_msg_agendada",
+        "citas_admin.blueprints.cit_citas.tasks.enviar_pendiente",
         cit_cita_id=cit_cita_id,
         to_email=to_email,
     )
@@ -98,7 +98,7 @@ def enviar_pendiente(ctx, cit_cita_id, to_email):
 @click.argument("cit_cita_id", type=int)
 @click.option("--to_email", default=None, help="Email del destinatario", type=str)
 @click.pass_context
-def enviar_cancelada(ctx, cit_cita_id, to_email):
+def enviar_cancelado(ctx, cit_cita_id, to_email):
     """Envía mensaje vía email cita Cancelada"""
     click.echo("Envío de mensaje de cita cancelada")
     # Validar cita
@@ -114,7 +114,7 @@ def enviar_cancelada(ctx, cit_cita_id, to_email):
 
     # Agregar tarea en el fondo para enviar el mensaje
     app.task_queue.enqueue(
-        "citas_admin.blueprints.cit_citas.tasks.enviar_msg_cancelacion",
+        "citas_admin.blueprints.cit_citas.tasks.enviar_cancelado",
         cit_cita_id=cit_cita_id,
         to_email=to_email,
     )
@@ -148,7 +148,7 @@ def enviar_asistio(ctx, cit_cita_id, to_email):
 
     # Agregar tarea en el fondo para enviar el mensaje
     app.task_queue.enqueue(
-        "citas_admin.blueprints.cit_citas.tasks.enviar_msg_asistencia",
+        "citas_admin.blueprints.cit_citas.tasks.enviar_asistio",
         cit_cita_id=cit_cita_id,
         to_email=to_email,
     )
@@ -182,7 +182,7 @@ def enviar_inasistencia(ctx, cit_cita_id, to_email):
 
     # Agregar tarea en el fondo para enviar el mensaje
     app.task_queue.enqueue(
-        "citas_admin.blueprints.cit_citas.tasks.enviar_msg_no_asistencia",
+        "citas_admin.blueprints.cit_citas.tasks.enviar_inasistencia",
         cit_cita_id=cit_cita_id,
         to_email=to_email,
     )
@@ -199,9 +199,9 @@ def enviar_inasistencia(ctx, cit_cita_id, to_email):
 @click.command()
 @click.option("--test", default=True, help="Se ejecuta en modo de prueba", type=bool)
 @click.pass_context
-def marcar_vencidas(ctx, test):
+def marcar_inasistencia(ctx, test):
     """Marca citas pasadas y PENDIENTES como 'INASISTENCIA'"""
-    click.echo("Marcar las citas viejas y pendientes como vencidas")
+    click.echo("Marcar las citas pasadas y PENDIENTES con INASISTENCIA")
 
     # Calcular fecha de vencimiento
     fecha_actual = datetime.now()
@@ -236,7 +236,7 @@ def marcar_vencidas(ctx, test):
 
 cli.add_command(consultar)
 cli.add_command(enviar_pendiente)
-cli.add_command(enviar_cancelada)
+cli.add_command(enviar_cancelado)
 cli.add_command(enviar_asistio)
 cli.add_command(enviar_inasistencia)
-cli.add_command(marcar_vencidas)
+cli.add_command(marcar_inasistencia)
