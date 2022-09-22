@@ -284,6 +284,9 @@ def assistance(cit_cita_id, qr=False):
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
     form = CitCitaAssistance()
     if form.validate_on_submit():
+        if cit_cita.estatus != "A":
+            flash("No puede marcar la asistencia de una cita BORRADA.", "warning")
+            return redirect(url_for("cit_citas.assistance", cit_cita_id=cit_cita.id))
         if cit_cita.estado != "PENDIENTE":
             flash("No puede marcar la asistencia de una cita que no tenga estado de PENDIENTE.", "warning")
             return redirect(url_for("cit_citas.assistance", cit_cita_id=cit_cita.id))
@@ -296,18 +299,27 @@ def assistance(cit_cita_id, qr=False):
             flash("El código de verificación es incorrecto", "danger")
             return redirect(url_for("cit_citas.assistance", cit_cita_id=cit_cita.id))
 
-        if cit_cita.estatus == "A":
-            cit_cita.estado = "ASISTIO"
-            cit_cita.asistencia = True
-            cit_cita.save()
-            bitacora = Bitacora(
-                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-                usuario=current_user,
-                descripcion=safe_message(f"Asistencia correcta en la Cita {cit_cita.id}"),
-                url=url_for("cit_citas.detail", cit_cita_id=cit_cita.id),
-            )
-            bitacora.save()
-            flash(bitacora.descripcion, "success")
+        # Actualización en BD
+        cit_cita.estado = "ASISTIO"
+        cit_cita.asistencia = True
+        cit_cita.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Asistencia correcta en la Cita {cit_cita.id}"),
+            url=url_for("cit_citas.detail", cit_cita_id=cit_cita.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+
+        # Lanzar tarea en el fondo
+        current_user.launch_task(
+            nombre="cit_citas.tasks.enviar_asistio",
+            descripcion=f"Enviar msg de asistió de la cita {cit_cita.id} al cliente {cit_cita.cit_cliente.email}",
+            cit_cita_id=cit_cita.id,
+        )
+        flash("Se está un msg de notificación de asistencia al cliente... ", "info")
+
         if qr is False:
             return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
     # Vista de formulario

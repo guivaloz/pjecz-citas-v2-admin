@@ -198,8 +198,9 @@ def enviar_inasistencia(ctx, cit_cita_id, to_email):
 
 @click.command()
 @click.option("--test", default=True, help="Se ejecuta en modo de prueba", type=bool)
+@click.option("--enviar", default=False, help="Se envía una notificación al cliente", type=bool)
 @click.pass_context
-def marcar_inasistencia(ctx, test):
+def marcar_inasistencia(ctx, test, enviar):
     """Marca citas pasadas y PENDIENTES como 'INASISTENCIA'"""
     click.echo("Marcar las citas pasadas y PENDIENTES con INASISTENCIA")
 
@@ -213,27 +214,37 @@ def marcar_inasistencia(ctx, test):
         minute=59,
         second=59,
     )
-
     fecha_limite = fecha_limite - timedelta(days=1)
     click.echo(f"Fecha de Vencimiento: {fecha_limite}, citas anteriores a esta fecha.")
 
+    # Conteo de citas para cambiar de PENDIENTE a INASISTENCIA
     citas_count = CitCita.query.filter_by(estado="PENDIENTE").filter(CitCita.inicio <= fecha_limite).filter_by(estatus="A").count()
 
-    if citas_count > 0:
-        # Agregar tarea en el fondo para enviar el mensaje
-        app.task_queue.enqueue(
-            "citas_admin.blueprints.cit_citas.tasks.marcar_vencidas",
-            test=test,
-        )
-        # TODO: Envíar mensaje de INASISTENCIA al cliente
-        if test is False:
-            pass
-
-    # Mostrar mensaje de termino
     if test:
         click.echo(f"MODO DE PRUEBA - citas a cambiar {citas_count}, No se hizo ningún cambio permanente.")
     else:
+        # Enviar mensaje de INASISTENCIA al cliente
+        if enviar is True:
+            citas = CitCita.query.filter_by(estado="PENDIENTE").filter(CitCita.inicio <= fecha_limite).filter_by(estatus="A").all()
+            for cita in citas:
+                # Agregar tarea en el fondo para enviar el mensaje de inasistencia
+                app.task_queue.enqueue(
+                    "citas_admin.blueprints.cit_citas.tasks.enviar_inasistencia",
+                    cit_cita_id=cita.id,
+                )
+            click.echo(f"Se han enviado {len(citas)} mensajes de INASISTENCIA")
+        else:
+            citas_count = CitCita.query.filter_by(estado="PENDIENTE").filter(CitCita.inicio <= fecha_limite).filter_by(estatus="A").count()
+            click.echo(f"SIN ENVÍO: Se podrían enviar {citas_count} mensajes de correo a los clientes.")
+
+    if citas_count > 0:
+        # Agregar tarea en el fondo para marcar las citas vencidas
+        app.task_queue.enqueue(
+            "citas_admin.blueprints.cit_citas.tasks.marcar_inasistencia",
+            test=test,
+        )
         click.echo(f"Se han cambiado {citas_count} citas a estado de INASISTENCIA")
+
     ctx.exit(0)
 
 
