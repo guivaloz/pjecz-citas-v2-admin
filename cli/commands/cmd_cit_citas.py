@@ -225,6 +225,9 @@ def marcar_inasistencia(ctx, test):
             "citas_admin.blueprints.cit_citas.tasks.marcar_vencidas",
             test=test,
         )
+        # TODO: Envíar mensaje de INASISTENCIA al cliente
+        if test is False:
+            pass
 
     # Mostrar mensaje de termino
     if test:

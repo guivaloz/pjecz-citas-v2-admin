@@ -20,6 +20,7 @@ from citas_admin.app import create_app
 from citas_admin.extensions import db, pwd_context
 
 from citas_admin.blueprints.cit_clientes.models import CitCliente
+from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitClienteRecuperacion
 
 app = create_app()
 db.app = app
@@ -88,13 +89,11 @@ def cambiar_contrasena(email):
 def eliminar_abandonados(test):
     """Eliminar clientes que han abandonado su cuenta"""
     click.echo("Eliminación de Clientes abandonados - Sin contraseña SHA256 ni citas Agendadas")
+    engine = db.engine
 
-    # Conteo de posibles eliminaciones
-    count_cit_clientes = CitCliente.query.outerjoin(CitCita).filter(CitCliente.contrasena_sha256 == "").filter(CitCita.cit_cliente == None).count()
-    click.echo(f"Se encontraron {count_cit_clientes} cuentas de clientes sin contraseña SHA256 y sin citas agendadas.")
-
+    # Si esta en modo EJECUCIÓN, se ejecutan las operaciones en BD.
     if test is False:
-        engine = db.engine
+        # engine = db.engine
         # Borrado permanente de clientes_recuperaciones
         borrado = text(
             "DELETE \
@@ -114,6 +113,18 @@ def eliminar_abandonados(test):
         if res:
             click.echo(f"Se eliminaron {res.rowcount} clientes correctamente")
     else:
+        count_query = text(
+            "SELECT COUNT(*) AS cantidad\
+                FROM cit_clientes AS cli \
+                WHERE cli.id NOT IN (SELECT cit_cliente_id FROM cit_citas WHERE cit_cliente_id = cli.id) \
+                    AND cli.id NOT IN (SELECT cit_cliente_id FROM cit_clientes_recuperaciones WHERE cit_cliente_id = cli.id AND estatus = 'A') \
+                    AND cli.contrasena_sha256 = ''"
+        )
+        res = engine.execute(count_query)
+        count_cit_clientes = 0
+        if res:
+            for cantidad in res.columns("cantidad"):
+                count_cit_clientes = cantidad[0]
         click.echo(f"MODO DE PRUEBA - Se podrían eliminar {count_cit_clientes} clientes")
 
 
@@ -142,99 +153,18 @@ def definir_boleanos(test):
 def evaluar_asistencia(test):
     """Penaliza o Premia al cliente dependiendo de su asistencia"""
     click.echo("Penaliza o Premia al cliente dependiendo de su asistencia")
-
-    # # Agregar tarea en el fondo para enviar el mensaje
-    # app.task_queue.enqueue(
-    #     "citas_admin.blueprints.cit_clientes.tasks.evaluar_asistencia",
-    #     test=test,
-    # )
-    _temp()
-    # Mostrar mensaje de termino
+    # Agregar tarea en el fondo para enviar el mensaje
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.cit_clientes.tasks.evaluar_asistencia",
+        test=test,
+    )
+    # Mostrar mensaje de Prueba o Ejecución
     if test:
         click.echo("MODO DE PRUEBA - No se hizo ningún cambio permanente.")
     else:
         click.echo("Se han cambiado el número de citas de los clientes buenos y malos.")
-
-
-def _temp(test=True):
-    """temp"""
-    DIAS_MARGEN = 30
-    LIMITE_SIN_CITAS = 15
-    LIMITE_INASISTENCIA = 2
-    LIMITE_ASISTENCIA = 30
-    PORCENTAJE_ASISTENCIA_ACEPTABLE = 0.8
-
-    # Calcular fecha de vencimiento
-    fecha_actual = datetime.now()
-    fecha_limite = datetime(
-        year=fecha_actual.year,
-        month=fecha_actual.month,
-        day=fecha_actual.day,
-        hour=0,
-        minute=0,
-        second=0,
-    )
-    fecha_limite = fecha_limite - timedelta(days=DIAS_MARGEN)
-
-    # Contadores de cambios realizados
-    count_clientes_ajustados = 0
-    count_clientes_premiados = 0
-    count_clientes_penalizados = 0
-
-    # Revisar los clientes
-    clientes = CitCliente.query.filter_by(estatus="A").all()
-    for cliente in clientes:
-        # variables para contar las citas por cliente
-        count_citas_asistio = 0
-        count_citas_inasistencia = 0
-        # Query para extraer el número de citas por estado
-        db = SessionLocal()
-        citas_cantidades = (
-            db.query(
-                CitCita.estado.label("estado"),
-                func.count("*").label("cantidad"),
-            )
-            .filter_by(cit_cliente_id=cliente.id)
-            .filter_by(estatus="A")
-            .filter(CitCita.creado > fecha_limite)
-            .group_by(CitCita.estado)
-        )
-        # Establecemos las cantidades
-        for estado, cantidad in citas_cantidades.all():
-            if estado == "ASISTIO":
-                count_citas_asistio = cantidad
-            elif estado == "INASISTENCIA":
-                count_citas_inasistencia = cantidad
-        # Calculamos los porcentajes
-        total_citas = count_citas_asistio + count_citas_inasistencia
-        click.echo(f"Cliente {cliente.id} citas: {total_citas}, asistio {count_citas_asistio}, faltó {count_citas_inasistencia}")  # DEBUG:
-        if total_citas == 0:
-            if cliente.limite_citas_pendientes == LIMITE_SIN_CITAS:
-                if test is False:
-                    cliente.limite_citas_pendientes = LIMITE_SIN_CITAS
-                    cliente.save()
-                mensaje = f"Cliente {cliente.id} sin citas en los últimos {DIAS_MARGEN} días. Se ajustó su límite de citas a {LIMITE_SIN_CITAS}."
-                click.echo(mensaje)
-                count_clientes_ajustados += 1
-        elif (count_citas_asistio * 100) / total_citas >= PORCENTAJE_ASISTENCIA_ACEPTABLE:
-            if cliente.limite_citas_pendientes == LIMITE_ASISTENCIA:
-                if test is False:
-                    cliente.limite_citas_pendientes = LIMITE_ASISTENCIA
-                    cliente.save()
-                mensaje = f"Cliente {cliente.id} con buena asistencia en los últimos {DIAS_MARGEN} días. Se ajustó su límite de citas a {LIMITE_ASISTENCIA}."
-                click.echo(mensaje)
-                count_clientes_premiados += 1
-        else:
-            if cliente.limite_citas_pendientes == LIMITE_INASISTENCIA:
-                if test is False:
-                    cliente.limite_citas_pendientes = LIMITE_INASISTENCIA
-                    cliente.save()
-                mensaje = f"Cliente {cliente.id} con mala asistencia en los últimos {DIAS_MARGEN} días. Se ajustó su límite de citas a {LIMITE_INASISTENCIA}."
-                click.echo(mensaje)
-                count_clientes_penalizados += 1
-
-    mensaje_final = f"Se premiaron {count_clientes_premiados}, se ajustaron {count_clientes_ajustados}, se penalizaron {count_clientes_penalizados} clientes."
-    click.echo(mensaje_final)
+    # Mostrar mensaje de termino
+    click.echo("Revise el LOG cit_clientes.log para mayor detalle de las operaciones realizadas.")
 
 
 cli.add_command(agregar)
