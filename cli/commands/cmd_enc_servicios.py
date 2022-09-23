@@ -6,8 +6,8 @@ Enc Servicios
 - crear: Crea una nueva encuesta
 """
 from datetime import datetime, timedelta
-from itertools import count
 import os
+
 import click
 from dotenv import load_dotenv
 from tabulate import tabulate

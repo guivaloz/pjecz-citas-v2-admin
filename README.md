@@ -96,8 +96,12 @@ Guarde sus configuraciones, contrasenas y tokens en un archivo `.env`
     SENDGRID_FROM_EMAIL=
 
     # URLs de destino a las paginas de confirmacion
-    NEW_ACCOUNT_CONFIRM_URL=https://localhost:3000/new_account_confirm
-    RECOVER_ACCOUNT_CONFIRM_URL=https://localhost:3000/recover_account_confirm
+    NEW_ACCOUNT_CONFIRM_URL=http://127.0.0.1:3000/new_account_confirm
+    RECOVER_ACCOUNT_CONFIRM_URL=http://127.0.0.1:3000/recover_account_confirm
+
+    # URLs de las encuestas
+    POLL_SYSTEM_URL=http://127.0.0.1:3000/poll_system
+    POLL_SERVICE_URL=http://127.0.0.1:3000/poll_service
 
     # Si esta en PRODUCTION se evita reiniciar la base de datos
     DEPLOYMENT_ENVIRONMENT=develop
@@ -116,42 +120,32 @@ Cree el archivo `.bashrc` para que un perfil de Konsole le facilite la inicializ
     figlet CitasV2 Admin
     echo
 
-    echo "-- Flask"
-    echo "   FLASK_APP:   ${FLASK_APP}"
-    echo "   FLASK_DEBUG: ${FLASK_DEBUG}"
-    echo "   SECRET_KEY:  ${SECRET_KEY}"
-    echo
-    echo "-- Database"
+    echo "== Variables de entorno"
+    echo "   CLOUD_STORAGE_DEPOSITO: ${CLOUD_STORAGE_DEPOSITO}"
+    echo "   DEPLOYMENT_ENVIRONMENT: ${DEPLOYMENT_ENVIRONMENT}"
     echo "   DB_HOST: ${DB_HOST}"
     echo "   DB_NAME: ${DB_NAME}"
-    echo "   DB_PASS: ${DB_PASS}"
     echo "   DB_USER: ${DB_USER}"
-    echo
-    echo "-- Redis"
-    echo "   REDIS_URL:  ${REDIS_URL}"
+    echo "   DB_PASS: ${DB_PASS}"
+    echo "   FLASK_APP: ${FLASK_APP}"
+    echo "   HOST: ${HOST}"
+    echo "   NEW_ACCOUNT_CONFIRM_URL: ${NEW_ACCOUNT_CONFIRM_URL}"
+    echo "   POLL_SYSTEM_URL: ${POLL_SYSTEM_URL}"
+    echo "   POLL_SERVICE_URL: ${POLL_SERVICE_URL}"
+    echo "   RECOVER_ACCOUNT_CONFIRM_URL: ${RECOVER_ACCOUNT_CONFIRM_URL}"
+    echo "   REDIS_URL: ${REDIS_URL}"
+    echo "   SALT: ${SALT}"
+    echo "   SECRET_KEY: ${SECRET_KEY}"
+    echo "   SENDGRID_API_KEY: ${SENDGRID_API_KEY}"
+    echo "   SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL}"
     echo "   TASK_QUEUE: ${TASK_QUEUE}"
     echo
-    echo "-- Google Cloud Storage"
-    echo "   CLOUD_STORAGE_DEPOSITO: ${CLOUD_STORAGE_DEPOSITO}"
-    echo
-    echo "-- Host"
-    echo "   HOST: ${HOST}"
-    echo
-    echo "-- Salt"
-    echo "   SALT: ${SALT}"
-    echo
-    echo "-- Deployment environment"
-    echo "   DEPLOYMENT_ENVIRONMENT: ${DEPLOYMENT_ENVIRONMENT}"
-    echo
 
-    export PGDATABASE=${DB_NAME}
-    export PGPASSWORD=${DB_PASS}
-    export PGUSER=${DB_USER}
-    echo "-- PostgreSQL"
-    echo "   PGDATABASE: ${PGDATABASE}"
-    echo "   PGPASSWORD: ${PGPASSWORD}"
-    echo "   PGUSER:     ${PGUSER}"
-    echo
+    export PGHOST=$DB_HOST
+    export PGPORT=5432
+    export PGDATABASE=$DB_NAME
+    export PGUSER=$DB_USER
+    export PGPASSWORD=$DB_PASS
 
     alias reiniciar="citas db reiniciar"
     alias arrancar="flask run --port 5010"
@@ -161,3 +155,9 @@ Cree el archivo `.bashrc` para que un perfil de Konsole le facilite la inicializ
     echo "   arrancar:  Arrancar Flask"
     echo "   fondear:   Arrancar RQ worker"
     echo
+
+## Tareas en el fondo a programar en el servidor en la nube
+
+Cada noche eliminar los cit_clientes que NO tengan contrasena SHA256 ni citas
+
+    citas cit_clientes eliminar-abandonados --test False
