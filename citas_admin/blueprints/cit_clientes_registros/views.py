@@ -12,10 +12,10 @@ from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_message
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_clientes_registros.models import CitClienteRegistro
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.cit_clientes_registros.models import CitClienteRegistro
 
 MODULO = "CIT CLIENTES REGISTROS"
 

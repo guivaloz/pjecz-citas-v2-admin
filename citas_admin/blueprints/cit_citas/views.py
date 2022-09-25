@@ -9,22 +9,20 @@ from flask_login import current_user, login_required
 from pytz import timezone
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_message, safe_string, safe_email, safe_text
+from lib.safe_string import safe_message, safe_string, safe_text
 from lib.pwgen import generar_codigo_asistencia
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
-from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.cit_citas.models import CitCita
-from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.cit_clientes.models import CitCliente
-from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.distritos.models import Distrito
-from citas_admin.blueprints.oficinas.models import Oficina
-from citas_admin.blueprints.usuarios_oficinas.models import UsuarioOficina
+from citas_admin.blueprints.cit_horas_bloqueadas.models import CitHoraBloqueada
 from citas_admin.blueprints.cit_oficinas_servicios.models import CitOficinaServicio
 from citas_admin.blueprints.cit_servicios.models import CitServicio
-from citas_admin.blueprints.cit_horas_bloqueadas.models import CitHoraBloqueada
+from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.oficinas.models import Oficina
+from citas_admin.blueprints.permisos.models import Permiso
+from citas_admin.blueprints.usuarios.decorators import permission_required
+from citas_admin.blueprints.usuarios_oficinas.models import UsuarioOficina
 
 from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm, CitCitaSearchAdminForm, CitCitaAssistance, CitCitaNew
 
@@ -47,8 +45,10 @@ def before_request():
 @cit_citas.route("/cit_citas/datatable_json", methods=["GET", "POST"])
 def datatable_json():
     """DataTable JSON para listado de citas"""
+
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
+
     # Consultar
     consulta = CitCita.query
     if "estatus" in request.form:
@@ -76,6 +76,7 @@ def datatable_json():
         inicio_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=0, minute=0, second=0)
         termino_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=23, minute=59, second=59)
         consulta = consulta.filter(CitCita.inicio >= inicio_dt).filter(CitCita.inicio <= termino_dt)
+
     # Si es admin, ordenar por id, si es juzgado ordenar por fecha
     if current_user.can_admin(MODULO):
         registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
@@ -87,6 +88,7 @@ def datatable_json():
         else:
             registros = consulta.order_by(CitCita.inicio).offset(start).limit(rows_per_page).all()
     total = consulta.count()
+
     # Elaborar datos para DataTable
     data = []
     for cita in registros:
@@ -118,6 +120,7 @@ def datatable_json():
                 "notas": cita.notas,
             }
         )
+
     # Entregar JSON
     return output_datatable_json(draw, total, data)
 
@@ -129,21 +132,25 @@ def list_active():
     fecha_str = ""
     fecha_anterior_str = ""
     fecha_siguiente_str = ""
+
     # La fecha puede venir como argumento
     fecha_str = request.args.get("fecha", "")
+
     # Si no es administrador y no viene la fecha, se impone la fecha de hoy
     if fecha_str == "" and not current_user.can_admin(MODULO):
         fecha = datetime.now()
         fecha_str = fecha.strftime("%Y-%m-%d")
+
     # Al tener la fecha, se calcula la fecha anterior y siguiente
     if fecha_str != "":
         fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
         fecha_anterior_str = (fecha - timedelta(days=1)).strftime("%Y-%m-%d")
         fecha_siguiente_str = (fecha + timedelta(days=1)).strftime("%Y-%m-%d")
+
     # Verificamos si tiene asignadas varias oficinas
     oficinas = UsuarioOficina.query.filter_by(usuario_id=current_user.id).filter_by(estatus="A").all()
 
-    # Si es administrador, puede ver las citas de todas las oficinas
+    # Si es administrador, entregar las citas de todas las oficinas
     if current_user.can_admin(MODULO):
         return render_template(
             "cit_citas/list_admin.jinja2",
@@ -154,7 +161,8 @@ def list_active():
             fecha_anterior=fecha_anterior_str,
             fecha_siguiente=fecha_siguiente_str,
         )
-    # NO es administrador, entonces se filtra por su propia oficina
+
+    # NO es administrador, entregar las citas de su propia oficina
     return render_template(
         "cit_citas/list.jinja2",
         filtros=json.dumps({"estatus": "A", "oficina_id": current_user.oficina_id, "fecha": fecha_str}),
@@ -175,18 +183,22 @@ def list_inactive():
     fecha_str = ""
     fecha_anterior_str = ""
     fecha_siguiente_str = ""
+
     # La fecha puede venir como argumento
     fecha_str = request.args.get("fecha", "")
+
     # Si no es administrador y no viene la fecha, se impone la fecha de hoy
     if fecha_str == "" and not current_user.can_admin(MODULO):
         fecha = datetime.now()
         fecha_str = fecha.strftime("%Y-%m-%d")
+
     # Al tener la fecha, se calcula la fecha anterior y siguiente
     if fecha_str != "":
         fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
         fecha_anterior_str = (fecha - timedelta(days=1)).strftime("%Y-%m-%d")
         fecha_siguiente_str = (fecha + timedelta(days=1)).strftime("%Y-%m-%d")
-    # Si es administrador, puede ver las citas de todas las oficinas
+
+    # Si es administrador, entregar las citas de todas las oficinas
     if current_user.can_admin(MODULO):
         return render_template(
             "cit_citas/list_admin.jinja2",
@@ -196,7 +208,8 @@ def list_inactive():
             fecha_anterior=fecha_anterior_str,
             fecha_siguiente=fecha_siguiente_str,
         )
-    # NO es administrador, entonces se filtra por su propia oficina
+
+    # NO es administrador, entregar las citas de su propia oficina
     return render_template(
         "cit_citas/list.jinja2",
         filtros=json.dumps({"estatus": "B", "oficina_id": current_user.oficina_id, "fecha": fecha_str}),
@@ -211,6 +224,8 @@ def list_inactive():
 @cit_citas.route("/cit_citas/<int:cit_cita_id>")
 def detail(cit_cita_id):
     """Detalle de una Cita"""
+
+    # Consultar
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
     if cit_cita.inicio <= datetime.now():
         if cit_cita.estado == "PENDIENTE":
@@ -219,17 +234,21 @@ def detail(cit_cita_id):
             marcar_asistencia = False
     else:
         marcar_asistencia = False
+
     # Si es administrador, ve todas las citas
     if current_user.can_admin(MODULO):
         return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
+
     # Si no es administrador, solo puede ver los detalles de una cita de su propia oficina
     if cit_cita.oficina == current_user.oficina:
         return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
+
     # Si tiene acceso a varias oficinas
     oficinas = UsuarioOficina.query.filter_by(usuario=current_user).filter_by(oficina=cit_cita.oficina).filter_by(estatus="A").first()
     if oficinas is not None:
         return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
-    # Si no es administrador, no puede ver los detalles de una cita de otra oficina, lo reenviamos al listado
+
+    # No puede ver la cita
     abort(403)
 
 
@@ -237,11 +256,15 @@ def detail(cit_cita_id):
 @permission_required(MODULO, Permiso.MODIFICAR)
 def delete(cit_cita_id):
     """Eliminar Cita"""
+
+    # Consultar
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
+
     # Si no es administrador, no puede eliminar un cita de otra oficina
     if not current_user.can_admin(MODULO) and cit_cita.oficina != current_user.oficina:
         abort(403)
 
+    # Si tiene estatus "A", eliminar
     if cit_cita.estatus == "A":
         cit_cita.delete()
         bitacora = Bitacora(
@@ -259,11 +282,15 @@ def delete(cit_cita_id):
 @permission_required(MODULO, Permiso.MODIFICAR)
 def recover(cit_cita_id):
     """Recuperar Cita"""
+
+    # Consultar
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
+
     # Si no es administrador, no puede eliminar un cita de otra oficina
     if not current_user.can_admin(MODULO) and cit_cita.oficina != current_user.oficina:
         abort(403)
 
+    # Si tiene estatus "B", recuperar
     if cit_cita.estatus == "B":
         cit_cita.recover()
         bitacora = Bitacora(
@@ -281,25 +308,35 @@ def recover(cit_cita_id):
 @permission_required(MODULO, Permiso.MODIFICAR)
 def assistance(cit_cita_id, qr=False):
     """Marcar Asistencia a una Cita"""
+
+    # Consultar
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
+
+    # Si viene el formulario
     form = CitCitaAssistance()
     if form.validate_on_submit():
+
+        # Validar el estatus
         if cit_cita.estatus != "A":
             flash("No puede marcar la asistencia de una cita BORRADA.", "warning")
             return redirect(url_for("cit_citas.assistance", cit_cita_id=cit_cita.id))
+
+        # Validar el estado
         if cit_cita.estado != "PENDIENTE":
             flash("No puede marcar la asistencia de una cita que no tenga estado de PENDIENTE.", "warning")
             return redirect(url_for("cit_citas.assistance", cit_cita_id=cit_cita.id))
-        # No se puede marcar la asistencia de una cita a futuro
+
+        # No se puede marcar la asistencia de una cita en el futuro
         if cit_cita.inicio > datetime.now():
             flash("No puede marcar la asistencia de una cita que aún no ha pasado.", "warning")
             return redirect(url_for("cit_citas.assistance", cit_cita_id=cit_cita.id))
-        # Revisar el código de verificación
+
+        # Validar el código de verificación
         if cit_cita.codigo_asistencia != form.codigo.data:
             flash("El código de verificación es incorrecto", "danger")
             return redirect(url_for("cit_citas.assistance", cit_cita_id=cit_cita.id))
 
-        # Actualización en BD
+        # Actualizar la cita
         cit_cita.estado = "ASISTIO"
         cit_cita.asistencia = True
         cit_cita.save()
@@ -315,14 +352,16 @@ def assistance(cit_cita_id, qr=False):
         # Lanzar tarea en el fondo
         current_user.launch_task(
             nombre="cit_citas.tasks.enviar_asistio",
-            descripcion=f"Enviar msg de asistió de la cita {cit_cita.id} al cliente {cit_cita.cit_cliente.email}",
+            descripcion="Enviar mensaje para informar que asistió a la cita",
             cit_cita_id=cit_cita.id,
         )
-        flash("Se está un msg de notificación de asistencia al cliente... ", "info")
+        flash("Se va a enviar un mensaje para informar que asistió a la cita", "info")
 
+        # TODO: Porque si no se usa el QR, redireccionar
         if qr is False:
             return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
-    # Vista de formulario
+
+    # Entregar formulario
     form.cita_id.data = cit_cita_id
     form.cliente.data = cit_cita.cit_cliente.nombre
     return render_template("cit_citas/assistance.jinja2", form=form, cit_cita_id=cit_cita.id)
@@ -332,7 +371,10 @@ def assistance(cit_cita_id, qr=False):
 @permission_required(MODULO, Permiso.MODIFICAR)
 def pending(cit_cita_id):
     """Marcar la Cita como Pendiente"""
+
+    # Consultar
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
+
     # Si no es administrador, no puede desmarcar una asistencia de una cita de otra oficina
     if not current_user.can_admin(MODULO) and cit_cita.oficina != current_user.oficina:
         abort(403)
@@ -342,6 +384,7 @@ def pending(cit_cita_id):
         flash("No puede desmarcar al asistencia de una cita que no tenga el estado previo de ASISTIO.", "warning")
         return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
 
+    # Si el estatus es "A"
     if cit_cita.estatus == "A":
         cit_cita.estado = "PENDIENTE"
         cit_cita.asistencia = False
@@ -354,6 +397,8 @@ def pending(cit_cita_id):
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
+
+    # Entregar
     return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
 
 
@@ -364,11 +409,9 @@ def search():
         form_search = CitCitaSearchAdminForm()
     else:
         form_search = CitCitaSearchForm()
-
     if form_search.validate_on_submit():
         busqueda = {"estatus": "A"}
         titulos = []
-
         if form_search.cliente.data:
             cliente = safe_string(form_search.cliente.data)
             if cliente != "":
@@ -396,30 +439,31 @@ def search():
                 if distrito != "":
                     busqueda["distrito_id"] = distrito.id
                     titulos.append("distrito " + distrito.nombre_corto)
-
         return render_template(
             "cit_citas/list_search.jinja2",
             filtros=json.dumps(busqueda),
             titulo="Citas con " + ", ".join(titulos),
             estatus="A",
         )
-
     return render_template("cit_citas/search.jinja2", form=form_search)
 
 
 @cit_citas.route("/cit_citas/asistencia/<string:cit_cita_id_encode>")
 def assistance_qr(cit_cita_id_encode):
     """Marcado de asistencia a una cita direccionando vía código QR"""
+
     # Se descodifica el hash para saber que cita_id se trata
     cit_cita_id = CitCita.decode_id(cit_cita_id_encode)
     if cit_cita_id is None or cit_cita_id == "":
         flash("!ERROR: La cita que busca no se encuentra", "danger")
         return render_template("cit_citas/assistance_qr.jinja2", cit_cita=0, asistencia=False)
+
     # Identificamos la cita correspondiente
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
     if cit_cita.estado == "ASISTIO":
         return render_template("cit_citas/assistance_qr.jinja2", cit_cita=cit_cita, asistencia=True)
-    # rango de aceptación para dar asistencia a una cita
+
+    # Rango de aceptación para dar asistencia a una cita
     if datetime.now() - timedelta(hours=24) <= cit_cita.inicio <= datetime.now() + timedelta(hours=8):
         if cit_cita.estado == "PENDIENTE":
             assistance(cit_cita.id, True)
@@ -427,6 +471,7 @@ def assistance_qr(cit_cita_id_encode):
     else:
         flash("El rango de horario aceptable para dar asistencia ha sido superado.", "warning")
 
+    # Entregar
     return render_template("cit_citas/assistance_qr.jinja2", cit_cita=cit_cita, asistencia=False)
 
 
@@ -441,9 +486,9 @@ def new(cit_cliente_id):
 
     # Listado de Oficinas donde puede agendar citas
     oficinas = UsuarioOficina.query.filter_by(usuario_id=current_user.id).filter_by(estatus="A").all()
-
     form = CitCitaNew()
     if form.validate_on_submit():
+
         # Validar datos
         if "oficina_id" not in request.form:
             flash("Error: Faltó indicar la oficina", "danger")
@@ -480,11 +525,13 @@ def new(cit_cliente_id):
             minute=hora_minutos.minute,
             second=0,
         )
+
         # Validar si se puede agendar la cita
         count_citas = CitCita.query.filter_by(oficina=oficina).filter_by(inicio=horario).filter(CitCita.estado != "CANCELO").filter_by(estatus="A").count()
         if count_citas >= LIMITE_CITAS:
             flash(f"Error: Ya se alcanzó el límite de citas para ese horario. Límite: {LIMITE_CITAS}", "warning")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
+
         # Hacer el insert en la tabla
         cit_cita = CitCita(
             cit_cliente_id=cliente.id,
@@ -505,6 +552,7 @@ def new(cit_cliente_id):
             url=url_for("cit_citas.detail", cit_cita_id=cit_cita.id),
         )
         bitacora.save()
+
         # Mostrar resultado
         flash(
             f"Cita agendada con éxito: {cit_cita.id}<br>\
