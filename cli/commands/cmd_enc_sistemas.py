@@ -1,26 +1,33 @@
 """
 Enc Sistemas
 
-- consultar: Ver listado de la encuesta filtrado por estado
+- consultar: Consultar encuestas de sistemas
 - enviar: Enviar mensaje con URL para contestar la encuesta
 - crear: Crea una nueva encuesta
+- crear_enviar: Crear y enviar mensajes para contestar las encuestas
+- cancelar: Cancelar encuestas pendientes creadas hace 7 dias
 """
+from datetime import datetime, timedelta
 import os
+
 import click
 from dotenv import load_dotenv
+from pytz import timezone
 from tabulate import tabulate
 
 from citas_admin.app import create_app
 from citas_admin.extensions import db
 
-from citas_admin.blueprints.enc_sistemas.models import EncSistema
+from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.cit_clientes.models import CitCliente
+from citas_admin.blueprints.enc_sistemas.models import EncSistema
 
 app = create_app()
 db.app = app
 
 load_dotenv()  # Take environment variables from .env
 
+HUSO_HORARIO = timezone("America/Mexico_City")
 POLL_SYSTEM_URL = os.getenv("POLL_SYSTEM_URL", "")
 SAFE_LIMIT = 30
 
@@ -134,31 +141,6 @@ def _respuesta_int_to_string(respuesta: int):
 
 
 @click.command()
-@click.argument("id", type=int)
-@click.pass_context
-def enviar(ctx, id):
-    """Enviar mensaje por correo electrónico con el URL para abrir la encuesta"""
-    click.echo(f"Por enviar un mensaje al cliente con ID {id}")
-
-    # Consultar la encuesta
-    encuesta = EncSistema.query.get(id)
-    if encuesta is None:
-        click.echo(click.style(f"La encuesta con el id '{id}' no existe.", fg="red"))
-        ctx.exit(1)
-
-    # Agregar tarea en el fondo para enviar el mensaje
-    app.task_queue.enqueue(
-        "citas_admin.blueprints.enc_sistemas.tasks.enviar",
-        enc_sistemas_id=encuesta.id,
-    )
-
-    # Mostrar mensaje de termino
-    url = f"{POLL_SYSTEM_URL}?hashid={encuesta.encode_id()}"
-    click.echo(f"Se ha enviado un mensaje a {encuesta.cit_cliente.email} con el URL {url}")
-    ctx.exit(0)
-
-
-@click.command()
 @click.argument("cit_cliente_id", type=int)
 @click.pass_context
 def crear(ctx, cit_cliente_id):
@@ -184,7 +166,154 @@ def crear(ctx, cit_cliente_id):
     ctx.exit(0)
 
 
+@click.command()
+@click.argument("id", type=int)
+@click.pass_context
+def enviar(ctx, id):
+    """Enviar mensaje por correo electrónico con el URL para abrir la encuesta"""
+    click.echo(f"Por enviar un mensaje al cliente con ID {id}")
+
+    # Consultar la encuesta
+    encuesta = EncSistema.query.get(id)
+    if encuesta is None:
+        click.echo(click.style(f"La encuesta con el id '{id}' no existe.", fg="red"))
+        ctx.exit(1)
+
+    # Agregar tarea en el fondo para enviar el mensaje
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.enc_sistemas.tasks.enviar",
+        enc_sistemas_id=encuesta.id,
+    )
+
+    # Mostrar mensaje de termino
+    url = f"{POLL_SYSTEM_URL}?hashid={encuesta.encode_id()}"
+    click.echo(f"Se ha enviado un mensaje a {encuesta.cit_cliente.email} con el URL {url}")
+    ctx.exit(0)
+
+
+@click.command()
+@click.option("--test", default=True, help="Modo de pruebas")
+@click.pass_context
+def crear_enviar(ctx, test):
+    """Crear y enviar mensajes para contestar las encuestas"""
+    click.echo("Crear y enviar mensajes para contestar las encuestas")
+
+    # Google App Engine usa tiempo universal, sin esta correccion las fechas de la noche cambian al dia siguiente
+    ahora_utc = datetime.now(timezone("UTC"))
+    ahora_mx_coah = ahora_utc.astimezone(timezone(HUSO_HORARIO))
+
+    # Definir inicio_desde e inicio_hasta
+    # En el cron debe ejecutarse esta rutina a las 12, 14, 16 y 18 horas
+    # Para que tome las citas de entre 2 y 4 horas antes
+    inicio_desde = ahora_mx_coah - timedelta(hours=4)  # Por ejemplo, si son las 12 horas el inicio desde seria las 8 horas
+    inicio_hasta = ahora_mx_coah - timedelta(hours=2)  # Por ejemplo, si son las 12 horas el inicio hasta seria las 10 horas
+
+    # Consultar citas con estado ASISTIO, asistencia verdadero y en el rango inicio_desde a inicio_hasta
+    citas = CitCita.query
+    citas = citas.filter_by(estado="ASISTIO").filter_by(asistencia=True).filter_by(estatus="A")
+    citas = citas.filter(CitCita.inicio >= inicio_desde).filter(CitCita.inicio <= inicio_hasta)
+
+    # Si la consulta no entrega nada, terminar
+    if citas.count() == 0:
+        click.echo("No hay citas para crear encuestas y enviar mensajes que inviten a contestarlas")
+        ctx.exit(0)
+
+    # Bucle en cada cita
+    contador = 0
+    for cita in citas.all():
+
+        # Consultar la ultima encuesta del cliente con estado CONTESTADO
+        enc_sistema = EncSistema.query.filter_by(cit_cliente_id=cita.cit_cliente_id).filter_by(estado="CONTESTADO").filter_by(estatus="A").order_by(EncSistema.id.desc()).first()
+
+        # Si el cliente tiene una encuesta CONTESTADO de hace 2 meses o menos, no crear una nueva
+        if enc_sistema is not None and enc_sistema.creado >= ahora_mx_coah - timedelta(days=60):
+            continue
+
+        # Consultar las encuestas del cliente con estado PENDIENTE
+        enc_sistema = EncSistema.query.filter_by(cit_cliente_id=cita.cit_cliente_id).filter_by(estado="PENDIENTE").filter_by(estatus="A")
+
+        # Si el cliente tiene una encuesta PENDIENTE, no crear una nueva
+        # Recuerde que un cliente puede tener ninguna o solo una encuesta pendiente
+        if enc_sistema.count() > 0:
+            continue
+
+        # Si NO esta en modo de pruebas, crear la encuesta
+        if test is False:
+
+            # Agregar la encuesta
+            enc_sistema = EncSistema(
+                cit_cliente=cita.cit_cliente,
+                estado="PENDIENTE",
+            )
+            enc_sistema.save()
+
+            # Agregar tarea en el fondo para enviar el mensaje
+            app.task_queue.enqueue(
+                "citas_admin.blueprints.enc_sistemas.tasks.enviar",
+                enc_sistemas_id=enc_sistema.id,
+            )
+
+        # Incrementar el contador
+        contador += 1
+
+    # Si esta en modo de pruebas
+    if test:
+        click.echo(f"Modo de pruebas: Se pueden crear {contador} encuestas de sistemas")
+    else:
+        click.echo(f"Se han creado {contador} encuestas de sistemas y agregado las tareas para enviar los mensajes")
+
+    # Terminar
+    ctx.exit(0)
+
+
+@click.command()
+@click.option("--test", default=True, help="Modo de pruebas")
+@click.pass_context
+def cancelar(ctx, test):
+    """Cancelar encuestas pendientes creadas hace 7 dias o mas"""
+    click.echo("Cancelar encuestas pendientes creadas hace 7 dias o mas")
+
+    # Google App Engine usa tiempo universal, sin esta correccion las fechas de la noche cambian al dia siguiente
+    ahora_utc = datetime.now(timezone("UTC"))
+    ahora_mx_coah = ahora_utc.astimezone(timezone(HUSO_HORARIO))
+
+    # Definir el inicio_hasta a 7 dias antes
+    inicio_hasta = ahora_mx_coah - timedelta(days=7)
+
+    # Consultar las encuestas PENDIENTE creadas antes de inicio_hasta
+    encuestas = EncSistema.query.filter(EncSistema.inicio <= inicio_hasta).filter_by(estado="PENDIENTE").filter_by(estatus="A")
+
+    # Si la consulta no entrega nada, terminar
+    if encuestas.count() == 0:
+        click.echo("No hay citas para cancelar")
+        ctx.exit(0)
+
+    # Bucle en cada encuesta
+    contador = 0
+    for encuesta in encuestas.all():
+
+        # Si NO esta en modo de pruebas, cancelar la encuesta
+        if test is False:
+            encuesta.estado = "CANCELADO"
+            encuesta.estatus = "B"
+            encuesta.save()
+
+        # Incrementar el contador
+        contador += 1
+
+    # Si esta en modo de pruebas
+    if test:
+        click.echo(f"Modo de pruebas: Se pueden cancelar {contador} encuestas de servicios")
+    else:
+        click.echo(f"Se han cancelado {contador} encuestas de servicios")
+
+    # Terminar
+    ctx.exit(0)
+
+
 # Añadir comandos al comando cli - citas enc_sistemas consultar | enviar | crear
 cli.add_command(consultar)
 cli.add_command(enviar)
 cli.add_command(crear)
+cli.add_command(crear_enviar)
+cli.add_command(cancelar)

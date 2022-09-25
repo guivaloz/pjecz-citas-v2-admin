@@ -39,7 +39,7 @@ SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "")
 
 
 def enviar(enc_sistemas_id):
-    """Enviar mensaje con URL para ver la encuesta de sistemas"""
+    """Enviar mensaje con el URL para invitar a llenar la encuesta de sistemas"""
 
     # Consultar encuesta
     encuesta = EncSistema.query.get(enc_sistemas_id)
@@ -131,8 +131,3 @@ def enviar(enc_sistemas_id):
     mensaje_final = f"Se ha enviado un mensaje a {cliente.email} con la URL: {url}"
     bitacora.info(mensaje_final)
     return mensaje_final
-
-
-def enviar_auto():
-    """Envío de encuestas automático"""
-    pass

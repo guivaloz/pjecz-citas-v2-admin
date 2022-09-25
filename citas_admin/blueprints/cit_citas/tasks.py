@@ -1,5 +1,5 @@
 """
-Cit Citas, tareas en el fondo
+Cit Citas, tareas para ejecutar en el fondo
 """
 from datetime import datetime, timedelta
 import locale
@@ -232,7 +232,7 @@ def marcar_inasistencia(test=True):
     )
     fecha_limite = fecha_limite - timedelta(days=1)
 
-    # Si no esta en modo prueba, se ejecuta el Query
+    # Si no esta en modo prueba, se ejecutan las actualizaciones
     if test is False:
         engine = db.engine
         actualizacion = text(
