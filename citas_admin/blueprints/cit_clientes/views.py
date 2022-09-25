@@ -3,25 +3,22 @@ Cit Clientes, vistas
 """
 import json
 import os
-from pathlib import Path
+
 from flask import Blueprint, render_template, request, url_for, flash, redirect
 from flask_login import login_required, current_user
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_text, safe_message, safe_email, safe_curp, safe_tel
+from lib.storage import GoogleCloudStorage, NotConfiguredError
 
-from dotenv import load_dotenv
-
-from citas_admin.blueprints.permisos.models import Permiso
-from citas_admin.blueprints.bitacoras.models import Bitacora
-from citas_admin.blueprints.modulos.models import Modulo
-from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitClienteRecuperacion
+from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.modulos.models import Modulo
+from citas_admin.blueprints.permisos.models import Permiso
+from citas_admin.blueprints.usuarios.decorators import permission_required
 
 from citas_admin.blueprints.cit_clientes.forms import ClienteEditForm
-
-from lib.storage import GoogleCloudStorage, NotAllowedExtesionError, UnknownExtesionError, NotConfiguredError
 
 FILE_NAME = "cit_clientes_reporte.json"
 MODULO = "CIT CLIENTES"
@@ -280,7 +277,10 @@ def refresh_report():
         flash("Debe esperar porque hay una tarea en el fondo sin terminar.", "warning")
     else:
         # Lanzar tarea en el fondo
-        current_user.launch_task(nombre="cit_clientes.tasks.refresh_report", descripcion=f"Actualiza el reporte de errores de cit_clientes")
+        current_user.launch_task(
+            nombre="cit_clientes.tasks.refresh_report",
+            descripcion="Actualiza el reporte de errores de cit_clientes",
+        )
         flash("Se está actualizando el reporte de errores de clientes...", "info")
     # Mostrar reporte de errores del cliente
     return redirect(url_for("cit_clientes.list_active"))
