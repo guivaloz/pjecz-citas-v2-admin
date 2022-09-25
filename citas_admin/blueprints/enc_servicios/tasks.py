@@ -40,7 +40,7 @@ SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "")
 
 
 def enviar(enc_servicios_id):
-    """Enviar mensaje con URL para ver la encuesta de sistemas"""
+    """Enviar mensaje con el URL para invitar a llenar la encuesta de servicios"""
 
     # Consultar encuesta
     encuesta = EncServicio.query.get(enc_servicios_id)

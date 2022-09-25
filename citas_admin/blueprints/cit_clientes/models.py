@@ -24,7 +24,7 @@ class CitCliente(db.Model, UniversalMixin):
     contrasena_md5 = db.Column(db.String(256), nullable=False)
     contrasena_sha256 = db.Column(db.String(256), nullable=False)
     renovacion = db.Column(db.Date(), nullable=False)
-    limite_citas_pendientes = db.Column(db.Integer(), nullable=True)
+    limite_citas_pendientes = db.Column(db.Integer(), nullable=False)
 
     # Columnas booleanas
     enviar_boletin = db.Column(db.Boolean(), nullable=False, default=True)

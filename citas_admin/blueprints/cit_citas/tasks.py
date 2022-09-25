@@ -1,5 +1,5 @@
 """
-Cit Citas, tareas en el fondo
+Cit Citas, tareas para ejecutar en el fondo
 """
 from datetime import datetime, timedelta
 import locale
@@ -37,16 +37,19 @@ load_dotenv()  # Take environment variables from .env
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "")
 HOST = os.getenv("HOST", "")
+SUBJECT_PREFIX = "PJECZ Sistema de Citas - "
 
 
 def enviar_pendiente(cit_cita_id, to_email=None):
     """Enviar mensaje con datos de la cita agendada"""
 
-    cit_cita = _validacion_cita(cit_cita_id)
+    # Validar cita
+    cit_cita = _validar_cita(cit_cita_id)
     if cit_cita is None:
         return None
 
-    cit_cliente = _validacion_cliente(cit_cita.cit_cliente_id)
+    # Validar cliente
+    cit_cliente = _validar_cliente(cit_cita.cit_cliente_id)
     if cit_cliente is None:
         return None
 
@@ -66,7 +69,7 @@ def enviar_pendiente(cit_cita_id, to_email=None):
             # Definir el URL para marcar asistencia
             asistencia_url = HOST + "/cit_citas/asistencia/" + cit_cita.encode_id()
 
-    # Importar plantilla Jinja2
+    # Cargar plantilla
     plantilla = _cargar_plantilla("email.jinja2")
     contenidos = plantilla.render(
         fecha_elaboracion=datetime.now().strftime("%d/%b/%Y %I:%M %p"),
@@ -75,22 +78,16 @@ def enviar_pendiente(cit_cita_id, to_email=None):
         va_a_incluir_qr=va_a_incluir_qr,
         asistencia_url=asistencia_url,
     )
-    content = Content("text/html", contenidos)
 
-    # Destinatario
+    # Enviar mensaje por correo electronico
     to_email = cit_cliente.email if to_email is None else to_email
-
-    envio_correcto = _enviar_email(
-        to_email=to_email,
-        subject="Citas - Agendada",
-        content=content,
-    )
-
-    if envio_correcto:
+    subject = SUBJECT_PREFIX + "Cita agendada"
+    content = Content("text/html", contenidos)
+    if _enviar_email(to_email=to_email, subject=subject, content=content):
         if va_a_incluir_qr:
-            mensaje_final = f"Se ha enviado un mensaje con QR a {to_email} de la cita agendada {cit_cita.id}, URL: {asistencia_url}"
+            mensaje_final = f"Se ha enviado un mensaje con QR a {to_email} por la cita agendada {cit_cita.id}, URL: {asistencia_url}"
         else:
-            mensaje_final = f"Se ha enviado un mensaje a {to_email} de la cita agendada {cit_cita.id}"
+            mensaje_final = f"Se ha enviado un mensaje a {to_email} por la cita agendada {cit_cita.id}"
         bitacora.info(mensaje_final)
     else:
         mensaje_error = f"Se omite el envío a {to_email} por que faltan elementos"
@@ -98,7 +95,7 @@ def enviar_pendiente(cit_cita_id, to_email=None):
         bitacora.error(mensaje_error)
         mensaje_final = mensaje_error
 
-    # Se termina la tarea y se envía el mensaje final
+    # Se termina la tarea y se entrega el mensaje final
     set_task_progress(100)
     return mensaje_final
 
@@ -106,33 +103,29 @@ def enviar_pendiente(cit_cita_id, to_email=None):
 def enviar_cancelado(cit_cita_id, to_email=None):
     """Enviar mensaje de cita cancelada"""
 
-    cit_cita = _validacion_cita(cit_cita_id)
+    # Validar cita
+    cit_cita = _validar_cita(cit_cita_id)
     if cit_cita is None:
         return None
 
-    cit_cliente = _validacion_cliente(cit_cita.cit_cliente_id)
+    # Validar cliente
+    cit_cliente = _validar_cliente(cit_cita.cit_cliente_id)
     if cit_cliente is None:
         return None
 
-    # Importar plantilla Jinja2
+    # Cargar plantilla
     plantilla = _cargar_plantilla("email_cancel.jinja2")
     contenidos = plantilla.render(
         fecha_elaboracion=datetime.now().strftime("%d/%b/%Y %I:%M %p"),
         cit_cliente=cit_cliente,
         cit_cita=cit_cita,
     )
-    content = Content("text/html", contenidos)
 
-    # Destinatario
+    # Enviar mensaje por correo electronico
     to_email = cit_cliente.email if to_email is None else to_email
-
-    envio_correcto = _enviar_email(
-        to_email=to_email,
-        subject="Citas - Cancelación",
-        content=content,
-    )
-
-    if envio_correcto:
+    subject = SUBJECT_PREFIX + "Cita cancelada"
+    content = Content("text/html", contenidos)
+    if _enviar_email(to_email=to_email, subject=subject, content=content):
         mensaje_final = f"Se ha enviado un mensaje a {to_email} de cancelación de la cita {cit_cita.id}"
         bitacora.info(mensaje_final)
     else:
@@ -141,41 +134,37 @@ def enviar_cancelado(cit_cita_id, to_email=None):
         bitacora.error(mensaje_error)
         mensaje_final = mensaje_error
 
-    # Se termina la tarea y se envía el mensaje final
+    # Se termina la tarea y se entrega el mensaje final
     set_task_progress(100)
     return mensaje_final
 
 
 def enviar_asistio(cit_cita_id, to_email=None):
-    """enviar mensaje de cita cancelada"""
+    """Enviar mensaje de asistencia a la cita"""
 
-    cit_cita = _validacion_cita(cit_cita_id)
+    # Validar cita
+    cit_cita = _validar_cita(cit_cita_id)
     if cit_cita is None:
         return None
 
-    cit_cliente = _validacion_cliente(cit_cita.cit_cliente_id)
+    # Validar cliente
+    cit_cliente = _validar_cliente(cit_cita.cit_cliente_id)
     if cit_cliente is None:
         return None
 
-    # Importar plantilla Jinja2
+    # Cargar plantilla
     plantilla = _cargar_plantilla("email_assistance.jinja2")
     contenidos = plantilla.render(
         fecha_elaboracion=datetime.now().strftime("%d/%b/%Y %I:%M %p"),
         cit_cliente=cit_cliente,
         cit_cita=cit_cita,
     )
-    content = Content("text/html", contenidos)
 
-    # Destinatario
+    # Enviar mensaje por correo electronico
     to_email = cit_cliente.email if to_email is None else to_email
-
-    envio_correcto = _enviar_email(
-        to_email=to_email,
-        subject="Citas - Asistencia",
-        content=content,
-    )
-
-    if envio_correcto:
+    subject = SUBJECT_PREFIX + "Asistencia a cita"
+    content = Content("text/html", contenidos)
+    if _enviar_email(to_email=to_email, subject=subject, content=content):
         mensaje_final = f"Se ha enviado un mensaje a {to_email} de asistencia a la cita {cit_cita.id}"
         bitacora.info(mensaje_final)
     else:
@@ -184,42 +173,38 @@ def enviar_asistio(cit_cita_id, to_email=None):
         bitacora.error(mensaje_error)
         mensaje_final = mensaje_error
 
-    # Se termina la tarea y se envía el mensaje final
+    # Se termina la tarea y se entrega el mensaje final
     set_task_progress(100)
     return mensaje_final
 
 
 def enviar_inasistencia(cit_cita_id, to_email=None):
-    """enviar mensaje de falta a la cita, no asistió"""
+    """Enviar mensaje de inasistencia a la cita"""
 
-    cit_cita = _validacion_cita(cit_cita_id)
+    # Validar cita
+    cit_cita = _validar_cita(cit_cita_id)
     if cit_cita is None:
         return None
 
-    cit_cliente = _validacion_cliente(cit_cita.cit_cliente_id)
+    # Validar cliente
+    cit_cliente = _validar_cliente(cit_cita.cit_cliente_id)
     if cit_cliente is None:
         return None
 
-    # Importar plantilla Jinja2
+    # Cargar plantilla
     plantilla = _cargar_plantilla("email_no_assistance.jinja2")
     contenidos = plantilla.render(
         fecha_elaboracion=datetime.now().strftime("%d/%b/%Y %I:%M %p"),
         cit_cliente=cit_cliente,
         cit_cita=cit_cita,
     )
-    content = Content("text/html", contenidos)
 
-    # Destinatario
+    # Enviar mensaje por correo electronico
     to_email = cit_cliente.email if to_email is None else to_email
-
-    envio_correcto = _enviar_email(
-        to_email=to_email,
-        subject="Citas - Inasistencia",
-        content=content,
-    )
-
-    if envio_correcto:
-        mensaje_final = f"Se ha enviado un mensaje a {to_email} de NO asistencia a la cita {cit_cita.id}"
+    subject = SUBJECT_PREFIX + "Cita agendada"
+    content = Content("text/html", contenidos)
+    if _enviar_email(to_email=to_email, subject=subject, content=content):
+        mensaje_final = f"Se ha enviado un mensaje a {to_email} de inasistencia a la cita {cit_cita.id}"
         bitacora.info(mensaje_final)
     else:
         mensaje_error = f"Se omite el envío a {to_email} por que faltan elementos"
@@ -227,13 +212,13 @@ def enviar_inasistencia(cit_cita_id, to_email=None):
         bitacora.error(mensaje_error)
         mensaje_final = mensaje_error
 
-    # Se termina la tarea y se envía el mensaje final
+    # Se termina la tarea y se entrega el mensaje final
     set_task_progress(100)
     return mensaje_final
 
 
 def marcar_inasistencia(test=True):
-    """Actualiza el estado de las citas a INASISTENCIA"""
+    """Actualizar el estado de las citas a PENDIENTE a INASISTENCIA"""
 
     # Calcular fecha de vencimiento
     fecha_actual = datetime.now()
@@ -247,7 +232,7 @@ def marcar_inasistencia(test=True):
     )
     fecha_limite = fecha_limite - timedelta(days=1)
 
-    # Si no esta en modo prueba, se ejecuta el Query
+    # Si no esta en modo prueba, se ejecutan las actualizaciones
     if test is False:
         engine = db.engine
         actualizacion = text(
@@ -260,7 +245,7 @@ def marcar_inasistencia(test=True):
         mensaje_final = f"Se pasaron {res.rowcount} citas al estado de INASISTENCIA"
         bitacora.info(mensaje_final)
 
-    # Se termina la tarea y se envía el mensaje final
+    # Se termina la tarea y se entrega el mensaje final
     set_task_progress(100)
     return mensaje_final
 
@@ -270,52 +255,51 @@ def marcar_inasistencia(test=True):
 ########################
 
 
-def _validacion_cita(cit_cita_id):
-    """Valida si la cita existe"""
-
+def _validar_cita(cit_cita_id):
+    """Validar la cita"""
     cit_cita = CitCita.query.get(cit_cita_id)
-    if cit_cita.estatus != "A":
-        mensaje_error = f"El ID {cit_cita.id} NO tiene estatus activo"
+    if cit_cita is None:
+        mensaje_error = f"La cita {cit_cita_id} NO existe"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return None
-    # Regresa la cita
+    if cit_cita.estatus != "A":
+        mensaje_error = f"La cita {cit_cita.id} NO tiene estatus activo"
+        set_task_error(mensaje_error)
+        bitacora.error(mensaje_error)
+        return None
     return cit_cita
 
 
-def _validacion_cliente(cit_cliente_id):
-    """Valida si el cliente existe"""
-
+def _validar_cliente(cit_cliente_id):
+    """Validar el cliente"""
     cit_cliente = CitCliente.query.get(cit_cliente_id)
     if cit_cliente is None:
-        mensaje_error = f"El ID del cliente '{cit_cliente_id}' NO existe"
+        mensaje_error = f"El el cliente {cit_cliente_id} NO existe"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return None
     if cit_cliente.estatus != "A":
-        mensaje_error = f"El ID del cliente {cit_cliente.id} NO tiene estatus activo"
+        mensaje_error = f"El el cliente {cit_cliente.id} NO tiene estatus activo"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return None
-    # Regresa la cita
     return cit_cliente
 
 
 def _cargar_plantilla(nombre_plantilla):
-    """Carga el archivo para ser utilizado como plantilla Jinja2"""
-    # Importar plantilla Jinja2
+    """Cargar la plantilla Jinja2"""
     entorno = Environment(
         loader=FileSystemLoader("citas_admin/blueprints/cit_citas/templates/cit_citas"),
         trim_blocks=True,
         lstrip_blocks=True,
     )
     plantilla = entorno.get_template(nombre_plantilla)
-
     return plantilla
 
 
-def _enviar_email(to_email, subject, content):
-    """Envía el mensaje vía SendGrid"""
+def _enviar_email(to_email, subject, content) -> bool:
+    """Enviar el mensaje con SendGrid"""
 
     # Validar remitente
     from_email = None
@@ -335,4 +319,5 @@ def _enviar_email(to_email, subject, content):
     mail = Mail(from_email, To(to_email), subject, content)
     sendgrid_client.client.mail.send.post(request_body=mail.get())
 
+    # Entregar verdadero
     return True

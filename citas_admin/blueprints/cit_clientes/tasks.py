@@ -65,6 +65,7 @@ def refresh_report():
     # Preparar Google Storage
     storage = GoogleCloudStorage("/")
     url = None
+
     # Subir el archivo a la nube (Google Storage)
     try:
         url = storage.upload_from_filename("pjecz-informatica", "json/" + FILE_NAME, "/tmp/" + FILE_NAME, "application/json")
@@ -320,6 +321,7 @@ class ReporteClientesSinCitas(Reporte):
 
 def evaluar_asistencia(test=True):
     """Penaliza o Premia al cliente conforme su asistencia"""
+
     # Constantes para parámetros
     DIAS_MARGEN = 30
     LIMITE_SIN_CITAS = 15
@@ -353,11 +355,14 @@ def evaluar_asistencia(test=True):
 
     # Revisar los clientes
     clientes = CitCliente.query.filter_by(estatus="A").order_by(CitCliente.id).all()
+
     for cliente in clientes:
-        # variables para contar las citas por cliente
+
+        # Variables para contar las citas por cliente
         count_citas_asistio = 0
         count_citas_inasistencia = 0
-        # Query para extraer el número de citas por estado
+
+        # Consultar el número de citas por estado
         citas_cantidades = (
             db.query(
                 CitCita.estado.label("estado"),
@@ -369,6 +374,7 @@ def evaluar_asistencia(test=True):
             .group_by(CitCita.estado)
             .all()
         )
+
         # Establecemos las cantidades de citas ASISTIDAS y INASISTIDAS
         if citas_cantidades is not None:
             for estado, cantidad in citas_cantidades:
@@ -376,6 +382,7 @@ def evaluar_asistencia(test=True):
                     count_citas_asistio = cantidad
                 elif estado == "INASISTENCIA":
                     count_citas_inasistencia = cantidad
+
         # Toma de acciones dependiendo del resultado de la asistencia del cliente
         total_citas = count_citas_asistio + count_citas_inasistencia
         if total_citas == 0:
@@ -402,9 +409,11 @@ def evaluar_asistencia(test=True):
                 mensaje = f"Cliente {cliente.id} con mala asistencia en los últimos {DIAS_MARGEN} días. Se ajustó su límite de citas a {LIMITE_INASISTENCIA}."
                 bitacora.info(mensaje)
                 count_clientes_penalizados += 1
+
     # Mensaje de Totales
     mensaje_final = f"Se procesaron {len(clientes)} Clientes, Fecha límite {fecha_limite} : Premiaron {count_clientes_premiados}, Ajustaron {count_clientes_ajustados}, Penalizaron {count_clientes_penalizados}."
     bitacora.info(mensaje_final)
+
     # Se termina la tarea y se envía el mensaje final
     set_task_progress(100)
     return mensaje_final
