@@ -5,6 +5,7 @@ Cit Clientes
 - cambiar_contrasena: Cambiar contraseña de un cliente
 - eliminar_abandonados: Eliminar los clientes que han abandonado su cuenta
 - definir_booleanos: Define los booleanos es_adulto_mayor, es_mujer, etc
+- evaluar_asistencia: Penaliza o Premia al cliente dependiendo de su asistencia
 """
 from datetime import datetime, timedelta
 import click

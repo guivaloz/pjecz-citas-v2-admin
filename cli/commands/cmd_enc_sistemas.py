@@ -27,7 +27,7 @@ db.app = app
 
 load_dotenv()  # Take environment variables from .env
 
-HUSO_HORARIO = timezone("America/Mexico_City")
+HUSO_HORARIO = "America/Mexico_City"
 POLL_SYSTEM_URL = os.getenv("POLL_SYSTEM_URL", "")
 SAFE_LIMIT = 30
 
@@ -277,11 +277,11 @@ def cancelar(ctx, test):
     ahora_utc = datetime.now(timezone("UTC"))
     ahora_mx_coah = ahora_utc.astimezone(timezone(HUSO_HORARIO))
 
-    # Definir el inicio_hasta a 7 dias antes
-    inicio_hasta = ahora_mx_coah - timedelta(days=7)
+    # Definir el creado_hasta a 7 dias antes
+    creado_hasta = ahora_mx_coah - timedelta(days=7)
 
-    # Consultar las encuestas PENDIENTE creadas antes de inicio_hasta
-    encuestas = EncSistema.query.filter(EncSistema.inicio <= inicio_hasta).filter_by(estado="PENDIENTE").filter_by(estatus="A")
+    # Consultar las encuestas PENDIENTE creadas antes de creado_hasta
+    encuestas = EncSistema.query.filter(EncSistema.creado <= creado_hasta).filter_by(estado="PENDIENTE").filter_by(estatus="A")
 
     # Si la consulta no entrega nada, terminar
     if encuestas.count() == 0:
