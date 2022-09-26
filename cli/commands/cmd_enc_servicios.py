@@ -12,7 +12,6 @@ import os
 
 import click
 from dotenv import load_dotenv
-from pytz import timezone
 from tabulate import tabulate
 
 from citas_admin.app import create_app
@@ -28,7 +27,6 @@ db.app = app
 
 load_dotenv()  # Take environment variables from .env
 
-HUSO_HORARIO = "America/Mexico_City"
 POLL_SERVICE_URL = os.getenv("POLL_SERVICE_URL", "")
 SAFE_LIMIT = 30
 
@@ -243,15 +241,12 @@ def crear_enviar(ctx, test):
     """Crear y enviar mensajes para contestar las encuestas"""
     click.echo("Crear y enviar mensajes para contestar las encuestas")
 
-    # Google App Engine usa tiempo universal, sin esta correccion las fechas de la noche cambian al dia siguiente
-    ahora_utc = datetime.now(timezone("UTC"))
-    ahora_mx_coah = ahora_utc.astimezone(timezone(HUSO_HORARIO))
-
     # Definir inicio_desde e inicio_hasta
     # En el cron debe ejecutarse esta rutina a las 12, 14, 16 y 18 horas
     # Para que tome las citas de entre 2 y 4 horas antes
-    inicio_desde = ahora_mx_coah - timedelta(hours=4)  # Por ejemplo, si son las 12 horas el inicio desde seria las 8 horas
-    inicio_hasta = ahora_mx_coah - timedelta(hours=2)  # Por ejemplo, si son las 12 horas el inicio hasta seria las 10 horas
+    ahora = datetime.now()
+    inicio_desde = ahora - timedelta(hours=4)  # Por ejemplo, si son las 12 horas el inicio desde seria las 8 horas
+    inicio_hasta = ahora - timedelta(hours=2)  # Por ejemplo, si son las 12 horas el inicio hasta seria las 10 horas
 
     # Consultar citas con estado ASISTIO, asistencia verdadero y en el rango inicio_desde a inicio_hasta
     citas = CitCita.query
@@ -312,12 +307,8 @@ def cancelar(ctx, test):
     """Cancelar encuestas pendientes creadas hace 7 dias o mas"""
     click.echo("Cancelar encuestas pendientes creadas hace 7 dias o mas")
 
-    # Google App Engine usa tiempo universal, sin esta correccion las fechas de la noche cambian al dia siguiente
-    ahora_utc = datetime.now(timezone("UTC"))
-    ahora_mx_coah = ahora_utc.astimezone(timezone(HUSO_HORARIO))
-
     # Definir el creado_hasta a 7 dias antes
-    creado_hasta = ahora_mx_coah - timedelta(days=7)
+    creado_hasta = datetime.now() - timedelta(days=7)
 
     # Consultar las encuestas PENDIENTE creadas antes de creado_hasta
     encuestas = EncServicio.query.filter(EncServicio.creado <= creado_hasta).filter_by(estado="PENDIENTE").filter_by(estatus="A")
