@@ -142,6 +142,6 @@ def enviar(enc_servicios_id):
 
     # Terminar tarea
     set_task_progress(100)
-    mensaje_final = f"Se ha enviado un mensaje a {cliente.email} con la URL: {url}"
+    mensaje_final = f"Mensaje a {cliente.email} con encuesta de servicio: {url}"
     bitacora.info(mensaje_final)
     return mensaje_final

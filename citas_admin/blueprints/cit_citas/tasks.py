@@ -85,9 +85,9 @@ def enviar_pendiente(cit_cita_id, to_email=None):
     content = Content("text/html", contenidos)
     if _enviar_email(to_email=to_email, subject=subject, content=content):
         if va_a_incluir_qr:
-            mensaje_final = f"Se ha enviado un mensaje con QR a {to_email} por la cita agendada {cit_cita.id}, URL: {asistencia_url}"
+            mensaje_final = f"Mensaje con QR a {to_email} por cita PENDIENTE {cit_cita.id}, URL: {asistencia_url}"
         else:
-            mensaje_final = f"Se ha enviado un mensaje a {to_email} por la cita agendada {cit_cita.id}"
+            mensaje_final = f"Mensaje a {to_email} por cita PENDIENTE {cit_cita.id}"
         bitacora.info(mensaje_final)
     else:
         mensaje_error = f"Se omite el envío a {to_email} por que faltan elementos"
@@ -126,7 +126,7 @@ def enviar_cancelado(cit_cita_id, to_email=None):
     subject = SUBJECT_PREFIX + "Cita cancelada"
     content = Content("text/html", contenidos)
     if _enviar_email(to_email=to_email, subject=subject, content=content):
-        mensaje_final = f"Se ha enviado un mensaje a {to_email} de cancelación de la cita {cit_cita.id}"
+        mensaje_final = f"Mensaje a {to_email} por cita CANCELADA {cit_cita.id}"
         bitacora.info(mensaje_final)
     else:
         mensaje_error = f"Se omite el envío a {to_email} por que faltan elementos"
@@ -165,7 +165,7 @@ def enviar_asistio(cit_cita_id, to_email=None):
     subject = SUBJECT_PREFIX + "Asistencia a cita"
     content = Content("text/html", contenidos)
     if _enviar_email(to_email=to_email, subject=subject, content=content):
-        mensaje_final = f"Se ha enviado un mensaje a {to_email} de asistencia a la cita {cit_cita.id}"
+        mensaje_final = f"Mensaje a {to_email} por cita ASISTIO {cit_cita.id}"
         bitacora.info(mensaje_final)
     else:
         mensaje_error = f"Se omite el envío a {to_email} por que faltan elementos"
@@ -204,7 +204,7 @@ def enviar_inasistencia(cit_cita_id, to_email=None):
     subject = SUBJECT_PREFIX + "Cita agendada"
     content = Content("text/html", contenidos)
     if _enviar_email(to_email=to_email, subject=subject, content=content):
-        mensaje_final = f"Se ha enviado un mensaje a {to_email} de inasistencia a la cita {cit_cita.id}"
+        mensaje_final = f"Mensaje a {to_email} por cita INASISTENCIA {cit_cita.id}"
         bitacora.info(mensaje_final)
     else:
         mensaje_error = f"Se omite el envío a {to_email} por que faltan elementos"
