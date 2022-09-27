@@ -33,6 +33,7 @@
 {% endblock %}
 
 {% block custom_javascript %}
+    {{ list.moment_js(moment) }}
     {{ list.config_datatable() }}
     <script>
         const fecha_actual = new Date();
@@ -53,6 +54,13 @@
                 data: null,
                 render: function(data, type, row, meta) {
                     return '<a href="' + data.url + '">' + data.id + '</a>';
+                }
+            },
+            {
+                targets: 1, // creado
+                type: 'date',
+                render: function (data, type, row) {
+                    return moment.utc(data).local().format("YYYY-MM-DD HH:mm");
                 }
             },
             {
