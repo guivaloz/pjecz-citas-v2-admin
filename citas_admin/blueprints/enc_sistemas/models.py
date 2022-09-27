@@ -29,8 +29,8 @@ class EncSistema(db.Model, UniversalMixin):
 
     # Columnas
     respuesta_01 = db.Column(db.Integer(), nullable=True)
-    respuesta_02 = db.Column(db.String(255), nullable=True)
-    respuesta_03 = db.Column(db.String(255), nullable=True)
+    respuesta_02 = db.Column(db.String(512), nullable=True)
+    respuesta_03 = db.Column(db.String(512), nullable=True)
     estado = db.Column(db.Enum(*ESTADOS, name="estados", native_enum=False))
 
     def __repr__(self):
