@@ -256,19 +256,28 @@ def contar_citas_dobles(ctx):
 
     # Recorrido de las citas
     citas = CitCita.query.filter_by(estatus="A").order_by(CitCita.id).all()
-    
+
     contador = 0
     count_citas_dobles = 0
     for cita in citas:
         contador += 1
         # Buscar cita repetida
-        cita_repetida = CitCita.query.filter(CitCita.id > cita.id).filter_by(creado=cita.creado).filter_by(inicio=cita.inicio).filter_by(cit_cliente=cita.cit_cliente).filter_by(oficina_id=cita.oficina_id).filter_by(cit_servicio_id=cita.cit_servicio_id).order_by(CitCita.id).first()
+        cita_repetida = (
+            CitCita.query.filter(CitCita.id > cita.id)
+            .filter_by(creado=cita.creado)
+            .filter_by(inicio=cita.inicio)
+            .filter_by(cit_cliente=cita.cit_cliente)
+            .filter_by(oficina_id=cita.oficina_id)
+            .filter_by(cit_servicio_id=cita.cit_servicio_id)
+            .order_by(CitCita.id)
+            .first()
+        )
         if cita_repetida:
             click.echo(f"! CITA REPETIDA: {cita.id} y {cita_repetida.id}")
             count_citas_dobles += 1
         # Muestra de avance
         if contador % 1000 == 0:
-            click.echo("Progreso [{porcentaje:.2f}%] : conteo {contador}".format(porcentaje=((contador*100)/len(citas)), contador=count_citas_dobles))
+            click.echo("Progreso [{porcentaje:.2f}%] : conteo {contador}".format(porcentaje=((contador * 100) / len(citas)), contador=count_citas_dobles))
 
     click.echo(f"= RESULTADO: Se han encontrado {count_citas_dobles} citas dobles")
 
