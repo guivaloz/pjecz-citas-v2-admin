@@ -248,9 +248,37 @@ def marcar_inasistencia(ctx, test, enviar):
     ctx.exit(0)
 
 
+@click.command()
+@click.pass_context
+def contar_citas_dobles(ctx):
+    """Cuenta las citas que se crearon más de una vez"""
+    click.echo("=== Reporte de citas dobles ===")
+
+    # Recorrido de las citas
+    citas = CitCita.query.filter_by(estatus="A").order_by(CitCita.id).all()
+    
+    contador = 0
+    count_citas_dobles = 0
+    for cita in citas:
+        contador += 1
+        # Buscar cita repetida
+        cita_repetida = CitCita.query.filter(CitCita.id > cita.id).filter_by(creado=cita.creado).filter_by(inicio=cita.inicio).filter_by(cit_cliente=cita.cit_cliente).filter_by(oficina_id=cita.oficina_id).filter_by(cit_servicio_id=cita.cit_servicio_id).order_by(CitCita.id).first()
+        if cita_repetida:
+            click.echo(f"! CITA REPETIDA: {cita.id} y {cita_repetida.id}")
+            count_citas_dobles += 1
+        # Muestra de avance
+        if contador % 1000 == 0:
+            click.echo("Progreso [{porcentaje:.2f}%] : conteo {contador}".format(porcentaje=((contador*100)/len(citas)), contador=count_citas_dobles))
+
+    click.echo(f"= RESULTADO: Se han encontrado {count_citas_dobles} citas dobles")
+
+    ctx.exit(0)
+
+
 cli.add_command(consultar)
 cli.add_command(enviar_pendiente)
 cli.add_command(enviar_cancelado)
 cli.add_command(enviar_asistio)
 cli.add_command(enviar_inasistencia)
 cli.add_command(marcar_inasistencia)
+cli.add_command(contar_citas_dobles)
