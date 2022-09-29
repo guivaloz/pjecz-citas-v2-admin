@@ -66,7 +66,7 @@ def datatable_json():
             consulta = consulta.join(Distrito)
             consulta = consulta.filter(Distrito.id == request.form["distrito_id"])
     # Hace el query de listado
-    registros = consulta.order_by(EncServicio.id.desc()).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(EncServicio.modificado.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
