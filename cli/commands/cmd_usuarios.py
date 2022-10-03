@@ -1,11 +1,14 @@
 """
 Usuarios
 
-- nueva_contrasena: Cambiar contraseña de un usuario
-- enviar_reporte: Enviar via correo electronico el reporte de usuarios
-- sincronizar: Sincronizar usuarios con la API de RRHH Personal
+- nueva_api_key: Nueva API Key
+- nueva_contrasena: Nueva contraseña
 """
+from datetime import datetime, timedelta
+
 import click
+
+from lib.pwgen import generar_api_key
 
 from citas_admin.app import create_app
 from citas_admin.extensions import db
@@ -24,8 +27,25 @@ def cli():
 
 @click.command()
 @click.argument("email", type=str)
+@click.option("--dias", default=90, help="Cantidad de días para expirar la API Key")
+def nueva_api_key(email, dias):
+    """Nueva API key"""
+    usuario = Usuario.find_by_identity(email)
+    if usuario is None:
+        click.echo(f"No existe el e-mail {email} en usuarios")
+        return
+    api_key = generar_api_key(usuario.id, usuario.email)
+    api_key_expiracion = datetime.now() + timedelta(days=dias)
+    usuario.api_key = api_key
+    usuario.api_key_expiracion = api_key_expiracion
+    usuario.save()
+    click.echo(f"Nueva API key para {usuario.email} es {api_key} que expira el {api_key_expiracion.strftime('%Y-%m-%d')}")
+
+
+@click.command()
+@click.argument("email", type=str)
 def nueva_contrasena(email):
-    """Cambiar contraseña de un usuario"""
+    """Nueva contraseña"""
     usuario = Usuario.find_by_identity(email)
     if usuario is None:
         click.echo(f"No existe el e-mail {email} en usuarios")
@@ -40,4 +60,5 @@ def nueva_contrasena(email):
     click.echo(f"Se ha cambiado la contraseña de {email} en usuarios")
 
 
+cli.add_command(nueva_api_key)
 cli.add_command(nueva_contrasena)
