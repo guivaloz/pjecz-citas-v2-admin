@@ -29,19 +29,31 @@
         <div class="col-lg-4 col-md-12">
             {% call detail.card(title='Cliente', estatus=cit_cita.estatus) %}
                 {{ detail.label_value('Nombre', cit_cita.cit_cliente.nombre) }}
-                {{ detail.label_value('e-mail', cit_cita.cit_cliente.email, url_for('cit_clientes.detail', cit_cliente_id=cit_cita.cit_cliente_id)) }}
+                {% if current_user.can_view('CIT CLIENTES') %}
+                    {{ detail.label_value('e-mail', cit_cita.cit_cliente.email, url_for('cit_clientes.detail', cit_cliente_id=cit_cita.cit_cliente_id)) }}
+                {% else %}
+                    {{ detail.label_value('e-mail', cit_cita.cit_cliente.email) }}
+                {% endif %}
             {% endcall %}
         </div>
         <div class="col-lg-4 col-md-12">
             {% call detail.card(title='Oficina', estatus=cit_cita.estatus) %}
                 {{ detail.label_value('Distrito', cit_cita.oficina.distrito.nombre) }}
-                {{ detail.label_value('Clave', cit_cita.oficina.clave, url_for('oficinas.detail', oficina_id=cit_cita.oficina_id)) }}
+                {% if current_user.can_view('OFICINAS') %}
+                    {{ detail.label_value('Clave', cit_cita.oficina.clave, url_for('oficinas.detail', oficina_id=cit_cita.oficina_id)) }}
+                {% else %}
+                    {{ detail.label_value('Clave', cit_cita.oficina.clave) }}
+                {% endif %}
                 {{ detail.label_value('Descripcion', cit_cita.oficina.descripcion) }}
             {% endcall %}
         </div>
         <div class="col-lg-4 col-md-12">
             {% call detail.card(title='Servicio', estatus=cit_cita.estatus) %}
-                {{ detail.label_value('Clave', cit_cita.cit_servicio.clave, url_for('cit_servicios.detail', cit_servicio_id=cit_cita.cit_servicio_id)) }}
+                {% if current_user.can_view('CIT SERVICIOS') %}
+                    {{ detail.label_value('Clave', cit_cita.cit_servicio.clave, url_for('cit_servicios.detail', cit_servicio_id=cit_cita.cit_servicio_id)) }}
+                {% else %}
+                    {{ detail.label_value('Clave', cit_cita.cit_servicio.clave) }}
+                {% endif %}
                 {{ detail.label_value('Descripcion', cit_cita.cit_servicio.descripcion) }}
                 {{ detail.label_value('Duracion', cit_cita.cit_servicio.duracion) }}
             {% endcall %}
@@ -64,7 +76,7 @@
                 {% else %}
                     {% set color = 'dark' %}
                 {% endif %}
-                    <span class="badge rounded-pill bg-{{color}}">{{ cit_cita.estado }}</span>
+                <span class="badge rounded-pill bg-{{color}}">{{ cit_cita.estado }}</span>
             </div>
         </div>
     {% endcall %}
