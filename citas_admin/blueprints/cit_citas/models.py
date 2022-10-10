@@ -39,6 +39,7 @@ class CitCita(db.Model, UniversalMixin):
     estado = db.Column(db.Enum(*ESTADOS, name="estados", native_enum=False))
     asistencia = db.Column(db.Boolean, nullable=False, default=False)
     codigo_asistencia = db.Column(db.String(4))
+    cancelar_antes = db.Column(db.DateTime())
 
     # Hijos
     cit_citas_documentos = db.relationship("CitCitaDocumento", back_populates="cit_cita")
