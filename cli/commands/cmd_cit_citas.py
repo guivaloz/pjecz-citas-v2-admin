@@ -1,7 +1,14 @@
 """
 Cit Citas
 
-- consultar: Ver listado de citas
+- actualizar_cencelar_antes: Actualizar el campo cancelar_antes
+- consultar: Consultar las citas
+- enviar_pendiente: Envía mensaje vía email agendada
+- enviar_cancelado: Envía mensaje vía email cancelada
+- enviar_asistio: Envía mensaje vía email asistió
+- enviar_inasistencia: Envía mensaje vía email inasistencia
+- marcar_inasistencia: Marca citas pasadas y pendientes como inasistencia
+- contar_citas_dobles: Cuenta las citas que se crearon más de una vez
 """
 import click
 from datetime import datetime, timedelta
@@ -23,6 +30,36 @@ LIMIT = 40
 @click.pass_context
 def cli(ctx):
     """Cit Citas"""
+
+
+@click.command()
+@click.pass_context
+def actualizar_cancelar_antes(ctx):
+    """Actualizar el campo cancelar_antes"""
+    click.echo("Actualizar el campo cancelar_antes")
+
+    # Bucle en todas las citas en el futuro que no tienen cancelar_antes
+    contador = 0
+    for cit_cita in CitCita.query.filter(CitCita.inicio > datetime.now()).filter(CitCita.cancelar_antes == None).all():
+
+        # Definir 24 horas antes de la cita
+        cancelar_antes = cit_cita.inicio - timedelta(hours=24)
+        if cancelar_antes.weekday() == 6:  # Si es domingo, se cambia a viernes
+            cancelar_antes = cancelar_antes - timedelta(days=2)
+        if cancelar_antes.weekday() == 5:  # Si es sábado, se cambia a viernes
+            cancelar_antes = cancelar_antes - timedelta(days=1)
+
+        # Actualizar
+        cit_cita.cancelar_antes = cancelar_antes
+        cit_cita.save()
+
+        # Incrementar contador
+        contador += 1
+        if contador % 100 == 0:
+            click.echo(f"Van {contador} citas actualizadas...")
+
+    click.echo(f"Se actualizaron {contador} citas")
+    ctx.exit(0)
 
 
 @click.command()
@@ -284,6 +321,7 @@ def contar_citas_dobles(ctx):
     ctx.exit(0)
 
 
+cli.add_command(actualizar_cancelar_antes)
 cli.add_command(consultar)
 cli.add_command(enviar_pendiente)
 cli.add_command(enviar_cancelado)

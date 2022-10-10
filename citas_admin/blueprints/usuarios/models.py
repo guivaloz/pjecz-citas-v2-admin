@@ -29,13 +29,17 @@ class Usuario(db.Model, UserMixin, UniversalMixin):
 
     # Columnas
     email = db.Column(db.String(256), nullable=False, unique=True, index=True)
-    contrasena = db.Column(db.String(256), nullable=False)
     nombres = db.Column(db.String(256), nullable=False)
     apellido_paterno = db.Column(db.String(256), nullable=False)
     apellido_materno = db.Column(db.String(256), default="", server_default="")
     curp = db.Column(db.String(18), default="", server_default="")
     puesto = db.Column(db.String(256), default="", server_default="")
     telefono_celular = db.Column(db.String(256), default="", server_default="")
+
+    # Columnas que no deben ser expuestas
+    api_key = db.Column(db.String(128), nullable=False)
+    api_key_expiracion = db.Column(db.DateTime(), nullable=False)
+    contrasena = db.Column(db.String(256), nullable=False)
 
     # Hijos
     bitacoras = db.relationship("Bitacora", back_populates="usuario")
