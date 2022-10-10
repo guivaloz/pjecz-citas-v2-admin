@@ -46,16 +46,17 @@ def actualizar_cancelar_antes(ctx):
     contador = 0
     for cit_cita in CitCita.query.filter(CitCita.inicio > datetime.now()).filter(CitCita.cancelar_antes == None).all():
 
-        # Definir 24 horas antes de la cita
+        # Definir cancelar_antes con 24 horas antes de la cita
         cancelar_antes = cit_cita.inicio - timedelta(hours=24)
-        if cancelar_antes.weekday() == 6:  # Si es domingo, se cambia a viernes
-            cancelar_antes = cancelar_antes - timedelta(days=2)
-        if cancelar_antes.weekday() == 5:  # Si es sábado, se cambia a viernes
-            cancelar_antes = cancelar_antes - timedelta(days=1)
 
-        # Si cancelar_antes es un dia inhabil, se entra en un bucle hasta encontrar un dia habil
-        while cancelar_antes.date() in dias_inhabiles:
-            cancelar_antes = cancelar_antes - timedelta(days=1)
+        # Si cancelar_antes es un dia inhabil, domingo o sabado, se busca el dia habil anterior
+        while cancelar_antes.date() in dias_inhabiles or cancelar_antes.weekday() == 6 or cancelar_antes.weekday() == 5:
+            if cancelar_antes.date() in dias_inhabiles:
+                cancelar_antes = cancelar_antes - timedelta(days=1)
+            if cancelar_antes.weekday() == 6:  # Si es domingo, se cambia a viernes
+                cancelar_antes = cancelar_antes - timedelta(days=2)
+            if cancelar_antes.weekday() == 5:  # Si es sábado, se cambia a viernes
+                cancelar_antes = cancelar_antes - timedelta(days=1)
 
         # Actualizar
         cit_cita.cancelar_antes = cancelar_antes
