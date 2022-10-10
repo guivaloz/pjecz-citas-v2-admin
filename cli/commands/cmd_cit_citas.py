@@ -11,13 +11,14 @@ Cit Citas
 - contar_citas_dobles: Cuenta las citas que se crearon más de una vez
 """
 import click
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from tabulate import tabulate
 
 from citas_admin.app import create_app
 from citas_admin.extensions import db
 
 from citas_admin.blueprints.cit_citas.models import CitCita
+from citas_admin.blueprints.cit_dias_inhabiles.models import CitDiaInhabil
 
 app = create_app()
 db.app = app
@@ -38,16 +39,24 @@ def actualizar_cancelar_antes(ctx):
     """Actualizar el campo cancelar_antes"""
     click.echo("Actualizar el campo cancelar_antes")
 
+    # Consultar dias inhabiles
+    dias_inhabiles = CitDiaInhabil.query.filter(CitDiaInhabil.fecha >= date.today()).filter_by(estatus="A").all()
+
     # Bucle en todas las citas en el futuro que no tienen cancelar_antes
     contador = 0
     for cit_cita in CitCita.query.filter(CitCita.inicio > datetime.now()).filter(CitCita.cancelar_antes == None).all():
 
-        # Definir 24 horas antes de la cita
+        # Definir cancelar_antes con 24 horas antes de la cita
         cancelar_antes = cit_cita.inicio - timedelta(hours=24)
-        if cancelar_antes.weekday() == 6:  # Si es domingo, se cambia a viernes
-            cancelar_antes = cancelar_antes - timedelta(days=2)
-        if cancelar_antes.weekday() == 5:  # Si es sábado, se cambia a viernes
-            cancelar_antes = cancelar_antes - timedelta(days=1)
+
+        # Si cancelar_antes es un dia inhabil, domingo o sabado, se busca el dia habil anterior
+        while cancelar_antes.date() in dias_inhabiles or cancelar_antes.weekday() == 6 or cancelar_antes.weekday() == 5:
+            if cancelar_antes.date() in dias_inhabiles:
+                cancelar_antes = cancelar_antes - timedelta(days=1)
+            if cancelar_antes.weekday() == 6:  # Si es domingo, se cambia a viernes
+                cancelar_antes = cancelar_antes - timedelta(days=2)
+            if cancelar_antes.weekday() == 5:  # Si es sábado, se cambia a viernes
+                cancelar_antes = cancelar_antes - timedelta(days=1)
 
         # Actualizar
         cit_cita.cancelar_antes = cancelar_antes
