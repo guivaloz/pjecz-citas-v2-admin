@@ -2,6 +2,8 @@
 Cit Citas, modelos
 """
 from collections import OrderedDict
+from datetime import datetime
+
 from citas_admin.extensions import db
 from lib.universal_mixin import UniversalMixin
 
@@ -13,8 +15,8 @@ class CitCita(db.Model, UniversalMixin):
         [
             ("ASISTIO", "Asistió"),
             ("CANCELO", "Canceló"),
-            ("PENDIENTE", "Pendiente"),
             ("INASISTENCIA", "Inasistencia"),
+            ("PENDIENTE", "Pendiente"),
         ]
     )
 
@@ -43,6 +45,11 @@ class CitCita(db.Model, UniversalMixin):
 
     # Hijos
     cit_citas_documentos = db.relationship("CitCitaDocumento", back_populates="cit_cita")
+
+    @property
+    def puede_cancelarse(self):
+        """Puede cancelarse esta cita?"""
+        return self.estado == "PENDIENTE" and datetime.now() < self.cancelar_antes
 
     def __repr__(self):
         """Representación"""
