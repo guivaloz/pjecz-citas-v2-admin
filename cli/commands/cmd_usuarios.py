@@ -34,10 +34,12 @@ def nueva_api_key(email, dias):
     if usuario is None:
         click.echo(f"No existe el e-mail {email} en usuarios")
         return
-    usuario.api_key = generar_api_key(usuario.id, usuario.email)
-    usuario.api_key_expiracion = datetime.now() + timedelta(days=dias)
+    api_key = generar_api_key(usuario.id, usuario.email)
+    api_key_expiracion = datetime.now() + timedelta(days=dias)
+    usuario.api_key = api_key
+    usuario.api_key_expiracion = api_key_expiracion
     usuario.save()
-    click.echo(f"Nueva api_key para el usuario {usuario.id} es {usuario.api_key} que expira el {usuario.api_key_expiracion.strftime('%Y-%m-%d')}")
+    click.echo(f"Nueva API key para {usuario.email} es {api_key} que expira el {api_key_expiracion.strftime('%Y-%m-%d')}")
 
 
 @click.command()
