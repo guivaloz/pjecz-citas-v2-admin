@@ -35,6 +35,50 @@
             </div>
         </form>
     {% endcall %}
+    {% call detail.card(title='Permisos por nivel') %}
+        <div class="row">
+        {% if permisos_en_nivel_1 %}
+            <div class="col">
+                <strong>Ver</strong>
+                <ul>
+                {% for etiqueta in permisos_en_nivel_1 %}
+                    <li>{{ etiqueta }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        {% if permisos_en_nivel_2 %}
+            <div class="col">
+                <strong>Ver y modificar</strong>
+                <ul>
+                {% for etiqueta in permisos_en_nivel_2 %}
+                    <li>{{ etiqueta }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        {% if permisos_en_nivel_3 %}
+            <div class="col">
+                <strong>Ver, modificar y crear</strong>
+                <ul>
+                {% for etiqueta in permisos_en_nivel_3 %}
+                    <li>{{ etiqueta }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        {% if permisos_en_nivel_4 %}
+            <div class="col">
+                <strong>Administrar</strong>
+                <ul>
+                {% for etiqueta in permisos_en_nivel_4 %}
+                    <li>{{ etiqueta }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        </div>
+    {% endcall %}
 {% endblock %}
 
 {% block custom_javascript %}

@@ -408,14 +408,17 @@ def view_api_key(usuario_id):
 
     # Juntar los permisos por nivel
     permisos_por_nivel = {1: [], 2: [], 3: [], 4: []}
-    for etiqueta, nivel in usuario.permisos():
+    for etiqueta, nivel in usuario.permisos.items():
         permisos_por_nivel[nivel].append(etiqueta)
 
-    # Mostrar pagina
+    # Mostrar api_key.jinja2
     return render_template(
         "usuarios/api_key.jinja2",
         usuario=usuario,
-        permisos_por_nivel=permisos_por_nivel,
+        permisos_en_nivel_1=sorted(permisos_por_nivel[1]),
+        permisos_en_nivel_2=sorted(permisos_por_nivel[2]),
+        permisos_en_nivel_3=sorted(permisos_por_nivel[3]),
+        permisos_en_nivel_4=sorted(permisos_por_nivel[4]),
     )
 
 
