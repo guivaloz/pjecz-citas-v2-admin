@@ -399,11 +399,24 @@ def edit_admin(usuario_id):
 @permission_required(MODULO, Permiso.ADMINISTRAR)
 def view_api_key(usuario_id):
     """Ver API Key"""
+
+    # Consultar usuario
     usuario = Usuario.query.get_or_404(usuario_id)
     if usuario.estatus != "A":
         flash("El usuario no está activo.", "warning")
         return redirect(url_for("usuarios.detail", usuario_id=usuario.id))
-    return render_template("usuarios/api_key.jinja2", usuario=usuario)
+
+    # Juntar los permisos por nivel
+    permisos_por_nivel = {1: [], 2: [], 3: [], 4: []}
+    for etiqueta, nivel in usuario.permisos():
+        permisos_por_nivel[nivel].append(etiqueta)
+
+    # Mostrar pagina
+    return render_template(
+        "usuarios/api_key.jinja2",
+        usuario=usuario,
+        permisos_por_nivel=permisos_por_nivel,
+    )
 
 
 @usuarios.route("/usuarios/api_key_request/<int:usuario_id>", methods=["GET", "POST"])
@@ -411,6 +424,8 @@ def view_api_key(usuario_id):
 @permission_required(MODULO, Permiso.ADMINISTRAR)
 def request_api_key_json(usuario_id):
     """Solicitar API Key"""
+
+    # Consultar usuario
     usuario = Usuario.query.get_or_404(usuario_id)
     if usuario.estatus != "A":
         return {"success": False, "message": "El usuario no está activo", "api_key": "", "api_key_expiracion": ""}
