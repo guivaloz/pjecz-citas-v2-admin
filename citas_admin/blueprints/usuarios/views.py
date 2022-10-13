@@ -433,21 +433,41 @@ def request_api_key_json(usuario_id):
     if usuario.estatus != "A":
         return {"success": False, "message": "El usuario no está activo", "api_key": "", "api_key_expiracion": ""}
 
-    # Si se recibe clean
+    # Si se recibe action con clean, se va a limpiar
     if "action" in request.form and request.form["action"] == "clean":
         usuario.api_key = ""
         usuario.api_key_expiracion = datetime(year=2000, month=1, day=1)
         usuario.save()
-        return {"success": True, "message": "Se ha limpiado la API Key", "api_key": usuario.api_key, "api_key_expiracion": usuario.api_key_expiracion}
+        mensaje = f"La API Key de {usuario.email} fue eliminada"
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=mensaje,
+            url=url_for("usuarios.detail", usuario_id=usuario.id),
+        )
+        bitacora.save()
+        return {"success": True, "message": mensaje, "api_key": usuario.api_key, "api_key_expiracion": usuario.api_key_expiracion}
 
-    # Si se recibe new
+    # Si se recibe action con new, se va a crear una nueva
     if "action" in request.form and request.form["action"] == "new":
+        if "days" in request.form:
+            days = int(request.form["days"])
+        else:
+            days = 90
         usuario.api_key = generar_api_key(usuario.id, usuario.email)
-        usuario.api_key_expiracion = datetime.now() + timedelta(days=365)
+        usuario.api_key_expiracion = datetime.now() + timedelta(days=days)
         usuario.save()
-        return {"success": True, "message": "Ya tiene una nueva API Key", "api_key": usuario.api_key, "api_key_expiracion": usuario.api_key_expiracion}
+        mensaje = f"Nueva API Key para {usuario.email} con expiración en {days} días"
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=mensaje,
+            url=url_for("usuarios.detail", usuario_id=usuario.id),
+        )
+        bitacora.save()
+        return {"success": True, "message": mensaje, "api_key": usuario.api_key, "api_key_expiracion": usuario.api_key_expiracion}
 
-    # Si no se recibe nada
+    # Si no se recibe nada, entregar la actual
     return {"success": True, "message": "Se ha entregado la API Key a la interfaz", "api_key": usuario.api_key, "api_key_expiracion": usuario.api_key_expiracion}
 
 
