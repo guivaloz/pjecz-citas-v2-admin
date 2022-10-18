@@ -82,6 +82,7 @@
         let apellidoPrimeroBuscar = document.getElementById('apellidoPrimeroInput').value.toUpperCase();
         let curpBuscar = document.getElementById('curpInput').value.toUpperCase();
         let telefonoBuscar = document.getElementById('telefonoInput').value;
+        
         if(emailBuscar != '')
             configDataTable['ajax']['data']['email'] = emailBuscar;
         if(nombreBuscar != '')
@@ -106,13 +107,20 @@
             let apellidoPrimeroBuscar = document.getElementById('apellidoPrimeroInput').value.toUpperCase();
             let curpBuscar = document.getElementById('curpInput').value.toUpperCase();
             let telefonoBuscar = document.getElementById('telefonoInput').value.toUpperCase();
+            
             if( configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' &&
                 configDataTable['ajax']['data']['nombres'] === undefined && nombreBuscar === '' &&
                 configDataTable['ajax']['data']['apellido_primero'] === undefined && apellidoPrimeroBuscar === '' &&
                 configDataTable['ajax']['data']['curp'] === undefined && curpBuscar === '' &&
                 configDataTable['ajax']['data']['telefono'] === undefined && telefonoBuscar === ''
             ) return false;
+
             $('#cit_clientes_datatable').DataTable().destroy();
+            
+            if(emailBuscar == '')
+                delete configDataTable['ajax']['data']['email'];
+            else
+                configDataTable['ajax']['data']['email'] = emailBuscar;
             if(nombreBuscar == '')
                 delete configDataTable['ajax']['data']['nombres'];
             else
@@ -133,6 +141,7 @@
                 delete configDataTable['ajax']['data']['telefono'];
             else
                 configDataTable['ajax']['data']['telefono'] = telefonoBuscar;
+
             $('#cit_clientes_datatable').DataTable(configDataTable);
         };
 
@@ -143,11 +152,13 @@
                 configDataTable['ajax']['data']['curp'] === undefined &&
                 configDataTable['ajax']['data']['telefono'] === undefined
             ) return false;
+
             delete configDataTable['ajax']['data']['email'];
             delete configDataTable['ajax']['data']['nombres'];
             delete configDataTable['ajax']['data']['apellido_primero'];
             delete configDataTable['ajax']['data']['curp'];
             delete configDataTable['ajax']['data']['telefono'];
+
             $('#cit_clientes_datatable').DataTable().destroy();
             $('#cit_clientes_datatable').DataTable(configDataTable);
         };

@@ -422,7 +422,6 @@ def evaluar_asistencia(test=True):
     return mensaje_final
 
 
-# TODO: Función para eliminar clientes sin ninguna cita agendada.
 def eliminar_sin_citas(dias=30):
     """Elimina los cit_clientes sin citas agendadas"""
 

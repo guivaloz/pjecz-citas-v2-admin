@@ -25,6 +25,16 @@
 
 {% block content %}
     {% call list.card() %}
+        <div class="row">
+            <div class="col">
+                <form class="input-group mb-3" id="buscadorForm" onsubmit="buscar(); return false;">
+                    <input id="emailInput" type="text" class="form-control text-primary" placeholder="email" aria-label="email" aria-describedby="button-buscar" style="text-transform: lowercase">
+                    <input id="nombreInput" type="text" class="form-control text-primary" placeholder="nombre completo" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
+                    <button class="btn btn-primary" type="submit" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                    <button class="btn btn-warning" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                </form>
+            </div>
+        </div>
         <table id="usuarios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -63,7 +73,7 @@
                 targets: [1, 2], // nombre, puesto
                 data: null,
                 render: function(data, type, row, meta) {
-                    return (data.length > 32 ? data.substr(0, 32) + '…' : data);
+                    return (data.length > 32 ? '<span title="'+ data +'">' + data.substr(0, 32) + '…</span>' : data);
                 }
             },
             {
@@ -89,6 +99,54 @@
                 }
             }
         ];
+
+        // Búsqueda
+        let emailBuscar = document.getElementById('emailInput').value.toLowerCase();
+        let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
+
+        if(emailBuscar != '')
+            configDataTable['ajax']['data']['email'] = emailBuscar;
+        if(nombreBuscar != '')
+            configDataTable['ajax']['data']['nombre_completo'] = nombreBuscar;
+        
+        // Datatable
         $('#usuarios_datatable').DataTable(configDataTable);
+    </script>
+    <!-- Función de buscador -->
+    <script type="text/javascript">
+
+        function buscar() {
+            let emailBuscar = document.getElementById('emailInput').value.toLowerCase();
+            let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
+
+            if( configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' &&
+                configDataTable['ajax']['data']['nombre_completo'] === undefined && nombreBuscar === ''
+            ) return false;
+
+            $('#usuarios_datatable').DataTable().destroy();
+
+            if(emailBuscar == '')
+                delete configDataTable['ajax']['data']['email'];
+            else
+                configDataTable['ajax']['data']['email'] = emailBuscar;
+            if(nombreBuscar == '')
+                delete configDataTable['ajax']['data']['nombre_completo'];
+            else
+                configDataTable['ajax']['data']['nombre_completo'] = nombreBuscar;
+
+            $('#usuarios_datatable').DataTable(configDataTable);
+        };
+
+        function limpiar()  {
+            if( configDataTable['ajax']['data']['email'] === undefined &&
+                configDataTable['ajax']['data']['nombre_completo'] === undefined
+            ) return false;
+
+            delete configDataTable['ajax']['data']['email'];
+            delete configDataTable['ajax']['data']['nombre_completo'];
+
+            $('#usuarios_datatable').DataTable().destroy();
+            $('#usuarios_datatable').DataTable(configDataTable);
+        };
     </script>
 {% endblock %}
