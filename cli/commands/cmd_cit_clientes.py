@@ -138,6 +138,44 @@ def eliminar_abandonados(test):
 
 
 @click.command()
+@click.option("--dias", default=30, help="Días de creación de la cuenta", type=int)
+@click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
+def eliminar_sin_cita(dias, test):
+    """Eliminar clientes que nunca han agendado una cita"""
+    click.echo("== Eliminación de Clientes sin citas Agendadas ==")
+
+    # Inicializar el engine para ejecutar comandos SQL
+    engine = db.engine
+
+    # Si esta en modo de pruebas, no se guardan los cambios
+    if test is True:
+        # Modo de pruebas
+        count_query = text(
+            f"SELECT COUNT(*) AS cantidad, current_date - {dias} AS fecha_creacion \
+                FROM cit_clientes AS cli \
+                LEFT JOIN cit_citas AS cit \
+                ON cli.id = cit.cit_cliente_id \
+                WHERE cit.cit_cliente_id IS NULL \
+                AND cli.creado <= now() - INTERVAL '{dias} day'"
+        )
+        res = engine.execute(count_query)
+        count_cit_clientes = 0
+        fecha_creacion = ""
+        if res:
+            for row in res:
+                count_cit_clientes = row["cantidad"]
+                fecha_creacion = row["fecha_creacion"]
+        click.echo(f"MODO DE PRUEBAS: Se podrían eliminar {count_cit_clientes} clientes que se crearon a partir del {fecha_creacion}")
+
+    else:  # Modo de realizar cambios
+        # Agregar tarea en el fondo
+        app.task_queue.enqueue(
+            "citas_admin.blueprints.cit_clientes.tasks.eliminar_sin_citas",
+            dias=dias,
+        )
+
+
+@click.command()
 @click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
 def definir_boleanos(test):
     """Define los booleanos es_adulto_mayor, es_mujer, etc"""
@@ -176,5 +214,6 @@ def evaluar_asistencia(test):
 cli.add_command(agregar)
 cli.add_command(cambiar_contrasena)
 cli.add_command(eliminar_abandonados)
+cli.add_command(eliminar_sin_cita)
 cli.add_command(definir_boleanos)
 cli.add_command(evaluar_asistencia)

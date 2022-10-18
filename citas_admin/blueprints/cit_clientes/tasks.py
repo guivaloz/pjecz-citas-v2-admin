@@ -7,7 +7,10 @@ import logging
 import re
 from datetime import datetime, timedelta
 
+from sqlalchemy import text
 from sqlalchemy.sql import func
+from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitClienteRecuperacion
+from lib import database
 from lib.database import SessionLocal
 from lib.tasks import set_task_progress, set_task_error
 from lib.storage import GoogleCloudStorage, NotAllowedExtesionError, UnknownExtesionError, NotConfiguredError
@@ -412,6 +415,48 @@ def evaluar_asistencia(test=True):
 
     # Mensaje de Totales
     mensaje_final = f"Se procesaron {len(clientes)} Clientes, Fecha límite {fecha_limite} : Premiaron {count_clientes_premiados}, Ajustaron {count_clientes_ajustados}, Penalizaron {count_clientes_penalizados}."
+    bitacora.info(mensaje_final)
+
+    # Se termina la tarea y se envía el mensaje final
+    set_task_progress(100)
+    return mensaje_final
+
+
+# TODO: Función para eliminar clientes sin ninguna cita agendada.
+def eliminar_sin_citas(dias=30):
+    """Elimina los cit_clientes sin citas agendadas"""
+
+    # Configuración del LOG
+    empunadura = logging.FileHandler("cit_clientes.log")
+    empunadura.setFormatter(formato)
+    bitacora.addHandler(empunadura)
+
+    # Establecer al fecha
+    fecha_creado = datetime.now() - timedelta(days=dias)
+
+    # Revisar los clientes
+    db = SessionLocal()
+    results = db.query(CitCliente, CitCita).outerjoin(CitCita).filter(CitCita.cit_cliente_id == None).filter(CitCliente.creado <= fecha_creado).all()
+
+    # Inicializar el engine para ejecutar comandos SQL
+    engine = database.engine
+
+    for cliente, _ in results:
+        # Borrado de recuperaciones
+        borrado = text(
+            f"DELETE \
+                FROM cit_clientes_recuperaciones \
+                WHERE cit_cliente_id = {cliente.id}"
+        )
+        engine.execute(borrado)
+        # Borrado del cit_cliente
+        cliente_borrar = CitCliente.query.get(cliente.id)
+        mensaje = f"Se eliminó PERMANENTEMENTE el Cliente: {cliente.id} por no tener citas."
+        cliente_borrar.delete(permanently=True)
+        bitacora.info(mensaje)
+
+    # Mensaje de Totales
+    mensaje_final = f"Se eliminaron {len(results)} clientes por no tener citas."
     bitacora.info(mensaje_final)
 
     # Se termina la tarea y se envía el mensaje final
