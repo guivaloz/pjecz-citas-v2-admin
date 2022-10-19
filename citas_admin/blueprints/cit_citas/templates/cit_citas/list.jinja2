@@ -55,7 +55,16 @@
             </div>
         </div>
         <!-- Formulario de filtros -->
-        
+        <div class="row mt-3">
+            <div class="col">
+                <form class="input-group mb-3" id="buscadorForm" onsubmit="buscar(); return false;">
+                    <input id="idInput" type="text" class="form-control text-primary" placeholder="id" aria-label="id" aria-describedby="button-buscar">
+                    <input id="nombreInput" type="text" class="form-control text-primary" placeholder="nombre completo" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
+                    <button class="btn btn-primary" type="submit" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                    <button class="btn btn-warning" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                </form>
+            </div>
+        </div>
         <!-- Datatable -->
         <table id="cit_citas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
@@ -155,7 +164,16 @@
                 title: 'Listado de {{ titulo }} : {{ fecha_actual }}',
             }
         ];
+        // Búsqueda
+        let idBuscar = document.getElementById('idInput').value;
+        let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
 
+        if(idBuscar != '')
+            configDataTable['ajax']['data']['id'] = idBuscar;
+        if(nombreBuscar != '')
+            configDataTable['ajax']['data']['nombre_completo'] = nombreBuscar;
+        
+        // Datatable
         $('#cit_citas_datatable').DataTable(configDataTable);
         $('#cit_citas_datatable').DataTable().button(0).text('Convertir a PDF');
         $('#cit_citas_datatable').DataTable().buttons().container().appendTo( '#example_wrapper .col-md-6:eq(0)' );
@@ -187,7 +205,6 @@
                 {
                     extend: 'pdf',
                     title: 'Listado de ' + oficina_clave + ' : ' + fecha_actual,
-                    buttonText: 'jajajaj',
                 }
             ];
             $('#cit_citas_datatable').DataTable(configDataTable);
@@ -204,6 +221,47 @@
             salida_f = date.toISOString().split('.');
             output_s = salida_f[0].split('T');
             cambiar_fecha(output_s[0]);
+        };
+    </script>
+    <!-- Función de buscador -->
+    <script type="text/javascript">
+
+        function buscar() {
+            let idBuscar = document.getElementById('idInput').value;
+            let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
+
+            if( configDataTable['ajax']['data']['id'] === undefined && idBuscar === '' &&
+                configDataTable['ajax']['data']['nombre_completo'] === undefined && nombreBuscar === ''
+            ) return false;
+
+            $('#cit_citas_datatable').DataTable().destroy();
+
+            if(idBuscar == '')
+                delete configDataTable['ajax']['data']['id'];
+            else
+                configDataTable['ajax']['data']['id'] = idBuscar;
+            if(nombreBuscar == '')
+                delete configDataTable['ajax']['data']['nombre_completo'];
+            else
+                configDataTable['ajax']['data']['nombre_completo'] = nombreBuscar;
+
+            $('#cit_citas_datatable').DataTable(configDataTable);
+            $('#cit_citas_datatable').DataTable().button(0).text('Convertir a PDF');
+        };
+
+        function limpiar()  {
+            cambiar_fecha({{fecha_actual}});
+            
+            if( configDataTable['ajax']['data']['id'] === undefined &&
+                configDataTable['ajax']['data']['nombre_completo'] === undefined
+            ) return false;
+
+            delete configDataTable['ajax']['data']['id'];
+            delete configDataTable['ajax']['data']['nombre_completo'];
+
+            $('#cit_citas_datatable').DataTable().destroy();
+            $('#cit_citas_datatable').DataTable(configDataTable);
+            $('#cit_citas_datatable').DataTable().button(0).text('Convertir a PDF');
         };
     </script>
 {% endblock %}
