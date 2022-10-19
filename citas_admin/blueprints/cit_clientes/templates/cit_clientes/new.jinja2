@@ -12,6 +12,21 @@
 {% endblock %}
 
 {% block content %}
+    {% if mensaje %}
+        <div class="alert alert-warning" role="alert">
+            <h4 class="alert-heading">¡CONFLICTO!</h4>
+            <p>{{ mensaje }}</p>
+            {% if cit_cliente %}
+                <hr>
+                <p>
+                ¿Quieres agendarle una cita? <a href="{{url_for('cit_citas.new', cit_cliente_id=cit_cliente.id)}}" role="button" class="btn btn-primary btn-sm"><span class="iconify" data-icon="mdi:calendar-plus"></span> Agendar Cita</a>
+                </p>
+                <p class="mb-0">
+                ¿Quieres editar su información? <a href="{{url_for('cit_clientes.edit', cit_cliente_id=cit_cliente.id)}}" role="button" class="btn btn-primary btn-sm"><span class="iconify" data-icon="mdi:account-edit"></span> Editar Cliente</a><br>
+                </p>
+            {% endif %}
+        </div>
+    {% endif %}
     {% call f.card() %}
         {% call f.form_tag('cit_clientes.new', fid='cliente_form') %}
             {% call f.form_group(form.nombres) %}{% endcall %}

@@ -303,22 +303,30 @@ def new():
         # Validar que el CURP no se repita
         curp = safe_curp(form.curp.data)
         if curp == "" or curp is None:
-            flash("El formato de la CURP no es válido.", "warning")
-            return render_template("cit_clientes/new.jinja2", form=form)
+            mensaje = "El formato de la <strong>CURP</strong> no es válido."
+            return render_template("cit_clientes/new.jinja2", form=form, mensaje=mensaje)
         curp_repetido = CitCliente.query.filter_by(curp=curp).first()
         if curp_repetido:
-            flash(f'Esta CURP ya se encuentra en uso. La utiliza el cliente: "{curp_repetido.nombre}"', "danger")
-            return render_template("cit_clientes/new.jinja2", form=form)
+            mensaje = f"Esta <strong>CURP</strong> ya se encuentra en uso.<br/>\
+                Lo utiliza el Cliente:<br/>\
+                <strong>Nombre:</strong> {curp_repetido.nombre} <br/>\
+                <strong>CURP:</strong> <span class='text-danger'><strong>{curp_repetido.curp}</strong></span> <br/>\
+                <strong>Email:</strong> {curp_repetido.email}"
+            return render_template("cit_clientes/new.jinja2", form=form, mensaje=mensaje, cit_cliente=curp_repetido)
 
         # Validar que el e-mail no se repita
         email = safe_email(form.email.data)
         if email == "":
-            flash("El formato del EMAIL no es válido.", "warning")
-            return render_template("cit_clientes/new.jinja2", form=form)
+            mensaje = "El formato del <strong>EMAIL</strong> no es válido."
+            return render_template("cit_clientes/new.jinja2", form=form, mensaje=mensaje)
         email_repetido = CitCliente.query.filter_by(email=email).first()
         if email_repetido:
-            flash(f'Este EMAIL ya se encuentra en uso. La utiliza el cliente: "{email_repetido.nombre}"', "danger")
-            return render_template("cit_clientes/new.jinja2", form=form)
+            mensaje = f"Este <strong>EMAIL</strong> ya se encuentra en uso.<br/>\
+                Lo utiliza el Cliente:<br/>\
+                <strong>Nombre:</strong> {email_repetido.nombre} <br/>\
+                <strong>CURP:</strong> {email_repetido.curp} <br/>\
+                <strong>Email:</strong> <span class='text-danger'><strong>{email_repetido.email}</strong></span>"
+            return render_template("cit_clientes/new.jinja2", form=form, mensaje=mensaje, cit_cliente=email_repetido)
 
         # Definir la fecha de renovación
         renovacion_fecha = datetime.now() + timedelta(days=360)
