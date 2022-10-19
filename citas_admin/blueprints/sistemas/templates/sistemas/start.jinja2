@@ -17,6 +17,7 @@
         {% call start.card('Opciones Rápidas') %}
             <a href="{{ url_for('cit_citas.list_active') }}" class="btn bnt-lg btn-primary me-4 mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;">Ver Citas del Día</a>
             <a href="{{ url_for('cit_clientes.list_active') }}" class="btn bnt-lg btn-success mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;">Agendar Cita Inmediata</a>
+            <a href="{{ url_for('cit_clientes.new') }}" class="btn bnt-lg btn-primary mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;">Nuevo Cliente</a>
         {% endcall %}
     {% endif %}
     {# Versiones #}
