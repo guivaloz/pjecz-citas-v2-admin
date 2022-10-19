@@ -15,9 +15,22 @@
     {# Botón para añadir citas instanteanas #}
     {% if current_user.can_insert('CIT CITAS') and show_menu_recepcionista %}
         {% call start.card('Opciones Rápidas') %}
-            <a href="{{ url_for('cit_citas.list_active') }}" class="btn bnt-lg btn-primary me-4 mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;">Ver Citas del Día</a>
-            <a href="{{ url_for('cit_clientes.list_active') }}" class="btn bnt-lg btn-success mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;">Agendar Cita Inmediata</a>
-            <a href="{{ url_for('cit_clientes.new') }}" class="btn bnt-lg btn-primary mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;">Nuevo Cliente</a>
+            <div class="row text-center justify-content-center g-0">
+                <div class="col-6">
+                    <a href="{{ url_for('cit_citas.list_active') }}" class="btn bnt-lg btn-primary me-4 mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;"><span class="iconify" data-icon="mdi:calendar"></span> Ver Citas del Día</a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ url_for('cit_clientes.list_active') }}" class="btn bnt-lg btn-success mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;"><span class="iconify" data-icon="mdi:calendar-plus"></span> Agendar Cita Inmediata</a>
+                </div>
+            </div>
+            <div class="row text-center justify-content-center">
+                <div class="col-6">
+                    <a href="{{ url_for('cit_clientes.list_active') }}" class="btn bnt-lg btn-primary mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;"><span class="iconify" data-icon="mdi:account-search"></span> Buscar Cliente</a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ url_for('cit_clientes.new') }}" class="btn bnt-lg btn-success mt-4" style="font-weight: bold; padding: 10px; font-size: 2em;"><span class="iconify" data-icon="mdi:account-plus"></span> Nuevo Cliente</a>
+                </div>
+            </div>
         {% endcall %}
     {% endif %}
     {# Versiones #}
