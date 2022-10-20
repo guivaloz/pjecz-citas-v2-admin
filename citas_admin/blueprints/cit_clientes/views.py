@@ -3,6 +3,7 @@ Cit Clientes, vistas
 """
 import json
 import os
+from datetime import datetime, timedelta
 
 from flask import Blueprint, render_template, request, url_for, flash, redirect
 from flask_login import login_required, current_user
@@ -10,6 +11,8 @@ from flask_login import login_required, current_user
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_text, safe_message, safe_email, safe_curp, safe_tel
 from lib.storage import GoogleCloudStorage, NotConfiguredError
+from citas_admin.extensions import pwd_context
+from sqlalchemy import or_
 
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitClienteRecuperacion
@@ -18,7 +21,8 @@ from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 
-from citas_admin.blueprints.cit_clientes.forms import ClienteEditForm
+from citas_admin.blueprints.cit_clientes.forms import CitClienteEditForm, CitClienteNewForm
+from config.settings import LIMITE_CITAS_PENDIENTES
 
 FILE_NAME = "cit_clientes_reporte.json"
 MODULO = "CIT CLIENTES"
@@ -55,6 +59,10 @@ def datatable_json():
         consulta = consulta.filter(CitCliente.curp.contains(safe_string(request.form["curp"])))
     if "telefono" in request.form:
         consulta = consulta.filter(CitCliente.telefono.contains(safe_tel(request.form["telefono"])))
+    if "nombre_completo" in request.form:
+        palabras = safe_string(request.form["nombre_completo"]).split(" ")
+        for palabra in palabras:
+            consulta = consulta.filter(or_(CitCliente.nombres.contains(palabra), CitCliente.apellido_primero.contains(palabra), CitCliente.apellido_segundo.contains(palabra)))
     registros = consulta.order_by(CitCliente.modificado.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -148,7 +156,7 @@ def send_email_recover_password(cit_cliente_recuperacion_id):
 def edit(cit_cliente_id):
     """Editar Cliente"""
     cliente = CitCliente.query.get_or_404(cit_cliente_id)
-    form = ClienteEditForm()
+    form = CitClienteEditForm()
     if form.validate_on_submit():
 
         # Validar que el CURP no se repita
@@ -284,3 +292,66 @@ def refresh_report():
         flash("Se está actualizando el reporte de errores de clientes...", "info")
     # Mostrar reporte de errores del cliente
     return redirect(url_for("cit_clientes.list_active"))
+
+
+@cit_clientes.route("/cit_clientes/nuevo", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.CREAR)
+def new():
+    """Nuevo Cliente"""
+    form = CitClienteNewForm()
+    if form.validate_on_submit():
+        # Validar que el CURP no se repita
+        curp = safe_curp(form.curp.data)
+        if curp == "" or curp is None:
+            mensaje = "El formato de la <strong>CURP</strong> no es válido."
+            return render_template("cit_clientes/new.jinja2", form=form, mensaje=mensaje)
+        curp_repetido = CitCliente.query.filter_by(curp=curp).first()
+        if curp_repetido:
+            mensaje = f"Esta <strong>CURP</strong> ya se encuentra en uso.<br/>\
+                Lo utiliza el Cliente:<br/>\
+                <strong>Nombre:</strong> {curp_repetido.nombre} <br/>\
+                <strong>CURP:</strong> <span class='text-danger'><strong>{curp_repetido.curp}</strong></span> <br/>\
+                <strong>Email:</strong> {curp_repetido.email}"
+            return render_template("cit_clientes/new.jinja2", form=form, mensaje=mensaje, cit_cliente=curp_repetido)
+
+        # Validar que el e-mail no se repita
+        email = safe_email(form.email.data)
+        if email == "":
+            mensaje = "El formato del <strong>EMAIL</strong> no es válido."
+            return render_template("cit_clientes/new.jinja2", form=form, mensaje=mensaje)
+        email_repetido = CitCliente.query.filter_by(email=email).first()
+        if email_repetido:
+            mensaje = f"Este <strong>EMAIL</strong> ya se encuentra en uso.<br/>\
+                Lo utiliza el Cliente:<br/>\
+                <strong>Nombre:</strong> {email_repetido.nombre} <br/>\
+                <strong>CURP:</strong> {email_repetido.curp} <br/>\
+                <strong>Email:</strong> <span class='text-danger'><strong>{email_repetido.email}</strong></span>"
+            return render_template("cit_clientes/new.jinja2", form=form, mensaje=mensaje, cit_cliente=email_repetido)
+
+        # Definir la fecha de renovación
+        renovacion_fecha = datetime.now() + timedelta(days=360)
+
+        cliente = CitCliente(
+            nombres=safe_string(form.nombres.data),
+            apellido_primero=safe_string(form.apellido_primero.data),
+            apellido_segundo=safe_string(form.apellido_segundo.data),
+            curp=safe_string(form.curp.data),
+            email=email,
+            telefono=safe_tel(form.telefono.data),
+            contrasena_md5="",
+            contrasena_sha256=pwd_context.hash(form.contrasena.data),
+            renovacion=renovacion_fecha.date(),
+            limite_citas_pendientes=LIMITE_CITAS_PENDIENTES,
+        )
+        cliente.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Nuevo cliente {cliente.email}: {cliente.nombre}"),
+            url=url_for("cit_clientes.detail", cit_cliente_id=cliente.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+        return redirect(bitacora.url)
+    # Entregar
+    return render_template("cit_clientes/new.jinja2", form=form)

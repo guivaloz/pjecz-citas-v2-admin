@@ -7,6 +7,7 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for, abort
 from flask_login import current_user, login_required
 from pytz import timezone
+from sqlalchemy import or_
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message, safe_string, safe_text
@@ -55,6 +56,8 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
+    if "id" in request.form:
+        consulta = consulta.filter_by(id=request.form["id"])
     if "cit_cliente_id" in request.form:
         consulta = consulta.filter_by(cit_cliente_id=request.form["cit_cliente_id"])
     if "cit_cliente" in request.form:
@@ -63,10 +66,15 @@ def datatable_json():
     if "cit_cliente_email" in request.form:
         consulta = consulta.join(CitCliente)
         consulta = consulta.filter(CitCliente.email.contains(request.form["cit_cliente_email"]))
-    if "cit_servicio_id" in request.form:
-        consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
     if "oficina_id" in request.form:
         consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
+    if "nombre_completo" in request.form:
+        palabras = safe_string(request.form["nombre_completo"]).split(" ")
+        consulta = consulta.join(CitCliente)
+        for palabra in palabras:
+            consulta = consulta.filter(or_(CitCliente.nombres.contains(palabra), CitCliente.apellido_primero.contains(palabra), CitCliente.apellido_segundo.contains(palabra)))
+    if "cit_servicio_id" in request.form:
+        consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
     else:
         if "distrito_id" in request.form:
             consulta = consulta.join(Oficina)
@@ -147,11 +155,10 @@ def list_active():
         fecha_anterior_str = (fecha - timedelta(days=1)).strftime("%Y-%m-%d")
         fecha_siguiente_str = (fecha + timedelta(days=1)).strftime("%Y-%m-%d")
 
-    # Verificamos si tiene asignadas varias oficinas
-    oficinas = UsuarioOficina.query.filter_by(usuario_id=current_user.id).filter_by(estatus="A").all()
-
     # Si es administrador, entregar las citas de todas las oficinas
     if current_user.can_admin(MODULO):
+        oficinas = Oficina.query.filter_by(estatus="A").filter_by(puede_agendar_citas=True).order_by(Oficina.clave).all()
+
         return render_template(
             "cit_citas/list_admin.jinja2",
             filtros=json.dumps({"estatus": "A", "fecha": fecha_str}),
@@ -160,7 +167,11 @@ def list_active():
             fecha_actual=fecha_str,
             fecha_anterior=fecha_anterior_str,
             fecha_siguiente=fecha_siguiente_str,
+            oficinas=oficinas,
         )
+
+    # Verificamos si tiene asignadas varias oficinas
+    oficinas_usr = UsuarioOficina.query.join(Oficina).filter(UsuarioOficina.usuario_id == current_user.id).filter_by(estatus="A").order_by(Oficina.descripcion_corta).all()
 
     # NO es administrador, entregar las citas de su propia oficina
     return render_template(
@@ -171,7 +182,7 @@ def list_active():
         fecha_actual=fecha_str,
         fecha_anterior=fecha_anterior_str,
         fecha_siguiente=fecha_siguiente_str,
-        oficinas=oficinas,
+        oficinas=oficinas_usr,
     )
 
 

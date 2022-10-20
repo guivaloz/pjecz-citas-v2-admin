@@ -16,6 +16,45 @@
 
 {% block content %}
     {% call list.card() %}
+        <div class="row">
+            <div class="col">
+                <form class="row g-1 mb-3" id="buscadorForm" onsubmit="buscar(); return false;">
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="idInput" type="text" class="form-control" placeholder="email" aria-label="text" aria-describedby="button-buscar" style="text-transform: lowercase">
+                            <label for="idInput">ID</label>
+                        </div>
+                    </div>
+                    <div class="col-9">
+                        <div class="form-floating">
+                            <input id="nombreInput" type="text" class="form-control" placeholder="cliente" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
+                            <label for="nombreInput">Cliente</label>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="fechaInput" type="date" class="form-control" aria-label="desde" aria-describedby="button-buscar" onchange="buscar(); return false;">
+                            <label for="fechaInput">Fecha</label>
+                        </div>
+                    </div>
+                    <div class="col-7">
+                        <div class="form-floating">
+                            <select class="form-select" id="oficinasSelect" name="oficina_id" aria-label="Todas" onchange="buscar(); return false;" style="flex: inherit;">
+                                <option selected value="">Todas</option>
+                                {% for oficina in oficinas %}
+                                    <option value="{{oficina.id}}">{{oficina.clave}} : {{oficina.descripcion_corta}}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="oficinasSelect">Oficina</label>
+                        </div>
+                    </div>
+                    <div class="col-2 text-end">
+                        <button title="Buscar" class="btn btn-primary btn-lg" onclick="buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                        <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
         <table id="cit_citas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -109,6 +148,76 @@
                 case "INASISTENCIA":    $(row).addClass("table-secondary"); break;
             }
         };
+
+        // Búsqueda
+        let idBuscar = document.getElementById('idInput').value
+        let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
+        let fechaBuscar = document.getElementById('fechaInput').value
+        let oficinaSelect = document.getElementById('oficinasSelect').value;
+
+        if(idBuscar != '')
+            configDataTable['ajax']['data']['id'] = idBuscar;
+        if(nombreBuscar != '')
+            configDataTable['ajax']['data']['nombre_completo'] = nombreBuscar;
+        if(fechaBuscar != '')
+            configDataTable['ajax']['data']['fecha'] = fechaBuscar;
+        if(oficinaSelect != '')
+            configDataTable['ajax']['data']['oficina_id'] = oficinaSelect;
+        
+        // Datatable
         $('#cit_citas_datatable').DataTable(configDataTable);
+    </script>
+    <!-- Función de buscador -->
+    <script type="text/javascript">
+
+        function buscar() {
+            let idBuscar = document.getElementById('idInput').value
+            let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
+            let fechaBuscar = document.getElementById('fechaInput').value
+            let oficinaSelect = document.getElementById('oficinasSelect').value;
+
+            if( configDataTable['ajax']['data']['id'] === undefined && idBuscar === '' &&
+                configDataTable['ajax']['data']['nombre_completo'] === undefined && nombreBuscar === '' &&
+                configDataTable['ajax']['data']['fecha'] === undefined && fechaBuscar === '' &&
+                configDataTable['ajax']['data']['oficina_id'] === undefined && oficinaSelect === ''
+            ) return false;
+
+            $('#cit_citas_datatable').DataTable().destroy();
+
+            if(idBuscar == '')
+                delete configDataTable['ajax']['data']['id'];
+            else
+                configDataTable['ajax']['data']['id'] = idBuscar;
+            if(nombreBuscar == '')
+                delete configDataTable['ajax']['data']['nombre_completo'];
+            else
+                configDataTable['ajax']['data']['nombre_completo'] = nombreBuscar;
+            if(fechaBuscar == '')
+                delete configDataTable['ajax']['data']['fecha'];
+            else
+                configDataTable['ajax']['data']['fecha'] = fechaBuscar;
+            if(oficinaSelect == '')
+                delete configDataTable['ajax']['data']['oficina_id'];
+            else
+                configDataTable['ajax']['data']['oficina_id'] = oficinaSelect;
+
+            $('#cit_citas_datatable').DataTable(configDataTable);
+        };
+
+        function limpiar()  {
+            if( configDataTable['ajax']['data']['id'] === undefined &&
+                configDataTable['ajax']['data']['nombre_completo'] === undefined &&
+                configDataTable['ajax']['data']['fecha'] === undefined &&
+                configDataTable['ajax']['data']['oficina_id'] === undefined
+            ) return false;
+
+            delete configDataTable['ajax']['data']['id'];
+            delete configDataTable['ajax']['data']['nombre_completo'];
+            delete configDataTable['ajax']['data']['fecha'];
+            delete configDataTable['ajax']['data']['oficina_id'];
+
+            $('#cit_citas_datatable').DataTable().destroy();
+            $('#cit_citas_datatable').DataTable(configDataTable);
+        };
     </script>
 {% endblock %}
