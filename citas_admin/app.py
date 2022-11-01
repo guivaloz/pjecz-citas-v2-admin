@@ -8,6 +8,7 @@ from citas_admin.extensions import csrf, db, login_manager, moment
 
 from citas_admin.blueprints.autoridades.views import autoridades
 from citas_admin.blueprints.bitacoras.views import bitacoras
+from citas_admin.blueprints.boletines.views import boletines
 from citas_admin.blueprints.cit_categorias.views import cit_categorias
 from citas_admin.blueprints.cit_citas.views import cit_citas
 from citas_admin.blueprints.cit_citas_stats.views import cit_citas_stats
@@ -55,6 +56,7 @@ def create_app():
     # Cargar los blueprints
     app.register_blueprint(autoridades)
     app.register_blueprint(bitacoras)
+    app.register_blueprint(boletines)
     app.register_blueprint(cit_categorias)
     app.register_blueprint(cit_citas)
     app.register_blueprint(cit_citas_stats)

@@ -21,7 +21,10 @@
         <table id="boletines_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
-                    <th>Nombres</th>
+                    <th>ID</th>
+                    <th>Envio P.</th>
+                    <th>Estado</th>
+                    <th>Asunto</th>
                 </tr>
             </thead>
         </table>
@@ -34,7 +37,10 @@
         configDataTable['ajax']['url'] = '/boletines/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
-            { data: 'detalle' }
+            { data: 'detalle' },
+            { data: 'envio_programado' },
+            { data: 'estado' },
+            { data: 'asunto' }
         ];
         configDataTable['columnDefs'] = [
             {

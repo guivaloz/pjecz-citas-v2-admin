@@ -1,0 +1,23 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/form.jinja2' as f with context %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Nuevo Boletin{% endblock %}
+
+{% block topbar_actions %}
+    {{ topbar.page('Nuevo Boletin') }}
+{% endblock %}
+
+{% block content %}
+    {% call f.card() %}
+        {% call f.form_tag('boletines.new', fid='boletin_form') %}
+            {% call f.form_group(form.envio_programado) %}{% endcall %}
+            {% call f.form_group(form.estado) %}{% endcall %}
+            {% call f.form_group(form.asunto) %}{% endcall %}
+            {% call f.form_group(form.cabecera) %}{% endcall %}
+            {% call f.form_group(form.contenido) %}{% endcall %}
+            {% call f.form_group(form.pie) %}{% endcall %}
+            {% call f.form_group(form.guardar) %}{% endcall %}
+        {% endcall %}
+    {% endcall %}
+{% endblock %}

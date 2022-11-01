@@ -18,10 +18,12 @@
 
 {% block content %}
     {% call detail.card(estatus=boletin.estatus) %}
-        {{ detail.label_value_big('Nombre o Descripción', boletin.asunto) }}
-        {{ detail.label_value('Columna 1', boletin.columna_1) }}
-        {{ detail.label_value('Columna 2', boletin.columna_2) }}
-        {{ detail.label_value('Fecha', moment(lista_de_acuerdo.fecha, local=True).format('DD MMM YYYY')) }}
+        {{ detail.label_value_big('Asunto', boletin.asunto) }}
+        {{ detail.label_value('Estado', boletin.estado) }}
+        {{ detail.label_value('Envio programado', moment(boletin.envio_programado, local=True).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Cabecera', boletin.cabecera) }}
+        {{ detail.label_value('Contenido', boletin.contenido) }}
+        {{ detail.label_value('Pie', boletin.pie) }}
     {% endcall %}
 {% endblock %}
 

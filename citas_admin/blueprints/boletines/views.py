@@ -42,7 +42,7 @@ def datatable_json():
         consulta = consulta.filter(Boletin.asunto.contains(request.form["asunto"]))
     if "estado" in request.form:
         consulta = consulta.filter_by(estado=request.form["estado"])
-    registros = consulta.order_by(Boletin.id).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(Boletin.envio_programado.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -54,8 +54,8 @@ def datatable_json():
                     "url": url_for("boletines.detail", boletin_id=resultado.id),
                 },
                 "envio_programado": resultado.envio_programado.strftime("%Y-%m-%d"),
-                "asunto": resultado.asunto,
                 "estado": resultado.estado,
+                "asunto": resultado.asunto,
             }
         )
     # Entregar JSON
@@ -100,11 +100,11 @@ def new():
     if form.validate_on_submit():
         boletin = Boletin(
             envio_programado=form.envio_programado.data,
+            estado=form.estado.data,
             asunto=safe_string(form.asunto.data),
             cabecera=form.cabecera.data,
             contenido=form.contenido.data,
             pie=form.pie.data,
-            estado=form.estado.data,
         )
         boletin.save()
         bitacora = Bitacora(
@@ -127,11 +127,11 @@ def edit(boletin_id):
     form = BoletinForm()
     if form.validate_on_submit():
         boletin.envio_programado = form.envio_programado.data
+        boletin.estado = form.estado.data
         boletin.asunto = safe_string(form.asunto.data)
         boletin.cabecera = form.cabecera.data
         boletin.contenido = form.contenido.data
         boletin.pie = form.pie.data
-        boletin.estado = form.estado.data
         boletin.save()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
