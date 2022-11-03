@@ -16,7 +16,5 @@ class BoletinForm(FlaskForm):
     envio_programado = DateField("Fecha de envío programado", validators=[DataRequired()])
     estado = SelectField("Estado", choices=Boletin.ESTADOS, validators=[DataRequired()])
     asunto = StringField("Asunto", validators=[DataRequired(), Length(max=256)])
-    cabecera = JSONField("Cabecera", validators=[Optional()])
     contenido = JSONField("Contenido", validators=[Optional()])
-    pie = JSONField("Pie", validators=[Optional()])
     guardar = SubmitField("Guardar")

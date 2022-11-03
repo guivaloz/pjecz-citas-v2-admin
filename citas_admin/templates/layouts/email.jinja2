@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <title>{% block modulo %}{% endblock %}</title>
+</head>
+
+<body style="margin: 0px;">
+
+    <table style="width: 700px; border-collapse:collapse; margin-left:auto; margin-right:auto;">
+        <tr>
+            <td style="background-color: #004360; height: 10px;"></td>
+        </tr>
+    </table>
+
+    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; padding-top:15px; width: 700px; margin-left:auto; margin-right:auto;">
+        <tr>
+            <td>{% block modulo %}{% endblock %}</td>
+            <td style="text-align: right;"><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px;"></td>
+        </tr>
+        <tr>
+            <td>{% block asunto %}{% endblock %}</td>
+            <td style="vertical-align: bottom;">{% block elaboracion %}{% endblock %}</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <hr style="border: 1px solid #004360;">
+                {% block contenido %}{% endblock %}
+            </td>
+        </tr>
+    </table>
+
+    <table style="width: 700px; text-align: center; border-collapse:collapse; margin-left:auto; margin-right:auto;">
+        <tr style="background-color: #004360; color: #daba93;">
+            <td>
+                <p style="font-size: small;">
+                    Blvd. Francisco Coss #945. Zona Centro. Saltillo, Coahuila de Zaragoza, México.<br>
+                    <a href="https://www.pjecz.gob.mx" style="color: #daba93;">www.pjecz.gob.mx</a><br>
+                    Teléfono 844 777 4498
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <small><strong style="color: #657c96;">ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></small>
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

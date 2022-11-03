@@ -49,6 +49,27 @@
                 render: function(data, type, row, meta) {
                     return '<a href="' + data.url + '">' + data.id + '</a>';
                 }
+            },
+            {
+                targets: 1, // envio_programado
+                type: "date",
+                render: function(data, type, row, meta) {
+                    return moment(data).format('DD MMM YYYY');
+                }
+            },
+            {
+                targets: 2, // estado
+                data: null,
+                render: function(data, type, row, meta) {
+                    let color = "black";
+                    switch (data)    {
+                        case "BORRADOR":   color = "#7d6608"; break;
+                        case "PROGRAMADO": color = "#154360"; break;
+                        case "ENVIADO":    color = "#0b5345"; break;
+                        case "CANCELADO":  color = "#e53935"; break;
+                    }
+                    return '<strong style="color:' + color + '; ">' + data + '</strong>';
+                }
             }
         ];
         $('#boletines_datatable').DataTable(configDataTable);

@@ -21,9 +21,9 @@
         {{ detail.label_value_big('Asunto', boletin.asunto) }}
         {{ detail.label_value('Estado', boletin.estado) }}
         {{ detail.label_value('Envio programado', moment(boletin.envio_programado, local=True).format('DD MMM YYYY')) }}
-        {{ detail.label_value('Cabecera', boletin.cabecera) }}
-        {{ detail.label_value('Contenido', boletin.contenido) }}
-        {{ detail.label_value('Pie', boletin.pie) }}
+    {% endcall %}
+    {% call detail.card(estatus=boletin.estatus) %}
+        {{ contenido }}
     {% endcall %}
 {% endblock %}
 

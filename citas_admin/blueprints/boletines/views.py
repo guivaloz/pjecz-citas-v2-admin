@@ -2,6 +2,8 @@
 Boletines, vistas
 """
 import json
+
+from delta import html
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
@@ -89,7 +91,11 @@ def list_inactive():
 def detail(boletin_id):
     """Detalle de un Boletin"""
     boletin = Boletin.query.get_or_404(boletin_id)
-    return render_template("boletines/detail.jinja2", boletin=boletin)
+    return render_template(
+        "boletines/detail.jinja2",
+        boletin=boletin,
+        contenido=html.render(boletin.contenido["ops"]),
+    )
 
 
 @boletines.route("/boletines/nuevo", methods=["GET", "POST"])
@@ -102,9 +108,7 @@ def new():
             envio_programado=form.envio_programado.data,
             estado=form.estado.data,
             asunto=safe_string(form.asunto.data, to_uppercase=False, do_unidecode=False),
-            cabecera=form.cabecera.data,
             contenido=form.contenido.data,
-            pie=form.pie.data,
         )
         boletin.save()
         bitacora = Bitacora(
@@ -129,9 +133,7 @@ def edit(boletin_id):
         boletin.envio_programado = form.envio_programado.data
         boletin.estado = form.estado.data
         boletin.asunto = safe_string(form.asunto.data, to_uppercase=False, do_unidecode=False)
-        boletin.cabecera = form.cabecera.data
         boletin.contenido = form.contenido.data
-        boletin.pie = form.pie.data
         boletin.save()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
@@ -145,10 +147,13 @@ def edit(boletin_id):
     form.envio_programado.data = boletin.envio_programado
     form.estado.data = boletin.estado
     form.asunto.data = boletin.asunto
-    form.cabecera.data = boletin.cabecera
     form.contenido.data = boletin.contenido
-    form.pie.data = boletin.pie
-    return render_template("boletines/edit.jinja2", form=form, boletin=boletin)
+    return render_template(
+        "boletines/edit.jinja2",
+        form=form,
+        boletin=boletin,
+        contenido=json.dumps(boletin.contenido),
+    )
 
 
 @boletines.route("/boletines/eliminar/<int:boletin_id>")

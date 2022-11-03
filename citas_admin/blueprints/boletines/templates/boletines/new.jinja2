@@ -19,16 +19,8 @@
             {% call f.form_group(form.envio_programado) %}{% endcall %}
             {% call f.form_group(form.estado) %}{% endcall %}
             {% call f.form_group(form.asunto) %}{% endcall %}
-
-            {{ quill.div(div_id='cabecera_quill', height='20vh') }}
-            <div style="display: none;">{% call f.form_group(form.cabecera, readonly=true) %}{% endcall %}</div>
-
-            {{ quill.div(div_id='contenido_quill', height='60vh') }}
+            {{ quill.div(div_id='contenido_quill', height='40vh') }}
             <div style="display: none;">{% call f.form_group(form.contenido, readonly=true) %}{% endcall %}</div>
-
-            {{ quill.div(div_id='pie_quill', height='20vh') }}
-            <div style="display: none;">{% call f.form_group(form.pie, readonly=true) %}{% endcall %}</div>
-
             {% call f.form_group(form.guardar) %}{% endcall %}
         {% endcall %}
     {% endcall %}
@@ -37,17 +29,11 @@
 {% block custom_javascript %}
     <!-- Quill -->
     {{ quill.library() }}
-    {{ quill.editor(instance='cabeceraQuill', div_id='cabecera_quill') }}
-    {{ quill.editor(instance='contenidoQuill', div_id='contenido_quill') }}
-    {{ quill.editor(instance='pieQuill', div_id='pie_quill') }}
-    <!-- Llenar los inputs con JSON vacios -->
+    {{ quill.editor(form_id='boletin_form', instance='contenidoQuill', div_id='contenido_quill', hidden_id='contenido', content='') }}
+    <!-- Llenar el input de contenido con un JSON vacio porque es nuevo -->
     <script>
         $(document).ready(function(){
-            const vacio = '{"ops":[{"insert":"\n"}]}';
-            const vacio_form = '{}';
-            $('#cabecera').val(vacio);
-            $('#contenido').val(vacio);
-            $('#pie').val(vacio);
+            $('#contenido').val('{"ops":[{"insert":"\n"}]}');
         });
     </script>
 {% endblock %}
