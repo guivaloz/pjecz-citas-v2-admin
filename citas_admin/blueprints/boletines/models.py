@@ -25,7 +25,7 @@ class Boletin(db.Model, UniversalMixin):
     id = db.Column(db.Integer, primary_key=True)
 
     # Columnas
-    envio_programado = db.Column(db.Date(), nullable=False)
+    envio_programado = db.Column(db.DateTime(), nullable=False)
     estado = db.Column(
         db.Enum(*ESTADOS, name="boletines_estados", native_enum=False),
         index=True,

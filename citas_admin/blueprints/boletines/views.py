@@ -50,7 +50,7 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "nombre": resultado.nombre,
+                    "id": resultado.id,
                     "url": url_for("boletines.detail", boletin_id=resultado.id),
                 },
                 "envio_programado": resultado.envio_programado.strftime("%Y-%m-%d"),
@@ -101,7 +101,7 @@ def new():
         boletin = Boletin(
             envio_programado=form.envio_programado.data,
             estado=form.estado.data,
-            asunto=safe_string(form.asunto.data),
+            asunto=safe_string(form.asunto.data, to_uppercase=False, do_unidecode=False),
             cabecera=form.cabecera.data,
             contenido=form.contenido.data,
             pie=form.pie.data,
@@ -128,7 +128,7 @@ def edit(boletin_id):
     if form.validate_on_submit():
         boletin.envio_programado = form.envio_programado.data
         boletin.estado = form.estado.data
-        boletin.asunto = safe_string(form.asunto.data)
+        boletin.asunto = safe_string(form.asunto.data, to_uppercase=False, do_unidecode=False)
         boletin.cabecera = form.cabecera.data
         boletin.contenido = form.contenido.data
         boletin.pie = form.pie.data
@@ -142,7 +142,12 @@ def edit(boletin_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
         return redirect(bitacora.url)
+    form.envio_programado.data = boletin.envio_programado
+    form.estado.data = boletin.estado
     form.asunto.data = boletin.asunto
+    form.cabecera.data = boletin.cabecera
+    form.contenido.data = boletin.contenido
+    form.pie.data = boletin.pie
     return render_template("boletines/edit.jinja2", form=form, boletin=boletin)
 
 
