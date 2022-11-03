@@ -1,7 +1,9 @@
 """
 Alimentar usuarios
 """
+from datetime import datetime
 from pathlib import Path
+
 import csv
 import click
 from lib.pwgen import generar_contrasena
@@ -70,6 +72,8 @@ def alimentar_usuarios():
                 telefono_celular=row["telefono_celular"],
                 estatus=row["estatus"],
                 contrasena=pwd_context.hash(generar_contrasena()),
+                api_key="",
+                api_key_expiracion=datetime(year=2000, month=1, day=1),
             ).save()
             contador += 1
             if contador % 100 == 0:

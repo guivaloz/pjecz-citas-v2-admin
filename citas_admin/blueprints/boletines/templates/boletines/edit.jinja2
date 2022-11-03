@@ -1,0 +1,34 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/form.jinja2' as f with context %}
+{% import 'macros/quill.jinja2' as quill %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Editar Boletin{% endblock %}
+
+{% block custom_head %}
+    {{ quill.head() }}
+{% endblock %}
+
+{% block topbar_actions %}
+    {{ topbar.page('Editar ' + boletin.asunto) }}
+{% endblock %}
+
+{% block content %}
+    {% call f.card() %}
+        {% set form_kwargs = {'boletin_id': boletin.id} %}
+        {% call f.form_tag('boletines.edit', fid='boletin_form', **form_kwargs) %}
+            {% call f.form_group(form.envio_programado) %}{% endcall %}
+            {% call f.form_group(form.estado) %}{% endcall %}
+            {% call f.form_group(form.asunto) %}{% endcall %}
+            {{ quill.div(div_id='contenido_quill', height='40vh') }}
+            <div style="display: none;">{% call f.form_group(form.contenido, readonly=true) %}{% endcall %}</div>
+            {% call f.form_group(form.guardar) %}{% endcall %}
+        {% endcall %}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    <!-- Quill -->
+    {{ quill.library() }}
+    {{ quill.editor(form_id='boletin_form', instance='contenidoQuill', div_id='contenido_quill', hidden_id='contenido', content=contenido) }}
+{% endblock %}
