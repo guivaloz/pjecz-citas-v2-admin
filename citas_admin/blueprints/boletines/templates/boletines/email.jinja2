@@ -1,15 +1,17 @@
 {% extends 'layouts/email.jinja2' %}
 
-{% block modulo %}
-    <h1 style='margin: 0px;'>Boletín Informativo</h1>
-{% endblock %}
-
 {% block asunto %}
-    <h2 style='margin: 0px; font-weight: normal;'>{{ boletin.asunto }}</h2>
+    <h1 style='margin: 0px;'>{{ mensaje_asunto }}</h1>
 {% endblock %}
 
 {% block elaboracion %}
-    <p style="margin: 0px; font-size: small; color: #657c96; text-align: right;"><i>{{ fecha_elaboracion }}</i></p>
+    <small style="color: #657c96;"><i>Fecha de elaboración: {{ fecha_elaboracion }}</i></small>
 {% endblock %}
 
-{% block contenido %}{{ boletin.contenido }}{% endblock %}
+{% block destinatario %}
+    <h3 style='margin-bottom: 0px;'>Hola {{ destinatario_nombre }}</h3>
+{% endblock %}
+
+{% block contenido %}
+    {{ mensaje_contenido }}
+{% endblock %}

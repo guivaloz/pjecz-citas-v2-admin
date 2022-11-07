@@ -3,10 +3,10 @@
 
 <head>
     <meta charset="utf-8">
-    <title>{% block modulo %}{% endblock %}</title>
+    <title>PJECZ Citas V2</title>
 </head>
 
-<body style="margin: 0px;">
+<body style="margin: 0px; font-family: Verdana, Geneva, Tahoma, sans-serif;">
 
     <table style="width: 700px; border-collapse:collapse; margin-left:auto; margin-right:auto;">
         <tr>
@@ -14,18 +14,18 @@
         </tr>
     </table>
 
-    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; padding-top:15px; width: 700px; margin-left:auto; margin-right:auto;">
+    <table style="width: 700px; color: #004360; background-color: #efebe8; padding:30px; padding-top:15px; margin-left:auto; margin-right:auto;">
         <tr>
-            <td>{% block modulo %}{% endblock %}</td>
-            <td style="text-align: right;"><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px;"></td>
+            <td>{{ asunto }}</td>
+            <td><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px; margin-left: 50px;"></td>
         </tr>
-        <tr>
-            <td>{% block asunto %}{% endblock %}</td>
-            <td style="vertical-align: bottom;">{% block elaboracion %}{% endblock %}</td>
+        <tr style="text-align:right;">
+            <td colspan="2">{{ elaboracion }}</td>
         </tr>
         <tr>
             <td colspan="2">
                 <hr style="border: 1px solid #004360;">
+                {% block destinatario %}{% endblock %}
                 {% block contenido %}{% endblock %}
             </td>
         </tr>
