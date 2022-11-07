@@ -1,6 +1,7 @@
 """
 Boletines, vistas
 """
+from datetime import datetime
 import json
 
 from delta import html
@@ -95,6 +96,19 @@ def detail(boletin_id):
         "boletines/detail.jinja2",
         boletin=boletin,
         contenido=html.render(boletin.contenido["ops"]),
+    )
+
+
+@boletines.route("/boletines/preview/<int:boletin_id>")
+def preview(boletin_id):
+    """Vista previa de un Boletin"""
+    boletin = Boletin.query.get_or_404(boletin_id)
+    return render_template(
+        "boletines/email.jinja2",
+        mensaje_asunto=boletin.asunto,
+        fecha_elaboracion=datetime.now().strftime("%d/%b/%Y %I:%M %p"),
+        destinatario_nombre="FULANO DE TAL",
+        mensaje_contenido=html.render(boletin.contenido["ops"]),
     )
 
 

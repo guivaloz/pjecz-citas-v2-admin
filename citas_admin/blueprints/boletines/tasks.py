@@ -6,6 +6,7 @@ import locale
 import logging
 import os
 
+from delta import html
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader
 import sendgrid
@@ -59,6 +60,13 @@ def enviar(boletin_id, cit_cliente_id=None, email=None):
         bitacora.error(mensaje_error)
         return mensaje_error
 
+    # Si no viene el cit_cliente_id, enviar a todos los clientes activos
+    if cit_cliente_id is None:
+        mensaje_final = "Aun no puedo enviar boletines a todos los clientes"
+        set_task_error(mensaje_final)
+        bitacora.error(mensaje_final)
+        return mensaje_final
+
     # Consultar cliente
     if cit_cliente_id is not None:
         cit_cliente = CitCliente.query.get(cit_cliente_id)
@@ -90,18 +98,18 @@ def enviar(boletin_id, cit_cliente_id=None, email=None):
         mensaje_asunto=boletin.asunto,
         fecha_elaboracion=momento_str,
         destinatario_nombre=destinatario_nombre,
-        mensaje_contenido=boletin.contenido,
+        mensaje_contenido=html.render(boletin.contenido["ops"]),
     )
 
     # Si no hay e-mail de destinatario, se guarda el mensaje en un archivo
-    if destinatario_email == "":
+    if SENDGRID_API_KEY == "" or destinatario_email == "":
         # Guardar mensaje en archivo
-        archivo = f"boletin_{boletin.id}_{momento.strftime('%Y%m%d_%H%M%S')}.html"
-        with open(archivo, "w", encoding="UTF-8") as archivo:
-            archivo.write(contenidos)
+        archivo_html = f"boletin_{boletin.id}_{momento.strftime('%Y%m%d_%H%M%S')}.html"
+        with open(archivo_html, "w", encoding="UTF-8") as puntero:
+            puntero.write(contenidos)
         # Terminar tarea
         set_task_progress(100)
-        mensaje_final = "No hay e-mail de destinatario, no se envía"
+        mensaje_final = f"No hay e-mail de destinatario o la variable SENDGRID_API_KEY NO ha sido declarada. Se guardó el mensaje en {archivo_html}"
         bitacora.info(mensaje_final)
         return mensaje_final
 
