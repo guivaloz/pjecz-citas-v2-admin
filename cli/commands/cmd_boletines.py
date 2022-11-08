@@ -31,9 +31,9 @@ def enviar(ctx, boletin_id=None, cit_cliente_id=None, email=None):
     """Enviar boletines"""
     click.echo("Enviar boletines")
 
-    # Si no viene el boletin_id, enviar el boletin activo, pendiente y que haya pasado su fecha de envio
+    # Si no viene el boletin_id
     if boletin_id is None:
-        click.echo("ERROR: Aun no puedo enviar boletines a todos los clientes")
+        click.echo("ERROR: Aun no puedo consultar los boletines con estado PROGRAMADO, necesito boletin_id")
         ctx.exit(1)
 
     # Validar boletin

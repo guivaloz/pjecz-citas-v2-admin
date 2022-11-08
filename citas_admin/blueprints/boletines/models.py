@@ -33,6 +33,7 @@ class Boletin(db.Model, UniversalMixin):
     )
     asunto = db.Column(db.String(256), nullable=False)
     contenido = db.Column(db.JSON())
+    puntero = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self):
         """Representación"""
