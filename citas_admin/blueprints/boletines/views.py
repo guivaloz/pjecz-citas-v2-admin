@@ -123,6 +123,7 @@ def new():
             estado=form.estado.data,
             asunto=safe_string(form.asunto.data, to_uppercase=False, do_unidecode=False),
             contenido=form.contenido.data,
+            puntero=0,
         )
         boletin.save()
         bitacora = Bitacora(
