@@ -71,7 +71,7 @@ def enviar(boletin_id, cit_cliente_id=None, email=None):
     if email is not None:
         destinatarios.append(
             {
-                "nombre_completo": "Fulano de Tal",
+                "nombre": "Fulano de Tal",
                 "email": email,
             }
         )
@@ -91,23 +91,20 @@ def enviar(boletin_id, cit_cliente_id=None, email=None):
         if email is None:
             destinatarios.append(
                 {
-                    "nombre_completo": cit_cliente.nombre_completo,
+                    "nombre": cit_cliente.nombre,
                     "email": cit_cliente.email,
                 }
             )
     else:
         # Consultar los clientes activos que quieren recibir el boletin
-        cit_clientes = CitCliente.query
-        cit_clientes = cit_clientes.filter_by(estatus="A")
-        cit_clientes = cit_clientes.filter_by(enviar_boletin=True)
-        cit_clientes = cit_clientes.filter(CitCliente.id > boletin.puntero)
-        cit_clientes = cit_clientes.order_by(CitCliente.id).limit(CANTIDAD).all()
+        cit_clientes = CitCliente.query.filter_by(estatus="A").filter_by(enviar_boletin=True).filter(CitCliente.id > boletin.puntero).order_by(CitCliente.id).limit(CANTIDAD).all()
         # Si hay resultados, agregarlos al listado de destinatarios
         if cit_clientes:
+            puntero = 0
             for cit_cliente in cit_clientes:
                 destinatarios.append(
                     {
-                        "nombre_completo": cit_cliente.nombre_completo,
+                        "nombre": cit_cliente.nombre,
                         "email": cit_cliente.email,
                     }
                 )
@@ -133,20 +130,29 @@ def enviar(boletin_id, cit_cliente_id=None, email=None):
     momento = datetime.now()
     momento_str = momento.strftime("%d/%b/%Y %I:%M %p")
 
+    # Definir cliente de SendGrid
+    sendgrid_client = None
+    if SENDGRID_API_KEY != "":
+        sendgrid_client = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
+    else:
+        bitacora.warning("La variable SENDGRID_API_KEY NO ha sido declarada.")
+
+    # Definir la plantilla
+    entorno = Environment(
+        loader=FileSystemLoader("citas_admin/blueprints/boletines/templates/boletines"),
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
+    plantilla = entorno.get_template("email.jinja2")
+
     # Bucle destinatarios
     for destinatario in destinatarios:
 
         # Elaborar contenido del mensaje
-        entorno = Environment(
-            loader=FileSystemLoader("citas_admin/blueprints/boletines/templates/boletines"),
-            trim_blocks=True,
-            lstrip_blocks=True,
-        )
-        plantilla = entorno.get_template("email.jinja2")
         contenidos = plantilla.render(
             mensaje_asunto=boletin.asunto,
             fecha_elaboracion=momento_str,
-            destinatario_nombre=destinatario["nombre_completo"],
+            destinatario_nombre=destinatario["nombre"],
             mensaje_contenido=html.render(boletin.contenido["ops"]),
         )
 
@@ -156,11 +162,8 @@ def enviar(boletin_id, cit_cliente_id=None, email=None):
             archivo_html = f"boletin_{boletin.id}_{destinatario['email']}_{momento.strftime('%Y%m%d_%H%M%S')}.html"
             with open(archivo_html, "w", encoding="UTF-8") as puntero:
                 puntero.write(contenidos)
-            # Terminar tarea
-            set_task_progress(100)
-            mensaje_final = f"La variable SENDGRID_API_KEY NO ha sido declarada. Se guardó el mensaje en {archivo_html}"
-            bitacora.info(mensaje_final)
-            return mensaje_final
+            bitacora.info("Se guardó el mensaje en %s", archivo_html)
+            continue
 
         # Definir destinatario para SendGrid
         to_email = To(destinatario["email"])
@@ -168,21 +171,12 @@ def enviar(boletin_id, cit_cliente_id=None, email=None):
         # Definir contenido para SendGrid
         content = Content("text/html", contenidos)
 
-        # Definir cliente para SendGrid
-        sendgrid_client = None
-        if SENDGRID_API_KEY == "":
-            mensaje_error = "La variable SENDGRID_API_KEY NO ha sido declarada"
-            set_task_error(mensaje_error)
-            bitacora.error(mensaje_error)
-            return mensaje_error
-        sendgrid_client = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
-
         # Enviar mensaje via SendGrid
         mail = Mail(from_email, to_email, boletin.asunto, content)
         try:
             sendgrid_client.client.mail.send.post(request_body=mail.get())
         except Exception as error:
-            mensaje_error = f"Error al enviar mensaje: {str(error)}"
+            mensaje_error = f"ERROR al enviar mensaje: {str(error)}"
             set_task_error(mensaje_error)
             bitacora.error(mensaje_error)
             return mensaje_error
