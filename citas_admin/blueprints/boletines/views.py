@@ -45,7 +45,7 @@ def datatable_json():
         consulta = consulta.filter(Boletin.asunto.contains(request.form["asunto"]))
     if "estado" in request.form:
         consulta = consulta.filter_by(estado=request.form["estado"])
-    registros = consulta.order_by(Boletin.envio_programado.desc()).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(Boletin.envio_programado.asc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -53,12 +53,11 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "id": resultado.id,
+                    "envio_programado": resultado.envio_programado.strftime("%Y-%m-%d"),
                     "url": url_for("boletines.detail", boletin_id=resultado.id),
                 },
-                "envio_programado": resultado.envio_programado.strftime("%Y-%m-%d"),
-                "estado": resultado.estado,
                 "asunto": resultado.asunto,
+                "estado": resultado.estado,
             }
         )
     # Entregar JSON
@@ -66,12 +65,21 @@ def datatable_json():
 
 
 @boletines.route("/boletines")
+def list_drafts_scheduled():
+    """Dos Listados de Boletines (borradores y programados)"""
+    return render_template(
+        "boletines/list_drafts_scheduled.jinja2",
+        titulo="Boletines borradores y programados",
+    )
+
+
+@boletines.route("/boletines/activos")
 def list_active():
     """Listado de Boletines activos"""
     return render_template(
         "boletines/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Boletines",
+        titulo="Boletines archivados",
         estatus="A",
     )
 
@@ -83,7 +91,7 @@ def list_inactive():
     return render_template(
         "boletines/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
-        titulo="Boletines inactivos",
+        titulo="Boletines eliminados",
         estatus="B",
     )
 
@@ -116,25 +124,31 @@ def preview(boletin_id):
 @permission_required(MODULO, Permiso.CREAR)
 def new():
     """Nuevo Boletin"""
+    hoy = datetime.now().date()
     form = BoletinForm()
     if form.validate_on_submit():
-        boletin = Boletin(
-            envio_programado=form.envio_programado.data,
-            estado=form.estado.data,
-            asunto=safe_string(form.asunto.data, to_uppercase=False, do_unidecode=False),
-            contenido=form.contenido.data,
-            puntero=0,
-        )
-        boletin.save()
-        bitacora = Bitacora(
-            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-            usuario=current_user,
-            descripcion=safe_message(f"Nuevo Boletin {boletin.asunto}"),
-            url=url_for("boletines.detail", boletin_id=boletin.id),
-        )
-        bitacora.save()
-        flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
+        es_valido = True
+        if form.envio_programado.data < hoy and form.estado.data == "PROGRAMADO":
+            flash("La fecha de envío programado no puede ser anterior a hoy", "warning")
+            es_valido = False
+        if es_valido:
+            boletin = Boletin(
+                envio_programado=form.envio_programado.data,
+                estado=form.estado.data,
+                asunto=safe_string(form.asunto.data, to_uppercase=False, do_unidecode=False),
+                contenido=form.contenido.data,
+                puntero=0,
+            )
+            boletin.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Nuevo Boletin {boletin.asunto}"),
+                url=url_for("boletines.detail", boletin_id=boletin.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
     return render_template("boletines/new.jinja2", form=form)
 
 
@@ -142,23 +156,29 @@ def new():
 @permission_required(MODULO, Permiso.MODIFICAR)
 def edit(boletin_id):
     """Editar Boletin"""
+    hoy = datetime.now().date()
     boletin = Boletin.query.get_or_404(boletin_id)
     form = BoletinForm()
     if form.validate_on_submit():
-        boletin.envio_programado = form.envio_programado.data
-        boletin.estado = form.estado.data
-        boletin.asunto = safe_string(form.asunto.data, to_uppercase=False, do_unidecode=False)
-        boletin.contenido = form.contenido.data
-        boletin.save()
-        bitacora = Bitacora(
-            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-            usuario=current_user,
-            descripcion=safe_message(f"Editado Boletin {boletin.asunto}"),
-            url=url_for("boletines.detail", boletin_id=boletin.id),
-        )
-        bitacora.save()
-        flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
+        es_valido = True
+        if form.envio_programado.data < hoy and form.estado.data == "PROGRAMADO":
+            flash("La fecha de envío programado no puede ser anterior a hoy", "warning")
+            es_valido = False
+        if es_valido:
+            boletin.envio_programado = form.envio_programado.data
+            boletin.estado = form.estado.data
+            boletin.asunto = safe_string(form.asunto.data, to_uppercase=False, do_unidecode=False)
+            boletin.contenido = form.contenido.data
+            boletin.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Editado Boletin {boletin.asunto}"),
+                url=url_for("boletines.detail", boletin_id=boletin.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
     form.envio_programado.data = boletin.envio_programado
     form.estado.data = boletin.estado
     form.asunto.data = boletin.asunto

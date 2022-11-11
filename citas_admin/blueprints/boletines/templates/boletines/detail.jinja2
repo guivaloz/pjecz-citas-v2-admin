@@ -7,7 +7,7 @@
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(boletin.asunto) %}
-        {{ topbar.button_previous('Boletines', url_for('boletines.list_active')) }}
+        {{ topbar.button_previous('Boletines', url_for('boletines.list_drafts_scheduled')) }}
         {{ topbar.button_print('Vista previa', url_for('boletines.preview', boletin_id=boletin.id)) }}
         {% if current_user.can_edit('BOLETINES') %}
             {{ topbar.button_edit('Editar', url_for('boletines.edit', boletin_id=boletin.id)) }}

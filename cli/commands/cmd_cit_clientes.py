@@ -177,20 +177,6 @@ def eliminar_sin_cita(dias, test):
 
 @click.command()
 @click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
-def definir_boleanos(test):
-    """Define los booleanos es_adulto_mayor, es_mujer, etc"""
-
-    # Si es adulto mayor
-    contador_es_adulto_mayor = 0
-    contador_no_es_adulto_mayor = 0
-
-    # Terminar mostrando las cantidades de actualizaciones
-    click.echo(f"Se han actualizado {contador_es_adulto_mayor} registros con es_adulto mayor.")
-    click.echo(f"Se han actualizado {contador_no_es_adulto_mayor} registros con NO es_adulto mayor.")
-
-
-@click.command()
-@click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
 def evaluar_asistencia(test):
     """Penaliza o Premia al cliente dependiendo de su asistencia"""
     click.echo("Penaliza o Premia al cliente dependiendo de su asistencia")
@@ -215,5 +201,4 @@ cli.add_command(agregar)
 cli.add_command(cambiar_contrasena)
 cli.add_command(eliminar_abandonados)
 cli.add_command(eliminar_sin_cita)
-cli.add_command(definir_boleanos)
 cli.add_command(evaluar_asistencia)
