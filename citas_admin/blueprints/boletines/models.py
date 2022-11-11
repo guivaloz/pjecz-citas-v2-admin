@@ -14,7 +14,6 @@ class Boletin(db.Model, UniversalMixin):
             ("BORRADOR", "Borrador"),
             ("PROGRAMADO", "Programado"),
             ("ENVIADO", "Enviado"),
-            ("CANCELADO", "Cancelado"),
         ]
     )
 

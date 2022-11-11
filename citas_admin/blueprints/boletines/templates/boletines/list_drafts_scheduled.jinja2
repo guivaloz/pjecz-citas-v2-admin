@@ -6,10 +6,9 @@
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
-        {{ topbar.button('Borradores y Programados', url_for('boletines.list_drafts_scheduled'), 'mdi:table-clock') }}
         {% if current_user.can_edit('BOLETINES') %}
-            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Eliminados', url_for('boletines.list_inactive')) }}{% endif %}
-            {% if estatus == 'B' %}{{ topbar.button_list_active('Archivados', url_for('boletines.list_active')) }}{% endif %}
+            {{ topbar.button_list_active('Archivados', url_for('boletines.list_active')) }}
+            {{ topbar.button_list_inactive('Eliminados', url_for('boletines.list_inactive')) }}
         {% endif %}
         {% if current_user.can_insert('BOLETINES') %}
             {{ topbar.button_new('Nuevo Boletin', url_for('boletines.new')) }}
@@ -18,12 +17,21 @@
 {% endblock %}
 
 {% block content %}
-    {% call list.card() %}
-        <table id="boletines_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+    {% call list.card(title='Borradores') %}
+        <table id="boletines_borradores_datatable" class="table display nowrap" style="width:100%">
             <thead>
                 <tr>
                     <th>Envio P.</th>
-                    <th>Estado</th>
+                    <th>Asunto</th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
+    {% call list.card(title='Programados') %}
+        <table id="boletines_programados_datatable" class="table display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Envio P.</th>
                     <th>Asunto</th>
                 </tr>
             </thead>
@@ -34,11 +42,11 @@
 {% block custom_javascript %}
     {{ list.config_datatable() }}
     <script>
+        // Boletines Borradores
         configDataTable['ajax']['url'] = '/boletines/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
+        configDataTable['ajax']['data'] = { estado: 'BORRADOR', estatus: 'A' };
         configDataTable['columns'] = [
             { data: 'detalle' },
-            { data: 'estado' },
             { data: 'asunto' }
         ];
         configDataTable['columnDefs'] = [
@@ -48,22 +56,25 @@
                 render: function(data, type, row, meta) {
                     return '<a href="' + data.url + '">' + moment(data.envio_programado).format('DD MMM YYYY') + '</a>';
                 }
-            },
+            }
+        ];
+        $('#boletines_borradores_datatable').DataTable(configDataTable);
+        // Boletines Programados
+        configDataTable['ajax']['url'] = '/boletines/datatable_json';
+        configDataTable['ajax']['data'] = { estado: 'PROGRAMADO', estatus: 'A' };
+        configDataTable['columns'] = [
+            { data: 'detalle' },
+            { data: 'asunto' }
+        ];
+        configDataTable['columnDefs'] = [
             {
-                targets: 1, // estado
+                targets: 0, // detalle
                 data: null,
                 render: function(data, type, row, meta) {
-                    let color = "black";
-                    switch (data)    {
-                        case "BORRADOR":   color = "#7d6608"; break;
-                        case "PROGRAMADO": color = "#154360"; break;
-                        case "ENVIADO":    color = "#0b5345"; break;
-                        case "CANCELADO":  color = "#e53935"; break;
-                    }
-                    return '<strong style="color:' + color + '; ">' + data + '</strong>';
+                    return '<a href="' + data.url + '">' + moment(data.envio_programado).format('DD MMM YYYY') + '</a>';
                 }
             }
         ];
-        $('#boletines_datatable').DataTable(configDataTable);
+        $('#boletines_programados_datatable').DataTable(configDataTable);
     </script>
 {% endblock %}
