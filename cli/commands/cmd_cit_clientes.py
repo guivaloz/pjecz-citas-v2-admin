@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 import click
 from sqlalchemy import text
 
+from lib import database
 from lib.pwgen import generar_contrasena
 from lib.safe_string import safe_string
 
@@ -18,6 +19,7 @@ from citas_admin.app import create_app
 from citas_admin.extensions import db, pwd_context
 
 from citas_admin.blueprints.cit_clientes.models import CitCliente
+from citas_admin.blueprints.cit_citas.models import CitCita
 
 app = create_app()
 db.app = app
@@ -65,6 +67,8 @@ def agregar(email):
         limite_citas_pendientes=5,
     )
     cit_cliente.save()
+
+    # Mensaje final
     click.echo(f"Se ha creado el cliente {email} con contraseña {contrasena}")
 
 
@@ -72,32 +76,43 @@ def agregar(email):
 @click.argument("email", type=str)
 def cambiar_contrasena(email):
     """Cambiar contraseña de un cliente"""
+
+    # Consultar el cliente
     cit_cliente = CitCliente.query.filter_by(email=email).first()
     if cit_cliente is None:
         click.echo(f"No existe el e-mail {email} en cit_clientes")
         return
+
+    # Preguntar la nueva contraseña
     contrasena_1 = input("Contraseña: ").strip()
     contrasena_2 = input("De nuevo la misma contraseña: ").strip()
+
+    # Validar que las contraseñas coincidan
     if contrasena_1 != contrasena_2:
         click.echo("No son iguales las contraseñas. Por favor intente de nuevo.")
         return
+
+    # Actualizar la contraseña
     cit_cliente.contrasena_md5 = ""
     cit_cliente.contrasena_sha256 = pwd_context.hash(contrasena_1)
     cit_cliente.save()
+
+    # Mensaje final
     click.echo(f"Se ha cambiado la contraseña de {email} en usuarios")
 
 
 @click.command()
 @click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
 def eliminar_abandonados(test):
-    """Eliminar clientes que han abandonado su cuenta"""
-    click.echo("Eliminación de Clientes abandonados - Sin contraseña SHA256 ni citas Agendadas")
+    """Eliminar clientes que han abandonado su cuenta, sin contraseña y sin citas agendadas"""
+    click.echo("Eliminar clientes que han abandonado su cuenta, sin contraseña y sin citas agendadas")
 
     # Inicializar el engine para ejecutar comandos SQL
-    engine = db.engine
+    engine = database.engine
 
     # Si esta en modo de pruebas, no se guardan los cambios
     if test is True:
+
         # Modo de pruebas
         count_query = text(
             "SELECT COUNT(*) AS cantidad\
@@ -113,8 +128,7 @@ def eliminar_abandonados(test):
                 count_cit_clientes = cantidad[0]
         click.echo(f"MODO DE PRUEBAS: Se podrían eliminar {count_cit_clientes} clientes")
 
-    else:
-        # Modo de realizar cambios
+    else:  # Modo de realizar cambios
 
         # Borrado de recuperaciones
         borrado = text(
@@ -142,37 +156,69 @@ def eliminar_abandonados(test):
 @click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
 def eliminar_sin_cita(dias, test):
     """Eliminar clientes que nunca han agendado una cita"""
-    click.echo("== Eliminación de Clientes sin citas Agendadas ==")
+    click.echo("Eliminar clientes que nunca han agendado una cita")
 
     # Inicializar el engine para ejecutar comandos SQL
-    engine = db.engine
+    engine = database.engine
 
     # Si esta en modo de pruebas, no se guardan los cambios
-    if test is True:
-        # Modo de pruebas
+    if test is True:  # Modo de pruebas
+
+        # Definir valores por defecto
+        cantidad = 0
+        creado_hasta = ""
+
+        # Obtener la cantidad de clientes que se podrían eliminar
         count_query = text(
-            f"SELECT COUNT(*) AS cantidad, current_date - {dias} AS fecha_creacion \
+            f"SELECT COUNT(*) AS cantidad, current_date - {dias} AS creado_hasta \
                 FROM cit_clientes AS cli \
                 LEFT JOIN cit_citas AS cit \
                 ON cli.id = cit.cit_cliente_id \
                 WHERE cit.cit_cliente_id IS NULL \
                 AND cli.creado <= now() - INTERVAL '{dias} day'"
         )
-        res = engine.execute(count_query)
-        count_cit_clientes = 0
-        fecha_creacion = ""
-        if res:
-            for row in res:
-                count_cit_clientes = row["cantidad"]
-                fecha_creacion = row["fecha_creacion"]
-        click.echo(f"MODO DE PRUEBAS: Se podrían eliminar {count_cit_clientes} clientes que se crearon a partir del {fecha_creacion}")
+        resultado = engine.execute(count_query)
+        if resultado:
+            renglon = resultado.fetchone()
+            cantidad = renglon["cantidad"]
+            creado_hasta = renglon["creado_hasta"]
+
+        # Mostrar el resultado
+        click.echo(f"MODO DE PRUEBAS: Se podrían eliminar {cantidad} clientes sin citas que se crearon a partir del {creado_hasta}")
 
     else:  # Modo de realizar cambios
-        # Agregar tarea en el fondo
-        app.task_queue.enqueue(
-            "citas_admin.blueprints.cit_clientes.tasks.eliminar_sin_citas",
-            dias=dias,
-        )
+
+        # Definir creacion para limitar los clientes a eliminar
+        creado_hasta = datetime.now() - timedelta(days=dias)
+
+        # Consultar los clientes que se van a eliminar
+        db = database.SessionLocal()
+        results = db.query(CitCliente, CitCita).outerjoin(CitCita).filter(CitCita.cit_cliente_id == None).filter(CitCliente.creado <= creado_hasta).all()
+
+        # Inicializar el engine
+        engine = database.engine
+
+        # Bucle para eliminar
+        contador = 0
+        for cliente, _ in results:
+
+            # Eliminar recuperaciones
+            cit_cilente_recuperacion_borrar = text(
+                f"DELETE \
+                    FROM cit_clientes_recuperaciones \
+                    WHERE cit_cliente_id = {cliente.id}"
+            )
+            engine.execute(cit_cilente_recuperacion_borrar)
+
+            # Eliminar cliente
+            cit_cliente = CitCliente.query.get(cliente.id)
+            cit_cliente.delete(permanently=True)
+
+            # Contador
+            contador += 1
+
+        # Mensaje final
+        click.echo(f"Se eliminaron {contador} clientes por no tener citas.")
 
 
 @click.command()
