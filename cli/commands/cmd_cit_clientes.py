@@ -104,8 +104,8 @@ def cambiar_contrasena(email):
 @click.command()
 @click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
 def eliminar_abandonados(test):
-    """Eliminar clientes que han abandonado su cuenta, sin contraseña y sin citas agendadas"""
-    click.echo("Eliminar clientes que han abandonado su cuenta, sin contraseña y sin citas agendadas")
+    """Eliminar clientes sin contraseña y sin citas"""
+    click.echo("Eliminar clientes sin contraseña y sin citas")
 
     # Inicializar el engine para ejecutar comandos SQL
     engine = database.engine
@@ -155,8 +155,8 @@ def eliminar_abandonados(test):
 @click.option("--dias", default=30, help="Días de creación de la cuenta", type=int)
 @click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
 def eliminar_sin_cita(dias, test):
-    """Eliminar clientes que nunca han agendado una cita"""
-    click.echo("Eliminar clientes que nunca han agendado una cita")
+    """Eliminar clientes sin citas en un periodo de tiempo"""
+    click.echo("Eliminar clientes sin citas en un periodo de tiempo")
 
     # Inicializar el engine para ejecutar comandos SQL
     engine = database.engine
@@ -222,29 +222,15 @@ def eliminar_sin_cita(dias, test):
 
 
 @click.command()
+@click.option("--dias", default=30, help="Días para contar las citas", type=int)
 @click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
-def evaluar_asistencia(test):
-    """Penaliza o Premia al cliente dependiendo de su asistencia"""
-    click.echo("Penaliza o Premia al cliente dependiendo de su asistencia")
-
-    # Agregar tarea en el fondo
-    app.task_queue.enqueue(
-        "citas_admin.blueprints.cit_clientes.tasks.evaluar_asistencia",
-        test=test,
-    )
-
-    # Mostrar mensaje de Prueba o Ejecución
-    if test is True:
-        click.echo("MODO DE PRUEBAS")
-    else:
-        click.echo("Se han cambiado el número de citas de los clientes buenos y malos")
-
-    # Mostrar mensaje de termino
-    click.echo("Revise cit_clientes.log para ver los detalles de las operaciones realizadas")
+def definir_enviar_boletin(dias, test):
+    """Pone en verdadero enviar_boletin a los clientes con citas recientes"""
+    click.echo("Pone en verdadero enviar_boletin a los clientes con citas recientes")
 
 
 cli.add_command(agregar)
 cli.add_command(cambiar_contrasena)
 cli.add_command(eliminar_abandonados)
 cli.add_command(eliminar_sin_cita)
-cli.add_command(evaluar_asistencia)
+cli.add_command(definir_enviar_boletin)
