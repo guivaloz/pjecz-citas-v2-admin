@@ -27,11 +27,13 @@ class CitCliente(db.Model, UniversalMixin):
     limite_citas_pendientes = db.Column(db.Integer(), nullable=False)
 
     # Columnas booleanas
-    enviar_boletin = db.Column(db.Boolean(), nullable=False, default=True)
+    autoriza_mensajes = db.Column(db.Boolean(), nullable=False, default=True)
+    enviar_boletin = db.Column(db.Boolean(), nullable=False, default=False)
     es_adulto_mayor = db.Column(db.Boolean(), nullable=False, default=False)
     es_mujer = db.Column(db.Boolean(), nullable=False, default=False)
     es_identidad = db.Column(db.Boolean(), nullable=False, default=False)
     es_discapacidad = db.Column(db.Boolean(), nullable=False, default=False)
+    es_personal_interno = db.Column(db.Boolean(), nullable=False, default=False)
 
     # Hijos
     cit_citas = db.relationship("CitCita", back_populates="cit_cliente")
