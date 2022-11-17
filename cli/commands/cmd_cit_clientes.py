@@ -230,45 +230,53 @@ def cambiar_enviar_boletin_verdadero(dias, test):
     """Pone en verdadero enviar_boletin a los clientes con citas recientes"""
     click.echo("Pone en verdadero enviar_boletin a los clientes con citas recientes")
 
-    # Consultar los clientes que han tenido citas recientemente
-    cit_clientes = CitCliente.query.join(CitCita).filter(CitCita.creado >= datetime.now() - timedelta(days=dias))
+    # Consultar clientes y citas
+    consulta = database.SessionLocal().query(CitCliente.id, CitCliente.email).select_from(CitCliente).join(CitCita)
+
+    # Filtrar por los que han tenido citas en los últimos días
+    consulta = consulta.filter(CitCita.creado >= datetime.now() - timedelta(days=dias))
 
     # Filtrar citas que no han sido canceladas
-    cit_clientes = cit_clientes.filter(CitCita.estado != "CANCELO")
+    consulta = consulta.filter(CitCita.estado != "CANCELO")
 
     # Filtrar clientes que NO tienen enviar_boletin en verdadero
-    cit_clientes = cit_clientes.filter(CitCliente.enviar_boletin == False)
+    consulta = consulta.filter(CitCliente.enviar_boletin == False)
 
     # Filtrar clientes que autorizan el envío de boletines
-    cit_clientes = cit_clientes.filter(CitCliente.autoriza_mensajes == True)
+    consulta = consulta.filter(CitCliente.autoriza_mensajes == True)
 
     # Filtrar clientes activos
-    cit_clientes = cit_clientes.filter(CitCliente.estatus == "A")
+    consulta = consulta.filter(CitCliente.estatus == "A")
+
+    # Ordenar por id
+    consulta = consulta.order_by(CitCliente.id)
+
+    # Unicos
+    consulta = consulta.distinct()
 
     # Si no hay clientes, terminar
-    if cit_clientes.count() == 0:
+    if consulta.count() == 0:
         click.echo("No hay clientes con citas recientes")
         return
 
     # Modo de pruebas, se muestran los clientes con tabulate
     if test is True:
         datos = []
-        for cit_cliente in cit_clientes.all():
+        for cliente in consulta.all():
             datos.append(
                 [
-                    cit_cliente.id,
-                    cit_cliente.email,
-                    cit_cliente.autoriza_mensajes,
-                    cit_cliente.enviar_boletin,
+                    cliente.id,
+                    cliente.email,
                 ]
             )
         click.echo(tabulate(datos, headers=["ID", "e-mail", "A.M.", "E.B."]))
-        click.echo(f"Se encontraron {cit_clientes.count()} clientes con citas recientes")
+        click.echo(f"Se encontraron {len(datos)} clientes con citas recientes")
         return
 
     # Actualizar los cliente con enviar_boletin en verdadero
     contador = 0
-    for cit_cliente in cit_clientes.all():
+    for cliente in consulta.all():
+        cit_cliente = CitCliente.query.get(cliente.id)
         cit_cliente.enviar_boletin = True
         cit_cliente.save()
         contador += 1
