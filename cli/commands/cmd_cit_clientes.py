@@ -8,8 +8,10 @@ Cit Clientes
 - evaluar_asistencia: Penaliza o Premia al cliente dependiendo de su asistencia
 """
 from datetime import datetime, timedelta
+
 import click
-from sqlalchemy import text
+from tabulate import tabulate
+from sqlalchemy import text, update
 
 from lib import database
 from lib.pwgen import generar_contrasena
@@ -224,13 +226,88 @@ def eliminar_sin_cita(dias, test):
 @click.command()
 @click.option("--dias", default=30, help="Días para contar las citas", type=int)
 @click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
-def definir_enviar_boletin(dias, test):
+def cambiar_enviar_boletin_verdadero(dias, test):
     """Pone en verdadero enviar_boletin a los clientes con citas recientes"""
     click.echo("Pone en verdadero enviar_boletin a los clientes con citas recientes")
+
+    # Consultar clientes y citas
+    consulta = database.SessionLocal().query(CitCliente.id, CitCliente.email).select_from(CitCliente).join(CitCita)
+
+    # Filtrar por los que han tenido citas en los últimos días
+    consulta = consulta.filter(CitCita.creado >= datetime.now() - timedelta(days=dias))
+
+    # Filtrar citas que no han sido canceladas
+    consulta = consulta.filter(CitCita.estado != "CANCELO")
+
+    # Filtrar clientes que NO tienen enviar_boletin en verdadero
+    consulta = consulta.filter(CitCliente.enviar_boletin == False)
+
+    # Filtrar clientes que autorizan el envío de boletines
+    consulta = consulta.filter(CitCliente.autoriza_mensajes == True)
+
+    # Filtrar clientes activos
+    consulta = consulta.filter(CitCliente.estatus == "A")
+
+    # Ordenar por id
+    consulta = consulta.order_by(CitCliente.id)
+
+    # Unicos
+    consulta = consulta.distinct()
+
+    # Si no hay clientes, terminar
+    if consulta.count() == 0:
+        click.echo("No hay clientes con citas recientes")
+        return
+
+    # Modo de pruebas, se muestran los clientes con tabulate
+    if test is True:
+        datos = []
+        for cliente in consulta.all():
+            datos.append(
+                [
+                    cliente.id,
+                    cliente.email,
+                ]
+            )
+        click.echo(tabulate(datos, headers=["ID", "e-mail", "A.M.", "E.B."]))
+        click.echo(f"Se encontraron {len(datos)} clientes con citas recientes")
+        return
+
+    # Actualizar los cliente con enviar_boletin en verdadero
+    contador = 0
+    for cliente in consulta.all():
+        cit_cliente = CitCliente.query.get(cliente.id)
+        cit_cliente.enviar_boletin = True
+        cit_cliente.save()
+        contador += 1
+    click.echo(f"Se actualizaron {contador} clientes con enviar_boletin en verdadero")
+
+
+@click.command()
+@click.option("--dias", default=30, help="Días para contar las citas", type=int)
+@click.option("--test", default=True, help="Modo de pruebas en el que no se guardan los cambios")
+def cambiar_enviar_boletin_falso(dias, test):
+    """Pone en falso enviar_boletin a TODOS los clientes"""
+    click.echo("Pone en falso enviar_boletin a TODOS los clientes")
+
+    # Modo de pruebas, se muestra la cantidad de clientes
+    if test is True:
+        cit_clientes = CitCliente.query.filter(CitCliente.estatus == "A").filter(CitCliente.enviar_boletin == True)
+        click.echo(f"Se encontraron {cit_clientes.count()} clientes con enviar_boletin en verdadero")
+        return
+
+    # Inicializar el engine para ejecutar comandos SQL
+    engine = database.engine
+
+    # Actualizar los cliente con enviar_boletin en falso
+    comando = update(CitCliente).where(CitCliente.estatus == "A").filter(CitCliente.enviar_boletin == True).values(enviar_boletin=False)
+    resultado = engine.execute(comando)
+    click.echo(f"Se actualizaron {resultado.rowcount} clientes con enviar_boletin en falso")
 
 
 cli.add_command(agregar)
 cli.add_command(cambiar_contrasena)
+cli.add_command(cambiar_enviar_boletin_verdadero)
+cli.add_command(cambiar_enviar_boletin_falso)
 cli.add_command(eliminar_abandonados)
 cli.add_command(eliminar_sin_cita)
-cli.add_command(definir_enviar_boletin)
