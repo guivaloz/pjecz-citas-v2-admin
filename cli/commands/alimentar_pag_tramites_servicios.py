@@ -1,5 +1,5 @@
 """
-Alimentar Cit Servicios
+Alimentar Pagos Tramites y Servicios
 """
 from pathlib import Path
 import csv
@@ -7,12 +7,12 @@ import click
 
 from lib.safe_string import safe_string, safe_url
 
-from citas_admin.blueprints.cit_tramites_servicios.models import CitTramiteServicio
+from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
 
-ARCHIVO_CSV = "seed/cit_tramites_servicios.csv"
+ARCHIVO_CSV = "seed/pag_tramites_servicios.csv"
 
 
-def alimentar_cit_tramites_servicios():
+def alimentar_pag_tramites_servicios():
     """Alimentar Tramites y Servicios de las Citas"""
     ruta = Path(ARCHIVO_CSV)
     if not ruta.exists():
@@ -30,7 +30,7 @@ def alimentar_cit_tramites_servicios():
             if servicio_id != contador + 1:
                 click.echo(f"  AVISO: cit_tramite_servicio_id {servicio_id} no es consecutivo")
                 continue
-            CitTramiteServicio(
+            PagTramiteServicio(
                 nombre=safe_string(row["nombre"]),
                 costo=float(row["costo"]),
                 url=safe_url(row["url"]),

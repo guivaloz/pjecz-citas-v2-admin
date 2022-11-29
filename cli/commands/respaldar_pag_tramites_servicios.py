@@ -5,7 +5,7 @@ from pathlib import Path
 import csv
 import click
 
-from citas_admin.blueprints.cit_tramites_servicios.models import CitTramiteServicio
+from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
 
 
 def respaldar_cit_tramites_servicios(salida: str = "cit_tramites_servicios.csv"):
@@ -17,7 +17,7 @@ def respaldar_cit_tramites_servicios(salida: str = "cit_tramites_servicios.csv")
     click.echo("Respaldando Tramites y Servicios de las citas...")
     contador = 0
     id = 1
-    servicios = CitTramiteServicio.query.filter(CitTramiteServicio.estatus == "A").order_by(CitTramiteServicio.id).all()
+    servicios = PagTramiteServicio.query.filter(PagTramiteServicio.estatus == "A").order_by(PagTramiteServicio.id).all()
     with open(ruta, "w", encoding="utf8") as puntero:
         respaldo = csv.writer(puntero)
         respaldo.writerow(

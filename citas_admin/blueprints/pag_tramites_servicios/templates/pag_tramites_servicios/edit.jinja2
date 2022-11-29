@@ -2,16 +2,16 @@
 {% import 'macros/form.jinja2' as f with context %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Editar Tramite y Servicio{% endblock %}
+{% block title %}Editar Trámite y Servicio{% endblock %}
 
 {% block topbar_actions %}
-    {{ topbar.page('Editar ' + cit_tramite_servicio.nombre) }}
+    {{ topbar.page('Editar ' + pag_tramite_sevicio.pag_tramites_servicios) }}
 {% endblock %}
 
 {% block content %}
     {% call f.card() %}
-        {% set form_kwargs = {'cit_tramite_servicio_id': cit_tramite_servicio.id} %}
-        {% call f.form_tag('cit_tramites_servicios.edit', fid='cit_tramite_servicio_form', **form_kwargs) %}
+        {% set form_kwargs = {'pag_tramite_sevicio_id': pag_tramite_sevicio.id} %}
+        {% call f.form_tag('pag_tramites_servicios.edit', fid='pag_tramite_sevicio_form', **form_kwargs) %}
             {% call f.form_group(form.nombre) %}{% endcall %}
             {% call f.form_group(form.costo) %}{% endcall %}
             {% call f.form_group(form.url) %}{% endcall %}

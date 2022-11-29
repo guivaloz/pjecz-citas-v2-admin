@@ -19,9 +19,7 @@ from citas_admin.blueprints.cit_clientes_registros.views import cit_clientes_reg
 from citas_admin.blueprints.cit_dias_inhabiles.views import cit_dias_inhabiles
 from citas_admin.blueprints.cit_horas_bloqueadas.views import cit_horas_bloqueadas
 from citas_admin.blueprints.cit_oficinas_servicios.views import cit_oficinas_servicios
-from citas_admin.blueprints.cit_pagos.views import cit_pagos
 from citas_admin.blueprints.cit_servicios.views import cit_servicios
-from citas_admin.blueprints.cit_tramites_servicios.views import cit_tramites_servicios
 from citas_admin.blueprints.distritos.views import distritos
 from citas_admin.blueprints.domicilios.views import domicilios
 from citas_admin.blueprints.enc_encuestas.views import enc_encuestas
@@ -31,6 +29,8 @@ from citas_admin.blueprints.entradas_salidas.views import entradas_salidas
 from citas_admin.blueprints.materias.views import materias
 from citas_admin.blueprints.modulos.views import modulos
 from citas_admin.blueprints.oficinas.views import oficinas
+from citas_admin.blueprints.pag_pagos.views import pag_pagos
+from citas_admin.blueprints.pag_tramites_servicios.views import pag_tramites_servicios
 from citas_admin.blueprints.permisos.views import permisos
 from citas_admin.blueprints.roles.views import roles
 from citas_admin.blueprints.sistemas.views import sistemas
@@ -67,9 +67,7 @@ def create_app():
     app.register_blueprint(cit_dias_inhabiles)
     app.register_blueprint(cit_horas_bloqueadas)
     app.register_blueprint(cit_oficinas_servicios)
-    app.register_blueprint(cit_pagos)
     app.register_blueprint(cit_servicios)
-    app.register_blueprint(cit_tramites_servicios)
     app.register_blueprint(distritos)
     app.register_blueprint(domicilios)
     app.register_blueprint(enc_servicios)
@@ -79,6 +77,8 @@ def create_app():
     app.register_blueprint(materias)
     app.register_blueprint(modulos)
     app.register_blueprint(oficinas)
+    app.register_blueprint(pag_pagos)
+    app.register_blueprint(pag_tramites_servicios)
     app.register_blueprint(permisos)
     app.register_blueprint(roles)
     app.register_blueprint(sistemas)

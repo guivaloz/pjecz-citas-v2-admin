@@ -2,23 +2,23 @@
 {% import 'macros/list.jinja2' as list %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Tramites y Servicios{% endblock %}
+{% block title %}Trámites y Servicios{% endblock %}
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
-        {% if current_user.can_edit('CIT TRAMITES SERVICIOS') %}
-            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_tramites_servicios.list_inactive')) }}{% endif %}
-            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_tramites_servicios.list_active')) }}{% endif %}
+        {% if current_user.can_edit('PAG TRAMITES SERVICIOS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('pag_tramites_servicios.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('pag_tramites_servicios.list_active')) }}{% endif %}
         {% endif %}
-        {% if current_user.can_insert('CIT TRAMITES SERVICIOS') %}
-            {{ topbar.button_new('Nuevo Tramite y Servicio', url_for('cit_tramites_servicios.new')) }}
+        {% if current_user.can_insert('PAG TRAMITES SERVICIOS') %}
+            {{ topbar.button_new('Nuevo Trámite y Servicio', url_for('pag_tramites_servicios.new')) }}
         {% endif %}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
     {% call list.card() %}
-        <table id="cit_tramites_servicios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+        <table id="pag_tramites_servicios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
                     <th>Nombre</th>
@@ -33,16 +33,16 @@
 {% block custom_javascript %}
     {{ list.config_datatable() }}
     <script>
-        configDataTable['ajax']['url'] = '/cit_tramites_servicios/datatable_json';
+        configDataTable['ajax']['url'] = '/pag_tramites_servicios/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
-            { data: 'nombre' },
+            { data: 'detalle' },
             { data: 'costo' },
             { data: 'url' },
         ];
         configDataTable['columnDefs'] = [
             {
-                targets: 0, // Nombre
+                targets: 0, // detalle
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data.nombre.length > 45)
@@ -60,16 +60,16 @@
                 }
             },
             {
-                targets: 2, // Url
+                targets: 2, // URL
                 data: null,
                 render: function(data, type, row, meta) {
                     if( data == '')
                         return ''
                     else
-                        return '<a href="' + data + '" target="_blank">link<span class="iconify" data-icon="mdi:open-in-new"></span></a>';
+                        return '<a href="' + data + '" target="_blank">Página pjecz.gob.mx<span class="iconify" data-icon="mdi:open-in-new"></span></a>';
                 }
             }
         ];
-        $('#cit_tramites_servicios_datatable').DataTable(configDataTable);
+        $('#pag_tramites_servicios_datatable').DataTable(configDataTable);
     </script>
 {% endblock %}
