@@ -10,8 +10,8 @@ import google.auth.transport.requests
 import google.oauth2.id_token
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
-
 from sqlalchemy import or_
+
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.firebase_auth import firebase_auth
 from lib.pwgen import generar_api_key, generar_contrasena
@@ -289,6 +289,8 @@ def new():
                 puesto=safe_string(form.puesto.data),
                 email=email,
                 contrasena=contrasena,
+                api_key="",
+                api_key_expiracion=datetime(year=2000, month=1, day=1),
             )
             usuario.save()
             bitacora = Bitacora(

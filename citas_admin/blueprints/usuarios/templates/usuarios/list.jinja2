@@ -39,7 +39,7 @@
             <thead>
                 <tr>
                     <th>e-mail</th>
-                    <th>Nombres Completos</th>
+                    <th>Nombre Completo</th>
                     <th>Puesto</th>
                     <th>Autoridad</th>
                     <th>Oficina</th>
@@ -52,6 +52,8 @@
 {% block custom_javascript %}
     {{ list.config_datatable() }}
     <script>
+
+        // DataTable
         configDataTable['ajax']['url'] = '/usuarios/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
@@ -103,50 +105,41 @@
         // Búsqueda
         let emailBuscar = document.getElementById('emailInput').value.toLowerCase();
         let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
-
-        if(emailBuscar != '')
+        if (emailBuscar != '')
             configDataTable['ajax']['data']['email'] = emailBuscar;
-        if(nombreBuscar != '')
+        if (nombreBuscar != '')
             configDataTable['ajax']['data']['nombre_completo'] = nombreBuscar;
-        
-        // Datatable
-        $('#usuarios_datatable').DataTable(configDataTable);
-    </script>
-    <!-- Función de buscador -->
-    <script type="text/javascript">
 
+        // DataTable
+        $('#usuarios_datatable').DataTable(configDataTable);
+
+        // Boton Buscar
         function buscar() {
             let emailBuscar = document.getElementById('emailInput').value.toLowerCase();
             let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
-
-            if( configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' &&
-                configDataTable['ajax']['data']['nombre_completo'] === undefined && nombreBuscar === ''
-            ) return false;
-
+            if (configDataTable['ajax']['data']['email'] === undefined && emailBuscar === '' &&
+                configDataTable['ajax']['data']['nombre_completo'] === undefined && nombreBuscar === '') return false;
             $('#usuarios_datatable').DataTable().destroy();
-
-            if(emailBuscar == '')
+            if (emailBuscar == '')
                 delete configDataTable['ajax']['data']['email'];
             else
                 configDataTable['ajax']['data']['email'] = emailBuscar;
-            if(nombreBuscar == '')
+            if (nombreBuscar == '')
                 delete configDataTable['ajax']['data']['nombre_completo'];
             else
                 configDataTable['ajax']['data']['nombre_completo'] = nombreBuscar;
-
             $('#usuarios_datatable').DataTable(configDataTable);
         };
 
+        // Boton Limpiar
         function limpiar()  {
-            if( configDataTable['ajax']['data']['email'] === undefined &&
-                configDataTable['ajax']['data']['nombre_completo'] === undefined
-            ) return false;
-
+            if (configDataTable['ajax']['data']['email'] === undefined &&
+                configDataTable['ajax']['data']['nombre_completo'] === undefined) return false;
             delete configDataTable['ajax']['data']['email'];
             delete configDataTable['ajax']['data']['nombre_completo'];
-
             $('#usuarios_datatable').DataTable().destroy();
             $('#usuarios_datatable').DataTable(configDataTable);
         };
+
     </script>
 {% endblock %}
