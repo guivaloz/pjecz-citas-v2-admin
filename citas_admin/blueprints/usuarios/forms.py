@@ -58,8 +58,8 @@ class UsuarioNewForm(FlaskForm):
     autoridad = SelectField("Autoridad", choices=None, validate_choice=False)  # Las opciones se agregan con JS
     oficina = QuerySelectField(query_factory=oficinas_opciones, get_label="compuesto")
     nombres = StringField("Nombres", validators=[DataRequired(), Length(max=256)])
-    apellido_paterno = StringField("Apellido paterno", validators=[DataRequired(), Length(max=256)])
-    apellido_materno = StringField("Apellido materno", validators=[Optional(), Length(max=256)])
+    apellido_paterno = StringField("Apellido primero", validators=[DataRequired(), Length(max=256)])
+    apellido_materno = StringField("Apellido segundo", validators=[Optional(), Length(max=256)])
     curp = StringField("CURP", validators=[Optional(), Length(max=256)])
     puesto = StringField("Puesto", validators=[Optional(), Length(max=256)])
     email = StringField("e-mail", validators=[DataRequired(), Email()])
@@ -82,8 +82,8 @@ class UsuarioEditForm(FlaskForm):
     autoridad = StringField("Autoridad")  # Read only
     oficina = QuerySelectField(query_factory=oficinas_opciones, get_label="compuesto")
     nombres = StringField("Nombres", validators=[Optional(), Length(max=256)])
-    apellido_paterno = StringField("Apellido paterno", validators=[Optional(), Length(max=256)])
-    apellido_materno = StringField("Apellido materno", validators=[Optional(), Length(max=256)])
+    apellido_paterno = StringField("Apellido primero", validators=[Optional(), Length(max=256)])
+    apellido_materno = StringField("Apellido segundo", validators=[Optional(), Length(max=256)])
     curp = StringField("CURP", validators=[Optional(), Length(max=256)])
     puesto = StringField("Puesto", validators=[Optional(), Length(max=256)])
     email = StringField("e-mail")  # Read only
@@ -97,8 +97,8 @@ class UsuarioEditAdminForm(FlaskForm):
     autoridad = SelectField("Autoridad", choices=None, validate_choice=False)  # Las opciones se agregan con JS
     oficina = QuerySelectField(query_factory=oficinas_opciones, get_label="compuesto")
     nombres = StringField("Nombres", validators=[DataRequired(), Length(max=256)])
-    apellido_paterno = StringField("Apellido paterno", validators=[DataRequired(), Length(max=256)])
-    apellido_materno = StringField("Apellido materno", validators=[Optional(), Length(max=256)])
+    apellido_paterno = StringField("Apellido primero", validators=[DataRequired(), Length(max=256)])
+    apellido_materno = StringField("Apellido segundo", validators=[Optional(), Length(max=256)])
     curp = StringField("CURP", validators=[Optional(), Length(max=256)])
     puesto = StringField("Puesto", validators=[Optional(), Length(max=256)])
     email = StringField("e-mail", validators=[DataRequired(), Email()])
@@ -118,8 +118,8 @@ class UsuarioSearchForm(FlaskForm):
     """Formulario para buscar usuarios"""
 
     nombres = StringField("Nombres", validators=[Optional(), Length(max=256)])
-    apellido_paterno = StringField("Apellido paterno", validators=[Optional(), Length(max=256)])
-    apellido_materno = StringField("Apellido materno", validators=[Optional(), Length(max=256)])
+    apellido_paterno = StringField("Apellido primero", validators=[Optional(), Length(max=256)])
+    apellido_materno = StringField("Apellido segundo", validators=[Optional(), Length(max=256)])
     curp = StringField("CURP", validators=[Optional(), Length(max=18)])
     puesto = StringField("Puesto", validators=[Optional(), Length(max=256)])
     email = StringField("e-mail", validators=[Optional(), Length(max=256)])
