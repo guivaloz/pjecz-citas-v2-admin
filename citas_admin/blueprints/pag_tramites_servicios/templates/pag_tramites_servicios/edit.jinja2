@@ -12,7 +12,8 @@
     {% call f.card() %}
         {% set form_kwargs = {'pag_tramite_sevicio_id': pag_tramite_sevicio.id} %}
         {% call f.form_tag('pag_tramites_servicios.edit', fid='pag_tramite_sevicio_form', **form_kwargs) %}
-            {% call f.form_group(form.nombre) %}{% endcall %}
+            {% call f.form_group(form.clave) %}{% endcall %}
+            {% call f.form_group(form.descripcion) %}{% endcall %}
             {% call f.form_group(form.costo) %}{% endcall %}
             {% call f.form_group(form.url) %}{% endcall %}
             {% call f.form_group(form.guardar) %}{% endcall %}

@@ -11,7 +11,8 @@
 {% block content %}
     {% call f.card() %}
         {% call f.form_tag('pag_tramites_servicios.new', fid='pag_tramite_servicio_form') %}
-            {% call f.form_group(form.nombre) %}{% endcall %}
+            {% call f.form_group(form.clave) %}{% endcall %}
+            {% call f.form_group(form.descripcion) %}{% endcall %}
             {% call f.form_group(form.costo) %}{% endcall %}
             {% call f.form_group(form.url) %}{% endcall %}
             {% call f.form_group(form.guardar) %}{% endcall %}

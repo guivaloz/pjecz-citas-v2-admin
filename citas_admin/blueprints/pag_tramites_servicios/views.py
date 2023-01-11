@@ -6,7 +6,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_string, safe_message
+from lib.safe_string import safe_clave, safe_string, safe_message
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
@@ -46,9 +46,10 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "nombre": resultado.nombre,
+                    "clave": resultado.clave,
                     "url": url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=resultado.id),
                 },
+                "descripcion": resultado.descripcion,
                 "costo": resultado.costo,
                 "url": resultado.url,
             }
@@ -94,7 +95,8 @@ def new():
     form = PagTramiteServicioForm()
     if form.validate_on_submit():
         pag_tramite_servicio = PagTramiteServicio(
-            nombre=safe_string(form.nombre.data, to_uppercase=True, save_enie=True),
+            clave=safe_clave(form.clave.data),
+            descripcion=safe_string(form.descripcion.data, to_uppercase=True, save_enie=True),
             costo=form.costo.data,
             url=form.url.data,
         )
@@ -102,7 +104,7 @@ def new():
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Nuevo Tramite y Servicio {pag_tramite_servicio.nombre} ${pag_tramite_servicio.costo:,.2f}"),
+            descripcion=safe_message(f"Nuevo Tramite y Servicio {pag_tramite_servicio.clave}"),
             url=url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=pag_tramite_servicio.id),
         )
         bitacora.save()
@@ -118,7 +120,8 @@ def edit(pag_tramite_servicio_id):
     pag_tramite_servicio = PagTramiteServicio.query.get_or_404(pag_tramite_servicio_id)
     form = PagTramiteServicioForm()
     if form.validate_on_submit():
-        pag_tramite_servicio.nombre = safe_string(form.nombre.data)
+        pag_tramite_servicio.clave = safe_clave(form.clave.data)
+        pag_tramite_servicio.descripcion = safe_string(form.descripcion.data, to_uppercase=True, save_enie=True)
         pag_tramite_servicio.costo = form.costo.data
         pag_tramite_servicio.url = form.url.data
         pag_tramite_servicio.save()
@@ -131,7 +134,8 @@ def edit(pag_tramite_servicio_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
         return redirect(bitacora.url)
-    form.nombre.data = pag_tramite_servicio.nombre
+    form.clave.data = pag_tramite_servicio.clave
+    form.descripcion.data = pag_tramite_servicio.descripcion
     form.costo.data = pag_tramite_servicio.costo
     form.url.data = pag_tramite_servicio.url
     return render_template("pag_tramites_servicios/edit.jinja2", form=form, pag_tramite_servicio=pag_tramite_servicio)

@@ -18,9 +18,10 @@
 
 {% block content %}
     {% call detail.card(estatus=pag_tramite_servicio.estatus) %}
-        {{ detail.label_value('Nombre', pag_tramite_servicio.nombre) }}
+        {{ detail.label_value('Clave', pag_tramite_servicio.clave) }}
+        {{ detail.label_value('Descripción', pag_tramite_servicio.descripcion) }}
         {{ detail.label_value('Costo', '$ ' + pag_tramite_servicio.costo | string) }}
-        {{ detail.label_value('Página pjecz.gob.mx', pag_tramite_servicio.url, pag_tramite_servicio.url) }}
+        {{ detail.label_value('URL', pag_tramite_servicio.url, pag_tramite_servicio.url) }}
     {% endcall %}
 {% endblock %}
 

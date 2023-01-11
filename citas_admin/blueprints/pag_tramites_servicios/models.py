@@ -15,9 +15,10 @@ class PagTramiteServicio(db.Model, UniversalMixin):
     id = db.Column(db.Integer, primary_key=True)
 
     # Columnas
-    nombre = db.Column(db.String(256), nullable=False, unique=True)
-    costo = db.Column(db.Numeric(12, 2), nullable=False)
-    url = db.Column(db.String(512), nullable=False)
+    clave = db.Column(db.String(16), nullable=False, unique=True)
+    descripcion = db.Column(db.String(256), nullable=False)
+    costo = db.Column(db.Numeric(precision=8, scale=2, decimal_return_scale=2), nullable=False)
+    url = db.Column(db.String(256), nullable=False)
 
     # Hijos
     pag_pagos = db.relationship("PagPago", back_populates="pag_tramite_servicio")
