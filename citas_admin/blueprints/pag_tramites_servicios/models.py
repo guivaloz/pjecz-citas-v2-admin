@@ -1,5 +1,5 @@
 """
-Pag Tramites Servicios, modelos
+Pagos Tramites Servicios, modelos
 """
 from citas_admin.extensions import db
 from lib.universal_mixin import UniversalMixin

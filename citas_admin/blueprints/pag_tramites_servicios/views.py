@@ -1,5 +1,5 @@
 """
-Pag Tramites y Servicios, vistas
+Pagos Tramites y Servicios, vistas
 """
 import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for

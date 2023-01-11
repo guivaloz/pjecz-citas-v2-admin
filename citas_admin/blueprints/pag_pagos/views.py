@@ -1,5 +1,5 @@
 """
-Pag Pagos, vistas
+Pagos Pagos, vistas
 """
 import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -28,7 +28,7 @@ def before_request():
 
 @pag_pagos.route("/pag_pagos/datatable_json", methods=["GET", "POST"])
 def datatable_json():
-    """DataTable JSON para listado de Pagos"""
+    """DataTable JSON para listado de pagos"""
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
@@ -48,6 +48,17 @@ def datatable_json():
                     "nombre": resultado.nombre,
                     "url": url_for("pag_pagos.detail", pag_pago_id=resultado.id),
                 },
+                "cit_cliente": {
+                    "nombre": resultado.cit_cliente.nombre,
+                    "url": url_for("cit_clientes.detail", cit_cliente_id=resultado.cit_cliente.id) if current_user.can_view("CIT CLIENTES") else "",
+                },
+                "email": resultado.email,
+                "pag_tramite_servicio": {
+                    "clave": resultado.cit_cliente.clave,
+                    "url": url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=resultado.pag_tramite_servicio.id) if current_user.can_view("PAG TRAMITES SERVICIOS") else "",
+                },
+                "estado": resultado.estado,
+                "total": resultado.total,
             }
         )
     # Entregar JSON
@@ -56,7 +67,7 @@ def datatable_json():
 
 @pag_pagos.route("/pag_pagos")
 def list_active():
-    """Listado de Pagos activos"""
+    """Listado de pagos activos"""
     return render_template(
         "pag_pagos/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
@@ -68,7 +79,7 @@ def list_active():
 @pag_pagos.route("/pag_pagos/inactivos")
 @permission_required(MODULO, Permiso.MODIFICAR)
 def list_inactive():
-    """Listado de Pagos inactivos"""
+    """Listado de pagos inactivos"""
     return render_template(
         "pag_pagos/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
@@ -79,7 +90,7 @@ def list_inactive():
 
 @pag_pagos.route("/pag_pagos/<int:pag_pago_id>")
 def detail(pag_pago_id):
-    """Detalle de un Pago"""
+    """Detalle de un pago"""
     pag_pago = PagPago.query.get_or_404(pag_pago_id)
     return render_template("pag_pagos/detail.jinja2", pag_pago=pag_pago)
 
@@ -87,14 +98,14 @@ def detail(pag_pago_id):
 @pag_pagos.route("/pag_pagos/eliminar/<int:pag_pago_id>")
 @permission_required(MODULO, Permiso.MODIFICAR)
 def delete(pag_pago_id):
-    """Eliminar Pago"""
+    """Eliminar pago"""
     pag_pago = PagPago.query.get_or_404(pag_pago_id)
     if pag_pago.estatus == "A":
         pag_pago.delete()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Eliminado Pago {pag_pago.descripcion}"),
+            descripcion=safe_message(f"Eliminado pago {pag_pago.id}"),
             url=url_for("pag_pagos.detail", pag_pago_id=pag_pago.id),
         )
         bitacora.save()
@@ -105,14 +116,14 @@ def delete(pag_pago_id):
 @pag_pagos.route("/pag_pagos/recuperar/<int:pag_pago_id>")
 @permission_required(MODULO, Permiso.MODIFICAR)
 def recover(pag_pago_id):
-    """Recuperar Pago"""
+    """Recuperar pago"""
     pag_pago = PagPago.query.get_or_404(pag_pago_id)
     if pag_pago.estatus == "B":
         pag_pago.recover()
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Recuperado Pago {pag_pago.descripcion}"),
+            descripcion=safe_message(f"Recuperado pago {pag_pago.id}"),
             url=url_for("pag_pagos.detail", pag_pago_id=pag_pago.id),
         )
         bitacora.save()

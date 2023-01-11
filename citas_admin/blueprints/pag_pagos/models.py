@@ -1,5 +1,5 @@
 """
-Pag Pagos, modelos
+Pagos Pagos, modelos
 """
 from collections import OrderedDict
 from citas_admin.extensions import db
@@ -11,9 +11,10 @@ class PagPago(db.Model, UniversalMixin):
 
     ESTADOS = OrderedDict(
         [
-            ("PENDIENTE", "Pendiente"),
-            ("REALIZADO", "Realizado"),
-            ("CANCELADO", "Cancelado"),
+            ("SOLICITADO", "Solicitado"),  # Cuando se crea el pago en espera de que el banco lo procese
+            ("CANCELADO", "Cancelado"),  # Cuando pasa mucho tiempo y no hay respuesta del banco, se cancela
+            ("PAGADO", "Pagado"),  # Cuando el banco procesa el pago con exito
+            ("FALLIDO", "Fallido"),  # Cuando el banco reporta que falla el pago
         ]
     )
 
@@ -30,10 +31,10 @@ class PagPago(db.Model, UniversalMixin):
     pag_tramite_servicio = db.relationship("PagTramiteServicio", back_populates="pag_pagos")
 
     # Columnas
-    descripcion = db.Column(db.String(256), nullable=False)
-    total = db.Column(db.Numeric(12, 2), nullable=False)
-    estado = db.Column(db.Enum(*ESTADOS, name="estados", native_enum=False))
-    folio = db.Column(db.Integer())
+    total = db.Column(db.Numeric(precision=8, scale=2, decimal_return_scale=2), nullable=False)
+    estado = db.Column(db.Enum(*ESTADOS, name="estados", native_enum=False), nullable=False)
+    email = db.Column(db.String(256))  # Email opcional si el cliente desea que se le envie el comprobante a otra dirección
+    ya_se_envio_comprobante = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         """Representación"""

@@ -61,8 +61,7 @@
                 targets: 3, // URL
                 data: null,
                 render: function(data, type, row, meta) {
-                    if ( data == '') return ''
-                    return '<a href="' + data + '" target="_blank">' + data + '<span class="iconify" data-icon="mdi:open-in-new"></span></a>';
+                    return data == '' ? '' : '<a href="' + data + '" target="_blank">' + data + '<span class="iconify" data-icon="mdi:open-in-new"></span></a>';
                 }
             }
         ];

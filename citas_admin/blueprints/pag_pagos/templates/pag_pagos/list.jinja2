@@ -19,8 +19,10 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Descripcion</th>
+                    <th>Nombre</th>
+                    <th>e-mail</th>
+                    <th>Trámite y Servicio</th>
+                    <th>Estado</th>
                     <th>Total</th>
                 </tr>
             </thead>
@@ -36,7 +38,9 @@
         configDataTable['columns'] = [
             { data: 'detalle' },
             { data: 'cit_cliente' },
-            { data: 'descripcion' },
+            { data: 'email' },
+            { data: 'pag_tramite_servicio' },
+            { data: 'estado' },
             { data: 'total' }
         ];
         configDataTable['columnDefs'] = [
@@ -51,14 +55,18 @@
                 targets: 1, // cit_cliente
                 data: null,
                 render: function(data, type, row, meta) {
-                    if (data.url != '') {
-                        return '<a href="' + data.url + '">' + data.nombre + '</a>';
-                    }
-                    return data.nombre;
+                    return data.url == '' ? data.nombre : '<a href="' + data.url + '">' + data.nombre + '</a>';
                 }
             },
             {
-                targets: 3, // total
+                targets: 3, // pag_tramite_servicio
+                data: null,
+                render: function(data, type, row, meta) {
+                    return data.url == '' ? data.clave : '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: 5, // total
                 data: null,
                 render: function(data, type, row, meta) {
                     return '$ ' + data;

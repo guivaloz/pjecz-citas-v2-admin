@@ -1,5 +1,5 @@
 """
-Pag Tramites Servicios, formularios
+Pagos Tramites Servicios, formularios
 """
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, DecimalField
