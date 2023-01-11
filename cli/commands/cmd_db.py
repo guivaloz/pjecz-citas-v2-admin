@@ -32,8 +32,8 @@ from cli.commands.respaldar_distritos import respaldar_distritos
 from cli.commands.respaldar_domicilios import respaldar_domicilios
 
 # from cli.commands.respaldar_cit_categorias import respaldar_cit_categorias
-# from cli.commands.respaldar_cit_servicios import respaldar_cit_servicios
-from cli.commands.respaldar_pag_tramites_servicios import respaldar_cit_tramites_servicios
+from cli.commands.respaldar_cit_servicios import respaldar_cit_servicios
+from cli.commands.respaldar_pag_tramites_servicios import respaldar_pag_tramites_servicios
 from cli.commands.respaldar_materias import respaldar_materias
 from cli.commands.respaldar_modulos import respaldar_modulos
 from cli.commands.respaldar_oficinas import respaldar_oficinas
@@ -101,13 +101,13 @@ def respaldar():
     respaldar_distritos()
     respaldar_domicilios()
     # respaldar_cit_categorias()
-    # respaldar_cit_servicios()
+    respaldar_cit_servicios()
     respaldar_materias()
     respaldar_modulos()
     respaldar_roles_permisos()
     respaldar_usuarios_roles()
     respaldar_oficinas()
-    respaldar_cit_tramites_servicios()
+    respaldar_pag_tramites_servicios()
     click.echo("Termina respaldar.")
 
 

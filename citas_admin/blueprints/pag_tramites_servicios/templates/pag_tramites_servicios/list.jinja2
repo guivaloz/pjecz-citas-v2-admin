@@ -39,7 +39,7 @@
         configDataTable['columns'] = [
             { data: 'detalle' },
             { data: 'descripcion' },
-            { data: 'costo' },
+            { data: 'costo', className: "text-end" },
             { data: 'url' },
         ];
         configDataTable['columnDefs'] = [
@@ -54,14 +54,26 @@
                 targets: 1, // descripcion
                 data: null,
                 render: function(data, type, row, meta) {
-                    return data.length > 24 ? data.substr(0, 24) + '…' : data;
+                    return data.length > 48 ? data.substr(0, 48) + '…' : data;
+                }
+            },
+            {
+                targets: 2, // costo
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '$ ' + data;
                 }
             },
             {
                 targets: 3, // URL
                 data: null,
                 render: function(data, type, row, meta) {
-                    return data == '' ? '' : '<a href="' + data + '" target="_blank">' + data + '<span class="iconify" data-icon="mdi:open-in-new"></span></a>';
+                    if (data == '') {
+                        return '';
+                    } else {
+                        texto = data.length > 48 ? '…' + data.slice(-48) : data;
+                        return data == '' ? '' : '<a href="' + data + '" target="_blank">' + texto + '<span class="iconify" data-icon="mdi:open-in-new"></span></a>';
+                    }
                 }
             }
         ];

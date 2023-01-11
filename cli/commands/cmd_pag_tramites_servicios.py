@@ -1,5 +1,7 @@
 """
-Alimentar Pagos Tramites y Servicios
+Pagos Tramites y Servicios
+
+- alimentar
 """
 from pathlib import Path
 import csv
@@ -7,29 +9,36 @@ import click
 
 from lib.safe_string import safe_clave, safe_string, safe_url
 
+from citas_admin.app import create_app
+from citas_admin.extensions import db
+
 from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
 
-ARCHIVO_CSV = "seed/pag_tramites_servicios.csv"
+app = create_app()
+db.app = app
 
 
-def alimentar_pag_tramites_servicios():
-    """Alimentar Tramites y Servicios"""
-    ruta = Path(ARCHIVO_CSV)
+@click.group()
+def cli():
+    """Pagos Tramites y Servicios"""
+
+
+@click.command()
+@click.argument("entrada_csv")
+def alimentar(entrada_csv):
+    """Alimentar a partir de un archivo CSV"""
+    ruta = Path(entrada_csv)
     if not ruta.exists():
         click.echo(f"AVISO: {ruta.name} no se encontró.")
         return
     if not ruta.is_file():
         click.echo(f"AVISO: {ruta.name} no es un archivo.")
         return
-    click.echo("Alimentando tramites y servicios de las citas...")
+    click.echo("Alimentando tramites y servicios...")
     contador = 0
-    with open(ruta, encoding="utf-8") as puntero:
+    with open(ruta, encoding="utf8") as puntero:
         rows = csv.DictReader(puntero)
         for row in rows:
-            servicio_id = int(row["cit_tramite_servicio_id"])
-            if servicio_id != contador + 1:
-                click.echo(f"  AVISO: cit_tramite_servicio_id {servicio_id} no es consecutivo")
-                continue
             PagTramiteServicio(
                 clave=safe_clave(row["clave"]),
                 descripcion=safe_string(row["descripcion"], to_uppercase=True, save_enie=True),
@@ -40,4 +49,7 @@ def alimentar_pag_tramites_servicios():
             contador += 1
             if contador % 100 == 0:
                 click.echo(f"  Van {contador}...")
-    click.echo(f"  {contador} tramites y servicios alimentados")
+    click.echo(f"{contador} tramites y servicios alimentados.")
+
+
+cli.add_command(alimentar)
