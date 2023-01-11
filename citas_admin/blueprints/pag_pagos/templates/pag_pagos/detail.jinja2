@@ -1,0 +1,44 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Pago{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(pag_pagos.descripcion) %}
+        {{ topbar.button_previous('Pagos', url_for('pag_pagos.list_active')) }}
+        {% if current_user.can_edit('PAG PAGOS') %}
+            {% if pag_pagos.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('pag_pagos.delete', pag_pagos_id=pag_pagos.id)) }}{% endif %}
+            {% if pag_pagos.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('pag_pagos.recover', pag_pagos_id=pag_pagos.id)) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=pag_pagos.estatus) %}
+        {{ detail.label_value_big('Estado', pag_pagos.estado) }}
+        {% if current_user.can_view('CIT CLIENTES') %}
+            {{ detail.label_value('Cliente', pag_pagos.cit_cliente.nombre, url_for('cit_clientes.detail', cit_cliente_id=pag_pagos.cit_cliente_id) }}
+        {% else %}
+            {{ detail.label_value('Cliente', pag_pagos.cit_cliente.nombre) }}
+        {% endif %}
+        {% if current_user.can_view('PAG TRAMITES SERVICIOS') %}
+            {{ detail.label_value('Trámite y Servicio', pag_pagos.pag_tramite_servicio.clave, url_for('pag_tramites_servicios.detail', pag_tramite_servicio_id=pag_pagos.pag_tramite_servicio_id) }}
+        {% else %}
+            {{ detail.label_value('Trámite y Servicio', pag_pagos.pag_tramite_servicio.clave) }}
+        {% endif %}
+        {{ detail.label_value('e-mail', pag_pagos.email) }}
+        {{ detail.label_value('Total', pag_pagos.total) }}
+        {{ detail.label_value_boolean('Ya se envió comprobante', pag_pagos.ya_se_envio_comprobante) }}
+        {{ detail.label_value('Creado', moment(lista_de_acuerdo.creado, local=True).format('DD MMM YYYY')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {% if current_user.can_edit('PAG PAGOS') %}
+        {% if pag_pagos.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + pag_pagos.descripcion + '?') }}{% endif %}
+        {% if pag_pagos.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + pag_pagos.descripcion + '?') }}{% endif %}
+    {% endif %}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

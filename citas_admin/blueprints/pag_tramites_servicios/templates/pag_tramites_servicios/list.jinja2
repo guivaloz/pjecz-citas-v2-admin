@@ -1,0 +1,82 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/list.jinja2' as list %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Trámites y Servicios{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(titulo) %}
+        {% if current_user.can_edit('PAG TRAMITES SERVICIOS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('pag_tramites_servicios.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('pag_tramites_servicios.list_active')) }}{% endif %}
+        {% endif %}
+        {% if current_user.can_insert('PAG TRAMITES SERVICIOS') %}
+            {{ topbar.button_new('Nuevo Trámite y Servicio', url_for('pag_tramites_servicios.new')) }}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call list.card() %}
+        <table id="pag_tramites_servicios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Clave</th>
+                    <th>Descripción</th>
+                    <th>Costo</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {{ list.config_datatable() }}
+    <script>
+        configDataTable['ajax']['url'] = '/pag_tramites_servicios/datatable_json';
+        configDataTable['ajax']['data'] = {{ filtros }};
+        configDataTable['columns'] = [
+            { data: 'detalle' },
+            { data: 'descripcion' },
+            { data: 'costo', className: "text-end" },
+            { data: 'url' },
+        ];
+        configDataTable['columnDefs'] = [
+            {
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: 1, // descripcion
+                data: null,
+                render: function(data, type, row, meta) {
+                    return data.length > 48 ? data.substr(0, 48) + '…' : data;
+                }
+            },
+            {
+                targets: 2, // costo
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '$ ' + data;
+                }
+            },
+            {
+                targets: 3, // URL
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data == '') {
+                        return '';
+                    } else {
+                        texto = data.length > 48 ? '…' + data.slice(-48) : data;
+                        return data == '' ? '' : '<a href="' + data + '" target="_blank">' + texto + '<span class="iconify" data-icon="mdi:open-in-new"></span></a>';
+                    }
+                }
+            }
+        ];
+        $('#pag_tramites_servicios_datatable').DataTable(configDataTable);
+    </script>
+{% endblock %}

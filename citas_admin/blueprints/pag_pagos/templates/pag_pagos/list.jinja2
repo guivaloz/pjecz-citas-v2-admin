@@ -6,21 +6,23 @@
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
-        {% if current_user.can_edit('CIT PAGOS') %}
-            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_pagos.list_inactive')) }}{% endif %}
-            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_pagos.list_active')) }}{% endif %}
+        {% if current_user.can_edit('PAG PAGOS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('pag_pagos.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('pag_pagos.list_active')) }}{% endif %}
         {% endif %}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
     {% call list.card() %}
-        <table id="cit_pagos_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+        <table id="pag_pagos_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Descripcion</th>
+                    <th>Nombre</th>
+                    <th>e-mail</th>
+                    <th>Trámite y Servicio</th>
+                    <th>Estado</th>
                     <th>Total</th>
                 </tr>
             </thead>
@@ -31,13 +33,15 @@
 {% block custom_javascript %}
     {{ list.config_datatable() }}
     <script>
-        configDataTable['ajax']['url'] = '/cit_pagos/datatable_json';
+        configDataTable['ajax']['url'] = '/pag_pagos/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
             { data: 'detalle' },
             { data: 'cit_cliente' },
-            { data: 'descripcion' },
-            { data: 'total' }
+            { data: 'email' },
+            { data: 'pag_tramite_servicio' },
+            { data: 'estado' },
+            { data: 'total', className: "text-end" },
         ];
         configDataTable['columnDefs'] = [
             {
@@ -51,20 +55,24 @@
                 targets: 1, // cit_cliente
                 data: null,
                 render: function(data, type, row, meta) {
-                    if (data.url != '') {
-                        return '<a href="' + data.url + '">' + data.nombre + '</a>';
-                    }
-                    return data.nombre;
+                    return data.url == '' ? data.nombre : '<a href="' + data.url + '">' + data.nombre + '</a>';
                 }
             },
             {
-                targets: 3, // total
+                targets: 3, // pag_tramite_servicio
+                data: null,
+                render: function(data, type, row, meta) {
+                    return data.url == '' ? data.clave : '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: 5, // total
                 data: null,
                 render: function(data, type, row, meta) {
                     return '$ ' + data;
                 }
             },
         ];
-        $('#cit_pagos_datatable').DataTable(configDataTable);
+        $('#pag_pagos_datatable').DataTable(configDataTable);
     </script>
 {% endblock %}
