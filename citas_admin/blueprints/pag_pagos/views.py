@@ -45,16 +45,16 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "nombre": resultado.nombre,
+                    "id": resultado.id,
                     "url": url_for("pag_pagos.detail", pag_pago_id=resultado.id),
                 },
                 "cit_cliente": {
-                    "nombre": resultado.cit_cliente.nombre,
+                    "nombre": f"{resultado.cit_cliente.nombre} {resultado.cit_cliente.apellido_primero} {resultado.cit_cliente.apellido_segundo}",
                     "url": url_for("cit_clientes.detail", cit_cliente_id=resultado.cit_cliente.id) if current_user.can_view("CIT CLIENTES") else "",
                 },
                 "email": resultado.email,
                 "pag_tramite_servicio": {
-                    "clave": resultado.cit_cliente.clave,
+                    "clave": resultado.pag_tramite_servicio.clave,
                     "url": url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=resultado.pag_tramite_servicio.id) if current_user.can_view("PAG TRAMITES SERVICIOS") else "",
                 },
                 "estado": resultado.estado,
