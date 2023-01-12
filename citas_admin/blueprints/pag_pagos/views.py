@@ -58,6 +58,7 @@ def datatable_json():
                     "url": url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=resultado.pag_tramite_servicio.id) if current_user.can_view("PAG TRAMITES SERVICIOS") else "",
                 },
                 "estado": resultado.estado,
+                "folio": resultado.folio,
                 "total": resultado.total,
             }
         )

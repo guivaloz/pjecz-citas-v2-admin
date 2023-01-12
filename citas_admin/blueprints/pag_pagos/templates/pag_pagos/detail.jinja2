@@ -29,6 +29,7 @@
             {{ detail.label_value('Trámite y Servicio', pag_pagos.pag_tramite_servicio.clave) }}
         {% endif %}
         {{ detail.label_value('e-mail', pag_pagos.email) }}
+        {{ detail.label_value('Folio', pag_pagos.folio) }}
         {{ detail.label_value('Total', pag_pagos.total) }}
         {{ detail.label_value_boolean('Ya se envió comprobante', pag_pagos.ya_se_envio_comprobante) }}
         {{ detail.label_value('Creado', moment(lista_de_acuerdo.creado, local=True).format('DD MMM YYYY')) }}
