@@ -153,8 +153,8 @@ def get_response(xml_encrypt_str: str):
 def _clean_xml(xml_str: str):
     """Quita los comentarios del archivo XML que no puede procesar la clase XML"""
     xml_limpio = ""
-    for line in xml_str.split('\n'):
-        if '<?' not in line:
+    for line in xml_str.split("\n"):
+        if "<?" not in line:
             xml_limpio += line
-    
+
     return xml_limpio

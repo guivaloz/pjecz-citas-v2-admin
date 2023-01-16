@@ -34,7 +34,7 @@ def main():
     print("=== Respuesta del Banco WPP (vía POST) ===")
     respuesta = get_response(strResponse)
     for key, value in respuesta.items():
-        print(key, ':', value)
+        print(key, ":", value)
 
 
 if __name__ == "__main__":
