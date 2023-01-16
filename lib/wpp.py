@@ -124,3 +124,37 @@ def create_pay_link(email: str, service_detail: str, cit_client_id: int, amount:
         return url_pay  # URL del link de formulario de pago
 
     return None
+
+
+def get_response(xml_encrypt_str: str):
+    """Entrega una respuesta procesada"""
+    respuesta = {
+        "pago_id": None,
+        "response": None,
+        "auth": None,
+        "email": None,
+    }
+
+    # procesar el xml encriptado
+    xml = decrypt_chain(xml_encrypt_str)
+    xml = _clean_xml(xml)
+    root = ET.fromstring(xml)
+
+    # Obtener nodos de respuesta
+    respuesta["pago_id"] = root.find("reference").text
+    respuesta["response"] = root.find("response").text
+    respuesta["foliocpagos"] = root.find("foliocpagos").text
+    respuesta["auth"] = root.find("auth").text
+    respuesta["email"] = root.find("email").text
+
+    return respuesta
+
+
+def _clean_xml(xml_str: str):
+    """Quita los comentarios del archivo XML que no puede procesar la clase XML"""
+    xml_limpio = ""
+    for line in xml_str.split('\n'):
+        if '<?' not in line:
+            xml_limpio += line
+    
+    return xml_limpio

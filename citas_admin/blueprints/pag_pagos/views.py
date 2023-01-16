@@ -49,7 +49,7 @@ def datatable_json():
                     "url": url_for("pag_pagos.detail", pag_pago_id=resultado.id),
                 },
                 "cit_cliente": {
-                    "nombre": f"{resultado.cit_cliente.nombre} {resultado.cit_cliente.apellido_primero} {resultado.cit_cliente.apellido_segundo}",
+                    "nombre": f"{resultado.cit_cliente.nombre}",
                     "url": url_for("cit_clientes.detail", cit_cliente_id=resultado.cit_cliente.id) if current_user.can_view("CIT CLIENTES") else "",
                 },
                 "email": resultado.email,
