@@ -16,24 +16,65 @@
 {% endblock %}
 
 {% block content %}
-    {% call detail.card(estatus=pag_pago.estatus) %}
-        {{ detail.label_value_big('Estado', pag_pago.estado) }}
+    {% if pag_pago.estatus == 'A' %}
+        {% if pag_pago.estado == "SOLICITADO" %}
+            {% set estado_bgcolor = "#fff3cd" %}
+        {% elif pag_pago.estado == "CANCELADO" %}
+            {% set estado_bgcolor = "#f8f9fa" %}
+        {% elif pag_pago.estado == "FALLIDO" %}
+            {% set estado_bgcolor = "#f8d7da" %}
+        {% elif pag_pago.estado == "PAGADO" %}
+            {% set estado_bgcolor = "#d1e7dd" %}
+        {% endif %}
+    {% else %}
+        {% set estado_bgcolor = "#212529; color: #FFF;" %}
+    {% endif %}
+    <div class="card mb-3">
+        <div class="card-body" style="background-color:{{estado_bgcolor}};">
+        <div class="row">
+            <div class="col-md-3 text-end">
+                <span style="font-size:2em">Estado</span>
+            </div>
+            <div class="col-md-9">
+                {% if pag_pago.estado == "SOLICITADO" %}
+                    {% set estado_class = "bg-warning text-dark" %}
+                {% elif pag_pago.estado == "CANCELADO" %}
+                    {% set estado_class = "bg-secondary" %}
+                {% elif pag_pago.estado == "FALLIDO" %}
+                    {% set estado_class = "bg-danger" %}
+                {% elif pag_pago.estado == "PAGADO" %}
+                    {% set estado_class = "bg-success" %}
+                {% endif %}
+                <span class="badge rounded-pill {{estado_class}}" style="font-size:2em">{{pag_pago.estado}}</span>
+            </div>
+        </div>
         {% if current_user.can_view('CIT CLIENTES') %}
             {{ detail.label_value('Cliente', pag_pago.cit_cliente.nombre, url_for('cit_clientes.detail', cit_cliente_id=pag_pago.cit_cliente_id)) }}
         {% else %}
             {{ detail.label_value('Cliente', pag_pago.cit_cliente.nombre) }}
         {% endif %}
         {% if current_user.can_view('PAG TRAMITES SERVICIOS') %}
-            {{ detail.label_value('Trámite y Servicio', pag_pago.pag_tramite_servicio.clave, url_for('pag_tramites_servicios.detail', pag_tramite_servicio_id=pag_pago.pag_tramite_servicio_id)) }}
+            {{ detail.label_value('Trámite y Servicio', pag_pago.pag_tramite_servicio.clave + ' : ' + pag_pago.pag_tramite_servicio.descripcion, url_for('pag_tramites_servicios.detail', pag_tramite_servicio_id=pag_pago.pag_tramite_servicio_id)) }}
         {% else %}
-            {{ detail.label_value('Trámite y Servicio', pag_pago.pag_tramite_servicio.clave) }}
+            {{ detail.label_value('Trámite y Servicio', pag_pago.pag_tramite_servicio.clave + ' : ' + pag_pago.pag_tramite_servicio.descripcion) }}
         {% endif %}
         {{ detail.label_value('e-mail', pag_pago.email) }}
         {{ detail.label_value('Folio', pag_pago.folio) }}
-        {{ detail.label_value('Total', pag_pago.total) }}
+        {{ detail.label_value('Total', '$ ' + pag_pago.total | string) }}
         {{ detail.label_value_boolean('Ya se envió comprobante', pag_pago.ya_se_envio_comprobante) }}
         {{ detail.label_value('Creado', moment(pag_pago.creado, local=True).format('DD MMM YYYY')) }}
-    {% endcall %}
+        {% if pag_pago.estatus != 'A' %}
+            {{ detail.label_value('Eliminado', 'ELIMINADO') }}
+            <div class="row">
+                <div class="col-md-3 text-end">Estatus
+                </div>
+                <div class="col-md-9">
+                    <span class="badge rounded-pill bg-danger">ELIMINADO</span>
+                </div>
+            </div>
+        {% endif %}
+        </div>
+    </div>
 {% endblock %}
 
 {% block custom_javascript %}

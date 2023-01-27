@@ -4,15 +4,19 @@ Pagos Pagos, vistas
 import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy import or_
+from datetime import datetime
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_message
+from lib.safe_string import safe_message, safe_string
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.pag_pagos.models import PagPago
+from citas_admin.blueprints.cit_clientes.models import CitCliente
+from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
 
 MODULO = "PAG PAGOS"
 
@@ -37,7 +41,23 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    registros = consulta.order_by(PagPago.id).offset(start).limit(rows_per_page).all()
+    if "id" in request.form:
+        consulta = consulta.filter_by(id=request.form["id"])
+    if "fecha" in request.form:
+        fecha = datetime.strptime(request.form["fecha"], "%Y-%m-%d")
+        inicio_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=0, minute=0, second=0)
+        termino_dt = datetime(year=fecha.year, month=fecha.month, day=fecha.day, hour=23, minute=59, second=59)
+        consulta = consulta.filter(PagPago.creado >= inicio_dt).filter(PagPago.creado <= termino_dt)
+    if "pag_tramite_servicio_id" in request.form:
+        consulta = consulta.filter_by(pag_tramite_servicio_id=request.form["pag_tramite_servicio_id"])
+    if "estado" in request.form:
+        consulta = consulta.filter_by(estado=request.form["estado"])
+    if "nombre_completo" in request.form:
+        palabras = safe_string(request.form["nombre_completo"]).split(" ")
+        consulta = consulta.join(CitCliente)
+        for palabra in palabras:
+            consulta = consulta.filter(or_(CitCliente.nombres.contains(palabra), CitCliente.apellido_primero.contains(palabra), CitCliente.apellido_segundo.contains(palabra)))
+    registros = consulta.order_by(PagPago.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -55,8 +75,10 @@ def datatable_json():
                 "email": resultado.email,
                 "pag_tramite_servicio": {
                     "clave": resultado.pag_tramite_servicio.clave,
+                    "descripcion": resultado.pag_tramite_servicio.descripcion,
                     "url": url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=resultado.pag_tramite_servicio.id) if current_user.can_view("PAG TRAMITES SERVICIOS") else "",
                 },
+                "fecha": resultado.creado,
                 "estado": resultado.estado,
                 "folio": resultado.folio,
                 "total": resultado.total,
@@ -74,6 +96,8 @@ def list_active():
         filtros=json.dumps({"estatus": "A"}),
         titulo="Pagos",
         estatus="A",
+        estados=PagPago.ESTADOS,
+        tramites_y_servicios=PagTramiteServicio.query.filter_by(estatus="A").all(),
     )
 
 
@@ -86,6 +110,8 @@ def list_inactive():
         filtros=json.dumps({"estatus": "B"}),
         titulo="Pagos inactivos",
         estatus="B",
+        estados=PagPago.ESTADOS,
+        tramites_y_servicios=PagTramiteServicio.query.filter_by(estatus="A").all(),
     )
 
 
