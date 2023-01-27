@@ -52,8 +52,13 @@
                     <div class="form-floating">
                         <select class="form-select" id="servicioSelect" name="servicio_id" aria-label="Todos" onchange="buscar(); return false;" style="flex: inherit;">
                             <option selected value="">Todos</option>
-                            {% for servicio in servicios %}
-                                <option value="{{servicio.id}}">{{servicio.clave}} : {{servicio.descripcion}}</option>
+                            {% for servicio in tramites_y_servicios %}
+                                {% if servicio.descripcion | length > 35 %}
+                                    {% set descripcion = servicio.descripcion[:35] | lower + '...' %}
+                                {% else %}
+                                    {% set descripcion = servicio.descripcion | lower %}
+                                {% endif %}
+                                <option value="{{servicio.id}}">{{servicio.clave}} : {{descripcion}}</option>
                             {% endfor %}
                         </select>
                         <label for="servicioSelect">Trámite y Servicio</label>
@@ -181,7 +186,7 @@
         if(estadoSelect != '')
             configDataTable['ajax']['data']['estado'] = estadoSelect;
         if(servicioSelect != '')
-            configDataTable['ajax']['data']['pag_tramite_servicio'] = servicioSelect;
+            configDataTable['ajax']['data']['pag_tramite_servicio_id'] = servicioSelect;
         
         // Datatable
         $('#pag_pagos_datatable').DataTable(configDataTable);
@@ -200,7 +205,7 @@
                 configDataTable['ajax']['data']['nombre_completo'] === undefined && nombreBuscar === '' &&
                 configDataTable['ajax']['data']['fecha'] === undefined && fechaBuscar === '' &&
                 configDataTable['ajax']['data']['estado'] === undefined && estadoSelect === '' &&
-                configDataTable['ajax']['data']['pag_tramite_servicio'] === undefined && servicioSelect === ''
+                configDataTable['ajax']['data']['pag_tramite_servicio_id'] === undefined && servicioSelect === ''
             ) return false;
 
             $('#pag_pagos_datatable').DataTable().destroy();
@@ -218,13 +223,13 @@
             else
                 configDataTable['ajax']['data']['fecha'] = fechaBuscar;
             if(estadoSelect == '')
-                delete configDataTable['ajax']['data']['oficina_id'];
+                delete configDataTable['ajax']['data']['estado'];
             else
                 configDataTable['ajax']['data']['estado'] = estadoSelect;
             if(servicioSelect == '')
-                delete configDataTable['ajax']['data']['oficina_id'];
+                delete configDataTable['ajax']['data']['pag_tramite_servicio_id'];
             else
-                configDataTable['ajax']['data']['pag_tramite_servicio'] = servicioSelect;
+                configDataTable['ajax']['data']['pag_tramite_servicio_id'] = servicioSelect;
 
             $('#pag_pagos_datatable').DataTable(configDataTable);
         };
@@ -234,14 +239,14 @@
                 configDataTable['ajax']['data']['nombre_completo'] === undefined &&
                 configDataTable['ajax']['data']['fecha'] === undefined &&
                 configDataTable['ajax']['data']['estado'] === undefined &&
-                configDataTable['ajax']['data']['pag_tramite_servicio'] === undefined
+                configDataTable['ajax']['data']['pag_tramite_servicio_id'] === undefined
             ) return false;
 
             delete configDataTable['ajax']['data']['id'];
             delete configDataTable['ajax']['data']['nombre_completo'];
             delete configDataTable['ajax']['data']['fecha'];
             delete configDataTable['ajax']['data']['estado'];
-            delete configDataTable['ajax']['data']['pag_tramite_servicio'];
+            delete configDataTable['ajax']['data']['pag_tramite_servicio_id'];
 
             $('#pag_pagos_datatable').DataTable().destroy();
             $('#pag_pagos_datatable').DataTable(configDataTable);

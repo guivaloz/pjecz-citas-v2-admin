@@ -16,14 +16,18 @@
 {% endblock %}
 
 {% block content %}
-    {% if pag_pago.estado == "SOLICITADO" %}
-        {% set estado_bgcolor = "#fff3cd" %}
-    {% elif pag_pago.estado == "CANCELADO" %}
-        {% set estado_bgcolor = "#f8f9fa" %}
-    {% elif pag_pago.estado == "FALLIDO" %}
-        {% set estado_bgcolor = "#f8d7da" %}
-    {% elif pag_pago.estado == "PAGADO" %}
-        {% set estado_bgcolor = "#d1e7dd" %}
+    {% if pag_pago.estatus == 'A' %}
+        {% if pag_pago.estado == "SOLICITADO" %}
+            {% set estado_bgcolor = "#fff3cd" %}
+        {% elif pag_pago.estado == "CANCELADO" %}
+            {% set estado_bgcolor = "#f8f9fa" %}
+        {% elif pag_pago.estado == "FALLIDO" %}
+            {% set estado_bgcolor = "#f8d7da" %}
+        {% elif pag_pago.estado == "PAGADO" %}
+            {% set estado_bgcolor = "#d1e7dd" %}
+        {% endif %}
+    {% else %}
+        {% set estado_bgcolor = "#212529; color: #FFF;" %}
     {% endif %}
     <div class="card mb-3">
         <div class="card-body" style="background-color:{{estado_bgcolor}};">
@@ -59,6 +63,16 @@
         {{ detail.label_value('Total', '$ ' + pag_pago.total | string) }}
         {{ detail.label_value_boolean('Ya se envió comprobante', pag_pago.ya_se_envio_comprobante) }}
         {{ detail.label_value('Creado', moment(pag_pago.creado, local=True).format('DD MMM YYYY')) }}
+        {% if pag_pago.estatus != 'A' %}
+            {{ detail.label_value('Eliminado', 'ELIMINADO') }}
+            <div class="row">
+                <div class="col-md-3 text-end">Estatus
+                </div>
+                <div class="col-md-9">
+                    <span class="badge rounded-pill bg-danger">ELIMINADO</span>
+                </div>
+            </div>
+        {% endif %}
         </div>
     </div>
 {% endblock %}
