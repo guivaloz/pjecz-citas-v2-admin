@@ -31,8 +31,8 @@ ratelimit
 requests
 rq
 sendgrid
-SQLAlchemy
-SQLAlchemy-Utils
+SQLAlchemy==1.4.44
+SQLAlchemy-Utils==0.38.3
 tabulate
 Unidecode
 Werkzeug==2.0.2
