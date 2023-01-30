@@ -135,3 +135,23 @@ def enviar(pag_pago_id, email=None):
     mensaje_final = f"Comprobante de Pago enviado a {email}"
     bitacora.info(mensaje_final)
     return mensaje_final
+
+
+def cancelar_solicitados_expirados(tiempo_limite):
+    """Pasa a estado de CANCELADO todos los pagos en estado previo de SOLICITADO"""
+
+    # Seleccionar Pagos con estado SOLICITADO
+    pagos = PagPago.query.filter_by(estatus="A").filter_by(estado="SOLICITADO").filter(PagPago.creado <= tiempo_limite).all()
+
+    # Contador de registros modificados
+    count = 0
+    for pago in pagos:
+        pago.estado = "CANCELADO"
+        pago.save()
+        count += 1
+
+    # Terminar tarea
+    set_task_progress(100)
+    mensaje_final = f"Se cancelaron {count} pagos"
+    bitacora.info(mensaje_final)
+    return mensaje_final
