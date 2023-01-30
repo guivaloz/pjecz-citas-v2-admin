@@ -62,10 +62,23 @@ def enviar(ctx, pag_pago_id=None, email=None):
 
 
 @click.command()
-@click.option("--email", default=None, help="email para probar", type=str)
 @click.pass_context
-def enviar_mensajes_comprobantes(ctx, pag_pago_id=None, email=None):
-    """Enviar mensajes de comprobante de pago para pagos en estado de PAGADO y sin haber sido enviados previamente"""
+@click.option("--email", default=None, help="email para probar", type=str)
+def enviar_mensajes_comprobantes(ctx, email=None):
+    """Enviar comprobante para pagos en estado de PAGADO y sin haber sido enviados previamente"""
+    tiempo = datetime.now() - timedelta(minutes=15)
+    click.echo(f"Envío de comprobantes de pago exitosos pendientes por enviar al tiempo previo {tiempo.strftime('%Y-%m-%d %H:%M:%S')}")
+
+    pagos_count = PagPago.query.filter_by(estatus="A").filter_by(estado="PAGADO").filter_by(ya_se_envio_comprobante=False).filter(PagPago.creado <= tiempo).count()
+
+    # Agregar tarea en el fondo para cancelar los pagos
+    app.task_queue.enqueue(
+        "citas_admin.blueprints.pag_pagos.tasks.enviar_mensajes_comprobantes",
+        tiempo=tiempo,
+        email=email,
+    )
+
+    click.echo(f"Se enviaron {pagos_count} comprobantes de pago")
     ctx.exit(0)
 
 
@@ -74,7 +87,7 @@ def enviar_mensajes_comprobantes(ctx, pag_pago_id=None, email=None):
 def cancelar_solicitados_expirados(ctx):
     """Pasa a estado de CANCELADO todos los pagos en estado previo de SOLICITADO"""
     tiempo_limite = datetime.now() - timedelta(hours=2)
-    click.echo(f"Cancelar pagos en estado de SOLICITADO previos al tiempo {tiempo_limite.strftime('%Y-%m-%d %H:%M:%S')}")
+    click.echo(f"Cancelar pagos en estado de SOLICITADO previos al tiempo previo {tiempo_limite.strftime('%Y-%m-%d %H:%M:%S')}")
 
     pagos_count = PagPago.query.filter_by(estatus="A").filter_by(estado="SOLICITADO").filter(PagPago.creado <= tiempo_limite).count()
 

@@ -137,10 +137,28 @@ def enviar(pag_pago_id, email=None):
     return mensaje_final
 
 
+def enviar_mensajes_comprobantes(tiempo, email=None):
+    """Enviar mensajes vía correo electrónico"""
+
+    # Consultar Pagos
+    pagos = PagPago.query.filter_by(estatus="A").filter_by(estado="PAGADO").filter_by(ya_se_envio_comprobante=False).filter(PagPago.creado <= tiempo).all()
+
+    count = 0
+    for pago in pagos:
+        enviar(pago.id, email)
+        count += 1
+
+    # Terminar tarea
+    set_task_progress(100)
+    mensaje_final = f"Se enviaron {count} comprobantes de pago"
+    bitacora.info(mensaje_final)
+    return mensaje_final
+
+
 def cancelar_solicitados_expirados(tiempo_limite):
     """Pasa a estado de CANCELADO todos los pagos en estado previo de SOLICITADO"""
 
-    # Seleccionar Pagos con estado SOLICITADO
+    # Seleccionar Pagos con estado SOLICITADO y menor al tiempo límite indicado
     pagos = PagPago.query.filter_by(estatus="A").filter_by(estado="SOLICITADO").filter(PagPago.creado <= tiempo_limite).all()
 
     # Contador de registros modificados
