@@ -25,7 +25,7 @@ locale.setlocale(locale.LC_TIME, "es_MX.utf8")
 bitacora = logging.getLogger(__name__)
 bitacora.setLevel(logging.INFO)
 formato = logging.Formatter("%(asctime)s:%(levelname)s:%(message)s")
-empunadura = logging.FileHandler("boletines.log")
+empunadura = logging.FileHandler("pag_pagos.log")
 empunadura.setFormatter(formato)
 bitacora.addHandler(empunadura)
 
