@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <title>PJECZ Citas V2</title>
+</head>
+
+<body style="margin: 0px; font-family: Verdana, Geneva, Tahoma, sans-serif;">
+
+    <table style="width: 700px; border-collapse:collapse; margin-left:auto; margin-right:auto;">
+        <tr>
+            <td style="background-color: #004360; height: 10px;"></td>
+        </tr>
+    </table>
+
+    <table style="width: 700px; color: #004360; background-color: #efebe8; padding:30px; padding-top:15px; margin-left:auto; margin-right:auto;">
+        <tr>
+            <td><h1 style='margin: 0px;'>{{ mensaje_asunto }}</h1></td>
+            <td style="text-align:right;"><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px; margin-left: 50px;"></td>
+        </tr>
+        <tr style="text-align:right;">
+            <td colspan="2"><small style="color: #657c96;"><i>{{ fecha_elaboracion }}</i></small></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <hr style="border: 1px solid #004360;">
+                <h3 style='margin-bottom: 0px;'>Hola {{ destinatario_nombre }}</h3>
+
+                <p>Este mensaje es un comprobante del estado de su pago de un trámite y servicio del PJECZ</p>
+
+                {% if pago.estado == "PAGADO" %}
+                    <h3 style="background-color: #d1e7dd; padding:5px; text-align: center;">✅ Su pago se ha realizado con éxito.</h3>
+                {% elif pago.estado == "CANCELADO" %}
+                    <h3 style="background-color: #e9ecef; padding:5px; text-align: center;">🤚 Su pago NO se completó, por lo que ha sido cancelado.</h3>
+                {% elif pago.estado == "FALLIDO" %}
+                    <h3 style="background-color: #f1aeb5; padding:5px; text-align: center;">❌ Su pago NO se realizó correctamente.</h3>
+                {% elif pago.estado == "SOLICITADO" %}
+                    <h3 style="background-color: #ffe69c; padding:5px; text-align: center;">🟡 Su pago sigue pendiente.</h3>
+                {% endif %}
+
+                <p>Datos del Pago
+                    <ul>
+                        <li>ID: <strong>{{ pago.id }}</strong></li>
+                        <li>Servicio: <strong>{{ pago.pag_tramite_servicio.clave }} : {{ pago.pag_tramite_servicio.descripcion }}</strong></li>
+                        <li>Folio: <strong>{{ pago.folio }}</strong></li>
+                        <li>Total: <strong>$ {{ pago.total }}</strong></li>
+                    </ul>
+                </p>
+                <a href="{{ url }}" target="_blank">URL de Verificación</a>
+            </td>
+        </tr>
+    </table>
+
+    <table style="width: 700px; text-align: center; border-collapse:collapse; margin-left:auto; margin-right:auto;">
+        <tr style="background-color: #004360; color: #daba93;">
+            <td>
+                <p style="font-size: small;">
+                    Blvd. Francisco Coss #945. Zona Centro. Saltillo, Coahuila de Zaragoza, México.<br>
+                    <a href="https://www.pjecz.gob.mx" style="color: #daba93;">www.pjecz.gob.mx</a><br>
+                    Teléfono 844 777 4498
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <small><strong style="color: #657c96;">ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></small>
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>
