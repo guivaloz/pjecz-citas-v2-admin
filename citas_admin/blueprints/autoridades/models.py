@@ -44,6 +44,7 @@ class Autoridad(db.Model, UniversalMixin):
     )
 
     # Hijos
+    ppa_solicitudes = db.relationship("PPASolicitud", back_populates="autoridad")
     usuarios = db.relationship("Usuario", back_populates="autoridad")
 
     @property
