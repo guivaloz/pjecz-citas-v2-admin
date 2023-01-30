@@ -6,7 +6,6 @@ import locale
 import logging
 import os
 
-from delta import html
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader
 import sendgrid
@@ -122,8 +121,10 @@ def enviar(pag_pago_id, email=None):
     mail = Mail(from_email, to_email, "Comprobante de Pago PJECZ", content)
     try:
         sendgrid_client.client.mail.send.post(request_body=mail.get())
-        pago.ya_se_envio_comprobante = True
-        pago.save()
+        # Si es el email real, se actualiza el campo de envío_comprobante
+        if email == pago.email:
+            pago.ya_se_envio_comprobante = True
+            pago.save()
     except Exception as error:
         mensaje_error = f"ERROR al enviar mensaje: {str(error)}"
         set_task_error(mensaje_error)
@@ -143,6 +144,7 @@ def enviar_mensajes_comprobantes(tiempo, email=None):
     # Consultar Pagos
     pagos = PagPago.query.filter_by(estatus="A").filter_by(estado="PAGADO").filter_by(ya_se_envio_comprobante=False).filter(PagPago.creado <= tiempo).all()
 
+    # Enviamos los mensajes pendientes
     count = 0
     for pago in pagos:
         enviar(pago.id, email)
@@ -155,13 +157,13 @@ def enviar_mensajes_comprobantes(tiempo, email=None):
     return mensaje_final
 
 
-def cancelar_solicitados_expirados(tiempo_limite):
+def cancelar_solicitados_expirados(tiempo):
     """Pasa a estado de CANCELADO todos los pagos en estado previo de SOLICITADO"""
 
     # Seleccionar Pagos con estado SOLICITADO y menor al tiempo límite indicado
-    pagos = PagPago.query.filter_by(estatus="A").filter_by(estado="SOLICITADO").filter(PagPago.creado <= tiempo_limite).all()
+    pagos = PagPago.query.filter_by(estatus="A").filter_by(estado="SOLICITADO").filter(PagPago.creado <= tiempo).all()
 
-    # Contador de registros modificados
+    # Cambiamos su estado a CANCELADO
     count = 0
     for pago in pagos:
         pago.estado = "CANCELADO"
