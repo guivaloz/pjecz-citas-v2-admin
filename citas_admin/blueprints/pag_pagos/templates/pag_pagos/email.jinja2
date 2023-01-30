@@ -27,27 +27,17 @@
                 <hr style="border: 1px solid #004360;">
                 <h3 style='margin-bottom: 0px;'>Hola {{ destinatario_nombre }}</h3>
 
-                <p>Este mensaje es un comprobante del estado de su pago de un trámite y servicio del PJECZ</p>
+                <p>Su pago se ha registrado correctamente.</p>
 
-                {% if pago.estado == "PAGADO" %}
-                    <h3 style="background-color: #d1e7dd; padding:5px; text-align: center;">✅ Su pago se ha realizado con éxito.</h3>
-                {% elif pago.estado == "CANCELADO" %}
-                    <h3 style="background-color: #e9ecef; padding:5px; text-align: center;">🤚 Su pago NO se completó, por lo que ha sido cancelado.</h3>
-                {% elif pago.estado == "FALLIDO" %}
-                    <h3 style="background-color: #f1aeb5; padding:5px; text-align: center;">❌ Su pago NO se realizó correctamente.</h3>
-                {% elif pago.estado == "SOLICITADO" %}
-                    <h3 style="background-color: #ffe69c; padding:5px; text-align: center;">🟡 Su pago sigue pendiente.</h3>
-                {% endif %}
-
-                <p>Datos del Pago
+                <p>Datos:
                     <ul>
-                        <li>ID: <strong>{{ pago.id }}</strong></li>
-                        <li>Servicio: <strong>{{ pago.pag_tramite_servicio.clave }} : {{ pago.pag_tramite_servicio.descripcion }}</strong></li>
                         <li>Folio: <strong>{{ pago.folio }}</strong></li>
+                        <li>Servicio: <strong>{{ pago.pag_tramite_servicio.clave }} : {{ pago.pag_tramite_servicio.descripcion }}</strong></li>
                         <li>Total: <strong>$ {{ pago.total }}</strong></li>
                     </ul>
                 </p>
-                <a href="{{ url }}" target="_blank">URL de Verificación</a>
+
+                <h3 style="background-color: #d1e7dd; padding:5px; text-align: center;"><a href="{{ url }}" target="_blank">Enlace de verificación ↗️</a></h3>
             </td>
         </tr>
     </table>
