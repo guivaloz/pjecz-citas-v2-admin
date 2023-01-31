@@ -106,8 +106,11 @@ def enviar_mensaje_pagado(pag_pago_id, to_email=None):
     )
 
     # Si no se indicó un email de prueba se utilizará el registrado en el pago
+    actualizar_registro = False
     if to_email is None:
         to_email = pago.email
+        actualizar_registro = True
+
     # Definir destinatario para SendGrid
     to_email = To(to_email)
 
@@ -125,7 +128,7 @@ def enviar_mensaje_pagado(pag_pago_id, to_email=None):
         return mensaje_error
 
     # Si se utilizó el correo indicado en el pago se hace la actualización del registro de pago
-    if to_email == pago.email:
+    if actualizar_registro:
         pago.ya_se_envio_comprobante = True
         pago.save()
 
