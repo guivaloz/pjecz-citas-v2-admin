@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <title>PJECZ Citas V2</title>
+</head>
+
+<body style="margin: 0px; font-family: Verdana, Geneva, Tahoma, sans-serif;">
+    <!-- Encabezado del Mensaje -->
+    <table style="width: 700px; border-collapse:collapse; margin-left:auto; margin-right:auto;">
+        <tr>
+            <td style="background-color: #004360; height: 10px;"></td>
+        </tr>
+    </table>
+    <!-- Contenido del Mensaje -->
+    <table style="width: 700px; color: #004360; background-color: #efebe8; padding:30px; padding-top:15px; margin-left:auto; margin-right:auto;">
+        <tr>
+            <td><h1 style='margin: 0px;'>{{ mensaje_asunto }}</h1></td>
+            <td style="text-align:right;"><img src="https://storage.googleapis.com/pjecz-informatica/static/images/logo-pjecz-horizontal-marino.png" alt="Logo PJECZ" style="height: 50px; margin-left: 50px;"></td>
+        </tr>
+        <tr style="text-align:right;">
+            <td colspan="2"><small style="color: #657c96;"><i>{{ fecha_elaboracion }}</i></small></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <hr style="border: 1px solid #004360;">
+                <h3 style='margin-bottom: 0px;'>Hola {{ destinatario_nombre }}</h3>
+                <p>Su pago se ha registrado correctamente.</p>
+                <p>Datos:
+                    <ul>
+                        <li>Folio: <strong>{{ pago.folio }}</strong></li>
+                        <li>Servicio: <strong>{{ pago.pag_tramite_servicio.clave }} : {{ pago.pag_tramite_servicio.descripcion }}</strong></li>
+                        <li>Total: <strong>$ {{ pago.total }}</strong></li>
+                    </ul>
+                </p>
+                <h3 style="background-color: #d1e7dd; padding:5px; text-align: center;"><a href="{{ url }}" target="_blank">Enlace de verificación ↗️</a></h3>
+            </td>
+        </tr>
+    </table>
+    <!-- Pie de Mensaje -->
+    <table style="width: 700px; text-align: center; border-collapse:collapse; margin-left:auto; margin-right:auto;">
+        <tr style="background-color: #004360; color: #daba93;">
+            <td>
+                <p style="font-size: small;">
+                    Blvd. Francisco Coss #945. Zona Centro. Saltillo, Coahuila de Zaragoza, México.<br>
+                    <a href="https://www.pjecz.gob.mx" style="color: #daba93;">www.pjecz.gob.mx</a><br>
+                    Teléfono 844 777 4498
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <small><strong style="color: #657c96;">ESTE MENSAJE ES ELABORADO POR UN PROGRAMA. FAVOR DE NO RESPONDER.</strong></small>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
