@@ -39,8 +39,8 @@ SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL", "")
 PAGO_VERIFY_URL = os.getenv("PAGO_VERIFY_URL", "")
 
 
-def enviar(pag_pago_id, email=None):
-    """Enviar mensajes vía correo electrónico"""
+def enviar_mensaje_pagado(pag_pago_id, to_email=None):
+    """Enviar mensaje de comprobante de pago vía correo electrónico"""
 
     # Consultar Pago
     pago = PagPago.query.get(pag_pago_id)
@@ -54,6 +54,11 @@ def enviar(pag_pago_id, email=None):
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
+    if pago.estado != "PAGADO":
+        mensaje_error = f"El ID {pago.id} NO tiene estado PAGADO"
+        set_task_error(mensaje_error)
+        bitacora.error(mensaje_error)
+        return mensaje_error
 
     # Definir remitente para SendGrid
     if SENDGRID_FROM_EMAIL == "":
@@ -63,20 +68,17 @@ def enviar(pag_pago_id, email=None):
         return mensaje_error
     from_email = Email(SENDGRID_FROM_EMAIL)
 
-    # Si viene un e-mail de pruebas
-    if email is None:
-        email = pago.email
+    # Definir cliente de SendGrid
+    if SENDGRID_API_KEY == "":
+        mensaje_error = "La variable SENDGRID_API_KEY NO ha sido declarada"
+        set_task_error(mensaje_error)
+        bitacora.error(mensaje_error)
+        return mensaje_error
+    sendgrid_client = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
 
     # Momento en que se elabora este mensaje
     momento = datetime.now()
     momento_str = momento.strftime("%d/%b/%Y %I:%M %p")
-
-    # Definir cliente de SendGrid
-    sendgrid_client = None
-    if SENDGRID_API_KEY != "":
-        sendgrid_client = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
-    else:
-        bitacora.warning("La variable SENDGRID_API_KEY NO ha sido declarada.")
 
     # Definir la plantilla
     entorno = Environment(
@@ -103,16 +105,11 @@ def enviar(pag_pago_id, email=None):
         url=url,
     )
 
-    # Si la variable SENDGRID_API_KEY NO ha sido declarada
-    if SENDGRID_API_KEY == "":
-        # Guardar mensaje en archivo
-        archivo_html = f"pago_{pago.id}_{email}_{momento.strftime('%Y%m%d_%H%M%S')}.html"
-        with open(archivo_html, "w", encoding="UTF-8") as puntero:
-            puntero.write(contenidos)
-        bitacora.info("Se guardó el mensaje en %s", archivo_html)
-
+    # Si no se indicó un email de prueba se utilizará el registrado en el pago
+    if to_email is None:
+        to_email = pago.email
     # Definir destinatario para SendGrid
-    to_email = To(email)
+    to_email = To(to_email)
 
     # Definir contenido para SendGrid
     content = Content("text/html", contenidos)
@@ -121,49 +118,50 @@ def enviar(pag_pago_id, email=None):
     mail = Mail(from_email, to_email, "Comprobante de Pago PJECZ", content)
     try:
         sendgrid_client.client.mail.send.post(request_body=mail.get())
-        # Si es el email real, se actualiza el campo de envío_comprobante
-        if email == pago.email:
-            pago.ya_se_envio_comprobante = True
-            pago.save()
     except Exception as error:
         mensaje_error = f"ERROR al enviar mensaje: {str(error)}"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
 
+    # Si se utilizó el correo indicado en el pago se hace la actualización del registro de pago
+    if to_email == pago.email:
+        pago.ya_se_envio_comprobante = True
+        pago.save()
+
     # Terminar tarea
     set_task_progress(100)
-    mensaje_final = f"Comprobante de Pago enviado a {email}"
+    mensaje_final = f"Comprobante de Pago {pag_pago_id} enviado a {to_email}"
     bitacora.info(mensaje_final)
     return mensaje_final
 
 
-def enviar_mensajes_comprobantes(tiempo, email=None):
+def enviar_mensajes_comprobantes(before_creado, to_email=None):
     """Enviar mensajes vía correo electrónico"""
 
     # Consultar Pagos
-    pagos = PagPago.query.filter_by(estatus="A").filter_by(estado="PAGADO").filter_by(ya_se_envio_comprobante=False).filter(PagPago.creado <= tiempo).all()
+    pagos = PagPago.query.filter_by(estatus="A").filter_by(estado="PAGADO").filter_by(ya_se_envio_comprobante=False).filter(PagPago.creado <= before_creado).all()
 
     # Enviamos los mensajes pendientes
     count = 0
     for pago in pagos:
-        enviar(pago.id, email)
+        enviar_mensaje_pagado(pago.id, to_email)
         count += 1
 
     # Terminar tarea
     set_task_progress(100)
-    mensaje_final = f"Se enviaron {count} comprobantes de pago"
+    mensaje_final = f"Se enviaron {count} comprobantes de pago creados antes del {before_creado.strftime('%Y-%m-%d %H:%M:%S')}"
     bitacora.info(mensaje_final)
     return mensaje_final
 
 
-def cancelar_solicitados_expirados(tiempo):
-    """Pasa a estado de CANCELADO todos los pagos en estado previo de SOLICITADO"""
+def cancelar_solicitados_expirados(before_creado):
+    """Cambia el estado a CANCELADO de los pagos SOLICITADOS creados antes de before_creado"""
 
-    # Seleccionar Pagos con estado SOLICITADO y menor al tiempo límite indicado
-    pagos = PagPago.query.filter_by(estatus="A").filter_by(estado="SOLICITADO").filter(PagPago.creado <= tiempo).all()
+    # Selecciona Pagos con estado SOLICITADO y menor a before_creado en su tiempo de creado
+    pagos = PagPago.query.filter_by(estatus="A").filter_by(estado="SOLICITADO").filter(PagPago.creado <= before_creado).all()
 
-    # Cambiamos su estado a CANCELADO
+    # Cambia su estado a CANCELADO
     count = 0
     for pago in pagos:
         pago.estado = "CANCELADO"
@@ -172,6 +170,6 @@ def cancelar_solicitados_expirados(tiempo):
 
     # Terminar tarea
     set_task_progress(100)
-    mensaje_final = f"Se cancelaron {count} pagos"
+    mensaje_final = f"Se cancelaron {count} pagos creados antes del {before_creado.strftime('%Y-%m-%d %H:%M:%S')}"
     bitacora.info(mensaje_final)
     return mensaje_final

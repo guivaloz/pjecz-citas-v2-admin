@@ -1,7 +1,9 @@
 """
 Pag Pagos
 
-- enviar: Enviar mensaje con resultado de su pago
+- enviar_mensaje_pagado: Envía mensaje de estado PAGADO
+- enviar_mensajes_comprobantes: Envía los mensajes de estado PAGADO pendientes por enviar antes de un tiempo indicado.
+- cancelar_solicitados_expirados : Cambia el estado a CANCELADO de los pagos SOLICITADOS creados antes de un tiempo indicado.
 """
 from datetime import datetime, timedelta
 
@@ -23,13 +25,12 @@ def cli(ctx):
 
 
 @click.command()
-@click.option("--pag_pago_id", default=None, help="ID del Pago", type=int)
-@click.option("--email", default=None, help="email para probar", type=str)
+@click.argument("pag_pago_id", type=int)
+@click.option("--to_email", default=None, help="email para probar", type=str)
 @click.pass_context
-def enviar(ctx, pag_pago_id=None, email=None):
+def enviar_mensaje_pagado(ctx, pag_pago_id, to_email=None):
     """Enviar comprobante de Pago"""
-    hoy = datetime.now().date()
-    click.echo(f"Enviar comprobante de pago para hoy {hoy.strftime('%Y-%m-%d')}")
+    click.echo("Enviar comprobante de pago")
 
     # Validar Pago
     pago = PagPago.query.get(pag_pago_id)
@@ -39,68 +40,76 @@ def enviar(ctx, pag_pago_id=None, email=None):
     if pago.estatus != "A":
         click.echo(f"ERROR: El ID {pago.id} NO tiene estatus ACTIVO")
         ctx.exit(1)
-
-    # Si no se establece un email de prueba, se utilizará el real
-    if email is None:
-        email = pago.email
+    if pago.estado != "PAGADO":
+        click.echo(f"ERROR: El ID {pago.id} NO tiene estado PAGADO")
+        ctx.exit(1)
 
     # Agregar tarea en el fondo para enviar el comprobante de pago
     app.task_queue.enqueue(
-        "citas_admin.blueprints.pag_pagos.tasks.enviar",
+        "citas_admin.blueprints.pag_pagos.tasks.enviar_mensaje_pagado",
         pag_pago_id=pago.id,
-        email=email,
+        to_email=to_email,
     )
 
     # Mostrar mensaje de termino
-    mensaje = "Se ha agregado una tarea en el fondo"
-    if email is not None:
-        mensaje += f" para enviar el comprobante de pago {pag_pago_id} al email {email}"
+    mensaje = f"Se ha agregado una tarea en el fondo para enviar el comprobante de pago {pag_pago_id} "
+    if to_email is not None:
+        mensaje += f"al email de prueba {to_email}"
     else:
-        mensaje += f" para guardar el comprobante de pago {pag_pago_id} en un archivo"
+        mensaje += f"al email {pago.email}"
     click.echo(mensaje)
     ctx.exit(0)
 
 
 @click.command()
 @click.pass_context
-@click.option("--email", default=None, help="email para probar", type=str)
-def enviar_mensajes_comprobantes(ctx, email=None):
+@click.option("--before_creado", default=30, help="Minutos antes de la hora actual", type=int)
+@click.option("--to_email", default=None, help="email para probar", type=str)
+def enviar_mensajes_comprobantes(ctx, before_creado, to_email=None):
     """Enviar comprobante para pagos en estado de PAGADO y sin haber sido enviados previamente"""
-    tiempo = datetime.now() - timedelta(minutes=15)
-    click.echo(f"Envío de comprobantes de pago exitosos pendientes por enviar al tiempo previo {tiempo.strftime('%Y-%m-%d %H:%M:%S')}")
+    tiempo = datetime.now() - timedelta(minutes=before_creado)
+    click.echo(f"Envío de comprobantes de pago exitosos pendientes por enviar creados antes del {tiempo.strftime('%Y-%m-%d %H:%M:%S')}")
 
+    # Conteo de registros a consultar
     pagos_count = PagPago.query.filter_by(estatus="A").filter_by(estado="PAGADO").filter_by(ya_se_envio_comprobante=False).filter(PagPago.creado <= tiempo).count()
 
     # Agregar tarea en el fondo para cancelar los pagos
     app.task_queue.enqueue(
         "citas_admin.blueprints.pag_pagos.tasks.enviar_mensajes_comprobantes",
-        tiempo=tiempo,
-        email=email,
+        before_creado=tiempo,
+        to_email=to_email,
     )
 
-    click.echo(f"Se enviaron {pagos_count} comprobantes de pago")
+    # Mostrar resultado
+    mensaje = f"Se ha agregado una tarea en el fondo para enviar {pagos_count} comprobantes de pago "
+    if to_email is not None:
+        mensaje += f"al email de prueba {to_email}"
+    click.echo(mensaje)
     ctx.exit(0)
 
 
 @click.command()
 @click.pass_context
-def cancelar_solicitados_expirados(ctx):
-    """Pasa a estado de CANCELADO todos los pagos en estado previo de SOLICITADO"""
-    tiempo = datetime.now() - timedelta(hours=2)
-    click.echo(f"Cancelar pagos en estado de SOLICITADO previos al tiempo previo {tiempo.strftime('%Y-%m-%d %H:%M:%S')}")
+@click.option("--before_creado", default=120, help="Minutos antes de la hora actual", type=int)
+def cancelar_solicitados_expirados(ctx, before_creado):
+    """Cambia el estado a CANCELADO de los pagos SOLICITADOS creados antes de before_creado"""
+    tiempo = datetime.now() - timedelta(minutes=before_creado)
+    click.echo(f"Cancelar pagos en estado SOLICITADO creados antes del {tiempo.strftime('%Y-%m-%d %H:%M:%S')}")
 
+    # Conteo de registros a afectar
     pagos_count = PagPago.query.filter_by(estatus="A").filter_by(estado="SOLICITADO").filter(PagPago.creado <= tiempo).count()
 
     # Agregar tarea en el fondo para cancelar los pagos
     app.task_queue.enqueue(
         "citas_admin.blueprints.pag_pagos.tasks.cancelar_solicitados_expirados",
-        tiempo=tiempo,
+        before_creado=tiempo,
     )
 
+    # Mostrar resultado
     click.echo(f"Se cancelaron {pagos_count} pagos")
     ctx.exit(0)
 
 
-cli.add_command(enviar)
+cli.add_command(enviar_mensaje_pagado)
 cli.add_command(enviar_mensajes_comprobantes)
 cli.add_command(cancelar_solicitados_expirados)
