@@ -35,6 +35,7 @@ class PPASolicitud(db.Model, UniversalMixin):
     identificacion_oficial_archivo = db.Column(db.String(64))
     identificacion_oficial_url = db.Column(db.String(256))
     numero_expediente = db.Column(db.String(24))
+    token = db.Column(db.String(128), nullable=False)
 
     def __repr__(self):
         """Representación"""
