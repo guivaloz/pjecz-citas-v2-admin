@@ -2,15 +2,11 @@
 
 Sistema de Citas V2: Interfaz para administracion hecho en Flask.
 
-## Entorno Virtual con Python 3.6 o superior
+## Entorno Virtual con Python 3.8
 
 Crear el entorno virtual dentro de la copia local del repositorio, con
 
-    python -m venv venv
-
-O con virtualenv
-
-    virtualenv -p python3 venv
+    python3.8 -m venv venv
 
 Active el entorno virtual, en Linux con...
 
@@ -75,8 +71,8 @@ Guarde sus configuraciones, contrasenas y tokens en un archivo `.env`
     # Database
     DB_HOST=127.0.0.1
     DB_NAME=pjecz_citas_v2
-    DB_PASS=****************
     DB_USER=adminpjeczcitasv2
+    DB_PASS=****************
 
     # Redis
     REDIS_URL=redis://127.0.0.1
@@ -96,68 +92,104 @@ Guarde sus configuraciones, contrasenas y tokens en un archivo `.env`
     SENDGRID_FROM_EMAIL=
 
     # URLs de destino a las paginas de confirmacion
-    NEW_ACCOUNT_CONFIRM_URL=http://127.0.0.1:3000/new_account_confirm
-    RECOVER_ACCOUNT_CONFIRM_URL=http://127.0.0.1:3000/recover_account_confirm
+    NEW_ACCOUNT_CONFIRM_URL=
+    RECOVER_ACCOUNT_CONFIRM_URL=
 
     # URLs de las encuestas
-    POLL_SYSTEM_URL=http://127.0.0.1:3000/poll_system
-    POLL_SERVICE_URL=http://127.0.0.1:3000/poll_service
+    POLL_SYSTEM_URL=
+    POLL_SERVICE_URL=
+
+    # URL de verificación de Pago
+    PAGO_VERIFY_URL=
 
     # Si esta en PRODUCTION se evita reiniciar la base de datos
     DEPLOYMENT_ENVIRONMENT=develop
 
 Cree el archivo `.bashrc` para que un perfil de Konsole le facilite la inicializacion
 
-    if [ -f ~/.bashrc ]; then
-        source ~/.bashrc
+    # pjecz-citas-v2-admin
+
+    if [ -f ~/.bashrc ]
+    then
+        . ~/.bashrc
     fi
 
-    source venv/bin/activate
-    if [ -f .env ]; then
+    if command -v figlet &> /dev/null
+    then
+        figlet PJECZ Citas V2 admin
+    else
+        echo "== PJECZ Citas V2 admin"
+    fi
+    echo
+
+    if [ -f .env ]
+    then
+        echo "-- Variables de entorno"
         export $(grep -v '^#' .env | xargs)
+        echo "   CLOUD_STORAGE_DEPOSITO: ${CLOUD_STORAGE_DEPOSITO}"
+        echo "   DEPLOYMENT_ENVIRONMENT: ${DEPLOYMENT_ENVIRONMENT}"
+        echo "   DB_HOST: ${DB_HOST}"
+        echo "   DB_NAME: ${DB_NAME}"
+        echo "   DB_USER: ${DB_USER}"
+        echo "   DB_PASS: ${DB_PASS}"
+        echo "   FLASK_APP: ${FLASK_APP}"
+        echo "   HOST: ${HOST}"
+        echo "   NEW_ACCOUNT_CONFIRM_URL: ${NEW_ACCOUNT_CONFIRM_URL}"
+        echo "   PAGO_VERIFY_URL: ${PAGO_VERIFY_URL}"
+        echo "   POLL_SYSTEM_URL: ${POLL_SYSTEM_URL}"
+        echo "   POLL_SERVICE_URL: ${POLL_SERVICE_URL}"
+        echo "   RECOVER_ACCOUNT_CONFIRM_URL: ${RECOVER_ACCOUNT_CONFIRM_URL}"
+        echo "   REDIS_URL: ${REDIS_URL}"
+        echo "   SALT: ${SALT}"
+        echo "   SECRET_KEY: ${SECRET_KEY}"
+        echo "   SENDGRID_API_KEY: ${SENDGRID_API_KEY}"
+        echo "   SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL}"
+        echo "   TASK_QUEUE: ${TASK_QUEUE}"
+        echo
+        export PGHOST=$DB_HOST
+        export PGPORT=5432
+        export PGDATABASE=$DB_NAME
+        export PGUSER=$DB_USER
+        export PGPASSWORD=$DB_PASS
     fi
 
-    figlet CitasV2 Admin
-    echo
+    if [ -d venv ]
+    then
+        echo "-- Python Virtual Environment"
+        source venv/bin/activate
+        echo "   $(python3 --version)"
+        export PYTHONPATH=$(pwd)
+        echo "   PYTHONPATH: ${PYTHONPATH}"
+        echo
+        echo "-- Arrancar Flask o RQ Worker"
+        alias arrancar="flask run --host 0.0.0.0 --port=5010"
+        alias fondear="rq worker ${TASK_QUEUE}"
+        echo "   arrancar = flask run --host 0.0.0.0 --port=5010"
+        echo "   fondear = rq worker ${TASK_QUEUE}"
+        echo
+    fi
 
-    echo "== Variables de entorno"
-    echo "   CLOUD_STORAGE_DEPOSITO: ${CLOUD_STORAGE_DEPOSITO}"
-    echo "   DEPLOYMENT_ENVIRONMENT: ${DEPLOYMENT_ENVIRONMENT}"
-    echo "   DB_HOST: ${DB_HOST}"
-    echo "   DB_NAME: ${DB_NAME}"
-    echo "   DB_USER: ${DB_USER}"
-    echo "   DB_PASS: ${DB_PASS}"
-    echo "   FLASK_APP: ${FLASK_APP}"
-    echo "   HOST: ${HOST}"
-    echo "   NEW_ACCOUNT_CONFIRM_URL: ${NEW_ACCOUNT_CONFIRM_URL}"
-    echo "   POLL_SYSTEM_URL: ${POLL_SYSTEM_URL}"
-    echo "   POLL_SERVICE_URL: ${POLL_SERVICE_URL}"
-    echo "   RECOVER_ACCOUNT_CONFIRM_URL: ${RECOVER_ACCOUNT_CONFIRM_URL}"
-    echo "   REDIS_URL: ${REDIS_URL}"
-    echo "   SALT: ${SALT}"
-    echo "   SECRET_KEY: ${SECRET_KEY}"
-    echo "   SENDGRID_API_KEY: ${SENDGRID_API_KEY}"
-    echo "   SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL}"
-    echo "   TASK_QUEUE: ${TASK_QUEUE}"
-    echo
+    if [ -f app.yaml ]
+    then
+        echo "-- Subir a Google Cloud"
+        echo "   gcloud app deploy"
+        echo
+    fi
 
-    export PGHOST=$DB_HOST
-    export PGPORT=5432
-    export PGDATABASE=$DB_NAME
-    export PGUSER=$DB_USER
-    export PGPASSWORD=$DB_PASS
+## Arrancar Flask
 
-    alias reiniciar="citas db reiniciar"
-    alias arrancar="flask run --port 5010"
-    alias fondear="rq worker ${TASK_QUEUE}"
-    echo "-- Aliases"
-    echo "   reiniciar: Reiniciar base de datos"
-    echo "   arrancar:  Arrancar Flask"
-    echo "   fondear:   Arrancar RQ worker"
-    echo
+Abra una terminal, cargue el entorno virtual y arranque Flask
 
-## Tareas en el fondo a programar en el servidor en la nube
+    source .bashrc
+    arrancar
 
-Cada noche eliminar los cit_clientes que NO tengan contrasena SHA256 ni citas
+## Arrancar RQ worker
 
-    citas cit_clientes eliminar-abandonados --test False
+Las tareas en el fondo requieren un servicio Redis
+
+Abra una terminal, cargue el entorno virtual y deje en ejecución el worker
+
+    source .bashrc
+    fondear
+
+Estará vigilante de Redis
