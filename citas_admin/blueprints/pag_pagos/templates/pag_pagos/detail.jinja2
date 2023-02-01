@@ -61,8 +61,19 @@
         {{ detail.label_value('e-mail', pag_pago.email) }}
         {{ detail.label_value('Folio', pag_pago.folio) }}
         {{ detail.label_value('Total', '$ ' + pag_pago.total | string) }}
-        {{ detail.label_value_boolean('Ya se envió comprobante', pag_pago.ya_se_envio_comprobante) }}
-        {{ detail.label_value('Creado', moment(pag_pago.creado, local=True).format('DD MMM YYYY')) }}
+        <div class="row">
+            <div class="col-md-3 text-end">
+                <span >Ya se envió comprobante</span>
+            </div>
+            <div class="col-md-9">
+                {% if pag_pago.ya_se_envio_comprobante %}
+                    <span class="badge rounded-pill bg-primary ps-3">SÍ <span class="iconify" data-icon="mdi:check-circle" style="font-size: 1.4em; margin-right: 4px;"></span></span>
+                {% else %}
+                    <span class="badge rounded-pill bg-secondary ps-3"><strong>NO</strong> <span class="iconify" data-icon="mdi:cancel" style="font-size: 1.4em; margin-right: 4px;"></span></span>
+                {% endif %}
+            </div>
+        </div>
+        {{ detail.label_value('Creado', moment(pag_pago.creado, local=True).format('DD MMM YYYY hh:mm a')) }}
         {% if pag_pago.estatus != 'A' %}
             {{ detail.label_value('Eliminado', 'ELIMINADO') }}
             <div class="row">
