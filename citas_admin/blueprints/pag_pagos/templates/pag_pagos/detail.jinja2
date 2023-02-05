@@ -59,6 +59,9 @@
             {{ detail.label_value('Trámite y Servicio', pag_pago.pag_tramite_servicio.clave + ' : ' + pag_pago.pag_tramite_servicio.descripcion) }}
         {% endif %}
         {{ detail.label_value('e-mail', pag_pago.email) }}
+        {% if pag_pago.resultado_tiempo %}
+            {{ detail.label_value('Tiempo del resultado', moment(pag_pago.resultado_tiempo, local=True).format('DD MMM YYYY hh:mm a')) }}
+        {% endif %}
         {{ detail.label_value('Folio', pag_pago.folio) }}
         {{ detail.label_value('Total', '$ ' + pag_pago.total | string) }}
         <div class="row">

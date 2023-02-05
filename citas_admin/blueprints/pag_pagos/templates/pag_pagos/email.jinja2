@@ -34,7 +34,10 @@
                         <li>Total: <strong>$ {{ pago.total }}</strong></li>
                     </ul>
                 </p>
-                <h3 style="background-color: #d1e7dd; padding:5px; text-align: center;"><a href="{{ url }}" target="_blank">Enlace de verificación ↗️</a></h3>
+                <p style="background-color: #d1e7dd; padding:5px; text-align: center;">
+                    <h3 style='margin-bottom: 4px;'>Código QR para validar:</h3>
+                    <img src="https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl={{ url }}" alt="QR">
+                </p>
             </td>
         </tr>
     </table>
