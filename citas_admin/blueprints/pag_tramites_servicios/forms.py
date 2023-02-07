@@ -9,8 +9,8 @@ from wtforms.validators import DataRequired, Length, Optional
 class PagTramiteServicioForm(FlaskForm):
     """Formulario PagTramiteServicio"""
 
-    clave = StringField("Clave", validators=[DataRequired(), Length(max=256)])
+    clave = StringField("Clave", validators=[DataRequired(), Length(max=16)])
     descripcion = StringField("Descripción", validators=[DataRequired(), Length(max=256)])
     costo = DecimalField("Costo", validators=[DataRequired()])
-    url = StringField("Página pjecz.gob.mx", validators=[Optional(), Length(max=512)])
+    url = StringField("Página pjecz.gob.mx", validators=[Optional(), Length(max=256)])
     guardar = SubmitField("Guardar")
