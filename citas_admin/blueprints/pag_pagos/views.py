@@ -7,6 +7,7 @@ from flask_login import current_user, login_required
 from sqlalchemy import or_
 from datetime import datetime
 
+from config.settings import PAGO_VERIFY_URL
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message, safe_string
 
@@ -119,7 +120,12 @@ def list_inactive():
 def detail(pag_pago_id):
     """Detalle de un pago"""
     pag_pago = PagPago.query.get_or_404(pag_pago_id)
-    return render_template("pag_pagos/detail.jinja2", pag_pago=pag_pago)
+    pag_pago_verify_url = "" if PAGO_VERIFY_URL == "" else PAGO_VERIFY_URL + pag_pago.encode_id()
+    return render_template(
+        "pag_pagos/detail.jinja2",
+        pag_pago=pag_pago,
+        pag_pago_verify_url=pag_pago_verify_url,
+    )
 
 
 @pag_pagos.route("/pag_pagos/eliminar/<int:pag_pago_id>")

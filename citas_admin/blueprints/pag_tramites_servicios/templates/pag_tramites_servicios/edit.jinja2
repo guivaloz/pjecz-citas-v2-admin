@@ -5,13 +5,13 @@
 {% block title %}Editar Trámite y Servicio{% endblock %}
 
 {% block topbar_actions %}
-    {{ topbar.page('Editar ' + pag_tramite_sevicio.pag_tramites_servicios) }}
+    {{ topbar.page('Editar ' + pag_tramite_servicio.clave) }}
 {% endblock %}
 
 {% block content %}
     {% call f.card() %}
-        {% set form_kwargs = {'pag_tramite_sevicio_id': pag_tramite_sevicio.id} %}
-        {% call f.form_tag('pag_tramites_servicios.edit', fid='pag_tramite_sevicio_form', **form_kwargs) %}
+        {% set form_kwargs = {'pag_tramite_servicio_id': pag_tramite_servicio.id} %}
+        {% call f.form_tag('pag_tramites_servicios.edit', fid='pag_tramite_servicio_form', **form_kwargs) %}
             {% call f.form_group(form.clave) %}{% endcall %}
             {% call f.form_group(form.descripcion) %}{% endcall %}
             {% call f.form_group(form.costo) %}{% endcall %}

@@ -36,3 +36,6 @@ SALT = os.environ.get("SALT", "Esta es una muy mala cadena aleatoria")
 
 # Limite de citas pendientes por cliente
 LIMITE_CITAS_PENDIENTES = int(os.environ.get("LIMITE_CITAS_PENDIENTES", "0"))
+
+# URL base para verificar el pago
+PAGO_VERIFY_URL = os.environ.get("PAGO_VERIFY_URL", "")

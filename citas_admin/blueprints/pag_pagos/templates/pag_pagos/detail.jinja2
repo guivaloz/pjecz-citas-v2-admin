@@ -66,13 +66,16 @@
         {{ detail.label_value('Total', '$ ' + pag_pago.total | string) }}
         <div class="row">
             <div class="col-md-3 text-end">
-                <span >Ya se envió comprobante</span>
+                <span>Comprobante</span>
             </div>
             <div class="col-md-9">
+                {% if pag_pago_verify_url %}
+                    <a href="{{ pag_pago_verify_url }}" target="_blank">{{ pag_pago_verify_url }}</a>
+                {% endif %}
                 {% if pag_pago.ya_se_envio_comprobante %}
-                    <span class="badge rounded-pill bg-primary ps-3">SÍ <span class="iconify" data-icon="mdi:check-circle" style="font-size: 1.4em; margin-right: 4px;"></span></span>
+                    <span class="badge rounded-pill bg-primary ps-3">ENVIADO <span class="iconify" data-icon="mdi:check-circle" style="font-size: 1.4em; margin-right: 4px;"></span></span>
                 {% else %}
-                    <span class="badge rounded-pill bg-secondary ps-3"><strong>NO</strong> <span class="iconify" data-icon="mdi:cancel" style="font-size: 1.4em; margin-right: 4px;"></span></span>
+                    <span class="badge rounded-pill bg-secondary ps-3"><strong>por enviar</strong> <span class="iconify" data-icon="mdi:cancel" style="font-size: 1.4em; margin-right: 4px;"></span></span>
                 {% endif %}
             </div>
         </div>

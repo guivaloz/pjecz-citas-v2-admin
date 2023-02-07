@@ -128,7 +128,7 @@ def edit(pag_tramite_servicio_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Editado Tramite y Servicio {pag_tramite_servicio.nombre}"),
+            descripcion=safe_message(f"Editado Tramite y Servicio {pag_tramite_servicio.clave}"),
             url=url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=pag_tramite_servicio.id),
         )
         bitacora.save()
