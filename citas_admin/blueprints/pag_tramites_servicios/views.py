@@ -38,7 +38,7 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    registros = consulta.order_by(PagTramiteServicio.id).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(PagTramiteServicio.clave).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -94,22 +94,30 @@ def new():
     """Nuevo Tramite y Servicio"""
     form = PagTramiteServicioForm()
     if form.validate_on_submit():
-        pag_tramite_servicio = PagTramiteServicio(
-            clave=safe_clave(form.clave.data),
-            descripcion=safe_string(form.descripcion.data, to_uppercase=True, save_enie=True),
-            costo=form.costo.data,
-            url=form.url.data,
-        )
-        pag_tramite_servicio.save()
-        bitacora = Bitacora(
-            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-            usuario=current_user,
-            descripcion=safe_message(f"Nuevo Tramite y Servicio {pag_tramite_servicio.clave}"),
-            url=url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=pag_tramite_servicio.id),
-        )
-        bitacora.save()
-        flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
+        es_valido = True
+        # Validar que la clave no exista
+        clave = safe_clave(form.clave.data)
+        if PagTramiteServicio.query.filter_by(clave=clave).first():
+            es_valido = False
+            flash(f"La clave {clave} ya existe", "warning")
+        # Si es válido, guardar
+        if es_valido:
+            pag_tramite_servicio = PagTramiteServicio(
+                clave=clave,
+                descripcion=safe_string(form.descripcion.data, to_uppercase=True, save_enie=True),
+                costo=form.costo.data,
+                url=form.url.data,
+            )
+            pag_tramite_servicio.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Nuevo Tramite y Servicio {pag_tramite_servicio.clave}"),
+                url=url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=pag_tramite_servicio.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
     return render_template("pag_tramites_servicios/new.jinja2", form=form)
 
 
@@ -120,20 +128,30 @@ def edit(pag_tramite_servicio_id):
     pag_tramite_servicio = PagTramiteServicio.query.get_or_404(pag_tramite_servicio_id)
     form = PagTramiteServicioForm()
     if form.validate_on_submit():
-        pag_tramite_servicio.clave = safe_clave(form.clave.data)
-        pag_tramite_servicio.descripcion = safe_string(form.descripcion.data, to_uppercase=True, save_enie=True)
-        pag_tramite_servicio.costo = form.costo.data
-        pag_tramite_servicio.url = form.url.data
-        pag_tramite_servicio.save()
-        bitacora = Bitacora(
-            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-            usuario=current_user,
-            descripcion=safe_message(f"Editado Tramite y Servicio {pag_tramite_servicio.clave}"),
-            url=url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=pag_tramite_servicio.id),
-        )
-        bitacora.save()
-        flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
+        es_valido = True
+        # Si cambia la clave verificar que no este en uso
+        clave = safe_clave(form.clave.data)
+        if pag_tramite_servicio.clave != clave:
+            pag_tramite_servicio_existente = PagTramiteServicio.query.filter_by(clave=clave).first()
+            if pag_tramite_servicio_existente and pag_tramite_servicio_existente.id != pag_tramite_servicio.id:
+                es_valido = False
+                flash(f"La clave {clave} ya esta en uso", "warning")
+        # Si es válido, actualizar
+        if es_valido:
+            pag_tramite_servicio.clave = clave
+            pag_tramite_servicio.descripcion = safe_string(form.descripcion.data, to_uppercase=True, save_enie=True)
+            pag_tramite_servicio.costo = form.costo.data
+            pag_tramite_servicio.url = form.url.data
+            pag_tramite_servicio.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Editado Tramite y Servicio {pag_tramite_servicio.clave}"),
+                url=url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=pag_tramite_servicio.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
     form.clave.data = pag_tramite_servicio.clave
     form.descripcion.data = pag_tramite_servicio.descripcion
     form.costo.data = pag_tramite_servicio.costo
@@ -151,7 +169,7 @@ def delete(pag_tramite_servicio_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Eliminado Tramite y Servicio {pag_tramite_servicio.nombre}"),
+            descripcion=safe_message(f"Eliminado Tramite y Servicio {pag_tramite_servicio.clave}"),
             url=url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=pag_tramite_servicio.id),
         )
         bitacora.save()
@@ -169,7 +187,7 @@ def recover(pag_tramite_servicio_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Recuperado Tramite y Servicio {pag_tramite_servicio.nombre}"),
+            descripcion=safe_message(f"Recuperado Tramite y Servicio {pag_tramite_servicio.clave}"),
             url=url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=pag_tramite_servicio.id),
         )
         bitacora.save()
