@@ -115,7 +115,7 @@
                 targets: 1, // fecha
                 type: 'date',
                 render: function (data, type, row) {
-                    return moment.utc(data).local().format("DD MMM YYYY");
+                    return moment.utc(data).local().format("DD MMM YYYY hh:mm:ss");
                 }
             },
             {
@@ -187,7 +187,7 @@
             configDataTable['ajax']['data']['estado'] = estadoSelect;
         if(servicioSelect != '')
             configDataTable['ajax']['data']['pag_tramite_servicio_id'] = servicioSelect;
-        
+
         // Datatable
         $('#pag_pagos_datatable').DataTable(configDataTable);
     </script>
