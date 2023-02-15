@@ -78,7 +78,9 @@
                     <th>ID</th>
                     <th>Fecha</th>
                     <th>Nombre</th>
+                    <th>Cantidad</th>
                     <th>Trámite y Servicio</th>
+                    <th>Autoridad</th>
                     <th>Estado</th>
                     <th>Folio</th>
                     <th>Total</th>
@@ -97,7 +99,9 @@
             { data: 'detalle' },
             { data: 'fecha' },
             { data: 'cit_cliente' },
+            { data: 'cantidad' },
             { data: 'pag_tramite_servicio' },
+            { data: 'autoridad' },
             { data: 'estado' },
             { data: 'folio' },
             { data: 'total', className: "text-end" },
@@ -130,7 +134,7 @@
                 }
             },
             {
-                targets: 3, // pag_tramite_servicio
+                targets: [4, 5], // pag_tramite_servicio, autoridad
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data.url == '') {
@@ -141,7 +145,7 @@
                 }
             },
             {
-                targets: 4, // Estado
+                targets: 6, // Estado
                 data: null,
                 render: function(data, type, row, meta) {
                     let color = "black";
@@ -155,7 +159,7 @@
                 }
             },
             {
-                targets: 6, // total
+                targets: 8, // total
                 data: null,
                 render: function(data, type, row, meta) {
                     return '$ ' + data;
