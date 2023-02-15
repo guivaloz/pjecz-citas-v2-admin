@@ -44,6 +44,7 @@ class Autoridad(db.Model, UniversalMixin):
     )
 
     # Hijos
+    pag_pagos = db.relationship("PagPago", back_populates="autoridad", lazy="noload")
     usuarios = db.relationship("Usuario", back_populates="autoridad")
 
     @property
