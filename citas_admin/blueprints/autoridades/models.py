@@ -44,7 +44,11 @@ class Autoridad(db.Model, UniversalMixin):
     )
 
     # Hijos
+<<<<<<< HEAD
     ppa_solicitudes = db.relationship("PPASolicitud", back_populates="autoridad")
+=======
+    pag_pagos = db.relationship("PagPago", back_populates="autoridad", lazy="noload")
+>>>>>>> b31d629 (Detalle muestra cantidad y autoridad)
     usuarios = db.relationship("Usuario", back_populates="autoridad")
 
     @property
