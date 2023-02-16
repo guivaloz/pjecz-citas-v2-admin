@@ -5,8 +5,8 @@ from citas_admin.extensions import db
 from lib.universal_mixin import UniversalMixin
 
 
-class PPASolicitud(db.Model, UniversalMixin):
-    """PPASolicitud"""
+class PpaSolicitud(db.Model, UniversalMixin):
+    """PpaSolicitud"""
 
     # Nombre de la tabla
     __tablename__ = "ppa_solicitudes"
@@ -44,6 +44,9 @@ class PPASolicitud(db.Model, UniversalMixin):
     autorizacion_archivo = db.Column(db.String(64))
     autorizacion_url = db.Column(db.String(256))
 
+    # Columnas mensajes
+    ya_se_envio_acuse = db.Column(db.Boolean, nullable=False, default=False)
+
     def __repr__(self):
         """Representación"""
-        return "<PPASolicitud>"
+        return f"<PpaSolicitud {self.id}>"

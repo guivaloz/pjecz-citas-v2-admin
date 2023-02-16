@@ -5,8 +5,8 @@ from citas_admin.extensions import db
 from lib.universal_mixin import UniversalMixin
 
 
-class TDTPartido(db.Model, UniversalMixin):
-    """TDTPartido"""
+class TdtPartido(db.Model, UniversalMixin):
+    """TdtPartido"""
 
     # Nombre de la tabla
     __tablename__ = "tdt_partidos"
@@ -19,8 +19,8 @@ class TDTPartido(db.Model, UniversalMixin):
     siglas = db.Column(db.String(24), unique=True, nullable=False)
 
     # Hijos
-    tdt_solicitudes = db.relationship("TDTSolicitud", back_populates="tdt_partido")
+    tdt_solicitudes = db.relationship("TdtSolicitud", back_populates="tdt_partido")
 
     def __repr__(self):
         """Representación"""
-        return "<TDTPartido>"
+        return f"<TdtPartido {self.siglas}>"

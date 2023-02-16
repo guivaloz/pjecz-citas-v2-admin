@@ -12,7 +12,7 @@ from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.tdt_solicitudes.models import TDTSolicitud
+from citas_admin.blueprints.tdt_solicitudes.models import TdtSolicitud
 
 MODULO = "TRES DE TRES SOLICITUDES"
 
@@ -32,12 +32,12 @@ def datatable_json():
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
-    consulta = TDTSolicitud.query
+    consulta = TdtSolicitud.query
     if "estatus" in request.form:
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    registros = consulta.order_by(TDTSolicitud.id).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(TdtSolicitud.id).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
