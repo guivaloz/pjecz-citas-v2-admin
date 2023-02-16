@@ -19,23 +19,30 @@ class PPASolicitud(db.Model, UniversalMixin):
     autoridad = db.relationship("Autoridad", back_populates="ppa_solicitudes")
     cit_cliente_id = db.Column(db.Integer, db.ForeignKey("cit_clientes.id"), index=True, nullable=False)
     cit_cliente = db.relationship("CitCliente", back_populates="ppa_solicitudes")
-    municipio_id = db.Column(db.Integer, db.ForeignKey("municipios.id"), index=True, nullable=False)
-    municipio = db.relationship("Municipio", back_populates="ppa_solicitudes")
 
-    # Columnas
-    autorizacion_archivo = db.Column(db.String(64))
-    autorizacion_url = db.Column(db.String(256))
-    comprobante_domicilio_archivo = db.Column(db.String(64))
-    comprobante_domicilio_url = db.Column(db.String(256))
-    compania_telefonica = db.Column(db.String(64))
+    # Columnas domicilio particular
     domicilio_calle = db.Column(db.String(256))
     domicilio_numero = db.Column(db.String(24))
     domicilio_colonia = db.Column(db.String(256))
     domicilio_cp = db.Column(db.Integer())
+
+    # Columnas compañía telefónica
+    compania_telefonica = db.Column(db.String(64))
+
+    # Columnas número de expediente donde se decretó la pensión
+    numero_expediente = db.Column(db.String(24))
+
+    # Columnas archivo PDF de la credencial de elector
     identificacion_oficial_archivo = db.Column(db.String(64))
     identificacion_oficial_url = db.Column(db.String(256))
-    numero_expediente = db.Column(db.String(24))
-    token = db.Column(db.String(128), nullable=False)
+
+    # Columnas archivo PDF del comprobante de domicilio
+    comprobante_domicilio_archivo = db.Column(db.String(64))
+    comprobante_domicilio_url = db.Column(db.String(256))
+
+    # Columnas archivo PDF de la autorización de transferencia de datos personales
+    autorizacion_archivo = db.Column(db.String(64))
+    autorizacion_url = db.Column(db.String(256))
 
     def __repr__(self):
         """Representación"""

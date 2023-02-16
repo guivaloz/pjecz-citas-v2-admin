@@ -18,7 +18,6 @@ class Municipio(db.Model, UniversalMixin):
     nombre = db.Column(db.String(256), unique=True, nullable=False)
 
     # Hijos
-    ppa_solicitudes = db.relationship("PPASolicitud", back_populates="municipio")
     tdt_candidatos = db.relationship("TDTCandidato", back_populates="municipio")
 
     def __repr__(self):
