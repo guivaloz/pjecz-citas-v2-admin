@@ -43,19 +43,19 @@ def enviar_mensaje_pagado(pag_pago_id, to_email=None):
     """Enviar mensaje de comprobante de pago vía correo electrónico"""
 
     # Consultar Pago
-    pago = PagPago.query.get(pag_pago_id)
-    if pago is None:
+    pag_pago = PagPago.query.get(pag_pago_id)
+    if pag_pago is None:
         mensaje_error = f"El ID del Pago '{pag_pago_id}' NO existe"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
-    if pago.estatus != "A":
-        mensaje_error = f"El ID {pago.id} NO tiene estatus ACTIVO"
+    if pag_pago.estatus != "A":
+        mensaje_error = f"El ID {pag_pago.id} NO tiene estatus ACTIVO"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
-    if pago.estado != "PAGADO":
-        mensaje_error = f"El ID {pago.id} NO tiene estado PAGADO"
+    if pag_pago.estado != "PAGADO":
+        mensaje_error = f"El ID {pag_pago.id} NO tiene estado PAGADO"
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
@@ -94,21 +94,21 @@ def enviar_mensaje_pagado(pag_pago_id, to_email=None):
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
-    url = PAGO_VERIFY_URL + cifrar_id(pago.id)
+    url = PAGO_VERIFY_URL + cifrar_id(pag_pago.id)
 
     # Elaborar contenido del mensaje
     contenidos = plantilla.render(
         mensaje_asunto="Comprobante de Pago",
         fecha_elaboracion=momento_str,
-        destinatario_nombre=pago.cit_cliente.nombre,
-        pago=pago,
+        destinatario_nombre=pag_pago.cit_cliente.nombre,
+        pag_pago=pag_pago,
         url=url,
     )
 
     # Si no se indicó un email de prueba se utilizará el registrado en el pago
     actualizar_registro = False
     if to_email is None:
-        to_email = pago.email
+        to_email = pag_pago.email
         actualizar_registro = True
 
     # Definir destinatario para SendGrid
@@ -129,8 +129,8 @@ def enviar_mensaje_pagado(pag_pago_id, to_email=None):
 
     # Si se utilizó el correo indicado en el pago se hace la actualización del registro de pago
     if actualizar_registro:
-        pago.ya_se_envio_comprobante = True
-        pago.save()
+        pag_pago.ya_se_envio_comprobante = True
+        pag_pago.save()
 
     # Terminar tarea
     set_task_progress(100)
