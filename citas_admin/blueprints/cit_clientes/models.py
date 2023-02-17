@@ -38,9 +38,11 @@ class CitCliente(db.Model, UniversalMixin):
     # Hijos
     cit_citas = db.relationship("CitCita", back_populates="cit_cliente")
     cit_clientes_recuperaciones = db.relationship("CitClienteRecuperacion", back_populates="cit_cliente")
-    pag_pagos = db.relationship("PagPago", back_populates="cit_cliente")
     enc_servicios = db.relationship("EncServicio", back_populates="cit_cliente")
     enc_sistemas = db.relationship("EncSistema", back_populates="cit_cliente")
+    pag_pagos = db.relationship("PagPago", back_populates="cit_cliente")
+    ppa_solicitudes = db.relationship("PpaSolicitud", back_populates="cit_cliente")
+    tdt_solicitudes = db.relationship("TdtSolicitud", back_populates="cit_cliente")
 
     @property
     def nombre(self):
