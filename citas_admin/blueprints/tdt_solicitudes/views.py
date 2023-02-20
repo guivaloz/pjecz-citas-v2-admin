@@ -14,7 +14,7 @@ from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.tdt_solicitudes.models import TdtSolicitud
 
-MODULO = "TRES DE TRES SOLICITUDES"
+MODULO = "TDT SOLICITUDES"
 
 tdt_solicitudes = Blueprint("tdt_solicitudes", __name__, template_folder="templates")
 
