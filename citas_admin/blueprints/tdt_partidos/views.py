@@ -14,7 +14,7 @@ from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.tdt_partidos.models import TdtPartido
 
-MODULO = "TRES DE TRES PARTIDOS"
+MODULO = "TDT PARTIDOS"
 
 tdt_partidos = Blueprint("tdt_partidos", __name__, template_folder="templates")
 
@@ -37,7 +37,7 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    registros = consulta.order_by(TdtPartido.id).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(TdtPartido.siglas).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -45,10 +45,10 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "nombre": resultado.nombre,
+                    "siglas": resultado.siglas,
                     "url": url_for("tdt_partidos.detail", tdt_partido_id=resultado.id),
                 },
-                "siglas": resultado.siglas,
+                "nombre": resultado.nombre,
             }
         )
     # Entregar JSON
@@ -61,6 +61,25 @@ def list_active():
     return render_template(
         "tdt_partidos/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="partidos",
+        titulo="Partidos",
         estatus="A",
     )
+
+
+@tdt_partidos.route("/tdt_partidos/inactivos")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def list_inactive():
+    """Listado de Partidos inactivos"""
+    return render_template(
+        "tdt_partidos/list.jinja2",
+        filtros=json.dumps({"estatus": "B"}),
+        titulo="Partidos inactivos",
+        estatus="B",
+    )
+
+
+@tdt_partidos.route("/tdt_partidos/<int:tdt_partido_id>")
+def detail(tdt_partido_id):
+    """Detalle de un Partido"""
+    tdt_partido = TdtPartido.query.get_or_404(tdt_partido_id)
+    return render_template("tdt_partidos/detail.jinja2", tdt_partido=tdt_partido)

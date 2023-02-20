@@ -60,6 +60,25 @@ def list_active():
     return render_template(
         "municipios/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="municipios",
+        titulo="Municipios",
         estatus="A",
     )
+
+
+@municipios.route("/municipios/inactivos")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def list_inactive():
+    """Listado de municipios inactivos"""
+    return render_template(
+        "municipios/list.jinja2",
+        filtros=json.dumps({"estatus": "B"}),
+        titulo="Municipios inactivos",
+        estatus="B",
+    )
+
+
+@municipios.route("/municipios/<int:municipio_id>")
+def detail(municipio_id):
+    """Detalle de un municipio"""
+    municipio = Municipio.query.get_or_404(municipio_id)
+    return render_template("municipios/detail.jinja2", municipio=municipio)
