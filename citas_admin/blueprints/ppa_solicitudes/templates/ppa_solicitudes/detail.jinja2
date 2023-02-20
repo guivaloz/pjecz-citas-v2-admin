@@ -1,0 +1,44 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Pago de Pension Alimenticia - Solicitud{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(ppa_solicitud.id) %}
+        {{ topbar.button_previous('Solicitudes', url_for('ppa_solicitudes.list_active')) }}
+        {% if current_user.can_edit('PPA SOLICITUDES') %}
+            {% if ppa_solicitud.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('ppa_solicitudes.delete', ppa_solicitud_id=ppa_solicitud.id)) }}{% endif %}
+            {% if ppa_solicitud.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('ppa_solicitudes.recover', ppa_solicitud_id=ppa_solicitud.id)) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=ppa_solicitud.estatus) %}
+        {{ detail.label_value_big('ID', ppa_solicitud.id) }}
+        {{ detail.label_value('Cliente', ppa_solicitud.cit_cliente.nombre) }}
+        {{ detail.label_value('Distrito', ppa_solicitud.autoridad.distrito.nombre) }}
+        {{ detail.label_value('Autoridad', ppa_solicitud.autoridad.descripcion) }}
+        {{ detail.label_value('Domicilio calle', ppa_solicitud.domicilio_calle) }}
+        {{ detail.label_value('Domicilio número', ppa_solicitud.domicilio_numero) }}
+        {{ detail.label_value('Domicilio colonia', ppa_solicitud.domicilio_colonia) }}
+        {{ detail.label_value('Domicilio C.P.', ppa_solicitud.domicilio_cp) }}
+        {{ detail.label_value('Compañía telefónica', ppa_solicitud.compania_telefonica) }}
+        {{ detail.label_value('Número de expediente', ppa_solicitud.numero_expediente) }}
+        {{ detail.label_value('Identificación oficial', ppa_solicitud.identificacion_oficial_archivo, ppa_solicitud.identificacion_oficial_url) }}
+        {{ detail.label_value('Comprobante de domicilio', ppa_solicitud.comprobante_domicilio_archivo, ppa_solicitud.comprobante_domicilio_url) }}
+        {{ detail.label_value('Autorización', ppa_solicitud.comprobante_domicilio_archivo, ppa_solicitud.autorizacion_url) }}
+        {{ detail.label_value_boolean('Ya se envió el acuse', ppa_solicitud.ya_se_envio_acuse) }}
+        {{ detail.label_value('Creado', moment(ppa_solicitud.creado, local=True).format('llll')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {% if current_user.can_edit('PPA SOLICITUDES') %}
+        {% if ppa_solicitud.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + ppa_solicitud.id + '?') }}{% endif %}
+        {% if ppa_solicitud.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + ppa_solicitud.id + '?') }}{% endif %}
+    {% endif %}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

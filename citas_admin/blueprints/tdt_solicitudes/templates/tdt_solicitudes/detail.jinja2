@@ -1,0 +1,44 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Tres de Tres - Solicitud{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(tdt_solicitud.id) %}
+        {{ topbar.button_previous('Solicitudes', url_for('tdt_solicitudes.list_active')) }}
+        {% if current_user.can_edit('TDT SOLICITUDES') %}
+            {% if tdt_solicitud.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('tdt_solicitudes.delete', tdt_solicitud_id=tdt_solicitud.id)) }}{% endif %}
+            {% if tdt_solicitud.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('tdt_solicitudes.recover', tdt_solicitud_id=tdt_solicitud.id)) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=tdt_solicitud.estatus) %}
+        {{ detail.label_value_big('ID', tdt_solicitud.id) }}
+        {{ detail.label_value('Cliente', tdt_solicitud.cit_cliente.nombre) }}
+        {{ detail.label_value('Municipio', tdt_solicitud.municipio.nombre) }}
+        {{ detail.label_value('Partido', tdt_solicitud.tdt_partido.siglas) }}
+        {{ detail.label_value('Cargo', tdt_solicitud.cargo) }}
+        {{ detail.label_value('Principio', tdt_solicitud.principio) }}
+        {{ detail.label_value('Domicilio calle', tdt_solicitud.domicilio_calle) }}
+        {{ detail.label_value('Domicilio número', tdt_solicitud.domicilio_numero) }}
+        {{ detail.label_value('Domicilio colonia', tdt_solicitud.domicilio_colonia) }}
+        {{ detail.label_value('Domicilio C.P.', tdt_solicitud.domicilio_cp) }}
+        {{ detail.label_value('Identificación oficial', tdt_solicitud.identificacion_oficial_archivo, tdt_solicitud.identificacion_oficial_url) }}
+        {{ detail.label_value('Comprobante de domicilio', tdt_solicitud.comprobante_domicilio_archivo, tdt_solicitud.comprobante_domicilio_url) }}
+        {{ detail.label_value('Autorización', tdt_solicitud.comprobante_domicilio_archivo, tdt_solicitud.autorizacion_url) }}
+        {{ detail.label_value_boolean('Ya se envió el acuse', tdt_solicitud.ya_se_envio_acuse) }}
+        {{ detail.label_value('Creado', moment(tdt_solicitud.creado, local=True).format('llll')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {% if current_user.can_edit('TDT SOLICITUDES') %}
+        {% if tdt_solicitud.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + tdt_solicitud.id + '?') }}{% endif %}
+        {% if tdt_solicitud.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + tdt_solicitud.id + '?') }}{% endif %}
+    {% endif %}
+    {{ detail.moment_js(moment) }}
+{% endblock %}
