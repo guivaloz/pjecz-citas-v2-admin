@@ -14,7 +14,7 @@ from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.ppa_solicitudes.models import PpaSolicitud
 
-MODULO = "Ppa SOLICITUDES"
+MODULO = "PPA SOLICITUDES"
 
 ppa_solicitudes = Blueprint("ppa_solicitudes", __name__, template_folder="templates")
 
@@ -48,6 +48,11 @@ def datatable_json():
                     "id": resultado.id,
                     "url": url_for("ppa_solicitudes.detail", ppa_solicitud_id=resultado.id),
                 },
+                "creado": resultado.creado,
+                "cit_cliente_nombre": resultado.cit_cliente.nombre,
+                "distrito_nombre": resultado.distrito.nombre,
+                "autoridad_clave": resultado.autoridad.clave,
+                "numero_expediente": resultado.numero_expediente,
             }
         )
     # Entregar JSON
@@ -60,7 +65,7 @@ def list_active():
     return render_template(
         "ppa_solicitudes/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Solicitudes",
+        titulo="Pagos de Pensiones Alimenticias - Solicitudes",
         estatus="A",
     )
 
@@ -72,7 +77,7 @@ def list_inactive():
     return render_template(
         "ppa_solicitudes/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
-        titulo="Solicitudes inactivas",
+        titulo="Pagos de Pensiones Alimenticias - Solicitudes inactivas",
         estatus="B",
     )
 

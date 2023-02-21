@@ -18,9 +18,21 @@
 {% block content %}
     {% call detail.card(estatus=ppa_solicitud.estatus) %}
         {{ detail.label_value_big('ID', ppa_solicitud.id) }}
-        {{ detail.label_value('Cliente', ppa_solicitud.cit_cliente.nombre) }}
-        {{ detail.label_value('Distrito', ppa_solicitud.autoridad.distrito.nombre) }}
-        {{ detail.label_value('Autoridad', ppa_solicitud.autoridad.descripcion) }}
+        {% if current_user.can_view('CIT CLIENTES') %}
+            {{ detail.label_value('Cliente', ppa_solicitud.cit_cliente.nombre, url_for('cit_clientes.detail', cit_cliente_id=ppa_solicitud.cit_cliente_id)) }}
+        {% else %}
+            {{ detail.label_value('Cliente', ppa_solicitud.cit_cliente.nombre) }}
+        {% endif %}
+        {% if current_user.can_view('DISTRITOS') %}
+            {{ detail.label_value('Distrito', ppa_solicitud.autoridad.distrito.nombre, url_for('distritos.detail', distrito_id=ppa_solicitud.autoridad.distrito_id)) }}
+        {% else %}
+            {{ detail.label_value('Distrito', ppa_solicitud.autoridad.distrito.nombre) }}
+        {% endif %}
+        {% if current_user.can_view('AUTORIDADES') %}
+            {{ detail.label_value('Autoridad', ppa_solicitud.autoridad.descripcion, url_for('autoridades.detail', autoridad_id=ppa_solicitud.autoridad_id)) }}
+        {% else %}
+            {{ detail.label_value('Autoridad', ppa_solicitud.autoridad.descripcion) }}
+        {% endif %}
         {{ detail.label_value('Domicilio calle', ppa_solicitud.domicilio_calle) }}
         {{ detail.label_value('Domicilio número', ppa_solicitud.domicilio_numero) }}
         {{ detail.label_value('Domicilio colonia', ppa_solicitud.domicilio_colonia) }}

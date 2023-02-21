@@ -18,8 +18,16 @@
 {% block content %}
     {% call detail.card(estatus=tdt_solicitud.estatus) %}
         {{ detail.label_value_big('ID', tdt_solicitud.id) }}
-        {{ detail.label_value('Cliente', tdt_solicitud.cit_cliente.nombre) }}
-        {{ detail.label_value('Municipio', tdt_solicitud.municipio.nombre) }}
+        {% if current_user.can_view('CIT CLIENTES') %}
+            {{ detail.label_value('Cliente', tdt_solicitud.cit_cliente.nombre, url_for('cit_clientes.detail', cit_cliente_id=tdt_solicitud.cit_cliente_id)) }}
+        {% else %}
+            {{ detail.label_value('Cliente', tdt_solicitud.cit_cliente.nombre) }}
+        {% endif %}
+        {% if current_user.can_view('MUNICIPIOS') %}
+            {{ detail.label_value('Municipio', tdt_solicitud.municipio.nombre, url_for('municipios.detail', municipio_id=tdt_solicitud.municipio_id)) }}
+        {% else %}
+            {{ detail.label_value('Municipio', tdt_solicitud.municipio.nombre) }}
+        {% endif %}
         {{ detail.label_value('Partido', tdt_solicitud.tdt_partido.siglas) }}
         {{ detail.label_value('Cargo', tdt_solicitud.cargo) }}
         {{ detail.label_value('Principio', tdt_solicitud.principio) }}

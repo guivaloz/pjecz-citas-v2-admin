@@ -48,6 +48,12 @@ def datatable_json():
                     "id": resultado.id,
                     "url": url_for("tdt_solicitudes.detail", tdt_solicitud_id=resultado.id),
                 },
+                "creado": resultado.creado,
+                "cit_cliente_nombre": resultado.cit_cliente.nombre,
+                "tdt_partido_siglas": resultado.tdt_partido.siglas,
+                "municipio_nombre": resultado.municipio.nombre,
+                "cargo": resultado.cargo,
+                "principio": resultado.principio,
             }
         )
     # Entregar JSON
@@ -60,7 +66,7 @@ def list_active():
     return render_template(
         "tdt_solicitudes/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Solicitudes",
+        titulo="Tres de Tres - Solicitudes",
         estatus="A",
     )
 
@@ -72,7 +78,7 @@ def list_inactive():
     return render_template(
         "tdt_solicitudes/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
-        titulo="Solicitudes inactivos",
+        titulo="Tres de Tres - Solicitudes inactivos",
         estatus="B",
     )
 
