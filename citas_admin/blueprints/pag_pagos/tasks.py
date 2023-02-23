@@ -94,7 +94,7 @@ def enviar_mensaje_pagado(pag_pago_id, to_email=None):
         set_task_error(mensaje_error)
         bitacora.error(mensaje_error)
         return mensaje_error
-    url = PAGO_VERIFY_URL + cifrar_id(pag_pago.id)
+    url = PAGO_VERIFY_URL + "/" + cifrar_id(pag_pago.id)
 
     # Elaborar contenido del mensaje
     contenidos = plantilla.render(

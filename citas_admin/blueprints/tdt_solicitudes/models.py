@@ -64,6 +64,9 @@ class TdtSolicitud(db.Model, UniversalMixin):
     # Columnas mensajes
     ya_se_envio_acuse = db.Column(db.Boolean, nullable=False, default=False)
 
+    # Columna caducidad
+    caducidad = db.Column(db.Date, nullable=False)
+
     def __repr__(self):
         """Representación"""
         return "<TdtSolicitud>"

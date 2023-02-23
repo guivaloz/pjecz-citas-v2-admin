@@ -91,6 +91,7 @@
             </div>
         </div>
         {{ detail.label_value('Creado', moment(pag_pago.creado, local=True).format('DD MMM YYYY hh:mm a')) }}
+        {{ detail.label_value('Caducidad', moment(pag_pago.caducidad).format('DD MMM YYYY')) }}
         {% if pag_pago.estatus != 'A' %}
             {{ detail.label_value('Eliminado', 'ELIMINADO') }}
             <div class="row">

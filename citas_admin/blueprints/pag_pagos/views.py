@@ -124,7 +124,7 @@ def list_inactive():
 def detail(pag_pago_id):
     """Detalle de un pago"""
     pag_pago = PagPago.query.get_or_404(pag_pago_id)
-    pag_pago_verify_url = "" if PAGO_VERIFY_URL == "" else PAGO_VERIFY_URL + pag_pago.encode_id()
+    pag_pago_verify_url = "" if PAGO_VERIFY_URL == "" else PAGO_VERIFY_URL + '/' + pag_pago.encode_id()
     return render_template(
         "pag_pagos/detail.jinja2",
         pag_pago=pag_pago,
