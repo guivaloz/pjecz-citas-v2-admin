@@ -99,8 +99,10 @@ Guarde sus configuraciones, contrasenas y tokens en un archivo `.env`
     POLL_SYSTEM_URL=
     POLL_SERVICE_URL=
 
-    # URL de verificación de Pago
+    # URLs para que junto con el ID Hasheado sean vinculos para verificar
     PAGO_VERIFY_URL=
+    PPA_SOLICITUD_VERIFY_URL=
+    TDT_SOLICITUD_VERIFY_URL=
 
     # Si esta en PRODUCTION se evita reiniciar la base de datos
     DEPLOYMENT_ENVIRONMENT=develop
@@ -138,6 +140,7 @@ Cree el archivo `.bashrc` para que un perfil de Konsole le facilite la inicializ
         echo "   PAGO_VERIFY_URL: ${PAGO_VERIFY_URL}"
         echo "   POLL_SYSTEM_URL: ${POLL_SYSTEM_URL}"
         echo "   POLL_SERVICE_URL: ${POLL_SERVICE_URL}"
+        echo "   PPA_SOLICITUD_VERIFY_URL: ${PPA_SOLICITUD_VERIFY_URL}"
         echo "   RECOVER_ACCOUNT_CONFIRM_URL: ${RECOVER_ACCOUNT_CONFIRM_URL}"
         echo "   REDIS_URL: ${REDIS_URL}"
         echo "   SALT: ${SALT}"
@@ -145,6 +148,7 @@ Cree el archivo `.bashrc` para que un perfil de Konsole le facilite la inicializ
         echo "   SENDGRID_API_KEY: ${SENDGRID_API_KEY}"
         echo "   SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL}"
         echo "   TASK_QUEUE: ${TASK_QUEUE}"
+        echo "   TDT_SOLICITUD_VERIFY_URL: ${TDT_SOLICITUD_VERIFY_URL}"
         echo
         export PGHOST=$DB_HOST
         export PGPORT=5432

@@ -15,6 +15,7 @@ class PagPago(db.Model, UniversalMixin):
             ("CANCELADO", "Cancelado"),  # Cuando pasa mucho tiempo y no hay respuesta del banco, se cancela
             ("PAGADO", "Pagado"),  # Cuando el banco procesa el pago con exito
             ("FALLIDO", "Fallido"),  # Cuando el banco reporta que falla el pago
+            ("ENTREGADO", "Entregado"),  # Cuando el usuario entrega el trámite o servicio
         ]
     )
 
@@ -33,7 +34,9 @@ class PagPago(db.Model, UniversalMixin):
     pag_tramite_servicio = db.relationship("PagTramiteServicio", back_populates="pag_pagos")
 
     # Columnas
-    cantidad = db.Column(db.Integer, nullable=False, default=1, server_default="1")
+    caducidad = db.Column(db.Date, nullable=False)
+    cantidad = db.Column(db.Integer, nullable=False, default=1)
+    descripcion = db.Column(db.String(256), nullable=False, default="", server_default="")
     estado = db.Column(db.Enum(*ESTADOS, name="estados", native_enum=False), nullable=False)
     email = db.Column(db.String(256), nullable=False, default="", server_default="")  # Email opcional si el cliente desea que se le envie el comprobante a otra dirección
     folio = db.Column(db.String(256), nullable=False, default="", server_default="")

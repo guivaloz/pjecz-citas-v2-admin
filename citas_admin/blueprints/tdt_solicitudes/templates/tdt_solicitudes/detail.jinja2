@@ -3,10 +3,10 @@
 {% import 'macros/modals.jinja2' as modals %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Tres de Tres - Solicitud{% endblock %}
+{% block title %}Solicitud Tres de Tres{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons(tdt_solicitud.id) %}
+    {% call topbar.page_buttons('Solicitud ' + tdt_solicitud.id | string) %}
         {{ topbar.button_previous('Solicitudes', url_for('tdt_solicitudes.list_active')) }}
         {% if current_user.can_edit('TDT SOLICITUDES') %}
             {% if tdt_solicitud.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('tdt_solicitudes.delete', tdt_solicitud_id=tdt_solicitud.id)) }}{% endif %}
@@ -17,11 +17,10 @@
 
 {% block content %}
     {% call detail.card(estatus=tdt_solicitud.estatus) %}
-        {{ detail.label_value_big('ID', tdt_solicitud.id) }}
         {% if current_user.can_view('CIT CLIENTES') %}
-            {{ detail.label_value('Cliente', tdt_solicitud.cit_cliente.nombre, url_for('cit_clientes.detail', cit_cliente_id=tdt_solicitud.cit_cliente_id)) }}
+            {{ detail.label_value_big('Cliente', tdt_solicitud.cit_cliente.nombre, url_for('cit_clientes.detail', cit_cliente_id=tdt_solicitud.cit_cliente_id)) }}
         {% else %}
-            {{ detail.label_value('Cliente', tdt_solicitud.cit_cliente.nombre) }}
+            {{ detail.label_value_big('Cliente', tdt_solicitud.cit_cliente.nombre) }}
         {% endif %}
         {% if current_user.can_view('MUNICIPIOS') %}
             {{ detail.label_value('Municipio', tdt_solicitud.municipio.nombre, url_for('municipios.detail', municipio_id=tdt_solicitud.municipio_id)) }}
@@ -38,8 +37,23 @@
         {{ detail.label_value('Identificación oficial', tdt_solicitud.identificacion_oficial_archivo, tdt_solicitud.identificacion_oficial_url) }}
         {{ detail.label_value('Comprobante de domicilio', tdt_solicitud.comprobante_domicilio_archivo, tdt_solicitud.comprobante_domicilio_url) }}
         {{ detail.label_value('Autorización', tdt_solicitud.comprobante_domicilio_archivo, tdt_solicitud.autorizacion_url) }}
-        {{ detail.label_value_boolean('Ya se envió el acuse', tdt_solicitud.ya_se_envio_acuse) }}
+        <div class="row">
+            <div class="col-md-3 text-end">
+                <span>Comprobante</span>
+            </div>
+            <div class="col-md-9">
+                {% if tdt_solicitud_verify_url %}
+                    <a href="{{ tdt_solicitud_verify_url }}" target="_blank">{{ tdt_solicitud_verify_url }}</a>
+                {% endif %}
+                {% if tdt_solicitud.ya_se_envio_acuse %}
+                    <span class="badge rounded-pill bg-primary ps-3">ENVIADO <span class="iconify" data-icon="mdi:check-circle" style="font-size: 1.4em; margin-right: 4px;"></span></span>
+                {% else %}
+                    <span class="badge rounded-pill bg-secondary ps-3"><strong>por enviar</strong> <span class="iconify" data-icon="mdi:cancel" style="font-size: 1.4em; margin-right: 4px;"></span></span>
+                {% endif %}
+            </div>
+        </div>
         {{ detail.label_value('Creado', moment(tdt_solicitud.creado, local=True).format('llll')) }}
+        {{ detail.label_value('Caducidad', moment(tdt_solicitud.caducidad).format('DD MMM YYYY')) }}
     {% endcall %}
 {% endblock %}
 

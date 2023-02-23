@@ -5,6 +5,7 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from config.settings import PPA_SOLICITUD_VERIFY_URL
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message
 
@@ -37,7 +38,7 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    registros = consulta.order_by(PpaSolicitud.id).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(PpaSolicitud.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -50,7 +51,7 @@ def datatable_json():
                 },
                 "creado": resultado.creado,
                 "cit_cliente_nombre": resultado.cit_cliente.nombre,
-                "distrito_nombre": resultado.distrito.nombre,
+                "distrito_nombre": resultado.autoridad.distrito.nombre,
                 "autoridad_clave": resultado.autoridad.clave,
                 "numero_expediente": resultado.numero_expediente,
             }
@@ -86,7 +87,12 @@ def list_inactive():
 def detail(ppa_solicitud_id):
     """Detalle de una solicitud"""
     ppa_solicitud = PpaSolicitud.query.get_or_404(ppa_solicitud_id)
-    return render_template("ppa_solicitudes/detail.jinja2", ppa_solicitud=ppa_solicitud)
+    pps_solicitud_verify_url = "" if PPA_SOLICITUD_VERIFY_URL == "" else PPA_SOLICITUD_VERIFY_URL + "/" + ppa_solicitud.encode_id()
+    return render_template(
+        "ppa_solicitudes/detail.jinja2",
+        ppa_solicitud=ppa_solicitud,
+        pps_solicitud_verify_url=pps_solicitud_verify_url,
+    )
 
 
 @ppa_solicitudes.route("/ppa_solicitudes/eliminar/<int:ppa_solicitud_id>")

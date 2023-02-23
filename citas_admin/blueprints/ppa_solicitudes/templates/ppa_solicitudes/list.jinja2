@@ -2,7 +2,7 @@
 {% import 'macros/list.jinja2' as list %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Pagos de Pensiones Alimenticias - Solicitudes{% endblock %}
+{% block title %}Solicitudes para Pagos de Pensiones Alimenticias{% endblock %}
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
@@ -48,7 +48,7 @@
                 targets: 0, // detalle
                 data: null,
                 render: function(data, type, row, meta) {
-                    return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                    return '<a href="' + data.url + '">' + data.id + '</a>';
                 }
             }
         ];

@@ -5,6 +5,7 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from config.settings import TDT_SOLICITUD_VERIFY_URL
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message
 
@@ -37,7 +38,7 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
-    registros = consulta.order_by(TdtSolicitud.id).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(TdtSolicitud.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -87,7 +88,12 @@ def list_inactive():
 def detail(tdt_solicitud_id):
     """Detalle de una solicitud"""
     tdt_solicitud = TdtSolicitud.query.get_or_404(tdt_solicitud_id)
-    return render_template("tdt_solicitudes/detail.jinja2", tdt_solicitud=tdt_solicitud)
+    tdt_solicitud_verify_url = "" if TDT_SOLICITUD_VERIFY_URL == "" else TDT_SOLICITUD_VERIFY_URL + "/" + tdt_solicitud.encode_id()
+    return render_template(
+        "tdt_solicitudes/detail.jinja2",
+        tdt_solicitud=tdt_solicitud,
+        tdt_solicitud_verify_url=tdt_solicitud_verify_url,
+    )
 
 
 @tdt_solicitudes.route("/tdt_solicitudes/eliminar/<int:tdt_solicitud_id>")
