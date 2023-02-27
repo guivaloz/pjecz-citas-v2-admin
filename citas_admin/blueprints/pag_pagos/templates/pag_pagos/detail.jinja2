@@ -9,8 +9,24 @@
     {% call topbar.page_buttons('Pago ' + pag_pago.id | string) %}
         {{ topbar.button_previous('Pagos', url_for('pag_pagos.list_active')) }}
         {% if current_user.can_edit('PAG PAGOS') %}
-            {% if pag_pago.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('pag_pagos.delete', pag_pago_id=pag_pago.id)) }}{% endif %}
-            {% if pag_pago.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('pag_pagos.recover', pag_pago_id=pag_pago.id)) }}{% endif %}
+            {% if pag_pago.estado == 'PAGADO' %}
+                <a class="btn btn-sm btn-outline-primary" href="javascript:void(0)" onclick="showModalDeliver('{{ url_for('pag_pagos.deliver', pag_pago_id=pag_pago.id) }}');">
+                    <span class="iconify" data-icon="mdi:package-check"></span>
+                    Entregado
+                </a>
+            {% endif %}
+            {% if pag_pago.estado == 'ENTREGADO' %}
+                <a class="btn btn-sm btn-outline-primary" href="javascript:void(0)" onclick="showModalPaid('{{ url_for('pag_pagos.paid', pag_pago_id=pag_pago.id) }}');">
+                    <span class="iconify" data-icon="mdi:cash"></span>
+                    Pagado
+                </a>
+            {% endif %}
+            {% if pag_pago.estatus == 'A' %}
+                {{ topbar.button_delete('Eliminar', url_for('pag_pagos.delete', pag_pago_id=pag_pago.id)) }}
+            {% endif %}
+            {% if pag_pago.estatus == 'B' %}
+                {{ topbar.button_recover('Recuperar', url_for('pag_pagos.recover', pag_pago_id=pag_pago.id)) }}
+            {% endif %}
         {% endif %}
     {% endcall %}
 {% endblock %}
@@ -25,6 +41,8 @@
             {% set estado_bgcolor = "#f8d7da" %}
         {% elif pag_pago.estado == "PAGADO" %}
             {% set estado_bgcolor = "#d1e7dd" %}
+        {% elif pag_pago.estado == "ENTREGADO" %}
+            {% set estado_bgcolor = "#c7f6ff" %}
         {% endif %}
     {% else %}
         {% set estado_bgcolor = "#212529; color: #FFF;" %}
@@ -44,6 +62,8 @@
                     {% set estado_class = "bg-danger" %}
                 {% elif pag_pago.estado == "PAGADO" %}
                     {% set estado_class = "bg-success" %}
+                {% elif pag_pago.estado == "ENTREGADO" %}
+                    {% set estado_class = "bg-info" %}
                 {% endif %}
                 <span class="badge rounded-pill {{estado_class}}" style="font-size:2em">{{pag_pago.estado}}</span>
             </div>
@@ -108,8 +128,18 @@
 
 {% block custom_javascript %}
     {% if current_user.can_edit('PAG PAGOS') %}
-        {% if pag_pago.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar este pago?') }}{% endif %}
-        {% if pag_pago.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar este pago?') }}{% endif %}
+        {% if pag_pago.estado == 'PAGADO' %}
+            {{ modals.custom_javascript('Cambiar a Entregado', '¿Desea cambiar el estado de este pago a ENTREGADO?', id="Deliver") }}
+        {% endif %}
+        {% if pag_pago.estado == 'ENTREGADO' %}
+            {{ modals.custom_javascript('Pagado', '¿Desea cambiar el estado de este pago a PAGADO?', id="Paid") }}
+        {% endif %}
+        {% if pag_pago.estatus == 'A' %}
+            {{ modals.custom_javascript_delete('Eliminar', '¿Eliminar este pago?') }}
+        {% endif %}
+        {% if pag_pago.estatus == 'B' %}
+            {{ modals.custom_javascript_recover('Recuperar', '¿Recuperar este pago?') }}
+        {% endif %}
     {% endif %}
     {{ detail.moment_js(moment) }}
 {% endblock %}
