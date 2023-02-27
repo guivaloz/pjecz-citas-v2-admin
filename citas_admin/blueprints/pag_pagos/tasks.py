@@ -100,6 +100,7 @@ def enviar_mensaje_pagado(pag_pago_id, to_email=None):
     contenidos = plantilla.render(
         mensaje_asunto="Comprobante de Pago",
         fecha_elaboracion=momento_str,
+        fecha_caducidad=pag_pago.fecha_caducidad.strftime("%d/%b/%Y"),
         destinatario_nombre=pag_pago.cit_cliente.nombre,
         pag_pago=pag_pago,
         url=url,

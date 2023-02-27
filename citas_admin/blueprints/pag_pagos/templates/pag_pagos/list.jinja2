@@ -150,10 +150,11 @@
                 render: function(data, type, row, meta) {
                     let color = "black";
                     switch (data)    {
-                        case "SOLICITADO":  font_color = "#7d6608"; bg_class = "bg-warning text-dark"; break;
-                        case "PAGADO":      font_color = "#0b5345"; bg_class = "bg-success"; break;
-                        case "CANCELADO":   font_color = "#e53935"; bg_class = "bg-secondary"; break;
-                        case "FALLIDO":     font_color = "#e53935"; bg_class = "bg-danger"; break;
+                        case "SOLICITADO": font_color = "#7d6608"; bg_class = "bg-warning text-dark"; break;
+                        case "PAGADO":     font_color = "#0b5345"; bg_class = "bg-success"; break;
+                        case "ENTREGADO":  font_color = "#c7f6ff"; bg_class = "bg-info"; break;
+                        case "CANCELADO":  font_color = "#e53935"; bg_class = "bg-secondary"; break;
+                        case "FALLIDO":    font_color = "#e53935"; bg_class = "bg-danger"; break;
                     }
                     return '<span class="badge rounded-pill ' + bg_class + ' px-3">' + data + '</span>';
                 }
@@ -168,10 +169,11 @@
         ];
         configDataTable['createdRow'] = function( row, data, dataIndex, cells){
             switch (data.estado)    {
-                case "SOLICITADO":      $(row).addClass("table-warning");   break;
-                case "PAGADO":          $(row).addClass("table-success");   break;
-                case "CANCELADO":       $(row).addClass("table-secondary"); break;
-                case "FALLIDO":         $(row).addClass("table-danger");    break;
+                case "SOLICITADO": $(row).addClass("table-warning");   break;
+                case "PAGADO":     $(row).addClass("table-success");   break;
+                case "ENTREGADO":  $(row).addClass("table-info");      break;
+                case "CANCELADO":  $(row).addClass("table-secondary"); break;
+                case "FALLIDO":    $(row).addClass("table-danger");    break;
             }
         };
         // Búsqueda

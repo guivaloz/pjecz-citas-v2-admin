@@ -124,7 +124,7 @@ def list_inactive():
 def detail(pag_pago_id):
     """Detalle de un pago"""
     pag_pago = PagPago.query.get_or_404(pag_pago_id)
-    pag_pago_verify_url = "" if PAGO_VERIFY_URL == "" else PAGO_VERIFY_URL + '/' + pag_pago.encode_id()
+    pag_pago_verify_url = "" if PAGO_VERIFY_URL == "" else PAGO_VERIFY_URL + "/" + pag_pago.encode_id()
     return render_template(
         "pag_pagos/detail.jinja2",
         pag_pago=pag_pago,
@@ -161,6 +161,44 @@ def recover(pag_pago_id):
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
             descripcion=safe_message(f"Recuperado pago {pag_pago.id}"),
+            url=url_for("pag_pagos.detail", pag_pago_id=pag_pago.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("pag_pagos.detail", pag_pago_id=pag_pago.id))
+
+
+@pag_pagos.route("/pag_pagos/entregar/<int:pag_pago_id>")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def deliver(pag_pago_id):
+    """Cambiar el estado a ENTREGADO"""
+    pag_pago = PagPago.query.get_or_404(pag_pago_id)
+    if pag_pago.estatus == "A" and pag_pago.estado == "PAGADO":
+        pag_pago.estado = "ENTREGADO"
+        pag_pago.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Entregado el pago {pag_pago.id}"),
+            url=url_for("pag_pagos.detail", pag_pago_id=pag_pago.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("pag_pagos.detail", pag_pago_id=pag_pago.id))
+
+
+@pag_pagos.route("/pag_pagos/pagar/<int:pag_pago_id>")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def paid(pag_pago_id):
+    """Cambiar el estado a PAGADO"""
+    pag_pago = PagPago.query.get_or_404(pag_pago_id)
+    if pag_pago.estatus == "A" and pag_pago.estado == "ENTREGADO":
+        pag_pago.estado = "PAGADO"
+        pag_pago.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Pagado el pago {pag_pago.id}"),
             url=url_for("pag_pagos.detail", pag_pago_id=pag_pago.id),
         )
         bitacora.save()
