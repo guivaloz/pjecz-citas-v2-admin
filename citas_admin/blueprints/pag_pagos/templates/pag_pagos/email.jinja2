@@ -27,20 +27,32 @@
                 <hr style="border: 1px solid #004360;">
                 <h3 style='margin-bottom: 0px;'>Hola {{ destinatario_nombre }}</h3>
                 <p>Su pago se ha registrado correctamente.</p>
-                <p>Datos:
+                <p>Trámite o servicio
                     <ul>
                         <li>Distrito: <strong>{{ pag_pago.autoridad.distrito.nombre }}</strong></li>
                         <li>Juzgado u oficina: <strong>{{ pag_pago.autoridad.descripcion }}</strong></li>
-                        <li>Folio: <strong>{{ pag_pago.folio }}</strong></li>
                         <li>Cantidad: <strong>{{ pag_pago.cantidad }}</strong></li>
                         <li>Servicio: <strong>{{ pag_pago.pag_tramite_servicio.clave }} : {{ pag_pago.pag_tramite_servicio.descripcion }}</strong></li>
                         <li>Total: <strong>$ {{ pag_pago.total }}</strong></li>
                     </ul>
                 </p>
+                <p>Datos del pago
+                    <ul>
+                        <li>Fecha de pago: {{ fecha_elaboracion }}</li>
+                        <li>Folio: <strong>{{ pag_pago.folio }}</strong></li>
+                        <li>Total: <strong>$ {{ pag_pago.total }}</strong></li>
+                        <li>Fecha de caducidad: {{ fecha_caducidad }}</li>
+                    </ul>
+                </p>
                 <p style="background-color: #d1e7dd; padding:5px; text-align: center;">
-                    <h3 style='margin-bottom: 4px;'>Código QR para validar:</h3>
+                    <h3 style='margin-bottom: 4px;'>este Código QR para validar:</h3>
                     <img src="https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl={{ url }}" alt="QR">
                 </p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <p>Consulte las <a href="https://pagos.justiciadigital.gob.mx/preguntas_frecuentes">preguntas frecuentes</a></p>
             </td>
         </tr>
     </table>
