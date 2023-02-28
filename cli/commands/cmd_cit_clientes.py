@@ -213,8 +213,10 @@ def eliminar_sin_cita(dias, test):
             engine.execute(cit_cilente_recuperacion_borrar)
 
             # Eliminar cliente
-            cit_cliente = CitCliente.query.get(cliente.id)
-            cit_cliente.delete(permanently=True)
+            # cit_cliente = CitCliente.query.get(cliente.id)
+            # cit_cliente.delete(permanently=True)
+            sql = text(f"DELETE FROM {CitCliente.__tablename__} WHERE id = {cliente.id};")
+            engine.execute(sql)
 
             # Contador
             contador += 1
