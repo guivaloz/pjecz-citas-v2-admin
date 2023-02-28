@@ -22,6 +22,7 @@ from citas_admin.extensions import db, pwd_context
 
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_citas.models import CitCita
+from citas_admin.blueprints.pag_pagos.models import PagPago
 
 app = create_app()
 db.app = app
@@ -175,9 +176,12 @@ def eliminar_sin_cita(dias, test):
             f"SELECT COUNT(*) AS cantidad, current_date - {dias} AS creado_hasta \
                 FROM cit_clientes AS cli \
                 LEFT JOIN cit_citas AS cit \
-                ON cli.id = cit.cit_cliente_id \
+                    ON cli.id = cit.cit_cliente_id \
+                LEFT JOIN pag_pagos AS pag \
+                    ON cli.id = pag.cit_cliente_id \
                 WHERE cit.cit_cliente_id IS NULL \
-                AND cli.creado <= now() - INTERVAL '{dias} day'"
+                    AND pag.cit_cliente_id IS NULL\
+                    AND cli.creado <= now() - INTERVAL '{dias} day'"
         )
         resultado = engine.execute(count_query)
         if resultado:
@@ -195,14 +199,14 @@ def eliminar_sin_cita(dias, test):
 
         # Consultar los clientes que se van a eliminar
         db = database.SessionLocal()
-        results = db.query(CitCliente, CitCita).outerjoin(CitCita).filter(CitCita.cit_cliente_id == None).filter(CitCliente.creado <= creado_hasta).all()
+        results = db.query(CitCliente, CitCita, PagPago).outerjoin(CitCita).outerjoin(PagPago).filter(CitCita.cit_cliente_id == None).filter(PagPago.cit_cliente_id == None).filter(CitCliente.creado <= creado_hasta).all()
 
         # Inicializar el engine
         engine = database.engine
 
         # Bucle para eliminar
         contador = 0
-        for cliente, _ in results:
+        for cliente, _, _ in results:
 
             # Eliminar recuperaciones
             cit_cilente_recuperacion_borrar = text(
@@ -213,8 +217,8 @@ def eliminar_sin_cita(dias, test):
             engine.execute(cit_cilente_recuperacion_borrar)
 
             # Eliminar cliente
-            cit_cliente = CitCliente.query.get(cliente.id)
-            cit_cliente.delete(permanently=True)
+            sql = text(f"DELETE FROM {CitCliente.__tablename__} WHERE id = {cliente.id};")
+            engine.execute(sql)
 
             # Contador
             contador += 1
