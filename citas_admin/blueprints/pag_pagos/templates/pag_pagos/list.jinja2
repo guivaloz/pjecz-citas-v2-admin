@@ -78,6 +78,7 @@
                     <th>ID</th>
                     <th>Fecha</th>
                     <th>Nombre</th>
+                    <th>Distrito</th>
                     <th>Cantidad</th>
                     <th>Trámite y Servicio</th>
                     <th>Autoridad</th>
@@ -99,12 +100,13 @@
             { data: 'detalle' },
             { data: 'fecha' },
             { data: 'cit_cliente' },
+            { data: 'distrito' },
             { data: 'cantidad' },
             { data: 'pag_tramite_servicio' },
             { data: 'autoridad' },
-            { data: 'estado' },
             { data: 'folio' },
             { data: 'total', className: "text-end" },
+            { data: 'estado' },
         ];
         configDataTable['iDisplayLength'] = 15;
         configDataTable['columnDefs'] = [
@@ -134,7 +136,18 @@
                 }
             },
             {
-                targets: [4, 5], // pag_tramite_servicio, autoridad
+                targets: 3, // distrito
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.url == '') {
+                        return data.nombre_corto;
+                    } else {
+                        return '<a href="' + data.url + '">' + data.nombre_corto + '</a>';
+                    }
+                }
+            },
+            {
+                targets: [5, 6], // pag_tramite_servicio, autoridad
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data.url == '') {
@@ -145,7 +158,14 @@
                 }
             },
             {
-                targets: 6, // Estado
+                targets: 8, // total
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '$ ' + data;
+                }
+            },
+            {
+                targets: 9, // Estado
                 data: null,
                 render: function(data, type, row, meta) {
                     let color = "black";
@@ -157,13 +177,6 @@
                         case "FALLIDO":    font_color = "#e53935"; bg_class = "bg-danger"; break;
                     }
                     return '<span class="badge rounded-pill ' + bg_class + ' px-3">' + data + '</span>';
-                }
-            },
-            {
-                targets: 8, // total
-                data: null,
-                render: function(data, type, row, meta) {
-                    return '$ ' + data;
                 }
             },
         ];

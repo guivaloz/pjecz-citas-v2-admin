@@ -81,9 +81,9 @@
             {{ detail.label_value('Trámite y Servicio', pag_pago.pag_tramite_servicio.descripcion) }}
         {% endif %}
         {% if current_user.can_view('DISTRITOS') %}
-            {{ detail.label_value('Distrito', pag_pago.autoridad.distrito.nombre, url_for('distritos.detail', distrito_id=pag_pago.autoridad.distrito_id)) }}
+            {{ detail.label_value('Distrito', pag_pago.distrito.nombre, url_for('distritos.detail', distrito_id=pag_pago.distrito_id)) }}
         {% else %}
-            {{ detail.label_value('Distrito', pag_pago.autoridad.distrito.nombre) }}
+            {{ detail.label_value('Distrito', pag_pago.distrito.nombre) }}
         {% endif %}
         {% if current_user.can_view('AUTORIDADES') %}
             {{ detail.label_value('Autoridad', pag_pago.autoridad.descripcion, url_for('autoridades.detail', autoridad_id=pag_pago.autoridad_id)) }}
