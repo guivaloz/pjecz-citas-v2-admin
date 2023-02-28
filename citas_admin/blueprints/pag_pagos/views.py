@@ -72,17 +72,21 @@ def datatable_json():
                 "fecha": resultado.creado,
                 "cit_cliente": {
                     "nombre": f"{resultado.cit_cliente.nombre}",
-                    "url": url_for("cit_clientes.detail", cit_cliente_id=resultado.cit_cliente.id) if current_user.can_view("CIT CLIENTES") else "",
+                    "url": url_for("cit_clientes.detail", cit_cliente_id=resultado.cit_cliente_id) if current_user.can_view("CIT CLIENTES") else "",
+                },
+                "distrito": {
+                    "nombre_corto": resultado.distrito.nombre_corto,
+                    "url": url_for("distritos.detail", distrito_id=resultado.distrito_id) if current_user.can_view("DISTRITOS") else "",
                 },
                 "cantidad": resultado.cantidad,
                 "pag_tramite_servicio": {
                     "clave": resultado.pag_tramite_servicio.clave,
                     "descripcion": resultado.pag_tramite_servicio.descripcion,
-                    "url": url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=resultado.pag_tramite_servicio.id) if current_user.can_view("PAG TRAMITES SERVICIOS") else "",
+                    "url": url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=resultado.pag_tramite_servicio_id) if current_user.can_view("PAG TRAMITES SERVICIOS") else "",
                 },
                 "autoridad": {
                     "clave": resultado.autoridad.clave,
-                    "url": url_for("autoridades.detail", autoridad_id=resultado.autoridad.id) if current_user.can_view("AUTORIDADES") else "",
+                    "url": url_for("autoridades.detail", autoridad_id=resultado.autoridad_id) if current_user.can_view("AUTORIDADES") else "",
                 },
                 "estado": resultado.estado,
                 "folio": resultado.folio,

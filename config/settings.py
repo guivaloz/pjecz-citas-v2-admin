@@ -5,15 +5,16 @@ import os
 
 
 # Google Cloud SQL
-DB_HOST = os.environ.get("DB_HOST", "127.0.0.1")
-DB_NAME = os.environ.get("DB_NAME", "pjecz_citas_v2")
-DB_PASS = os.environ.get("DB_PASS", "wrongpassword")
 DB_USER = os.environ.get("DB_USER", "nouser")
+DB_PASS = os.environ.get("DB_PASS", "wrongpassword")
+DB_HOST = os.environ.get("DB_HOST", "127.0.0.1")
+DB_PORT = os.environ.get("DB_PORT", "5432")
+DB_NAME = os.environ.get("DB_NAME", "pjecz_citas_v2")
 DB_SOCKET_DIR = os.environ.get("DB_SOCKET_DIR", "/cloudsql")
 CLOUD_SQL_CONNECTION_NAME = os.environ.get("CLOUD_SQL_CONNECTION_NAME", "none")
 
 # Google Cloud SQL a Minerva con PostgreSQL
-SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
+SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # Always in False
 SQLALCHEMY_TRACK_MODIFICATIONS = False
