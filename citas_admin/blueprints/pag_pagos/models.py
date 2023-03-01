@@ -27,7 +27,9 @@ class PagPago(db.Model, UniversalMixin):
 
     # Clave foránea
     autoridad_id = db.Column(db.Integer, db.ForeignKey("autoridades.id"), index=True, nullable=False)
-    autoridad = db.relationship("Autoridad", back_populates="pag_pagos")
+    autoridad = db.relationship("Autoridad", back_populates="pag_pagos")  # Esta es la autoridad que debe de entregar el trámite o servicio
+    distrito_id = db.Column(db.Integer, db.ForeignKey("distritos.id"), index=True, nullable=False)
+    distrito = db.relationship("Distrito", back_populates="pag_pagos")  # Hay pagos en los necesitamos saber a que distrito pertenece quien lo solicita
     cit_cliente_id = db.Column(db.Integer, db.ForeignKey("cit_clientes.id"), index=True, nullable=False)
     cit_cliente = db.relationship("CitCliente", back_populates="pag_pagos")
     pag_tramite_servicio_id = db.Column(db.Integer, db.ForeignKey("pag_tramites_servicios.id"), index=True, nullable=False)
