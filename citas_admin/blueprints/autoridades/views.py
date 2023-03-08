@@ -12,6 +12,7 @@ from lib.safe_string import safe_clave, safe_string, safe_message
 from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.autoridades.forms import AutoridadEditForm, AutoridadNewForm, AutoridadSearchForm
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.materias.models import Materia
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
@@ -50,6 +51,13 @@ def datatable_json():
         consulta = consulta.filter(Autoridad.descripcion.contains(safe_string(request.form["descripcion"], to_uppercase=False)))
     if "organo_jurisdiccional" in request.form:
         consulta = consulta.filter(Autoridad.organo_jurisdiccional == safe_string(request.form["organo_jurisdiccional"]))
+    if "caracteristicas" in request.form:
+        if request.form["caracteristicas"] == "JURISDICCIONAL":
+            consulta = consulta.filter_by(es_jurisdiccional=True)
+        elif request.form["caracteristicas"] == "NOTARIA":
+            consulta = consulta.filter_by(es_notaria=True)
+        elif request.form["caracteristicas"] == "ORGANO_ESPECIALIZADO":
+            consulta = consulta.filter_by(es_organo_especializado=True)
     registros = consulta.order_by(Autoridad.clave).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -85,6 +93,7 @@ def list_active():
         filtros=json.dumps({"estatus": "A"}),
         titulo="Autoridades",
         estatus="A",
+        distritos=Distrito.query.filter_by(es_distrito_judicial=True).filter_by(estatus="A").all(),
     )
 
 
@@ -97,6 +106,7 @@ def list_inactive():
         filtros=json.dumps({"estatus": "B"}),
         titulo="Autoridades inactivos",
         estatus="B",
+        distritos=Distrito.query.filter_by(es_distrito_judicial=True).filter_by(estatus="A").all(),
     )
 
 
@@ -156,6 +166,7 @@ def new():
                 clave=clave,
                 es_jurisdiccional=form.es_jurisdiccional.data,
                 es_notaria=form.es_notaria.data,
+                es_organo_especializado=form.es_organo_especializado.data,
                 organo_jurisdiccional=form.organo_jurisdiccional.data,
                 materia=form.materia.data,
             )
@@ -196,6 +207,7 @@ def edit(autoridad_id):
             autoridad.clave = clave
             autoridad.es_jurisdiccional = form.es_jurisdiccional.data
             autoridad.es_notaria = form.es_notaria.data
+            autoridad.es_organo_especializado = form.es_organo_especializado.data
             autoridad.organo_jurisdiccional = form.organo_jurisdiccional.data
             autoridad.materia = form.materia.data
             autoridad.save()
@@ -214,6 +226,7 @@ def edit(autoridad_id):
     form.clave.data = autoridad.clave
     form.es_jurisdiccional.data = autoridad.es_jurisdiccional
     form.es_notaria.data = autoridad.es_notaria
+    form.es_organo_especializado.data = autoridad.es_organo_especializado
     form.organo_jurisdiccional.data = autoridad.organo_jurisdiccional
     form.materia.data = autoridad.materia
     return render_template("autoridades/edit.jinja2", form=form, autoridad=autoridad)
