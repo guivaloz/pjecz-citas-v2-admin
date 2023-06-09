@@ -78,6 +78,7 @@
                     <th>ID</th>
                     <th>Fecha</th>
                     <th>Nombre</th>
+                    <th>Email</th>
                     <th>Distrito</th>
                     <th>Cantidad</th>
                     <th>Trámite y Servicio</th>
@@ -100,6 +101,7 @@
             { data: 'detalle' },
             { data: 'fecha' },
             { data: 'cit_cliente' },
+            { data: 'email' },
             { data: 'distrito' },
             { data: 'cantidad' },
             { data: 'pag_tramite_servicio' },
@@ -121,33 +123,47 @@
                 targets: 1, // fecha
                 type: 'date',
                 render: function (data, type, row) {
-                    return moment.utc(data).local().format("DD MMM YYYY hh:mm:ss");
+                    return moment.utc(data).local().format("YYYY/MM/DD hh:mm A");
                 }
             },
             {
                 targets: 2, // cit_cliente
                 data: null,
                 render: function(data, type, row, meta) {
+                    let texto = data.nombre;
+                    if (texto.length > 16 ) {
+                        texto = data.nombre.substr(0, 16) + '…'
+                    }
                     if (data.url == '') {
-                        return data.nombre;
+                        return data.texto;
                     } else {
-                        return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                        return '<a href="' + data.url + '"><span title="' + data.nombre + '">' + texto + '</span></a>';
                     }
                 }
             },
             {
-                targets: 3, // distrito
+                targets: 3, // email
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.length < 16 ) {
+                        return '<a href="mailto:' + data + '">' + data + '</a>';
+                    }
+                    return '<a href="mailto:' + data + '"><span title="' + data + '">' + data.substr(0, 16) + '…' + '</span></a>';
+                }
+            },
+            {
+                targets: 4, // distrito
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data.url == '') {
                         return data.nombre_corto;
                     } else {
-                        return '<a href="' + data.url + '">' + data.nombre_corto + '</a>';
+                        return '<a href="' + data.url + '"><span title="' + data.nombre_corto + '">' + data.clave + '</span></a>';
                     }
                 }
             },
             {
-                targets: [5, 6], // pag_tramite_servicio, autoridad
+                targets: [6, 7], // pag_tramite_servicio, autoridad
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data.url == '') {
@@ -158,14 +174,14 @@
                 }
             },
             {
-                targets: 8, // total
+                targets: 9, // total
                 data: null,
                 render: function(data, type, row, meta) {
                     return '$ ' + data;
                 }
             },
             {
-                targets: 9, // Estado
+                targets: 10, // Estado
                 data: null,
                 render: function(data, type, row, meta) {
                     let color = "black";
