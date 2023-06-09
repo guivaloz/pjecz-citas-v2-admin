@@ -74,7 +74,9 @@ def datatable_json():
                     "nombre": f"{resultado.cit_cliente.nombre}",
                     "url": url_for("cit_clientes.detail", cit_cliente_id=resultado.cit_cliente_id) if current_user.can_view("CIT CLIENTES") else "",
                 },
+                "email": resultado.cit_cliente.email,
                 "distrito": {
+                    "clave": resultado.distrito.clave,
                     "nombre_corto": resultado.distrito.nombre_corto,
                     "url": url_for("distritos.detail", distrito_id=resultado.distrito_id) if current_user.can_view("DISTRITOS") else "",
                 },
@@ -86,6 +88,7 @@ def datatable_json():
                 },
                 "autoridad": {
                     "clave": resultado.autoridad.clave,
+                    "descripcion": resultado.autoridad.descripcion_corta,
                     "url": url_for("autoridades.detail", autoridad_id=resultado.autoridad_id) if current_user.can_view("AUTORIDADES") else "",
                 },
                 "estado": resultado.estado,
