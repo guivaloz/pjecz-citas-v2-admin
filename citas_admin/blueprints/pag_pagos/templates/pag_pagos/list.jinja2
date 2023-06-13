@@ -135,7 +135,7 @@
                         texto = data.nombre.substr(0, 16) + '…'
                     }
                     if (data.url == '') {
-                        return data.texto;
+                        return '<span title="' + data.nombre + '">' + texto + '</span>';
                     } else {
                         return '<a href="' + data.url + '"><span title="' + data.nombre + '">' + texto + '</span></a>';
                     }
