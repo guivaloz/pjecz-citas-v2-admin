@@ -1,30 +1,41 @@
 """
 Tareas, modelos
 """
-from flask import current_app
+
 import redis
 import rq
-from citas_admin.extensions import db
+from flask import current_app
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class Tarea(db.Model, UniversalMixin):
+class Tarea(database.Model, UniversalMixin):
     """Tarea"""
 
     # Nombre de la tabla
     __tablename__ = "tareas"
 
-    # Clave primaria
-    id = db.Column(db.String(36), primary_key=True)
+    # Clave primaria NOTA: El id es string y es el mismo que usa el RQ worker
+    id = Column(String(36), primary_key=True)
 
     # Clave foránea
-    usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), index=True, nullable=False)
-    usuario = db.relationship("Usuario", back_populates="tareas")
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), index=True, nullable=False)
+    usuario = relationship("Usuario", back_populates="tareas")
+
+    # Columnas futuras
+    # archivo = Column(String(256), nullable=False, default="", server_default="")
+    # comando = Column(String(256), nullable=False, index=True)
+    # ha_terminado = Column(Boolean, nullable=False, default=False)
+    # mensaje = Column(String(1024), nullable=False, default="", server_default="")
+    # url = Column(String(512), nullable=False, default="", server_default="")
 
     # Columnas
-    nombre = db.Column(db.String(128), index=True)
-    descripcion = db.Column(db.String(128), default="", server_default="")
-    ha_terminado = db.Column(db.Boolean, nullable=False, default=False)
+    nombre = Column(String(128), index=True)
+    descripcion = Column(String(128), default="", server_default="")
+    ha_terminado = Column(Boolean, nullable=False, default=False)
 
     def get_rq_job(self):
         """Helper method that loads the RQ Job instance"""

@@ -1,61 +1,54 @@
 """
 Permisos, formularios
 """
+
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, SubmitField
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
+from wtforms import RadioField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired
 
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.roles.models import Rol
 
 NIVELES = [
-    (1, "VER"),
-    (2, "VER y MODIFICAR"),
-    (3, "VER, MODIFICAR y CREAR"),
-    (4, "ADMINISTRAR"),
+    (1, "1) Ver"),
+    (2, "2) Ver y Modificar"),
+    (3, "3) Ver, Modificar y Crear"),
+    (4, "4) ADMINISTRAR (Todos los anteriores más eliminar y recuperar)"),
 ]
 
 
-def modulos_opciones():
-    """Modulos: opciones para select"""
-    return Modulo.query.filter_by(estatus="A").order_by(Modulo.nombre).all()
+class PermisoEditForm(FlaskForm):
+    """Formulario para editar Permiso"""
 
-
-def roles_opciones():
-    """Roles: opciones para select"""
-    return Rol.query.filter_by(estatus="A").order_by(Rol.nombre).all()
-
-
-class PermisoNewForm(FlaskForm):
-    """Formulario Permiso"""
-
-    modulo = QuerySelectField(query_factory=modulos_opciones, get_label="nombre", validators=[DataRequired()])
-    rol = QuerySelectField(query_factory=roles_opciones, get_label="nombre", validators=[DataRequired()])
-    nivel = SelectField("Nivel", validators=[DataRequired()], choices=NIVELES, coerce=int)
+    modulo = StringField("Módulo")  # Solo lectura
+    rol = StringField("Rol")  # Solo lectura
+    nivel = RadioField("Nivel", validators=[DataRequired()], choices=NIVELES, coerce=int)
     guardar = SubmitField("Guardar")
 
 
 class PermisoNewWithModuloForm(FlaskForm):
-    """Formulario Permiso"""
+    """Formulario para agregar Permiso con el modulo como parametro"""
 
     modulo = StringField("Módulo")  # Solo lectura
-    rol = QuerySelectField(query_factory=roles_opciones, get_label="nombre", validators=[DataRequired()])
-    nivel = SelectField("Nivel", validators=[DataRequired()], choices=NIVELES, coerce=int)
+    rol = SelectField("Rol", coerce=int, validators=[DataRequired()])
+    nivel = RadioField("Nivel", validators=[DataRequired()], choices=NIVELES, coerce=int)
     guardar = SubmitField("Guardar")
+
+    def __init__(self, *args, **kwargs):
+        """Inicializar y cargar opciones para rol"""
+        super().__init__(*args, **kwargs)
+        self.rol.choices = [(r.id, r.nombre) for r in Rol.query.filter_by(estatus="A").order_by(Rol.nombre).all()]
 
 
 class PermisoNewWithRolForm(FlaskForm):
-    """Formulario Permiso"""
+    """Formulario para agregar Permiso con el rol como parametro"""
 
-    modulo = QuerySelectField(query_factory=modulos_opciones, get_label="nombre", validators=[DataRequired()])
+    modulo = SelectField("Modulo", coerce=int, validators=[DataRequired()])
     rol = StringField("Rol")  # Solo lectura
-    nivel = SelectField("Nivel", validators=[DataRequired()], choices=NIVELES, coerce=int)
+    nivel = RadioField("Nivel", validators=[DataRequired()], choices=NIVELES, coerce=int)
     guardar = SubmitField("Guardar")
 
-
-class PermisoEditForm(FlaskForm):
-    """Formulario Permiso"""
-
-    nivel = SelectField("Nivel", validators=[DataRequired()], choices=NIVELES, coerce=int)
-    guardar = SubmitField("Guardar")
+    def __init__(self, *args, **kwargs):
+        """Inicializar y cargar opciones para modulo"""
+        super().__init__(*args, **kwargs)
+        self.modulo.choices = [(m.id, m.nombre) for m in Modulo.query.filter_by(estatus="A").order_by(Modulo.nombre).all()]

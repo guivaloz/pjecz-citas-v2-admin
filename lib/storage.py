@@ -109,47 +109,44 @@ Tenga en cuenta que...
 
 """
 import datetime
+import locale
 import re
-from datetime import datetime, date
+from datetime import date, datetime
 from pathlib import Path
-from unidecode import unidecode
+from typing import Any
 
 from flask import current_app
 from google.cloud import storage
+from unidecode import unidecode
 from werkzeug.utils import secure_filename
 
-from .time_to_text import mes_en_palabra
+from lib.exceptions import MyFilenameError, MyNotAllowedExtensionError, MyUnknownExtensionError
 
-
-class NotAllowedExtesionError(Exception):
-    """Exception raised when the extension is not allowed"""
-
-
-class UnknownExtesionError(Exception):
-    """Exception raised when the extension is unknown"""
-
-
-class NoneFilenameError(Exception):
-    """Exception raised when the filename is None"""
-
-
-class NotConfiguredError(Exception):
-    """Exception raised when a environment variable is not configured"""
+locale.setlocale(locale.LC_TIME, "es_MX.utf8")
 
 
 class GoogleCloudStorage:
     """Google Cloud Storage"""
 
     EXTENSIONS_MIME_TYPES = {
+        "doc": "application/msword",
         "docx": "application/msword",
         "pdf": "application/pdf",
         "xls": "xapplication/vnd.ms-excel",
+        "xlsx": "xapplication/vnd.ms-excel",
         "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
         "png": "image/png",
-        "json": "application/json",
     }
 
-    def __init__(self, base_directory: str, upload_date: date = None, allowed_extensions: list = None, month_in_word: bool = False):
+    def __init__(
+        self,
+        base_directory: str,
+        upload_date: date = None,
+        allowed_extensions: list = None,
+        month_in_word: bool = False,
+        bucket_name: str = None,
+    ) -> None:
         """Storage constructor"""
         self.base_directory = base_directory
         if upload_date is None:
@@ -165,8 +162,12 @@ class GoogleCloudStorage:
         self.filename = None
         self.url = None
         self.content_type = None
+        if bucket_name is None:
+            self.bucket_name = current_app.config["CLOUD_STORAGE_DEPOSITO"]
+        else:
+            self.bucket_name = bucket_name
 
-    def set_content_type(self, original_filename: str):
+    def set_content_type(self, original_filename: str) -> str:
         """Set content type from original filename, casuses an error on wrong extension"""
         self.extension = None
         self.filename = None
@@ -174,30 +175,37 @@ class GoogleCloudStorage:
         self.content_type = None
         original_filename = secure_filename(original_filename)
         if "." not in original_filename:
-            raise NotAllowedExtesionError
+            raise MyNotAllowedExtensionError
         extension = original_filename.rsplit(".", 1)[1].lower()
         if extension not in self.allowed_extensions:
-            raise NotAllowedExtesionError
+            raise MyNotAllowedExtensionError
         try:
             self.content_type = self.EXTENSIONS_MIME_TYPES[extension]
         except KeyError as error:
-            raise UnknownExtesionError from error
+            raise MyUnknownExtensionError from error
         self.extension = extension
         return self.extension
 
-    def set_filename(self, hashed_id: str = "", description: str = "", max_length: int = 64, extension: str = None):
+    def set_filename(
+        self,
+        description: str = "",
+        extension: str = None,
+        hashed_id: str = "",
+        max_length: int = 64,
+        start_with_date: bool = True,
+    ) -> str:
         """Filename standarize, returns the filename"""
         self.filename = None
         if extension is not None:
             if extension not in self.allowed_extensions:
-                raise NotAllowedExtesionError
+                raise MyNotAllowedExtensionError
             try:
                 self.content_type = self.EXTENSIONS_MIME_TYPES[extension]
             except KeyError as error:
-                raise UnknownExtesionError from error
+                raise MyUnknownExtensionError from error
             self.extension = extension
         if self.extension is None:
-            raise UnknownExtesionError
+            raise MyUnknownExtensionError("Extension not set")
         description = re.sub(r"[^a-zA-Z0-9()-]+", " ", unidecode(description)).upper()
         if len(description) > max_length:
             description = description[:max_length]
@@ -207,52 +215,33 @@ class GoogleCloudStorage:
             description = "SIN-DESCRIPCION"
         upload_date_str = self.upload_date.strftime("%Y-%m-%d")
         if hashed_id == "":
-            self.filename = f"{upload_date_str}-{description}.{self.extension}"
+            if start_with_date:
+                self.filename = f"{upload_date_str}-{description}.{self.extension}"
+            else:
+                self.filename = f"{description}.{self.extension}"
         else:
-            self.filename = f"{upload_date_str}-{description}-{hashed_id}.{self.extension}"
+            if start_with_date:
+                self.filename = f"{upload_date_str}-{description}-{hashed_id}.{self.extension}"
+            else:
+                self.filename = f"{description}-{hashed_id}.{self.extension}"
         return self.filename
 
-    def upload(self, data):
+    def upload(self, data: Any) -> str:
         """Upload to the cloud, returns the public URL"""
         self.url = None
         if self.filename is None:
-            raise NoneFilenameError
+            raise MyFilenameError
         if self.content_type is None:
-            raise UnknownExtesionError
+            raise MyUnknownExtensionError
         year_str = self.upload_date.strftime("%Y")
         if self.month_in_word:
-            month_str = mes_en_palabra(self.upload_date.month)
+            month_str = self.upload_date.strftime("%B")
         else:
             month_str = self.upload_date.strftime("%m")
         path_str = str(Path(self.base_directory, year_str, month_str, self.filename))
-        try:
-            bucket_name = current_app.config["CLOUD_STORAGE_DEPOSITO"]
-        except KeyError as error:
-            raise NotConfiguredError from error
         storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
+        bucket = storage_client.bucket(self.bucket_name)
         blob = bucket.blob(path_str)
         blob.upload_from_string(data, self.content_type)
         self.url = blob.public_url
         return self.url
-
-    def upload_from_filename(self, bucket_name, destination_blob_name, source_file_name, content_type):
-        """Upload to the cloud, returns the public URL"""
-        self.url = None
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        blob = bucket.blob(destination_blob_name)
-        blob.upload_from_filename(filename=source_file_name, content_type=content_type)
-        self.url = blob.public_url
-        return self.url
-
-    def download_as_string(self, blob_name):
-        """Descarga un archivo como string"""
-        try:
-            bucket_name = current_app.config["CLOUD_STORAGE_DEPOSITO"]
-        except KeyError as error:
-            raise NotConfiguredError from error
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        blob = bucket.blob(blob_name)
-        return blob.download_as_string()

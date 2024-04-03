@@ -1,22 +1,24 @@
 """
-UniversalMixin define las columnas y métodos comunes de todos los modelos
+Universal Mixin
 """
-import os
-import re
-from sqlalchemy.sql import func
+
 from hashids import Hashids
-from citas_admin.extensions import db
+from sqlalchemy import Column, DateTime, String
+from sqlalchemy.sql import func
 
-hashids = Hashids(salt=os.environ.get("SALT", "Esta es una muy mala cadena aleatoria"), min_length=8)
-hashid_regexp = re.compile("[0-9a-zA-Z]{8}")
+from config.settings import get_settings
+from citas_admin.extensions import database
+
+settings = get_settings()
+hashids = Hashids(salt=settings.SALT, min_length=8)
 
 
-class UniversalMixin(object):
-    """Columnas y métodos comunes a todas las tablas"""
+class UniversalMixin:
+    """Columnas y metodos universales"""
 
-    creado = db.Column(db.DateTime, server_default=func.now(), nullable=False)
-    modificado = db.Column(db.DateTime, onupdate=func.now(), server_default=func.now())
-    estatus = db.Column(db.String(1), server_default="A", nullable=False)
+    creado = Column(DateTime, default=func.now(), nullable=False)
+    modificado = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+    estatus = Column(String(1), default="A", nullable=False)
 
     def delete(self):
         """Eliminar registro"""
@@ -35,21 +37,15 @@ class UniversalMixin(object):
 
     def save(self):
         """Guardar registro"""
-        db.session.add(self)
-        db.session.commit()
+        database.session.add(self)
+        database.session.commit()
         return self
 
-    def encode_id(self):
-        """Convertir el ID de entero a cadena"""
+    def encode_id(self) -> str:
+        """Encode id"""
         return hashids.encode(self.id)
 
     @classmethod
-    def decode_id(cls, id_encoded: str):
-        """Convertir el ID de entero a cadena"""
-        if re.fullmatch(hashid_regexp, id_encoded) is None:
-            return None
-        descifrado = hashids.decode(id_encoded)
-        try:
-            return descifrado[0]
-        except IndexError:
-            return None
+    def decode_id(cls, id_encoded: str) -> int:
+        """Decode id"""
+        return hashids.decode(id_encoded)[0]

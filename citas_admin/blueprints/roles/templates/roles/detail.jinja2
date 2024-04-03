@@ -1,16 +1,17 @@
 {% extends 'layouts/app.jinja2' %}
 {% import 'macros/detail.jinja2' as detail %}
-{% import 'macros/list.jinja2' as list %}
 {% import 'macros/modals.jinja2' as modals %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Rol{% endblock %}
+{% block title %}Rol {{ rol.nombre }}{% endblock %}
 
 {% block topbar_actions %}
     {% call topbar.page_buttons('Rol ' + rol.nombre) %}
         {{ topbar.button_previous('Roles', url_for('roles.list_active')) }}
         {% if current_user.can_edit('ROLES') %}
             {{ topbar.button_edit('Editar', url_for('roles.edit', rol_id=rol.id)) }}
+        {% endif %}
+        {% if current_user.can_admin('ROLES') %}
             {% if rol.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('roles.delete', rol_id=rol.id)) }}{% endif %}
             {% if rol.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('roles.recover', rol_id=rol.id)) }}{% endif %}
         {% endif %}
@@ -18,13 +19,12 @@
 {% endblock %}
 
 {% block content %}
-    {# Permisos del rol #}
     {% if current_user.can_view('PERMISOS') %}
-        {% call detail.card('Permisos del rol') %}
+        {% call detail.card('Permisos') %}
             <table id="permisos_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
-                        <th>Nombre</th>
+                        <th>Descripción</th>
                         <th>Módulo</th>
                         <th>Nivel</th>
                     </tr>
@@ -35,26 +35,27 @@
             {% endif %}
         {% endcall %}
     {% endif %}
-    {# Usuarios en este rol #}
     {% if current_user.can_view('USUARIOS ROLES') %}
-        {% call detail.card('Usuarios en este rol') %}
+        {% call detail.card('Usuarios') %}
             <table id="usuarios_roles_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>e-mail</th>
+                        <th>Correo electrónico</th>
                         <th>Nombre completo</th>
-                        <th>Oficina</th>
                         <th>Puesto</th>
                     </tr>
                 </thead>
             </table>
+            {% if current_user.can_insert('USUARIOS ROLES') %}
+            <a href="{{ url_for('usuarios_roles.new_with_rol', rol_id=rol.id) }}" class="btn btn-primary">Agregar</a>
+            {% endif %}
         {% endcall %}
     {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
-    {% if current_user.can_edit('ROLES') %}
+    {% if current_user.can_admin('ROLES') %}
         {% if rol.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + rol.nombre + '?') }}{% endif %}
         {% if rol.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + rol.nombre + '?') }}{% endif %}
     {% endif %}
@@ -99,8 +100,7 @@
                 { data: "detalle" },
                 { data: "usuario" },
                 { data: "usuario_nombre" },
-                { data: "oficina" },
-                { data: "usuario_puesto" },
+                { data: "usuario_puesto" }
             ];
             configDataTable['columnDefs'] = [
                 {
@@ -122,18 +122,15 @@
                     }
                 },
                 {
-                    targets: 3, // oficina
+                    targets: [2, 3], // usuario_nombre, usuario_puesto
                     data: null,
                     render: function(data, type, row, meta) {
-                        if (data.url == '') {
-                            return data.nombre;
-                        } else {
-                            return '<a href="' + data.url + '">' + data.nombre + '</a>';
-                        }
+                        return (data.length > 32 ? data.substr(0, 32) + '…' : data);
                     }
                 }
             ];
             $('#usuarios_roles_datatable').DataTable(configDataTable);
         </script>
     {% endif %}
+    {{ detail.moment_js(moment) }}
 {% endblock %}

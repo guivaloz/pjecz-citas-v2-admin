@@ -1,28 +1,42 @@
 """
-Usuarios
+CLI usuarios
 
-- nueva_api_key: Nueva API Key
-- nueva_contrasena: Nueva contraseña
+- mostrar_api_key
+- nueva_api_key
+- nueva_contrasena
 """
+
+import sys
 from datetime import datetime, timedelta
 
 import click
 
 from lib.pwgen import generar_api_key
-
 from citas_admin.app import create_app
-from citas_admin.extensions import db
-
 from citas_admin.blueprints.usuarios.models import Usuario
-from citas_admin.extensions import pwd_context
+from citas_admin.extensions import database, pwd_context
 
 app = create_app()
-db.app = app
+app.app_context().push()
+database.app = app
 
 
 @click.group()
 def cli():
     """Usuarios"""
+
+
+@click.command()
+@click.argument("email", type=str)
+def mostrar_api_key(email):
+    """Mostrar API Key"""
+    usuario = Usuario.query.filter_by(email=email).first()
+    if usuario is None:
+        click.echo(f"ERROR: No existe el e-mail {email} en usuarios")
+        sys.exit(1)
+    click.echo(f"Usuario: {usuario.email}")
+    click.echo(f"API key: {usuario.api_key}")
+    click.echo(f"Expira:  {usuario.api_key_expiracion.strftime('%Y-%m-%d')}")
 
 
 @click.command()
@@ -39,26 +53,30 @@ def nueva_api_key(email, dias):
     usuario.api_key = api_key
     usuario.api_key_expiracion = api_key_expiracion
     usuario.save()
-    click.echo(f"Nueva API key para {usuario.email} es {api_key} que expira el {api_key_expiracion.strftime('%Y-%m-%d')}")
+    click.echo("Nueva API key")
+    click.echo(f"Usuario: {usuario.email}")
+    click.echo(f"API key: {usuario.api_key}")
+    click.echo(f"Expira:  {usuario.api_key_expiracion.strftime('%Y-%m-%d')}")
 
 
 @click.command()
 @click.argument("email", type=str)
 def nueva_contrasena(email):
     """Nueva contraseña"""
-    usuario = Usuario.find_by_identity(email)
+    usuario = Usuario.query.filter_by(email=email).first()
     if usuario is None:
-        click.echo(f"No existe el e-mail {email} en usuarios")
-        return
+        click.echo(f"ERROR: No existe el e-mail {email} en usuarios")
+        sys.exit(1)
     contrasena_1 = input("Contraseña: ")
     contrasena_2 = input("De nuevo la misma contraseña: ")
     if contrasena_1 != contrasena_2:
-        click.echo("No son iguales las contraseñas. Por favor intente de nuevo.")
-        return
+        click.echo("ERROR: No son iguales las contraseñas. Por favor intente de nuevo.")
+        sys.exit(1)
     usuario.contrasena = pwd_context.hash(contrasena_1.strip())
     usuario.save()
-    click.echo(f"Nueva contraseña para el usuario {usuario.id}")
+    click.echo(f"Se ha cambiado la contraseña de {email} en usuarios")
 
 
+cli.add_command(mostrar_api_key)
 cli.add_command(nueva_api_key)
 cli.add_command(nueva_contrasena)

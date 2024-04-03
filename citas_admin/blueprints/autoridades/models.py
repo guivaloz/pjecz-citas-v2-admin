@@ -1,58 +1,54 @@
 """
-Autoridades, modelos
+Autoridad
 """
-from collections import OrderedDict
-from citas_admin.extensions import db
+
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class Autoridad(db.Model, UniversalMixin):
+class Autoridad(database.Model, UniversalMixin):
     """Autoridad"""
 
-    ORGANOS_JURISDICCIONALES = OrderedDict(
-        [
-            ("NO DEFINIDO", "No Definido"),
-            ("JUZGADO DE PRIMERA INSTANCIA", "Juzgado de Primera Instancia"),
-            ("PLENO O SALA DEL TSJ", "Pleno o Sala del TSJ"),
-            ("TRIBUNAL DISTRITAL", "Tribunal Distrital"),
-            ("TRIBUNAL DE CONCILIACION Y ARBITRAJE", "Tribunal de Conciliación y Arbitraje"),
-        ]
-    )
+    ORGANOS_JURISDICCIONALES = {
+        "NO DEFINIDO": "No Definido",
+        "JUZGADO DE PRIMERA INSTANCIA": "Juzgado de Primera Instancia",
+        "PLENO O SALA DEL TSJ": "Pleno o Sala del TSJ",
+        "TRIBUNAL DISTRITAL": "Tribunal Distrital",
+        "TRIBUNAL DE CONCILIACION Y ARBITRAJE": "Tribunal de Conciliación y Arbitraje",
+    }
 
     # Nombre de la tabla
     __tablename__ = "autoridades"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Claves foráneas
-    distrito_id = db.Column(db.Integer, db.ForeignKey("distritos.id"), index=True, nullable=False)
-    distrito = db.relationship("Distrito", back_populates="autoridades")
-    materia_id = db.Column(db.Integer, db.ForeignKey("materias.id"), index=True, nullable=False)
-    materia = db.relationship("Materia", back_populates="autoridades")
+    distrito_id = Column(Integer, ForeignKey("distritos.id"), index=True, nullable=False)
+    distrito = relationship("Distrito", back_populates="autoridades")
+    # materia_id = Column(Integer, ForeignKey("materias.id"), index=True, nullable=False)
+    # materia = relationship("Materia", back_populates="autoridades")
 
     # Columnas
-    clave = db.Column(db.String(16), nullable=False, unique=True)
-    descripcion = db.Column(db.String(256), nullable=False)
-    descripcion_corta = db.Column(db.String(64), nullable=False, default="", server_default="")
-    es_jurisdiccional = db.Column(db.Boolean, nullable=False, default=False)
-    es_notaria = db.Column(db.Boolean, nullable=False, default=False)
-    es_organo_especializado = db.Column(db.Boolean, nullable=False, default=False)
-    organo_jurisdiccional = db.Column(
-        db.Enum(*ORGANOS_JURISDICCIONALES, name="tipos_organos_jurisdiccionales", native_enum=False),
+    clave = Column(String(16), nullable=False, unique=True)
+    descripcion = Column(String(256), nullable=False)
+    descripcion_corta = Column(String(64), nullable=False, default="", server_default="")
+    es_jurisdiccional = Column(Boolean, nullable=False, default=False)
+    es_notaria = Column(Boolean, nullable=False, default=False)
+    es_organo_especializado = Column(Boolean, nullable=False, default=False)
+    organo_jurisdiccional = Column(
+        Enum(*ORGANOS_JURISDICCIONALES, name="tipos_organos_jurisdiccionales", native_enum=False),
         index=True,
         nullable=False,
     )
 
     # Hijos
-    pag_pagos = db.relationship("PagPago", back_populates="autoridad")
-    ppa_solicitudes = db.relationship("PpaSolicitud", back_populates="autoridad")
-    usuarios = db.relationship("Usuario", back_populates="autoridad")
-
-    @property
-    def compuesto(self):
-        """Entregar clave - descripcion_corta para selects"""
-        return f"{self.clave} - {self.descripcion_corta}"
+    # pag_pagos = relationship("PagPago", back_populates="autoridad")
+    # ppa_solicitudes = relationship("PpaSolicitud", back_populates="autoridad")
+    usuarios = relationship("Usuario", back_populates="autoridad")
 
     def __repr__(self):
         """Representación"""

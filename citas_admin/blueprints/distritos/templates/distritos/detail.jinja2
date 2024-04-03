@@ -3,13 +3,15 @@
 {% import 'macros/modals.jinja2' as modals %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Distrito{% endblock %}
+{% block title %}Distrito {{ distrito.nombre_corto }}{% endblock %}
 
 {% block topbar_actions %}
     {% call topbar.page_buttons('Distrito ' + distrito.nombre_corto) %}
         {{ topbar.button_previous('Distritos', url_for('distritos.list_active')) }}
         {% if current_user.can_edit('DISTRITOS') %}
             {{ topbar.button_edit('Editar', url_for('distritos.edit', distrito_id=distrito.id)) }}
+        {% endif %}
+        {% if current_user.can_admin('DISTRITOS') %}
             {% if distrito.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('distritos.delete', distrito_id=distrito.id)) }}{% endif %}
             {% if distrito.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('distritos.recover', distrito_id=distrito.id)) }}{% endif %}
         {% endif %}
@@ -21,59 +23,30 @@
         {{ detail.label_value_big('Clave', distrito.clave) }}
         {{ detail.label_value('Nombre', distrito.nombre) }}
         {{ detail.label_value('Nombre corto', distrito.nombre_corto) }}
-        {{ detail.label_value_boolean('Es Distrito Judicial', distrito.es_distrito_judicial) }}
-        {{ detail.label_value_boolean('NUEVO Es Distrito (geográfico)', distrito.es_distrito) }}
-        {{ detail.label_value_boolean('NUEVO Es Jurisdiccional', distrito.es_jurisdiccional) }}
+        {{ detail.label_value_boolean('Es Distrito (geográfico)', distrito.es_distrito) }}
+        {{ detail.label_value_boolean('Es Jurisdiccional', distrito.es_jurisdiccional) }}
+        {# detail.label_value('Creado', moment(distrito.creado).format('llll')) #}
     {% endcall %}
-    {# Autoridades en este distrito #}
     {% if current_user.can_view('AUTORIDADES') %}
-        {% call detail.card('Autoridades en este distrito') %}
+        {% call detail.card('Autoridades') %}
             <table id="autoridades_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
-                        <th>Claves</th>
-                        <th>Descripciones cortas</th>
-                        <th>Órganos Jurisdiccionales</th>
-                        <th>Materias</th>
+                        <th>Clave</th>
+                        <th>Descripción corta</th>
                     </tr>
                 </thead>
             </table>
-        {% endcall %}
-    {% endif %}
-    {# Oficinas en este distrito #}
-    {% if current_user.can_view('OFICINAS') %}
-        {% call detail.card('Oficinas en este distrito') %}
-            <table id="oficinas_datatable" class="table display nowrap" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>Claves</th>
-                        <th>Descripciones</th>
-                        <th>Domicilios</th>
-                        <th>Es J.</th>
-                        <th>Aperturas</th>
-                        <th>Cierres</th>
-                        <th>L.P.</th>
-                        <th>P.A.C.</th>
-                    </tr>
-                </thead>
-            </table>
-        {% endcall %}
-    {% endif %}
-    {# Tareas en el fondo #}
-    {% if current_user.can_insert('CIT OFICINAS SERVICIOS') %}
-        {% call detail.card('Tareas en el fondo') %}
-            <a href="{{ url_for('cit_oficinas_servicios.add_cit_categoria_to_distrito', distrito_id=distrito.id) }}" class="btn btn-primary">
-                Asignar servicios de una categoria a todas sus oficinas
-            </a>
         {% endcall %}
     {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
-    {% if current_user.can_edit('DISTRITOS') %}
+    {% if current_user.can_admin('DISTRITOS') %}
         {% if distrito.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + distrito.nombre + '?') }}{% endif %}
         {% if distrito.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + distrito.nombre + '?') }}{% endif %}
     {% endif %}
+    {{ detail.moment_js(moment) }}
     {{ detail.config_datatable() }}
     {% if current_user.can_view('AUTORIDADES') %}
         <script>
@@ -81,9 +54,7 @@
             configDataTable['ajax']['data'] = { 'estatus': "A", 'distrito_id': {{ distrito.id}} };
             configDataTable['columns'] = [
                 { data: "detalle" },
-                { data: "descripcion_corta" },
-                { data: "organo_jurisdiccional" },
-                { data: "materia" }
+                { data: "descripcion_corta" }
             ];
             configDataTable['columnDefs'] = [
                 {
@@ -92,80 +63,9 @@
                     render: function(data, type, row, meta) {
                         return '<a href="' + data.url + '">' + data.clave + '</a>';
                     }
-                },
-            {
-                targets: 3, // materia
-                data: null,
-                render: function(data, type, row, meta) {
-                    if (data.url == '') {
-                        return data.nombre;
-                    } else {
-                        return '<a href="' + data.url + '">' + data.nombre + '</a>';
-                    }
                 }
-            }
             ];
             $('#autoridades_datatable').DataTable(configDataTable);
         </script>
     {% endif %}
-    {% if current_user.can_view('OFICINAS') %}
-        <script>
-            configDataTable['ajax']['url'] = '/oficinas/datatable_json';
-            configDataTable['ajax']['data'] = { 'estatus': "A", 'distrito_id': {{ distrito.id}} };
-            configDataTable['columns'] = [
-                { data: "detalle" },
-                { data: "descripcion_corta" },
-                { data: "domicilio" },
-                { data: "es_jurisdiccional" },
-                { data: "apertura" },
-                { data: "cierre" },
-                { data: "limite_personas" },
-                { data: "puede_agendar_citas" },
-            ];
-            configDataTable['columnDefs'] = [
-                {
-                    targets: 0, // detalle
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        return '<a href="' + data.url + '">' + data.clave + '</a>';
-                    }
-                },
-                {
-                    targets: 1, // descripcion_corta
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        return (data.length > 48 ? data.substr(0, 48) + '…' : data);
-                    }
-                },
-                {
-                    targets: 2, // domicilio
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        if (data.completo.length > 32) {
-                            texto = data.completo.substr(0, 32) + '…';
-                        } else {
-                            texto = data.completo;
-                        }
-                        if (data.url == '') {
-                            return texto;
-                        } else {
-                            return '<a href="' + data.url + '">' + texto + '</a>';
-                        }
-                    }
-                },
-                {
-                    targets: [3, 7], // es_jurisdiccional, puede_agendar_citas
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        if (data) {
-                            return 'SI';
-                        }
-                        return '';
-                    }
-                }
-            ];
-            $('#oficinas_datatable').DataTable(configDataTable);
-        </script>
-    {% endif %}
-    {{ detail.moment_js(moment) }}
 {% endblock %}

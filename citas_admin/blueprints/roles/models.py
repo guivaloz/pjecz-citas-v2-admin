@@ -1,25 +1,29 @@
 """
-Roles, modelos
+Roles
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class Rol(db.Model, UniversalMixin):
+class Rol(database.Model, UniversalMixin):
     """Rol"""
 
     # Nombre de la tabla
     __tablename__ = "roles"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Columnas
-    nombre = db.Column(db.String(256), unique=True, nullable=False)
+    nombre = Column(String(256), unique=True, nullable=False)
 
     # Hijos
-    permisos = db.relationship("Permiso", back_populates="rol")
-    usuarios_roles = db.relationship("UsuarioRol", back_populates="rol")
+    permisos = relationship("Permiso", back_populates="rol")
+    usuarios_roles = relationship("UsuarioRol", back_populates="rol")
 
     def __repr__(self):
         """Representación"""

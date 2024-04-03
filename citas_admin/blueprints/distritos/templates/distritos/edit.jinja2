@@ -2,10 +2,12 @@
 {% import 'macros/form.jinja2' as f with context %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Editar Distrito{% endblock %}
+{% block title %}Editar Distrito {{ distrito.clave }}{% endblock %}
 
 {% block topbar_actions %}
-    {{ topbar.page('Editar ' + distrito.nombre) }}
+    {% call topbar.page_buttons('Editar Distrito ' + distrito.clave) %}
+        {{ topbar.button_cancel() }}
+    {% endcall %}
 {% endblock %}
 
 {% block content %}
@@ -15,7 +17,6 @@
             {% call f.form_group(form.clave) %}{% endcall %}
             {% call f.form_group(form.nombre) %}{% endcall %}
             {% call f.form_group(form.nombre_corto) %}{% endcall %}
-            {% call f.form_group(form.es_distrito_judicial) %}{% endcall %}
             {% call f.form_group(form.es_distrito) %}{% endcall %}
             {% call f.form_group(form.es_jurisdiccional) %}{% endcall %}
             {% call f.form_group(form.guardar) %}{% endcall %}

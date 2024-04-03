@@ -2,16 +2,20 @@
 {% import 'macros/form.jinja2' as f with context %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Editar Permiso{% endblock %}
+{% block title %}Editar Permiso {{ permiso.id }}{% endblock %}
 
 {% block topbar_actions %}
-    {{ topbar.page('Editar permiso ' + permiso.nombre) }}
+    {% call topbar.page_buttons('Editar Permiso ' + permiso.id | string) %}
+        {{ topbar.button_cancel() }}
+    {% endcall %}
 {% endblock %}
 
 {% block content %}
     {% call f.card() %}
         {% set form_kwargs = {'permiso_id': permiso.id} %}
         {% call f.form_tag('permisos.edit', fid='permiso_form', **form_kwargs) %}
+            {% call f.form_group(form.modulo, readonly=true) %}{% endcall %}
+            {% call f.form_group(form.rol, readonly=true) %}{% endcall %}
             {% call f.form_group(form.nivel) %}{% endcall %}
             {% call f.form_group(form.guardar) %}{% endcall %}
         {% endcall %}

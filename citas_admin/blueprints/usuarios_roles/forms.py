@@ -1,22 +1,38 @@
 """
 Usuarios-Roles, formularios
 """
+
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
 
 from citas_admin.blueprints.roles.models import Rol
+from citas_admin.blueprints.usuarios.models import Usuario
 
 
-def roles_opciones():
-    """Roles: opciones para select"""
-    return Rol.query.filter_by(estatus="A").order_by(Rol.nombre).all()
+class UsuarioRolNewWithRolForm(FlaskForm):
+    """Formulario para agregar Usuario-Rol con el rol como parametro"""
 
-
-class UsuarioRolWithUsuarioForm(FlaskForm):
-    """Formulario UsuarioRol"""
-
-    rol = QuerySelectField(query_factory=roles_opciones, get_label="nombre", validators=[DataRequired()])
-    usuario = StringField("Usuario")  # Read only
+    rol_nombre = StringField("Rol")  # Solo lectura
+    usuario = SelectField("Usuario", coerce=int, validators=[DataRequired()])
     guardar = SubmitField("Guardar")
+
+    def __init__(self, *args, **kwargs):
+        """Inicializar y cargar opciones para rol"""
+        super().__init__(*args, **kwargs)
+        self.usuario.choices = [(u.id, u.email) for u in Usuario.query.filter_by(estatus="A").order_by(Usuario.email).all()]
+
+
+class UsuarioRolNewWithUsuarioForm(FlaskForm):
+    """Formulario para agregar Usuario-Rol con el usuario como parametro"""
+
+    rol = SelectField("Rol", coerce=int, validators=[DataRequired()])
+    usuario_email = StringField("Usuario e-mail")  # Solo lectura
+    usuario_nombre = StringField("Usuario nombre")  # Solo lectura
+    usuario_puesto = StringField("Usuario puesto")  # Solo lectura
+    guardar = SubmitField("Guardar")
+
+    def __init__(self, *args, **kwargs):
+        """Inicializar y cargar opciones para rol"""
+        super().__init__(*args, **kwargs)
+        self.rol.choices = [(r.id, r.nombre) for r in Rol.query.filter_by(estatus="A").order_by(Rol.nombre).all()]

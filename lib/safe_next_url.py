@@ -2,6 +2,7 @@
 Siguiente URL segura
 """
 from urllib.parse import urljoin
+
 from flask import request
 
 

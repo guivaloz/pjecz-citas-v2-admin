@@ -1,21 +1,11 @@
 {
+  "black-formatter.args": ["--line-length", "128"],
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "[jinja-html]": {
-    "editor.formatOnSave": false
-  },
+  "github.branchProtection": true,
+  "git.branchProtection": ["main"],
+  "pylint.args": ["--max-line-length", "128"],
   "[python]": {
-    "editor.defaultFormatter": "ms-python.python"
-  },
-  "python.linting.pylintArgs": [
-    "--max-line-length",
-    "256",
-    "--load-plugins",
-    "pylint_flask_sqlalchemy"
-  ],
-  "python.formatting.provider": "black",
-  "python.formatting.blackArgs": ["--line-length", "256"],
-  "python.linting.pylintEnabled": true,
-  "python.linting.enabled": true,
-  "python.analysis.typeCheckingMode": "off"
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  }
 }

@@ -1,6 +1,7 @@
 """
 Permisos, vistas
 """
+
 import json
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -8,10 +9,9 @@ from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
-from citas_admin.blueprints.permisos.forms import PermisoNewWithModuloForm, PermisoNewWithRolForm, PermisoEditForm
+from citas_admin.blueprints.permisos.forms import PermisoEditForm, PermisoNewWithModuloForm, PermisoNewWithRolForm
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.roles.models import Rol
 from citas_admin.blueprints.usuarios.decorators import permission_required
@@ -81,7 +81,7 @@ def list_active():
 
 
 @permisos.route("/permisos/inactivos")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def list_inactive():
     """Listado de Permisos inactivos"""
     return render_template(
@@ -106,12 +106,13 @@ def new_with_rol(rol_id):
     rol = Rol.query.get_or_404(rol_id)
     form = PermisoNewWithRolForm()
     if form.validate_on_submit():
-        modulo = form.modulo.data
+        modulo = Modulo.query.get_or_404(form.modulo.data)
         nivel = form.nivel.data
         nombre = f"{rol.nombre} puede {Permiso.NIVELES[nivel]} en {modulo.nombre}"
-        if Permiso.query.filter(Permiso.modulo == modulo).filter(Permiso.rol == rol).first() is not None:
-            flash(f"CONFLICTO: Ya existe {rol.nombre} en {modulo.nombre}. Mejor recupere el registro.", "warning")
-            return redirect(url_for("permisos.list_inactive"))
+        permiso_existente = Permiso.query.filter(Permiso.modulo == modulo).filter(Permiso.rol == rol).first()
+        if permiso_existente is not None:
+            flash(f"CONFLICTO: Ya existe {rol.nombre} en {modulo.nombre}.", "warning")
+            return redirect(url_for("permisos.detail", permiso_id=permiso_existente.id))
         permiso = Permiso(
             modulo=modulo,
             rol=rol,
@@ -121,7 +122,7 @@ def new_with_rol(rol_id):
         permiso.save()
         flash(safe_message(f"Nuevo permiso {nombre}"), "success")
         return redirect(url_for("roles.detail", rol_id=rol.id))
-    form.rol.data = rol.nombre
+    form.rol.data = rol.nombre  # Solo lectura
     return render_template(
         "permisos/new_with_rol.jinja2",
         form=form,
@@ -137,12 +138,13 @@ def new_with_modulo(modulo_id):
     modulo = Modulo.query.get_or_404(modulo_id)
     form = PermisoNewWithModuloForm()
     if form.validate_on_submit():
-        rol = form.rol.data
+        rol = Rol.query.get_or_404(form.rol.data)
         nivel = form.nivel.data
         nombre = f"{rol.nombre} puede {Permiso.NIVELES[nivel]} en {modulo.nombre}"
-        if Permiso.query.filter(Permiso.modulo == modulo).filter(Permiso.rol == rol).first() is not None:
-            flash(f"CONFLICTO: Ya existe {nombre}. Mejor recupere el registro.", "warning")
-            return redirect(url_for("permisos.list_inactive"))
+        permiso_existente = Permiso.query.filter(Permiso.modulo == modulo).filter(Permiso.rol == rol).first()
+        if permiso_existente is not None:
+            flash(f"CONFLICTO: Ya existe {nombre}.", "warning")
+            return redirect(url_for("permisos.detail", permiso_id=permiso_existente.id))
         permiso = Permiso(
             modulo=modulo,
             rol=rol,
@@ -152,7 +154,7 @@ def new_with_modulo(modulo_id):
         permiso.save()
         flash(safe_message(f"Nuevo permiso {nombre}"), "success")
         return redirect(url_for("modulos.detail", modulo_id=modulo.id))
-    form.modulo.data = modulo.nombre
+    form.modulo.data = modulo.nombre  # Solo lectura
     return render_template(
         "permisos/new_with_modulo.jinja2",
         form=form,
@@ -174,18 +176,20 @@ def edit(permiso_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Editado permiso {permiso.nombre}"),
+            descripcion=safe_message(f"Editado Permiso {permiso.nombre}"),
             url=url_for("permisos.detail", permiso_id=permiso.id),
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
         return redirect(bitacora.url)
+    form.modulo.data = permiso.modulo.nombre  # Solo lectura
+    form.rol.data = permiso.rol.nombre  # Solo lectura
     form.nivel.data = permiso.nivel
     return render_template("permisos/edit.jinja2", form=form, permiso=permiso)
 
 
 @permisos.route("/permisos/eliminar/<int:permiso_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(permiso_id):
     """Eliminar Permiso"""
     permiso = Permiso.query.get_or_404(permiso_id)
@@ -194,17 +198,16 @@ def delete(permiso_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Eliminado permiso {permiso.nombre}"),
+            descripcion=safe_message(f"Eliminado Permiso {permiso.nombre}"),
             url=url_for("permisos.detail", permiso_id=permiso.id),
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
     return redirect(url_for("permisos.detail", permiso_id=permiso.id))
 
 
 @permisos.route("/permisos/recuperar/<int:permiso_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(permiso_id):
     """Recuperar Permiso"""
     permiso = Permiso.query.get_or_404(permiso_id)
@@ -213,10 +216,9 @@ def recover(permiso_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Recuperado permiso {permiso.nombre}"),
+            descripcion=safe_message(f"Recuperado Permiso {permiso.nombre}"),
             url=url_for("permisos.detail", permiso_id=permiso.id),
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
     return redirect(url_for("permisos.detail", permiso_id=permiso.id))

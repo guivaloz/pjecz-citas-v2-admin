@@ -1,19 +1,18 @@
 """
 Autoridades, vistas
 """
+
 import json
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_clave, safe_string, safe_message
-
+from lib.safe_string import safe_clave, safe_message, safe_string
+from citas_admin.blueprints.autoridades.forms import AutoridadForm
 from citas_admin.blueprints.autoridades.models import Autoridad
-from citas_admin.blueprints.autoridades.forms import AutoridadEditForm, AutoridadNewForm, AutoridadSearchForm
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.distritos.models import Distrito
-from citas_admin.blueprints.materias.models import Materia
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
@@ -43,21 +42,15 @@ def datatable_json():
         consulta = consulta.filter_by(estatus="A")
     if "distrito_id" in request.form:
         consulta = consulta.filter_by(distrito_id=request.form["distrito_id"])
-    if "materia_id" in request.form:
-        consulta = consulta.filter_by(materia_id=request.form["materia_id"])
     if "clave" in request.form:
-        consulta = consulta.filter(Autoridad.clave.contains(safe_string(request.form["clave"])))
+        try:
+            clave = safe_clave(request.form["clave"], max_len=24)
+            if clave != "":
+                consulta = consulta.filter(Autoridad.clave.contains(clave))
+        except ValueError:
+            pass
     if "descripcion" in request.form:
         consulta = consulta.filter(Autoridad.descripcion.contains(safe_string(request.form["descripcion"], to_uppercase=False)))
-    if "organo_jurisdiccional" in request.form:
-        consulta = consulta.filter(Autoridad.organo_jurisdiccional == safe_string(request.form["organo_jurisdiccional"]))
-    if "caracteristicas" in request.form:
-        if request.form["caracteristicas"] == "JURISDICCIONAL":
-            consulta = consulta.filter_by(es_jurisdiccional=True)
-        elif request.form["caracteristicas"] == "NOTARIA":
-            consulta = consulta.filter_by(es_notaria=True)
-        elif request.form["caracteristicas"] == "ORGANO_ESPECIALIZADO":
-            consulta = consulta.filter_by(es_organo_especializado=True)
     registros = consulta.order_by(Autoridad.clave).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -70,14 +63,13 @@ def datatable_json():
                     "url": url_for("autoridades.detail", autoridad_id=resultado.id),
                 },
                 "descripcion_corta": resultado.descripcion_corta,
-                "organo_jurisdiccional": resultado.organo_jurisdiccional,
                 "distrito": {
                     "nombre_corto": resultado.distrito.nombre_corto,
-                    "url": url_for("distritos.detail", distrito_id=resultado.distrito_id) if current_user.can_view("DISTRITOS") else "",
-                },
-                "materia": {
-                    "nombre": resultado.materia.nombre,
-                    "url": url_for("materias.detail", materia_id=resultado.materia_id) if current_user.can_view("MATERIAS") else "",
+                    "url": (
+                        url_for("distritos.detail", distrito_id=resultado.distrito_id)
+                        if current_user.can_view("DISTRITOS")
+                        else ""
+                    ),
                 },
             }
         )
@@ -87,63 +79,30 @@ def datatable_json():
 
 @autoridades.route("/autoridades")
 def list_active():
-    """Listado de Autoridades activos"""
+    """Listado de Autoridades activas"""
     return render_template(
         "autoridades/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
         titulo="Autoridades",
         estatus="A",
-        distritos=Distrito.query.filter_by(es_distrito_judicial=True).filter_by(estatus="A").all(),
     )
 
 
 @autoridades.route("/autoridades/inactivos")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def list_inactive():
-    """Listado de Autoridades inactivos"""
+    """Listado de Autoridades inactivas"""
     return render_template(
         "autoridades/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
-        titulo="Autoridades inactivos",
+        titulo="Autoridades inactivas",
         estatus="B",
-        distritos=Distrito.query.filter_by(es_distrito_judicial=True).filter_by(estatus="A").all(),
     )
-
-
-@autoridades.route("/autoridades/buscar", methods=["GET", "POST"])
-def search():
-    """Buscar Autoridad"""
-    form_search = AutoridadSearchForm()
-    if form_search.validate_on_submit():
-        busqueda = {"estatus": "A"}
-        titulos = []
-        if form_search.descripcion.data:
-            descripcion = safe_string(form_search.descripcion.data)
-            if descripcion != "":
-                busqueda["descripcion"] = descripcion
-                titulos.append("descripción " + descripcion)
-        if form_search.clave.data:
-            clave = safe_string(form_search.clave.data)
-            if clave != "":
-                busqueda["clave"] = clave
-                titulos.append("clave " + clave)
-        if form_search.organo_jurisdiccional.data:
-            organo_jurisdiccional = safe_string(form_search.organo_jurisdiccional.data)
-            if organo_jurisdiccional != "":
-                busqueda["organo_jurisdiccional"] = organo_jurisdiccional
-                titulos.append("órgano jurisdiccional " + organo_jurisdiccional)
-        return render_template(
-            "autoridades/list.jinja2",
-            filtros=json.dumps(busqueda),
-            titulo="Autoridad con " + ", ".join(titulos),
-            estatus="A",
-        )
-    return render_template("autoridades/search.jinja2", form=form_search)
 
 
 @autoridades.route("/autoridades/<int:autoridad_id>")
 def detail(autoridad_id):
-    """Detalle de un Autoridad"""
+    """Detalle de una Autoridad"""
     autoridad = Autoridad.query.get_or_404(autoridad_id)
     return render_template("autoridades/detail.jinja2", autoridad=autoridad)
 
@@ -151,36 +110,33 @@ def detail(autoridad_id):
 @autoridades.route("/autoridades/nuevo", methods=["GET", "POST"])
 @permission_required(MODULO, Permiso.CREAR)
 def new():
-    """Nueva Autoridad"""
-    form = AutoridadNewForm()
+    """Nuevo Autoridad"""
+    form = AutoridadForm()
     if form.validate_on_submit():
         # Validar que la clave no se repita
-        clave = safe_string(form.clave.data)
+        clave = safe_clave(form.clave.data)
         if Autoridad.query.filter_by(clave=clave).first():
             flash("La clave ya está en uso. Debe de ser única.", "warning")
-        else:
-            autoridad = Autoridad(
-                distrito=form.distrito.data,
-                descripcion=safe_string(form.descripcion.data),
-                descripcion_corta=safe_string(form.descripcion_corta.data),
-                clave=clave,
-                es_jurisdiccional=form.es_jurisdiccional.data,
-                es_notaria=form.es_notaria.data,
-                es_organo_especializado=form.es_organo_especializado.data,
-                organo_jurisdiccional=form.organo_jurisdiccional.data,
-                materia=form.materia.data,
-            )
-            autoridad.save()
-            bitacora = Bitacora(
-                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
-                usuario=current_user,
-                descripcion=safe_message(f"Nueva autoridad {autoridad.clave}"),
-                url=url_for("autoridades.detail", autoridad_id=autoridad.id),
-            )
-            bitacora.save()
-            flash(bitacora.descripcion, "success")
-            return redirect(bitacora.url)
-    form.materia.data = Materia.query.get(1)  # Materia NO DEFINIDO
+            return render_template("autoridades/new.jinja2", form=form)
+        # Guardar
+        distrito = Distrito.query.get_or_404(form.distrito.data)
+        autoridad = Autoridad(
+            distrito=distrito,
+            clave=clave,
+            descripcion=safe_string(form.descripcion.data, save_enie=True),
+            descripcion_corta=safe_string(form.descripcion_corta.data, save_enie=True),
+            es_extinto=form.es_extinto.data,
+        )
+        autoridad.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Nueva Autoridad {autoridad.clave}"),
+            url=url_for("autoridades.detail", autoridad_id=autoridad.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+        return redirect(bitacora.url)
     return render_template("autoridades/new.jinja2", form=form)
 
 
@@ -189,51 +145,44 @@ def new():
 def edit(autoridad_id):
     """Editar Autoridad"""
     autoridad = Autoridad.query.get_or_404(autoridad_id)
-    form = AutoridadEditForm()
+    form = AutoridadForm()
     if form.validate_on_submit():
         es_valido = True
         # Si cambia la clave verificar que no este en uso
         clave = safe_clave(form.clave.data)
         if autoridad.clave != clave:
             oficina_existente = Autoridad.query.filter_by(clave=clave).first()
-            if oficina_existente and oficina_existente.id != autoridad.id:
+            if oficina_existente and oficina_existente.id != autoridad_id:
                 es_valido = False
                 flash("La clave ya está en uso. Debe de ser única.", "warning")
         # Si es valido actualizar
         if es_valido:
-            autoridad.distrito = form.distrito.data
-            autoridad.descripcion = safe_string(form.descripcion.data)
-            autoridad.descripcion_corta = safe_string(form.descripcion_corta.data)
+            distrito = Distrito.query.get_or_404(form.distrito.data)
+            autoridad.distrito = distrito
             autoridad.clave = clave
-            autoridad.es_jurisdiccional = form.es_jurisdiccional.data
-            autoridad.es_notaria = form.es_notaria.data
-            autoridad.es_organo_especializado = form.es_organo_especializado.data
-            autoridad.organo_jurisdiccional = form.organo_jurisdiccional.data
-            autoridad.materia = form.materia.data
+            autoridad.descripcion = safe_string(form.descripcion.data, save_enie=True)
+            autoridad.descripcion_corta = safe_string(form.descripcion_corta.data, save_enie=True)
+            autoridad.es_extinto = form.es_extinto.data
             autoridad.save()
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
                 usuario=current_user,
-                descripcion=safe_message(f"Editada autoridad {autoridad.clave}"),
+                descripcion=safe_message(f"Editada Autoridad {autoridad.clave}"),
                 url=url_for("autoridades.detail", autoridad_id=autoridad.id),
             )
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
-    form.distrito.data = autoridad.distrito
+    form.distrito.data = autoridad.distrito_id  # Usa id porque es un SelectField
+    form.clave.data = autoridad.clave
     form.descripcion.data = autoridad.descripcion
     form.descripcion_corta.data = autoridad.descripcion_corta
-    form.clave.data = autoridad.clave
-    form.es_jurisdiccional.data = autoridad.es_jurisdiccional
-    form.es_notaria.data = autoridad.es_notaria
-    form.es_organo_especializado.data = autoridad.es_organo_especializado
-    form.organo_jurisdiccional.data = autoridad.organo_jurisdiccional
-    form.materia.data = autoridad.materia
+    form.es_extinto.data = autoridad.es_extinto
     return render_template("autoridades/edit.jinja2", form=form, autoridad=autoridad)
 
 
 @autoridades.route("/autoridades/eliminar/<int:autoridad_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(autoridad_id):
     """Eliminar Autoridad"""
     autoridad = Autoridad.query.get_or_404(autoridad_id)
@@ -242,17 +191,16 @@ def delete(autoridad_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Eliminada autoridad {autoridad.clave}"),
+            descripcion=safe_message(f"Eliminado Autoridad {autoridad.clave}"),
             url=url_for("autoridades.detail", autoridad_id=autoridad.id),
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
     return redirect(url_for("autoridades.detail", autoridad_id=autoridad.id))
 
 
 @autoridades.route("/autoridades/recuperar/<int:autoridad_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(autoridad_id):
     """Recuperar Autoridad"""
     autoridad = Autoridad.query.get_or_404(autoridad_id)
@@ -261,10 +209,9 @@ def recover(autoridad_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Recuperada autoridad {autoridad.clave}"),
+            descripcion=safe_message(f"Recuperado Autoridad {autoridad.clave}"),
             url=url_for("autoridades.detail", autoridad_id=autoridad.id),
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
     return redirect(url_for("autoridades.detail", autoridad_id=autoridad.id))

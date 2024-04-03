@@ -2,10 +2,12 @@
 {% import 'macros/form.jinja2' as f with context %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Editar Módulo{% endblock %}
+{% block title %}Editar Modulo {{ modulo.nombre_corto }}{% endblock %}
 
 {% block topbar_actions %}
-    {{ topbar.page('Editar módulo ' + modulo.nombre) }}
+    {% call topbar.page_buttons('Editar Módulo ' + modulo.nombre_corto) %}
+        {{ topbar.button_cancel() }}
+    {% endcall %}
 {% endblock %}
 
 {% block content %}

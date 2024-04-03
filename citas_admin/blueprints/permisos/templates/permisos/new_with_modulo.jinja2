@@ -2,10 +2,12 @@
 {% import 'macros/form.jinja2' as f with context %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Agregar permiso al módulo{% endblock %}
+{% block title %}{{ titulo }}{% endblock %}
 
 {% block topbar_actions %}
-    {{ topbar.page(titulo) }}
+    {% call topbar.page_buttons(titulo) %}
+        {{ topbar.button_cancel() }}
+    {% endcall %}
 {% endblock %}
 
 {% block content %}

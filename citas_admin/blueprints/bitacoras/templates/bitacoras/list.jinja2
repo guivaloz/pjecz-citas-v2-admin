@@ -9,9 +9,6 @@
         {% if current_user.can_view('ENTRADAS SALIDAS') %}
             {{ topbar.button('Entradas/Salidas', url_for('entradas_salidas.list_active'), 'mdi:calendar-clock') }}
         {% endif %}
-        {% if current_user.can_view('TAREAS') %}
-            {{ topbar.button('Tareas', url_for('tareas.list_active'), 'mdi:washing-machine') }}
-        {% endif %}
     {% endcall %}
 {% endblock %}
 
@@ -20,9 +17,9 @@
         <table id="bitacoras_datatable" class="table display nowrap" style="width:100%">
             <thead>
                 <tr>
-                    <th>Tiempos</th>
-                    <th>Usuarios</th>
-                    <th>Descripciones</th>
+                    <th>Tiempo</th>
+                    <th>Usuario</th>
+                    <th>Descripción</th>
                 </tr>
             </thead>
         </table>

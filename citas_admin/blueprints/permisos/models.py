@@ -1,16 +1,21 @@
 """
-Permisos, modelos
+Permisos
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class Permiso(db.Model, UniversalMixin):
+class Permiso(database.Model, UniversalMixin):
     """Permiso"""
 
     VER = 1
     MODIFICAR = 2
     CREAR = 3
+    BORRAR = 3
     ADMINISTRAR = 4
     NIVELES = {
         1: "VER",
@@ -23,17 +28,27 @@ class Permiso(db.Model, UniversalMixin):
     __tablename__ = "permisos"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
-    # Clave foránea
-    rol_id = db.Column(db.Integer, db.ForeignKey("roles.id"), index=True, nullable=False)
-    rol = db.relationship("Rol", back_populates="permisos")
-    modulo_id = db.Column(db.Integer, db.ForeignKey("modulos.id"), index=True, nullable=False)
-    modulo = db.relationship("Modulo", back_populates="permisos")
+    # Claves foráneas
+    rol_id = Column(Integer, ForeignKey("roles.id"), index=True, nullable=False)
+    rol = relationship("Rol", back_populates="permisos")
+    modulo_id = Column(Integer, ForeignKey("modulos.id"), index=True, nullable=False)
+    modulo = relationship("Modulo", back_populates="permisos")
 
     # Columnas
-    nombre = db.Column(db.String(256), nullable=False, unique=True)
-    nivel = db.Column(db.Integer(), nullable=False)
+    nombre = Column(String(256), nullable=False, unique=True)
+    nivel = Column(Integer(), nullable=False)
+
+    @property
+    def rol_nombre(self):
+        """Nombre del rol"""
+        return self.rol.nombre
+
+    @property
+    def modulo_nombre(self):
+        """Nombre del modulo"""
+        return self.modulo.nombre
 
     @property
     def nivel_descrito(self):
@@ -42,4 +57,4 @@ class Permiso(db.Model, UniversalMixin):
 
     def __repr__(self):
         """Representación"""
-        return f"<Permiso {self.nombre}>"
+        return f"<Permiso {self.id}>"

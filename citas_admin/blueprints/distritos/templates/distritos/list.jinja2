@@ -2,14 +2,14 @@
 {% import 'macros/list.jinja2' as list %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Distritos{% endblock %}
+{% block title %}{{ titulo }}{% endblock %}
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
-        {% if current_user.can_edit('AUTORIDADES') %}
+        {% if current_user.can_view('AUTORIDADES') %}
             {{ topbar.button('Autoridades', url_for('autoridades.list_active'), 'mdi:scale-balance') }}
         {% endif %}
-        {% if current_user.can_edit('DISTRITOS') %}
+        {% if current_user.can_admin('DISTRITOS') %}
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('distritos.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('distritos.list_active')) }}{% endif %}
         {% endif %}
@@ -27,7 +27,6 @@
                     <th>Clave</th>
                     <th>Nombre</th>
                     <th>Nombre corto</th>
-                    <th>Es D.J.</th>
                     <th>Es D.</th>
                     <th>Es J.</th>
                 </tr>
@@ -45,9 +44,8 @@
             { data: 'detalle' },
             { data: 'nombre' },
             { data: 'nombre_corto' },
-            { data: 'es_distrito_judicial' },
             { data: 'es_distrito' },
-            { data: 'es_jurisdiccional' },
+            { data: 'es_jurisdiccional' }
         ];
         configDataTable['columnDefs'] = [
             {
@@ -58,14 +56,13 @@
                 }
             },
             {
-                targets: [3,4,5], // es_distrito_judicial, es_distrito, es_jurisdiccional
+                targets: [3, 4], // es_distrito, es_jurisdiccional
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data) { return 'Si'; } else { return ''; }
                 }
             }
         ];
-        configDataTable['pageLength'] = 25;
         $('#distritos_datatable').DataTable(configDataTable);
     </script>
 {% endblock %}

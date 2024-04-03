@@ -1,32 +1,36 @@
 """
-Distritos, modelos
+Distritos
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class Distrito(db.Model, UniversalMixin):
+class Distrito(database.Model, UniversalMixin):
     """Distrito"""
 
     # Nombre de la tabla
     __tablename__ = "distritos"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Columnas
-    clave = db.Column(db.String(16), nullable=False, unique=True)
-    nombre = db.Column(db.String(256), unique=True, nullable=False)
-    nombre_corto = db.Column(db.String(64), nullable=False, default="", server_default="")
-    es_distrito_judicial = db.Column(db.Boolean, nullable=False, default=False)
-    es_distrito = db.Column(db.Boolean, nullable=False, default=False)
-    es_jurisdiccional = db.Column(db.Boolean, nullable=False, default=False)
+    clave = Column(String(16), nullable=False, unique=True)
+    nombre = Column(String(256), unique=True, nullable=False)
+    nombre_corto = Column(String(64), nullable=False, default="", server_default="")
+    es_distrito_judicial = Column(Boolean, nullable=False, default=False)
+    es_distrito = Column(Boolean, nullable=False, default=False)
+    es_jurisdiccional = Column(Boolean, nullable=False, default=False)
 
     # Hijos
-    autoridades = db.relationship("Autoridad", back_populates="distrito")
-    oficinas = db.relationship("Oficina", back_populates="distrito")
-    pag_pagos = db.relationship("PagPago", back_populates="distrito")
+    autoridades = relationship("Autoridad", back_populates="distrito")
+    # oficinas = relationship("Oficina", back_populates="distrito")
+    # pag_pagos = relationship("PagPago", back_populates="distrito")
 
     def __repr__(self):
         """Representación"""
-        return f"<Distrito {self.nombre}>"
+        return f"<Distrito {self.clave}>"

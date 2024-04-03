@@ -1,44 +1,82 @@
 """
-Configuración para producción
+Settings
+
+Para produccion, configure los siguientes secretos en Google Cloud Secret Manager:
+
+- pjecz_citas_v2_admin_cloud_storage_deposito
+- pjecz_citas_v2_admin_host
+- pjecz_citas_v2_admin_redis_url
+- pjecz_citas_v2_admin_salt
+- pjecz_citas_v2_admin_secret_key
+- pjecz_citas_v2_admin_sqlalchemy_database_uri
+- pjecz_citas_v2_admin_task_queue
+
+Para desarrollo, debe crear un archivo .env con las variables de entorno:
+
+- CLOUD_STORAGE_DEPOSITO
+- HOST
+- REDIS_URL
+- SALT
+- SECRET_KEY
+- SQLALCHEMY_DATABASE_URI
+- TASK_QUEUE
 """
+
 import os
+from functools import lru_cache
+
+from dotenv import load_dotenv
+from google.cloud import secretmanager
+from pydantic_settings import BaseSettings
+
+load_dotenv()
+
+PROJECT_ID = os.getenv("PROJECT_ID", "")  # Por defecto esta vacio, esto significa estamos en modo local
+SERVICE_PREFIX = os.getenv("SERVICE_PREFIX", "pjecz_hercules")
 
 
-# Google Cloud SQL
-DB_USER = os.environ.get("DB_USER", "nouser")
-DB_PASS = os.environ.get("DB_PASS", "wrongpassword")
-DB_HOST = os.environ.get("DB_HOST", "127.0.0.1")
-DB_PORT = os.environ.get("DB_PORT", "5432")
-DB_NAME = os.environ.get("DB_NAME", "pjecz_citas_v2")
-DB_SOCKET_DIR = os.environ.get("DB_SOCKET_DIR", "/cloudsql")
-CLOUD_SQL_CONNECTION_NAME = os.environ.get("CLOUD_SQL_CONNECTION_NAME", "none")
+def get_secret(secret_id: str) -> str:
+    """Get secret from google cloud secret manager"""
 
-# Google Cloud SQL a Minerva con PostgreSQL
-SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    # If not in google cloud, return environment variable
+    if PROJECT_ID == "":
+        return os.getenv(secret_id.upper(), "")
 
-# Always in False
-SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Create the secret manager client
+    client = secretmanager.SecretManagerServiceClient()
 
-# Secret key
-SECRET_KEY = os.environ.get("SECRET_KEY", "Esta es una muy mala cadena aleatoria")
+    # Build the resource name of the secret version
+    secret = f"{SERVICE_PREFIX}_{secret_id}"
+    name = client.secret_version_path(PROJECT_ID, secret, "latest")
 
-# Redis
-REDIS_URL = os.environ.get("REDIS_URL", "redis://")
-TASK_QUEUE = os.environ.get("TASK_QUEUE", "pjecz_citas_v2")
+    # Access the secret version
+    response = client.access_secret_version(name=name)
 
-# Google Cloud Storage
-CLOUD_STORAGE_DEPOSITO = os.environ.get("CLOUD_STORAGE_DEPOSITO", "pjecz-informatica")
+    # Return the decoded payload
+    return response.payload.data.decode("UTF-8")
 
-# Host para los vínculos en los mensajes
-HOST = os.environ.get("HOST", "")
 
-# Salt para convertir/reconverir el id en hash
-SALT = os.environ.get("SALT", "Esta es una muy mala cadena aleatoria")
+class Settings(BaseSettings):
+    """Settings"""
 
-# Limite de citas pendientes por cliente
-LIMITE_CITAS_PENDIENTES = int(os.environ.get("LIMITE_CITAS_PENDIENTES", "0"))
+    CLOUD_STORAGE_DEPOSITO: str = get_secret("cloud_storage_deposito")
+    HOST: str = get_secret("host")
+    REDIS_URL: str = get_secret("redis_url")
+    SALT: str = get_secret("salt")
+    SECRET_KEY: str = get_secret("secret_key")
+    SQLALCHEMY_DATABASE_URI: str = get_secret("sqlalchemy_database_uri")
+    TASK_QUEUE: str = get_secret("task_queue")
 
-# URL base para verificar
-PAGO_VERIFY_URL = os.environ.get("PAGO_VERIFY_URL", "")
-PPA_SOLICITUD_VERIFY_URL = os.environ.get("PPA_SOLICITUD_VERIFY_URL", "")
-TDT_SOLICITUD_VERIFY_URL = os.environ.get("TDT_SOLICITUD_VERIFY_URL", "")
+    class Config:
+        """Load configuration"""
+
+        @classmethod
+        def customise_sources(cls, init_settings, env_settings, file_secret_settings):
+            """Customise sources, first environment variables, then .env file, then google cloud secret manager"""
+            return env_settings, file_secret_settings, init_settings
+
+
+@lru_cache()
+def get_settings() -> Settings:
+    """Get Settings"""
+    return Settings()

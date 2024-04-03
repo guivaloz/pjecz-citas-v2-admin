@@ -1,9 +1,9 @@
 """
-Comandos click
+CLI
 """
 import os
-import click
 
+import click
 
 CMD_FOLDER = os.path.join(os.path.dirname(__file__), "commands")
 CMD_PREFIX = "cmd_"
@@ -34,3 +34,7 @@ class CLI(click.MultiCommand):
 @click.command(cls=CLI)
 def cli():
     """Click"""
+
+
+if __name__ == "__main__":
+    cli()

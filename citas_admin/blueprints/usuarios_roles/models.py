@@ -1,27 +1,41 @@
 """
-Usuarios Roles, modelos
+Usuarios-Roles
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class UsuarioRol(db.Model, UniversalMixin):
+class UsuarioRol(database.Model, UniversalMixin):
     """UsuarioRol"""
 
     # Nombre de la tabla
     __tablename__ = "usuarios_roles"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
-    # Clave foránea
-    rol_id = db.Column(db.Integer, db.ForeignKey("roles.id"), index=True, nullable=False)
-    rol = db.relationship("Rol", back_populates="usuarios_roles")
-    usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), index=True, nullable=False)
-    usuario = db.relationship("Usuario", back_populates="usuarios_roles")
+    # Claves foráneas
+    rol_id = Column(Integer, ForeignKey("roles.id"), index=True, nullable=False)
+    rol = relationship("Rol", back_populates="usuarios_roles")
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), index=True, nullable=False)
+    usuario = relationship("Usuario", back_populates="usuarios_roles")
 
     # Columnas
-    descripcion = db.Column(db.String(256), nullable=False)
+    descripcion = Column(String(256), nullable=False)
+
+    @property
+    def rol_nombre(self):
+        """Nombre del rol"""
+        return self.rol.nombre
+
+    @property
+    def usuario_email(self):
+        """Email del usuario"""
+        return self.usuario.email
 
     def __repr__(self):
         """Representación"""

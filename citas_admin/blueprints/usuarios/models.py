@@ -1,52 +1,54 @@
 """
 Usuarios, modelos
 """
+
 from flask import current_app
 from flask_login import UserMixin
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
 from lib.universal_mixin import UniversalMixin
-from citas_admin.extensions import db, pwd_context
-
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.tareas.models import Tarea
 from citas_admin.blueprints.usuarios_roles.models import UsuarioRol
+from citas_admin.extensions import database, pwd_context
 
 
-class Usuario(db.Model, UserMixin, UniversalMixin):
+class Usuario(database.Model, UserMixin, UniversalMixin):
     """Usuario"""
 
     # Nombre de la tabla
     __tablename__ = "usuarios"
 
     # Clave primaria
-    id = db.Column(db.Integer(), primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Claves foráneas
-    autoridad_id = db.Column(db.Integer, db.ForeignKey("autoridades.id"), index=True, nullable=False)
-    autoridad = db.relationship("Autoridad", back_populates="usuarios")
-    oficina_id = db.Column(db.Integer, db.ForeignKey("oficinas.id"), index=True, nullable=False)
-    oficina = db.relationship("Oficina", back_populates="usuarios")
+    autoridad_id = Column(Integer, ForeignKey("autoridades.id"), index=True, nullable=False)
+    autoridad = relationship("Autoridad", back_populates="usuarios")
+    # oficina_id = Column(Integer, ForeignKey("oficinas.id"), index=True, nullable=False)
+    # oficina = relationship("Oficina", back_populates="usuarios")
 
     # Columnas
-    email = db.Column(db.String(256), nullable=False, unique=True, index=True)
-    nombres = db.Column(db.String(256), nullable=False)
-    apellido_paterno = db.Column(db.String(256), nullable=False)
-    apellido_materno = db.Column(db.String(256), default="", server_default="")
-    curp = db.Column(db.String(18), default="", server_default="")
-    puesto = db.Column(db.String(256), default="", server_default="")
-    telefono_celular = db.Column(db.String(256), default="", server_default="")
+    email = Column(String(256), nullable=False, unique=True, index=True)
+    nombres = Column(String(256), nullable=False)
+    apellido_paterno = Column(String(256), nullable=False)
+    apellido_materno = Column(String(256), default="", server_default="")
+    curp = Column(String(18), default="", server_default="")
+    puesto = Column(String(256), default="", server_default="")
+    telefono_celular = Column(String(256), default="", server_default="")
 
     # Columnas que no deben ser expuestas
-    api_key = db.Column(db.String(128), nullable=False)
-    api_key_expiracion = db.Column(db.DateTime(), nullable=False)
-    contrasena = db.Column(db.String(256), nullable=False)
+    api_key = Column(String(128), nullable=False)
+    api_key_expiracion = Column(DateTime(), nullable=False)
+    contrasena = Column(String(256), nullable=False)
 
     # Hijos
-    bitacoras = db.relationship("Bitacora", back_populates="usuario")
-    entradas_salidas = db.relationship("EntradaSalida", back_populates="usuario")
-    tareas = db.relationship("Tarea", back_populates="usuario")
-    usuarios_roles = db.relationship("UsuarioRol", back_populates="usuario")  # Sin lazy="noload" para que funcione el menu
-    usuarios_oficinas = db.relationship("UsuarioOficina", back_populates="usuario")
+    bitacoras = relationship("Bitacora", back_populates="usuario", lazy="noload")
+    entradas_salidas = relationship("EntradaSalida", back_populates="usuario", lazy="noload")
+    tareas = relationship("Tarea", back_populates="usuario")
+    usuarios_roles = relationship("UsuarioRol", back_populates="usuario")
+    # usuarios_oficinas = relationship("UsuarioOficina", back_populates="usuario")
 
     # Propiedades
     modulos_menu_principal_consultados = []
@@ -54,7 +56,7 @@ class Usuario(db.Model, UserMixin, UniversalMixin):
 
     @property
     def nombre(self):
-        """Junta nombres, apellido_paterno y apellido materno"""
+        """Junta nombres, apellido primero y apellido segundo"""
         return self.nombres + " " + self.apellido_paterno + " " + self.apellido_materno
 
     @property
@@ -67,7 +69,12 @@ class Usuario(db.Model, UserMixin, UniversalMixin):
         for usuario_rol in self.usuarios_roles:
             if usuario_rol.estatus == "A":
                 for permiso in usuario_rol.rol.permisos:
-                    if permiso.modulo.nombre not in modulos_nombres and permiso.estatus == "A" and permiso.nivel > 0 and permiso.modulo.en_navegacion:
+                    if (
+                        permiso.modulo.nombre not in modulos_nombres
+                        and permiso.estatus == "A"
+                        and permiso.nivel > 0
+                        and permiso.modulo.en_navegacion
+                    ):
                         modulos.append(permiso.modulo)
                         modulos_nombres.append(permiso.modulo.nombre)
         self.modulos_menu_principal_consultados = sorted(modulos, key=lambda x: x.nombre_corto)
@@ -126,25 +133,21 @@ class Usuario(db.Model, UserMixin, UniversalMixin):
         """¿Tiene permiso para administrar?"""
         return self.can(modulo_nombre, Permiso.ADMINISTRAR)
 
-    def launch_task(self, nombre, descripcion, *args, **kwargs):
-        """Arrancar tarea"""
-        rq_job = current_app.task_queue.enqueue("citas_admin.blueprints." + nombre, *args, **kwargs)
-        tarea = Tarea(id=rq_job.get_id(), nombre=nombre, descripcion=descripcion, usuario=self)
+    def get_roles(self):
+        """Obtener roles"""
+        usuarios_roles = UsuarioRol.query.filter_by(usuario_id=self.id).filter_by(estatus="A").all()
+        return [usuario_rol.rol.nombre for usuario_rol in usuarios_roles]
+
+    def launch_task(self, comando, mensaje, *args, **kwargs):
+        """Lanzar tarea en el fondo"""
+        rq_job = current_app.task_queue.enqueue(f"perseo.blueprints.{comando}", *args, **kwargs)
+        tarea = Tarea(id=rq_job.get_id(), comando=comando, mensaje=mensaje, usuario=self)
         tarea.save()
         return tarea
 
     def get_tasks_in_progress(self):
         """Obtener tareas"""
         return Tarea.query.filter_by(usuario=self, ha_terminado=False).all()
-
-    def get_task_in_progress(self, nombre):
-        """Obtener progreso de una tarea"""
-        return Tarea.query.filter_by(nombre=nombre, usuario=self, ha_terminado=False).first()
-
-    def get_roles(self):
-        """Obtener roles"""
-        usuarios_roles = UsuarioRol.query.filter_by(usuario_id=self.id).filter_by(estatus="A").all()
-        return [usuario_rol.rol.nombre for usuario_rol in usuarios_roles]
 
     def __repr__(self):
         """Representación"""

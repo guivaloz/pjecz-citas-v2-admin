@@ -12,13 +12,18 @@
 *.sqlite3
 *.sqlite3-journal
 *.session.sql
+*.xls
+*.xlsx
+*.XLS
+*.XLSX
 
 __pycache__/
 /.git
 /.github
+/.venv
 /.vscode
 /cli
-/instance/settings.py
+/poetry.lock
 /seed
 /setup.cfg
 /sql

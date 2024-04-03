@@ -1,12 +1,11 @@
 """
-Entradas-Salidas, vistas
+Entradas-Salidas
 """
-from flask import Blueprint, render_template
-from flask.helpers import url_for
+
+from flask import Blueprint, render_template, request, url_for
 from flask_login import login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-
 from citas_admin.blueprints.entradas_salidas.models import EntradaSalida
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
@@ -16,27 +15,36 @@ MODULO = "ENTRADAS SALIDAS"
 entradas_salidas = Blueprint("entradas_salidas", __name__, template_folder="templates")
 
 
-@entradas_salidas.route("/entradas_salidas/datatable_json", methods=["GET", "POST"])
+@entradas_salidas.before_request
 @login_required
 @permission_required(MODULO, Permiso.VER)
+def before_request():
+    """Permiso por defecto"""
+
+
+@entradas_salidas.route("/entradas_salidas/datatable_json", methods=["GET", "POST"])
 def datatable_json():
-    """DataTable JSON para listado de entradas y salidas"""
+    """DataTable JSON para listado de Entradas-Salidas"""
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
     consulta = EntradaSalida.query
+    if "estatus" in request.form:
+        consulta = consulta.filter_by(estatus=request.form["estatus"])
+    else:
+        consulta = consulta.filter_by(estatus="A")
     registros = consulta.order_by(EntradaSalida.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
-    for entrada_salida in registros:
+    for resultado in registros:
         data.append(
             {
-                "creado": entrada_salida.creado.strftime("%Y-%m-%d %H:%M:%S"),
-                "tipo": entrada_salida.tipo,
+                "creado": resultado.creado.strftime("%Y-%m-%d %H:%M:%S"),
+                "tipo": resultado.tipo,
                 "usuario": {
-                    "email": entrada_salida.usuario.email,
-                    "url": url_for("usuarios.detail", usuario_id=entrada_salida.usuario_id),
+                    "email": resultado.usuario.email,
+                    "url": url_for("usuarios.detail", usuario_id=resultado.usuario_id),
                 },
             }
         )
@@ -45,8 +53,6 @@ def datatable_json():
 
 
 @entradas_salidas.route("/entradas_salidas")
-@login_required
-@permission_required(MODULO, Permiso.VER)
 def list_active():
-    """Listado de entradas y salidas"""
+    """Listado de Entradas-Salidas activos"""
     return render_template("entradas_salidas/list.jinja2")

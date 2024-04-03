@@ -2,32 +2,27 @@
 {% import 'macros/detail.jinja2' as detail %}
 {% import 'macros/modals.jinja2' as modals %}
 {% import 'macros/topbar.jinja2' as topbar %}
-{% import 'macros/list.jinja2' as list %}
 
-{% block title %}Usuario{% endblock %}
+{% block title %}Usuario {{ usuario.email }}{% endblock %}
 
 {% block topbar_actions %}
     {% call topbar.page_buttons('Usuario ' + usuario.email) %}
         {{ topbar.button_previous('Usuarios', url_for('usuarios.list_active')) }}
-        {% if current_user.can_admin('USUARIOS') %}
-            {{ topbar.button_edit('Editar', url_for('usuarios.edit_admin', usuario_id=usuario.id)) }}
-            {% if usuario.estatus == 'A' %}
-                {{ topbar.button('API Key', url_for('usuarios.view_api_key', usuario_id=usuario.id), 'mdi:key') }}
-                {{ topbar.button_delete('Eliminar', url_for('usuarios.delete', usuario_id=usuario.id)) }}
-            {% endif %}
-            {% if usuario.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('usuarios.recover', usuario_id=usuario.id)) }}{% endif %}
-        {% elif current_user.can_edit('USUARIOS') %}
+        {% if current_user.can_edit('USUARIOS') %}
             {{ topbar.button_edit('Editar', url_for('usuarios.edit', usuario_id=usuario.id)) }}
+        {% endif %}
+        {% if current_user.can_admin('USUARIOS') %}
+            {% if usuario.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('usuarios.delete', usuario_id=usuario.id)) }}{% endif %}
+            {% if usuario.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('usuarios.recover', usuario_id=usuario.id)) }}{% endif %}
         {% endif %}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
     {% call detail.card(estatus=usuario.estatus) %}
-        {{ detail.label_value_big('Nombre', usuario.nombre) }}
-        {{ detail.label_value('Puesto', usuario.puesto) }}
+        {{ detail.label_value_big('e-mail', usuario.email) }}
+        {{ detail.label_value('Nombre', usuario.nombre) }}
         {{ detail.label_value('CURP', usuario.curp) }}
-        {{ detail.label_value('e-mail', usuario.email) }}
         {% if current_user.can_view("DISTRITOS") %}
             {{ detail.label_value('Distrito', usuario.autoridad.distrito.nombre, url_for('distritos.detail', distrito_id=usuario.autoridad.distrito_id)) }}
         {% else %}
@@ -38,18 +33,12 @@
         {% else %}
             {{ detail.label_value('Autoridad', usuario.autoridad.descripcion) }}
         {% endif %}
-        {% if current_user.can_view("OFICINAS") %}
-            {{ detail.label_value('Oficina', usuario.oficina.descripcion, url_for('oficinas.detail', oficina_id=usuario.oficina_id)) }}
-        {% else %}
-            {{ detail.label_value('Oficina', usuario.oficina.descripcion) }}
-        {% endif %}
-        {{ detail.label_value('Teléfono celular', usuario.telefono_celular) }}
-        {{ detail.label_value('Creado', moment(usuario.creado).format('llll')) }}
+        {{ detail.label_value('Puesto', usuario.puesto) }}
+        {# detail.label_value('Creado', moment(usuario.creado).format('llll')) #}
     {% endcall %}
-    {# Roles del usuario #}
     {% if current_user.can_view('USUARIOS ROLES') %}
         {% call detail.card('Roles') %}
-            <table id="usuarios_roles_datatable" class="table display nowrap init_tabs" style="width:100%;">
+            <table id="usuarios_roles_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -58,37 +47,18 @@
                 </thead>
             </table>
             {% if current_user.can_insert('USUARIOS ROLES') %}
-                <a href="{{ url_for('usuarios_roles.new_with_usuario', usuario_id=usuario.id) }}" class="btn btn-primary">Agregar</a>
-            {% endif %}
-        {% endcall %}
-    {% endif %}
-    {# Oficinas del usuario #}
-    {% if current_user.can_view('USUARIOS OFICINAS') %}
-        {% call detail.card('Oficinas que se van a mostrar en Cita Inmediata') %}
-            <table id="usuarios_oficinas_datatable" class="table display nowrap" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Clave</th>
-                        <th>Descripcion Corta</th>
-                        <th><span title="Límite de personas">L.P.</span></th>
-                        <th><span title="Puede agendar citas">P.A.C.</span></th>
-                        <th><span title="Puede enviar QR">QR</span></th>
-                    </tr>
-                </thead>
-            </table>
-            {% if current_user.can_insert('USUARIOS OFICINAS') %}
-                <a href="{{ url_for('usuarios_oficinas.new_with_usuario', usuario_id=usuario.id) }}" class="btn btn-primary">Agregar</a>
+            <a href="{{ url_for('usuarios_roles.new_with_usuario', usuario_id=usuario.id) }}" class="btn btn-primary">Agregar</a>
             {% endif %}
         {% endcall %}
     {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
-    {% if current_user.can_edit('USUARIOS') %}
+    {% if current_user.can_admin('USUARIOS') %}
         {% if usuario.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + usuario.nombre + '?') }}{% endif %}
         {% if usuario.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + usuario.nombre + '?') }}{% endif %}
     {% endif %}
+    {{ detail.moment_js(moment) }}
     {{ detail.config_datatable() }}
     {% if current_user.can_view('USUARIOS ROLES') %}
         <script>
@@ -121,50 +91,4 @@
             $('#usuarios_roles_datatable').DataTable(configDataTable);
         </script>
     {% endif %}
-    {% if current_user.can_view('USUARIOS OFICINAS') %}
-        <script>
-            configDataTable['ajax']['url'] = '/usuarios_oficinas/datatable_json';
-            configDataTable['ajax']['data'] = { 'estatus': "A", 'usuario_id': {{ usuario.id }} };
-            configDataTable['columns'] = [
-                { data: 'detalle' },
-                { data: 'oficina' },
-                { data: 'oficina_descripcion_corta' },
-                { data: 'oficina_limite_personas' },
-                { data: 'oficina_puede_agendar_citas' },
-                { data: 'oficina_puede_enviar_qr' },
-            ];
-            configDataTable['columnDefs'] = [
-                {
-                    targets: 0, // detalle
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        return '<a href="' + data.url + '">' + data.id + '</a>';
-                    }
-                },
-                {
-                    targets: 1, // oficina
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        if (data.url == '') {
-                            return data.clave;
-                        } else {
-                            return '<a href="' + data.url + '">' + data.clave + '</a>';
-                        }
-                    }
-                },
-                {
-                    targets: [4, 5], // puede_agendar_citas, puede_enviar_qr
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        if (data) {
-                            return 'SI';
-                        }
-                        return '';
-                    }
-                }
-            ];
-            $('#usuarios_oficinas_datatable').DataTable(configDataTable);
-        </script>
-    {% endif %}
-    {{ detail.moment_js(moment) }}
 {% endblock %}

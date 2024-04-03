@@ -1,6 +1,13 @@
+/* Datatables Config */
 class ConfigDataTable {
+  // Constructor
   constructor(csrf_token) {
-    this.config = {
+    this.csrf_token = csrf_token;
+  }
+
+  // Entregar configuracion
+  config() {
+    return {
       processing: true,
       serverSide: true,
       ordering: false,
@@ -10,7 +17,7 @@ class ConfigDataTable {
       ajax: {
         url: null,
         type: "POST",
-        headers: { "X-CSRF-TOKEN": csrf_token },
+        headers: { "X-CSRF-TOKEN": this.csrf_token },
         dataType: "json",
         dataSrc: "data",
         data: null,
@@ -31,22 +38,6 @@ class ConfigDataTable {
           sPrevious: "Anterior",
         },
       },
-    };
-
-    /* Renderiza una celda de la tabla con el texto indicado haciéndolo un enlace a la url indicada
-    y dejando el texto plano si el enlace está vacío. */
-    this.texto_con_url = function (texto, url) {
-      if (url == "") return texto;
-      return '<a href="' + url + '">' + texto + "</a>";
-    };
-
-    /* Corta el texto a una longitud especificada, al pasar de ésta, agrega la puntuación '…' al final */
-    this.texto_cortado = function (texto, longitud = 32) {
-      if (texto.length > longitud) {
-        const texto_cortado = texto.substr(0, longitud) + "…";
-        return "<span title='" + texto + "'>" + texto_cortado + "</span>";
-      }
-      return texto;
     };
   }
 }

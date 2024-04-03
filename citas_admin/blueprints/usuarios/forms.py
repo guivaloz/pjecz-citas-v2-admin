@@ -1,21 +1,15 @@
 """
 Usuarios, formularios
 """
+
 from flask_wtf import FlaskForm
 from wtforms import HiddenField, PasswordField, SelectField, StringField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, Regexp
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
+from wtforms.validators import DataRequired, Email, Length, Optional, Regexp
 
 from lib.safe_string import CONTRASENA_REGEXP
-
-from citas_admin.blueprints.oficinas.models import Oficina
+from citas_admin.blueprints.autoridades.models import Autoridad
 
 CONTRASENA_MENSAJE = "De 8 a 48 caracteres con al menos una mayúscula, una minúscula y un número. No acentos, ni eñe."
-
-
-def oficinas_opciones():
-    """Oficinas: opciones para select"""
-    return Oficina.query.filter_by(estatus="A").order_by(Oficina.clave).all()
 
 
 class AccesoForm(FlaskForm):
@@ -23,104 +17,31 @@ class AccesoForm(FlaskForm):
 
     siguiente = HiddenField()
     identidad = StringField("Correo electrónico o usuario", validators=[Optional(), Length(8, 256)])
-    contrasena = PasswordField("Contraseña", validators=[Optional(), Length(8, 48), Regexp(CONTRASENA_REGEXP, 0, CONTRASENA_MENSAJE)])
+    contrasena = PasswordField(
+        "Contraseña",
+        validators=[Optional(), Length(8, 48), Regexp(CONTRASENA_REGEXP, 0, CONTRASENA_MENSAJE)],
+    )
     email = StringField("Correo electrónico", validators=[Optional(), Email()])
     token = StringField("Token", validators=[Optional()])
     guardar = SubmitField("Guardar")
 
 
-class CambiarContrasenaForm(FlaskForm):
-    """Formulario para cambiar la contraseña"""
+class UsuarioForm(FlaskForm):
+    """Formulario Usuario"""
 
-    contrasena_actual = PasswordField(
-        "Contraseña actual",
-        validators=[
-            DataRequired(),
-            Regexp(CONTRASENA_REGEXP, 0, CONTRASENA_MENSAJE),
-        ],
-    )
-    contrasena = PasswordField(
-        "Nueva contraseña",
-        validators=[
-            DataRequired(),
-            Regexp(CONTRASENA_REGEXP, 0, CONTRASENA_MENSAJE),
-            EqualTo("contrasena_repetir", message="Las contraseñas deben coincidir."),
-        ],
-    )
-    contrasena_repetir = PasswordField("Repetir la nueva contraseña")
-    actualizar = SubmitField("Actualizar")
-
-
-class UsuarioNewForm(FlaskForm):
-    """Formulario para nuevo usuario"""
-
-    distrito = SelectField("Distrito", choices=None, validate_choice=False)  # Las opciones se agregan con JS
-    autoridad = SelectField("Autoridad", choices=None, validate_choice=False)  # Las opciones se agregan con JS
-    oficina = QuerySelectField(query_factory=oficinas_opciones, get_label="compuesto")
+    autoridad = SelectField("Autoridad", coerce=int, validators=[DataRequired()])
+    email = StringField("e-mail", validators=[DataRequired(), Email()])
     nombres = StringField("Nombres", validators=[DataRequired(), Length(max=256)])
     apellido_paterno = StringField("Apellido primero", validators=[DataRequired(), Length(max=256)])
     apellido_materno = StringField("Apellido segundo", validators=[Optional(), Length(max=256)])
     curp = StringField("CURP", validators=[Optional(), Length(max=256)])
     puesto = StringField("Puesto", validators=[Optional(), Length(max=256)])
-    email = StringField("e-mail", validators=[DataRequired(), Email()])
-    contrasena = PasswordField(
-        "Contraseña",
-        validators=[
-            Optional(),
-            Regexp(CONTRASENA_REGEXP, 0, CONTRASENA_MENSAJE),
-            EqualTo("contrasena_repetir", message="Las contraseñas deben coincidir."),
-        ],
-    )
-    contrasena_repetir = PasswordField("Repetir contraseña", validators=[Optional()])
     guardar = SubmitField("Guardar")
 
-
-class UsuarioEditForm(FlaskForm):
-    """Formulario para editar usuario"""
-
-    distrito = StringField("Distrito")  # Read only
-    autoridad = StringField("Autoridad")  # Read only
-    oficina = QuerySelectField(query_factory=oficinas_opciones, get_label="compuesto")
-    nombres = StringField("Nombres", validators=[Optional(), Length(max=256)])
-    apellido_paterno = StringField("Apellido primero", validators=[Optional(), Length(max=256)])
-    apellido_materno = StringField("Apellido segundo", validators=[Optional(), Length(max=256)])
-    curp = StringField("CURP", validators=[Optional(), Length(max=256)])
-    puesto = StringField("Puesto", validators=[Optional(), Length(max=256)])
-    email = StringField("e-mail")  # Read only
-    guardar = SubmitField("Guardar")
-
-
-class UsuarioEditAdminForm(FlaskForm):
-    """Formulario para editar usuario"""
-
-    distrito = SelectField("Distrito", choices=None, validate_choice=False)  # Las opciones se agregan con JS
-    autoridad = SelectField("Autoridad", choices=None, validate_choice=False)  # Las opciones se agregan con JS
-    oficina = QuerySelectField(query_factory=oficinas_opciones, get_label="compuesto")
-    nombres = StringField("Nombres", validators=[DataRequired(), Length(max=256)])
-    apellido_paterno = StringField("Apellido primero", validators=[DataRequired(), Length(max=256)])
-    apellido_materno = StringField("Apellido segundo", validators=[Optional(), Length(max=256)])
-    curp = StringField("CURP", validators=[Optional(), Length(max=256)])
-    puesto = StringField("Puesto", validators=[Optional(), Length(max=256)])
-    email = StringField("e-mail", validators=[DataRequired(), Email()])
-    contrasena = PasswordField(
-        "Contraseña",
-        validators=[
-            Optional(),
-            Regexp(CONTRASENA_REGEXP, 0, CONTRASENA_MENSAJE),
-            EqualTo("contrasena_repetir", message="Las contraseñas deben coincidir."),
-        ],
-    )
-    contrasena_repetir = PasswordField("Repetir contraseña", validators=[Optional()])
-    guardar = SubmitField("Guardar")
-
-
-class UsuarioSearchForm(FlaskForm):
-    """Formulario para buscar usuarios"""
-
-    nombres = StringField("Nombres", validators=[Optional(), Length(max=256)])
-    apellido_paterno = StringField("Apellido primero", validators=[Optional(), Length(max=256)])
-    apellido_materno = StringField("Apellido segundo", validators=[Optional(), Length(max=256)])
-    curp = StringField("CURP", validators=[Optional(), Length(max=18)])
-    puesto = StringField("Puesto", validators=[Optional(), Length(max=256)])
-    email = StringField("e-mail", validators=[Optional(), Length(max=256)])
-    buscar = SubmitField("Buscar")
+    def __init__(self, *args, **kwargs):
+        """Inicializar y cargar opciones para autoridad"""
+        super().__init__(*args, **kwargs)
+        self.autoridad.choices = [
+            (d.id, d.clave + " - " + d.descripcion_corta)
+            for d in Autoridad.query.filter_by(estatus="A").order_by(Autoridad.clave).all()
+        ]

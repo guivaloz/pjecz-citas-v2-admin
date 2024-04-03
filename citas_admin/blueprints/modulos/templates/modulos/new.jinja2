@@ -5,7 +5,9 @@
 {% block title %}Nuevo Módulo{% endblock %}
 
 {% block topbar_actions %}
-    {{ topbar.page('Nuevo Módulo') }}
+    {% call topbar.page_buttons('Nuevo Módulo') %}
+        {{ topbar.button_cancel() }}
+    {% endcall %}
 {% endblock %}
 
 {% block content %}

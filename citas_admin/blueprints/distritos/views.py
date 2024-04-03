@@ -1,22 +1,20 @@
 """
 Distritos, vistas
 """
+
 import json
 
-from flask import Blueprint, flash, render_template, redirect, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_clave, safe_message, safe_string
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
-from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.distritos.forms import DistritoForm
+from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-
-from citas_admin.blueprints.oficinas.models import Oficina
 
 MODULO = "DISTRITOS"
 
@@ -54,7 +52,6 @@ def datatable_json():
                 },
                 "nombre": resultado.nombre,
                 "nombre_corto": resultado.nombre_corto,
-                "es_distrito_judicial": resultado.es_distrito_judicial,
                 "es_distrito": resultado.es_distrito,
                 "es_jurisdiccional": resultado.es_jurisdiccional,
             }
@@ -75,7 +72,7 @@ def list_active():
 
 
 @distritos.route("/distritos/inactivos")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def list_inactive():
     """Listado de Distritos inactivos"""
     return render_template(
@@ -86,7 +83,7 @@ def list_inactive():
     )
 
 
-@distritos.route("/distrito/<int:distrito_id>")
+@distritos.route("/distritos/<int:distrito_id>")
 def detail(distrito_id):
     """Detalle de un Distrito"""
     distrito = Distrito.query.get_or_404(distrito_id)
@@ -116,7 +113,6 @@ def new():
                 clave=clave,
                 nombre=nombre,
                 nombre_corto=safe_string(form.nombre_corto.data, save_enie=True),
-                es_distrito_judicial=form.es_distrito_judicial.data,
                 es_distrito=form.es_distrito.data,
                 es_jurisdiccional=form.es_jurisdiccional.data,
             )
@@ -124,7 +120,7 @@ def new():
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
                 usuario=current_user,
-                descripcion=safe_message(f"Nuevo distrito {distrito.nombre}"),
+                descripcion=safe_message(f"Nuevo Distrito {distrito.clave}"),
                 url=url_for("distritos.detail", distrito_id=distrito.id),
             )
             bitacora.save()
@@ -155,19 +151,18 @@ def edit(distrito_id):
             if distrito_existente and distrito_existente.id != distrito.id:
                 es_valido = False
                 flash("El nombre ya está en uso. Debe de ser único.", "warning")
-        # Si es valido actualizar
+        # Si es válido, actualizar
         if es_valido:
             distrito.clave = clave
             distrito.nombre = nombre
             distrito.nombre_corto = safe_string(form.nombre_corto.data, save_enie=True)
-            distrito.es_distrito_judicial = form.es_distrito_judicial.data
             distrito.es_distrito = form.es_distrito.data
             distrito.es_jurisdiccional = form.es_jurisdiccional.data
             distrito.save()
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
                 usuario=current_user,
-                descripcion=safe_message(f"Editado distrito {distrito.nombre}"),
+                descripcion=safe_message(f"Editado Distrito {distrito.clave}"),
                 url=url_for("distritos.detail", distrito_id=distrito.id),
             )
             bitacora.save()
@@ -176,14 +171,13 @@ def edit(distrito_id):
     form.clave.data = distrito.clave
     form.nombre.data = distrito.nombre
     form.nombre_corto.data = distrito.nombre_corto
-    form.es_distrito_judicial.data = distrito.es_distrito_judicial
     form.es_distrito.data = distrito.es_distrito
     form.es_jurisdiccional.data = distrito.es_jurisdiccional
     return render_template("distritos/edit.jinja2", form=form, distrito=distrito)
 
 
 @distritos.route("/distritos/eliminar/<int:distrito_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(distrito_id):
     """Eliminar Distrito"""
     distrito = Distrito.query.get_or_404(distrito_id)
@@ -192,17 +186,16 @@ def delete(distrito_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Eliminado distrito {distrito.nombre}"),
+            descripcion=safe_message(f"Eliminado Distrito {distrito.clave}"),
             url=url_for("distritos.detail", distrito_id=distrito.id),
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
     return redirect(url_for("distritos.detail", distrito_id=distrito.id))
 
 
 @distritos.route("/distritos/recuperar/<int:distrito_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(distrito_id):
     """Recuperar Distrito"""
     distrito = Distrito.query.get_or_404(distrito_id)
@@ -211,26 +204,9 @@ def recover(distrito_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Recuperado distrito {distrito.nombre}"),
+            descripcion=safe_message(f"Recuperado Distrito {distrito.clave}"),
             url=url_for("distritos.detail", distrito_id=distrito.id),
         )
         bitacora.save()
         flash(bitacora.descripcion, "success")
-        return redirect(bitacora.url)
     return redirect(url_for("distritos.detail", distrito_id=distrito.id))
-
-
-@distritos.route("/distritos/select", methods=["GET", "POST"])
-def select():
-    """Regresa las opciones para añadir a un select"""
-    # Consultar
-    consulta = Distrito.query.filter_by(estatus="A")
-    consulta = consulta.join(Oficina)
-    consulta = consulta.filter(Oficina.estatus == "A").filter(Oficina.puede_agendar_citas == True)
-    registros = consulta.order_by(Distrito.nombre).all()
-    # Elaborar datos
-    results = {}
-    for registro in registros:
-        results[registro.id] = registro.nombre_corto
-    # Entregar el json resultante
-    return {"data": results}

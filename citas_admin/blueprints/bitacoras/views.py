@@ -1,11 +1,11 @@
 """
-Bitácoras, vistas
+Bitácoras
 """
-from flask import Blueprint, render_template, url_for
+
+from flask import Blueprint, render_template, request, url_for
 from flask_login import login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
@@ -15,30 +15,39 @@ MODULO = "BITACORAS"
 bitacoras = Blueprint("bitacoras", __name__, template_folder="templates")
 
 
-@bitacoras.route("/bitacoras/datatable_json", methods=["GET", "POST"])
+@bitacoras.before_request
 @login_required
 @permission_required(MODULO, Permiso.VER)
+def before_request():
+    """Permiso por defecto"""
+
+
+@bitacoras.route("/bitacoras/datatable_json", methods=["GET", "POST"])
 def datatable_json():
-    """DataTable JSON para listado de listado de bitácoras"""
+    """DataTable JSON para listado de Bitacoras"""
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
     consulta = Bitacora.query
+    if "estatus" in request.form:
+        consulta = consulta.filter_by(estatus=request.form["estatus"])
+    else:
+        consulta = consulta.filter_by(estatus="A")
     registros = consulta.order_by(Bitacora.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
-    # Elaborar un listado de diccionarios
+    # Elaborar datos para DataTable
     data = []
-    for bitacora in registros:
+    for resultado in registros:
         data.append(
             {
-                "creado": bitacora.creado.strftime("%Y-%m-%d %H:%M:%S"),
+                "creado": resultado.creado.strftime("%Y-%m-%d %H:%M:%S"),
                 "usuario": {
-                    "email": bitacora.usuario.email,
-                    "url": url_for("usuarios.detail", usuario_id=bitacora.usuario_id),
+                    "email": resultado.usuario.email,
+                    "url": url_for("usuarios.detail", usuario_id=resultado.usuario_id),
                 },
                 "vinculo": {
-                    "descripcion": bitacora.descripcion,
-                    "url": bitacora.url,
+                    "descripcion": resultado.descripcion,
+                    "url": resultado.url,
                 },
             }
         )
@@ -47,8 +56,6 @@ def datatable_json():
 
 
 @bitacoras.route("/bitacoras")
-@login_required
-@permission_required(MODULO, Permiso.VER)
 def list_active():
-    """Listado de bitácoras"""
+    """Listado de Bitácoras activas"""
     return render_template("bitacoras/list.jinja2")

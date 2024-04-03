@@ -1,27 +1,29 @@
 """
 Sistemas
 """
-from flask import Blueprint, redirect, render_template
+
+from flask import Blueprint, redirect, render_template, send_from_directory
 from flask_login import current_user
 
 sistemas = Blueprint("sistemas", __name__, template_folder="templates")
 
-# Roles que deben estar en la base de datos
-ROL_RECEPCIONISTA = "RECEPCIONISTA"
-
 
 @sistemas.route("/")
 def start():
-    """Página inicial"""
+    """Pagina Inicial"""
+    # Si el usuario está autenticado
     if current_user.is_authenticated:
-        # Consultar los roles del usuario
-        current_user_roles = current_user.get_roles()
-        # Crear pagina de inicio
-        return render_template(
-            "sistemas/start.jinja2",
-            show_menu_recepcionista=ROL_RECEPCIONISTA in current_user_roles,
-        )
+        # Mostrar start.jinja2
+        return render_template("sistemas/start.jinja2")
+
+    # No está autenticado, debe de iniciar sesión
     return redirect("/login")
+
+
+@sistemas.route("/favicon.ico")
+def favicon():
+    """Favicon"""
+    return send_from_directory("static/img", "favicon.ico", mimetype="image/vnd.microsoft.icon")
 
 
 @sistemas.app_errorhandler(400)

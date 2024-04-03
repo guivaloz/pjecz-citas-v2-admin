@@ -1,29 +1,33 @@
 """
-Modulos, modelos
+Modulos
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class Modulo(db.Model, UniversalMixin):
+class Modulo(database.Model, UniversalMixin):
     """Modulo"""
 
     # Nombre de la tabla
     __tablename__ = "modulos"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Columnas
-    nombre = db.Column(db.String(256), unique=True, nullable=False)
-    nombre_corto = db.Column(db.String(64), nullable=False)
-    icono = db.Column(db.String(48), nullable=False)
-    ruta = db.Column(db.String(64), nullable=False)
-    en_navegacion = db.Column(db.Boolean, nullable=False, default=True)
+    nombre = Column(String(256), unique=True, nullable=False)
+    nombre_corto = Column(String(64), nullable=False)
+    icono = Column(String(48), nullable=False)
+    ruta = Column(String(64), nullable=False)
+    en_navegacion = Column(Boolean, nullable=False, default=True)
 
     # Hijos
-    bitacoras = db.relationship("Bitacora", back_populates="modulo")
-    permisos = db.relationship("Permiso", back_populates="modulo")
+    bitacoras = relationship("Bitacora", back_populates="modulo")
+    permisos = relationship("Permiso", back_populates="modulo")
 
     def __repr__(self):
         """Representación"""

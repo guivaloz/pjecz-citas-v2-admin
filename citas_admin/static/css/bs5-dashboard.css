@@ -1,29 +1,21 @@
-/*
- * Bootstrap 5 - Dashboard
- */
+/* Bootstrap 5 - Dashboard */
 
 html,
 body {
   height: 100%;
 }
+
 body {
-  font-size: 0.875rem;
+  font-family: "Roboto", Arial, Helvetica, sans-serif;
   background-color: #eee;
 }
-.pjecz-bg-dark {
-  background-color: #004360 !important;
-  /* background: linear-gradient(#054d11, #135a1f) !important;
-  background: linear-gradient(#5c0202, #7a0a0a) !important; navidad*/
-}
-.feather {
-  width: 16px;
-  height: 16px;
-  vertical-align: text-bottom;
+
+/* Color de fondo del menu izquierdo */
+.bg-dark {
+  background-color: #276e9e !important;
 }
 
-/*
- * Sidebar
- */
+/* Sidebar */
 
 .sidebar {
   height: auto; /* position: fixed; */
@@ -75,9 +67,7 @@ body {
   text-transform: uppercase;
 }
 
-/*
- * Navbar
- */
+/* Navbar */
 
 .navbar-brand {
   padding-top: 0.75rem;
@@ -109,30 +99,35 @@ body {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
 }
 
-/*
- * Icons
- */
-
-.feature-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 4rem;
-  height: 4rem;
-  margin-bottom: 0rem;
-  margin-right: 0.5rem;
-  font-size: 2rem;
-  color: #fff;
-  border-radius: 0.75rem;
-  float: left;
+/* Currency */
+.currency {
+  font-size: 1em;
+  margin: 0;
 }
+
+/* Boton Cancelar */
 
 .btn-cancelar {
   float: right;
   margin-top: -46px;
 }
 
-.dataTable tbody tr:hover {
-  background-color: #f8f9fa;
-  --bs-table-accent-bg: rgba(245, 245, 250, 0.5);
+/* Progress Bar */
+
+.progress-bar {
+  width: calc(100% - 6px);
+  height: 5px;
+  background: #e0e0e0;
+  padding: 3px;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.progress-bar-fill {
+  display: block;
+  height: 5px;
+  background: #26a8db;
+  border-radius: 3px;
+  /*transition: width 250ms ease-in-out;*/
+  transition: width 5s ease-in-out;
 }

@@ -1,16 +1,17 @@
 {% extends 'layouts/app.jinja2' %}
 {% import 'macros/detail.jinja2' as detail %}
-{% import 'macros/list.jinja2' as list %}
 {% import 'macros/modals.jinja2' as modals %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Módulo{% endblock %}
+{% block title %}Módulo {{ modulo.nombre }}{% endblock %}
 
 {% block topbar_actions %}
     {% call topbar.page_buttons('Módulo ' + modulo.nombre) %}
         {{ topbar.button_previous('Módulos', url_for('modulos.list_active')) }}
         {% if current_user.can_edit('MODULOS') %}
             {{ topbar.button_edit('Editar', url_for('modulos.edit', modulo_id=modulo.id)) }}
+        {% endif %}
+        {% if current_user.can_admin('MODULOS') %}
             {% if modulo.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('modulos.delete', modulo_id=modulo.id)) }}{% endif %}
             {% if modulo.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('modulos.recover', modulo_id=modulo.id)) }}{% endif %}
         {% endif %}
@@ -23,29 +24,31 @@
         {{ detail.label_value('Icono', modulo.icono) }}
         {{ detail.label_value('Ruta', modulo.ruta) }}
         {{ detail.label_value_boolean('En menú de navegación', modulo.en_navegacion) }}
+        {# detail.label_value('Creado', moment(modulo.creado).format('llll')) #}
     {% endcall %}
-    {# Permisos de este módulo #}
-    {% call detail.card('Permisos de este módulo') %}
-        <table id="permisos_datatable" class="table display nowrap" style="width:100%">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Nivel</th>
-                    <th>Rol</th>
-                </tr>
-            </thead>
-        </table>
-        {% if current_user.can_insert('PERMISOS') %}
-        <a href="{{ url_for('permisos.new_with_modulo', modulo_id=modulo.id) }}" class="btn btn-primary">Agregar</a>
-        {% endif %}
-    {% endcall %}
+    {% if current_user.can_view('PERMISOS') %}
+        {% call detail.card('Permisos') %}
+            <table id="permisos_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Rol</th>
+                    </tr>
+                </thead>
+            </table>
+            {% if current_user.can_insert('PERMISOS') %}
+            <a href="{{ url_for('permisos.new_with_modulo', modulo_id=modulo.id) }}" class="btn btn-primary">Agregar</a>
+            {% endif %}
+        {% endcall %}
+    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
-    {% if current_user.can_edit('MODULOS') %}
+    {% if current_user.can_admin('MODULOS') %}
         {% if modulo.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + modulo.nombre + '?') }}{% endif %}
-        {% if modulo.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', 'Recuperar a ' + modulo.nombre + '?') }}{% endif %}
+        {% if modulo.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + modulo.nombre + '?') }}{% endif %}
     {% endif %}
+    {{ detail.moment_js(moment) }}
     {{ detail.config_datatable() }}
     {% if current_user.can_view('PERMISOS') %}
         <script>
@@ -53,8 +56,7 @@
             configDataTable['ajax']['data'] = { 'estatus': "A", 'modulo_id': {{ modulo.id}} };
             configDataTable['columns'] = [
                 { data: "detalle" },
-                { data: "nivel" },
-                { data: "rol" },
+                { data: "rol" }
             ];
             configDataTable['columnDefs'] = [
                 {
@@ -65,7 +67,7 @@
                     }
                 },
                 {
-                    targets: 2, // rol
+                    targets: 1, // rol
                     data: null,
                     render: function(data, type, row, meta) {
                         if (data.url == '') {

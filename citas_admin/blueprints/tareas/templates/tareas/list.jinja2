@@ -2,32 +2,27 @@
 {% import 'macros/list.jinja2' as list %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Tareas{% endblock %}
+{% block title %}{{ titulo }}{% endblock %}
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
-        {% if current_user.can_view('BITACORAS') %}
-            {{ topbar.button('Bitácoras', url_for('bitacoras.list_active'), 'mdi:calendar-clock') }}
-        {% endif %}
-        {% if current_user.can_view('ENTRADAS SALIDAS') %}
-            {{ topbar.button('Entradas/Salidas', url_for('entradas_salidas.list_active'), 'mdi:calendar-clock') }}
-        {% endif %}
-        {% if current_user.can_edit('TAREAS') %}
-            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivas', url_for('tareas.list_inactive')) }}{% endif %}
-            {% if estatus == 'B' %}{{ topbar.button_list_active('Activas', url_for('tareas.list_active')) }}{% endif %}
+        {% if current_user.can_admin('TAREAS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('tareas.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('tareas.list_active')) }}{% endif %}
         {% endif %}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
     {% call list.card() %}
-        <table id="tareas_datatable" class="table display nowrap" style="width:100%">
+        <table id="tareas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
-                    <th>Inicios</th>
-                    <th>Nombres</th>
-                    <th>Descripciones</th>
+                    <th>Comando</th>
                     <th>Ha terminado</th>
+                    <th>Mensaje</th>
+                    <th>Usuario</th>
+                    <th>Creado</th>
                 </tr>
             </thead>
         </table>
@@ -40,24 +35,46 @@
         configDataTable['ajax']['url'] = '/tareas/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
+            { data: 'detalle' },
+            { data: 'ha_terminado' },
+            { data: 'mensaje' },
+            { data: 'usuario' },
             { data: 'creado' },
-            { data: 'nombre' },
-            { data: 'descripcion' },
-            { data: 'ha_terminado' }
         ];
         configDataTable['columnDefs'] = [
             {
-                targets: 0, // creado
-                type: "date",
-                render: function (data, type, row) {
-                    return moment.utc(data).local().format("YYYY-MM-DD HH:mm:ss");
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.comando + '</a>';
                 }
             },
             {
-                targets: 3, // ha_terminado
+                targets: 1, // ha_terminado
                 data: null,
                 render: function(data, type, row, meta) {
-                    if (data) { return 'Si'; } else { return ''; }
+                    if (data) { return 'Terminado'; } else { return ''; }
+                }
+            },
+            {
+                targets: 2, // mensaje
+                data: null,
+                render: function(data, type, row, meta) {
+                    return (data.length > 48 ? '<span title="'+ data +'">' + data.substr(0, 48) + '…</span>' : data);
+                }
+            },
+            {
+                targets: 3, // usuario
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.email + '</a>';
+                }
+            },
+            {
+                targets: 4, // creado
+                type: "date",
+                render: function (data, type, row) {
+                    return moment.utc(data).local().format("YYYY-MM-DD HH:mm:ss");
                 }
             }
         ];
