@@ -1,6 +1,7 @@
 """
 Lectura de la Base de datos de la versión 1.0
 """
+
 import argparse
 import logging
 import os
@@ -13,7 +14,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_servicios.models import CitServicio
@@ -63,7 +64,9 @@ def main():
             bitacora_clientes_errores.setLevel(logging.INFO)
             empunadura_cli = logging.FileHandler(filename="migracion_errores-clientes.log", mode="w")
             bitacora_clientes_errores.addHandler(empunadura_cli)
-            bitacora_clientes_errores.info(f"{datetime.now()} - Último reporte de errores de la migración de la tabla de *clientes*")
+            bitacora_clientes_errores.info(
+                f"{datetime.now()} - Último reporte de errores de la migración de la tabla de *clientes*"
+            )
             # Eliminar tabla V2 de clientes 'cit_clientes'.
             if simulacion is False:
                 print("- Eliminando la tabla cit_clientes")
@@ -158,7 +161,9 @@ def main():
             sum_errors = 0
             for key, value in count_error.items():
                 sum_errors += value
-            bitacora.info(f"Total de clientes insertados {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}")
+            bitacora.info(
+                f"Total de clientes insertados {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}"
+            )
             if sum_errors == 0:
                 bitacora_clientes_errores.info("¡¡¡Sin Errores!!!")
             else:
@@ -205,7 +210,9 @@ def main():
             bitacora.info(f"Oficinas cargadas: {len(oficinas)}")
             # extraer el número total de registros
             num_registros_total = 0
-            result = connection.execute(text("SELECT COUNT(*) AS total FROM citas WHERE fecha >= CURDATE() AND fecha <= CURDATE() + 90"))
+            result = connection.execute(
+                text("SELECT COUNT(*) AS total FROM citas WHERE fecha >= CURDATE() AND fecha <= CURDATE() + 90")
+            )
             for row in result:
                 num_registros_total = int(row["total"])
             # Lectura de la BD v1, tabla de citas, solo migra las citas a futuro y no mayor a 90 días.
@@ -239,24 +246,32 @@ def main():
                     servicio_v2 = CitServicio.query.filter(CitServicio.descripcion == nombre_servicio).first()
                 if servicio_v2 is None:
                     count_error["servicio_no_encontrado"] += 1
-                    bitacora_citas_errores.info("Servicio de la cita NO encontrado, id=%d. NOM-SERVICIO:%s", row["citas_id"], nombre_servicio)
+                    bitacora_citas_errores.info(
+                        "Servicio de la cita NO encontrado, id=%d. NOM-SERVICIO:%s", row["citas_id"], nombre_servicio
+                    )
                     continue
                 # Buscar el cliente con este email
                 cliente_v2 = CitCliente.query.filter(CitCliente.email == row["correo"]).first()
                 if cliente_v2 is None:
                     count_error["email_no_encontrado"] += 1
-                    bitacora_citas_errores.info("Cliente de la cita NO encontrado, id=%d. EMAIL:%s", row["citas_id"], row["correo"])
+                    bitacora_citas_errores.info(
+                        "Cliente de la cita NO encontrado, id=%d. EMAIL:%s", row["citas_id"], row["correo"]
+                    )
                     continue
                 # Buscar Oficina_id en citas v1.
                 if row["id_juzgado"] not in oficinas:
                     count_error["oficina_no_establecida"] += 1
-                    bitacora_citas_errores.info("Oficina NO establecida, id=%d. Juzgado_id:%d", row["citas_id"], row["id_juzgado"])
+                    bitacora_citas_errores.info(
+                        "Oficina NO establecida, id=%d. Juzgado_id:%d", row["citas_id"], row["id_juzgado"]
+                    )
                     continue
                 # Buscar Oficina_id.
                 oficina_v2 = Oficina.query.filter(Oficina.id == oficinas[row["id_juzgado"]]).first()
                 if oficina_v2 is None:
                     count_error["oficina_no_encontrada"] += 1
-                    bitacora_citas_errores.info("Oficina NO encontrada, id=%d. Juzgado_id:%d", row["citas_id"], row["id_juzgado"])
+                    bitacora_citas_errores.info(
+                        "Oficina NO encontrada, id=%d. Juzgado_id:%d", row["citas_id"], row["id_juzgado"]
+                    )
                     continue
                 # Copia las notas y números de expedientes a las notas
                 notas = safe_string(row["detalles"])
@@ -300,7 +315,9 @@ def main():
             sum_errors = 0
             for key, value in count_error.items():
                 sum_errors += value
-            bitacora.info(f"Total de citas insertadas {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}")
+            bitacora.info(
+                f"Total de citas insertadas {count_insert} de {num_registros_total}, omitidos {sum_errors}:{count_error}"
+            )
             if sum_errors == 0:
                 bitacora_citas_errores.info("¡¡¡Sin Errores!!!")
             else:

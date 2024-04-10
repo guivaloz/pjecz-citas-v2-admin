@@ -1,6 +1,7 @@
 """
 Cit Clientes Registros, tareas para ejecutar en el fondo
 """
+
 from datetime import datetime
 import locale
 import logging
@@ -13,7 +14,7 @@ from sendgrid.helpers.mail import Email, To, Content, Mail
 from lib.tasks import set_task_progress, set_task_error
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.cit_clientes_registros.models import CitClienteRegistro
 

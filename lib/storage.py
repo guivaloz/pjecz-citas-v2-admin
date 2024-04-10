@@ -64,7 +64,7 @@ Defina el nombre guardado en el depósito y suba
                 cid_formato.archivo = archivo.filename  # Conservar el nombre original
                 cid_formato.url = storage.url
                 cid_formato.save()
-            except NotConfiguredError:
+            except (MyFilenameError, MyNotAllowedExtensionError, MyUnknownExtensionError):
                 flash("No se ha configurado el almacenamiento en la nube.", "warning")
             except Exception:
                 flash("Error al subir el archivo.", "danger")
@@ -97,10 +97,7 @@ Tenga en cuenta que...
             cid_procedimiento.archivo = storage.filename
             cid_procedimiento.url = storage.url
             cid_procedimiento.save()
-        except NotConfiguredError:
-            mensaje = set_task_error("No fue posible subir el archivo PDF a Google Storage porque falta la configuración.")
-            bitacora.warning(mensaje)
-        except (NotAllowedExtesionError, UnknownExtesionError, NoneFilenameError) as error:
+        except (MyFilenameError, MyNotAllowedExtensionError, MyUnknownExtensionError) as error:
             mensaje = set_task_error("No fue posible subir el archivo PDF a Google Storage por un error de tipo de archivo.")
             bitacora.warning(mensaje, str(error))
         except Exception as error:
@@ -108,6 +105,7 @@ Tenga en cuenta que...
             bitacora.warning(mensaje, str(error))
 
 """
+
 import datetime
 import locale
 import re

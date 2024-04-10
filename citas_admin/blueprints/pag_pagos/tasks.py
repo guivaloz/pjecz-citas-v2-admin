@@ -1,6 +1,7 @@
 """
 Pagos, tareas en el fondo
 """
+
 from datetime import datetime
 import locale
 import logging
@@ -17,7 +18,7 @@ from lib.hashids import cifrar_id
 from citas_admin.blueprints.pag_pagos.models import PagPago
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 locale.setlocale(locale.LC_TIME, "es_MX.utf8")
 
@@ -144,7 +145,13 @@ def enviar_mensajes_comprobantes(before_creado, to_email=None):
     """Enviar mensajes vía correo electrónico"""
 
     # Consultar Pagos
-    pagos = PagPago.query.filter_by(estatus="A").filter_by(estado="PAGADO").filter_by(ya_se_envio_comprobante=False).filter(PagPago.creado <= before_creado).all()
+    pagos = (
+        PagPago.query.filter_by(estatus="A")
+        .filter_by(estado="PAGADO")
+        .filter_by(ya_se_envio_comprobante=False)
+        .filter(PagPago.creado <= before_creado)
+        .all()
+    )
 
     # Enviamos los mensajes pendientes
     count = 0

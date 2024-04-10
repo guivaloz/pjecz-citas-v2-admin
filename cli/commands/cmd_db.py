@@ -6,11 +6,12 @@ Base de datos
 - reiniciar
 - respaldar
 """
+
 import os
 import click
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from cli.commands.alimentar_autoridades import alimentar_autoridades
 from cli.commands.alimentar_cit_dias_inhabiles import alimentar_cit_dias_inhabiles

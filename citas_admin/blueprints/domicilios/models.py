@@ -1,31 +1,35 @@
 """
 Domicilios, modelos
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class Domicilio(db.Model, UniversalMixin):
+class Domicilio(database.Model, UniversalMixin):
     """Domicilio"""
 
     # Nombre de la tabla
     __tablename__ = "domicilios"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Columnas
-    estado = db.Column(db.String(64), nullable=False)
-    municipio = db.Column(db.String(64), nullable=False)
-    calle = db.Column(db.String(256), nullable=False)
-    num_ext = db.Column(db.String(24), nullable=False, default="", server_default="")
-    num_int = db.Column(db.String(24), nullable=False, default="", server_default="")
-    colonia = db.Column(db.String(256), nullable=False, default="", server_default="")
-    cp = db.Column(db.Integer(), nullable=False)
-    completo = db.Column(db.String(1024), nullable=False, default="", server_default="")
+    estado = Column(String(64), nullable=False)
+    municipio = Column(String(64), nullable=False)
+    calle = Column(String(256), nullable=False)
+    num_ext = Column(String(24), nullable=False, default="", server_default="")
+    num_int = Column(String(24), nullable=False, default="", server_default="")
+    colonia = Column(String(256), nullable=False, default="", server_default="")
+    cp = Column(Integer(), nullable=False)
+    completo = Column(String(1024), nullable=False, default="", server_default="")
 
     # Hijos
-    oficinas = db.relationship("Oficina", back_populates="domicilio")
+    oficinas = relationship("Oficina", back_populates="domicilio")
 
     def elaborar_completo(self):
         """Elaborar completo"""

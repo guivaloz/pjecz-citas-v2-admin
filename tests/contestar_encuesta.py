@@ -1,6 +1,7 @@
 """
 Responde la preguntas de las encuestas
 """
+
 import argparse
 import logging
 import random
@@ -8,7 +9,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.enc_servicios.models import EncServicio
 from citas_admin.blueprints.enc_sistemas.models import EncSistema
@@ -117,7 +118,9 @@ def responder_encuesta_sistema(num_respuestas):
 
         # Impresión en pantalla de muestras
         if i % 25 == 0:
-            print(f"{i+1} - c_id: {cliente_id}, r01: {respuesta_01}, r02: {respuesta_02}, r03: {respuesta_03}, estado: {estado}")
+            print(
+                f"{i+1} - c_id: {cliente_id}, r01: {respuesta_01}, r02: {respuesta_02}, r03: {respuesta_03}, estado: {estado}"
+            )
 
         # Inserción en la BD
         EncSistema(
@@ -170,7 +173,9 @@ def responder_encuesta_servicios(num_respuestas):
 
         # Impresión en pantalla de muestras
         if i % 25 == 0:
-            print(f"{i+1} - cli_id: {cliente_id}, ofi_id: {oficina_id} | r01: {respuesta_01}, r02: {respuesta_02}, r03: {respuesta_03}, r04: {respuesta_04}, estado: {estado}")
+            print(
+                f"{i+1} - cli_id: {cliente_id}, ofi_id: {oficina_id} | r01: {respuesta_01}, r02: {respuesta_02}, r03: {respuesta_03}, r04: {respuesta_04}, estado: {estado}"
+            )
 
         # Inserción en la BD
         EncServicio(

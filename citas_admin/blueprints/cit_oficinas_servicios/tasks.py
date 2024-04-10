@@ -1,12 +1,13 @@
 """
 Cit Oficinas-Servicios, tareas para ejecutar en el fondo
 """
+
 import logging
 
 from lib.tasks import set_task_progress, set_task_error
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.cit_categorias.models import CitCategoria
 from citas_admin.blueprints.cit_oficinas_servicios.models import CitOficinaServicio
@@ -86,7 +87,9 @@ def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
     # Actualizar o insertar registros de Oficina-Servicio
     for oficina in oficinas:
         for cit_servicio in cit_servicios:
-            posible_cit_oficina_servicio = CitOficinaServicio.query.filter_by(cit_servicio_id=cit_servicio.id).filter_by(oficina_id=oficina.id).first()
+            posible_cit_oficina_servicio = (
+                CitOficinaServicio.query.filter_by(cit_servicio_id=cit_servicio.id).filter_by(oficina_id=oficina.id).first()
+            )
             if posible_cit_oficina_servicio:
                 # Actualizar Oficina-Servicio si esta eliminado
                 if posible_cit_oficina_servicio.estatus != "A":
@@ -104,7 +107,9 @@ def asignar_a_cit_categoria_con_distrito(cit_categoria_id, distrito_id):
 
     # Terminar
     set_task_progress(100)
-    mensaje_final = f"Terminado con {actualizaciones_contador} actualizaciones y {inserciones_contador} inserciones en Oficinas-Servicios."
+    mensaje_final = (
+        f"Terminado con {actualizaciones_contador} actualizaciones y {inserciones_contador} inserciones en Oficinas-Servicios."
+    )
     bitacora.info(mensaje_final)
     return mensaje_final
 

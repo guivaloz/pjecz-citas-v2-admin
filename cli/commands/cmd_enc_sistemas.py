@@ -7,6 +7,7 @@ Enc Sistemas
 - crear_enviar: Crear y enviar mensajes para contestar las encuestas
 - cancelar: Cancelar encuestas pendientes creadas hace 7 dias
 """
+
 from datetime import datetime, timedelta
 import os
 
@@ -15,7 +16,7 @@ from dotenv import load_dotenv
 from tabulate import tabulate
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.cit_clientes.models import CitCliente
@@ -218,14 +219,22 @@ def crear_enviar(ctx, test):
     for cita in citas.all():
 
         # Consultar la ultima encuesta del cliente con estado CONTESTADO
-        enc_sistema = EncSistema.query.filter_by(cit_cliente_id=cita.cit_cliente_id).filter_by(estado="CONTESTADO").filter_by(estatus="A").order_by(EncSistema.id.desc()).first()
+        enc_sistema = (
+            EncSistema.query.filter_by(cit_cliente_id=cita.cit_cliente_id)
+            .filter_by(estado="CONTESTADO")
+            .filter_by(estatus="A")
+            .order_by(EncSistema.id.desc())
+            .first()
+        )
 
         # Si el cliente tiene una encuesta CONTESTADO de hace 2 meses o menos, no crear una nueva
         if enc_sistema is not None and enc_sistema.creado >= ahora - timedelta(days=60):
             continue
 
         # Consultar las encuestas del cliente con estado PENDIENTE
-        enc_sistema = EncSistema.query.filter_by(cit_cliente_id=cita.cit_cliente_id).filter_by(estado="PENDIENTE").filter_by(estatus="A")
+        enc_sistema = (
+            EncSistema.query.filter_by(cit_cliente_id=cita.cit_cliente_id).filter_by(estado="PENDIENTE").filter_by(estatus="A")
+        )
 
         # Si el cliente tiene una encuesta PENDIENTE, no crear una nueva
         # Recuerde que un cliente puede tener ninguna o solo una encuesta pendiente

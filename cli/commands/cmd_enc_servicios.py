@@ -7,6 +7,7 @@ Enc Servicios
 - crear_enviar: Crear y enviar mensajes para contestar las encuestas
 - cancelar: Cancelar encuestas pendientes creadas hace 7 dias o mas
 """
+
 from datetime import datetime, timedelta
 import os
 
@@ -15,7 +16,7 @@ from dotenv import load_dotenv
 from tabulate import tabulate
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.cit_clientes.models import CitCliente
@@ -158,7 +159,11 @@ def consultar(ctx, id, cit_cliente_id, oficina_id, estado, limit):
                 encuesta.cit_cliente.nombre,
             ]
         )
-    click.echo(tabulate(datos, headers=["ID", "Creado", "ID Ofi", "Oficina Nombre (clave : nombre corto)", "ID Cli", "Nombre del Cliente"]))
+    click.echo(
+        tabulate(
+            datos, headers=["ID", "Creado", "ID Ofi", "Oficina Nombre (clave : nombre corto)", "ID Cli", "Nombre del Cliente"]
+        )
+    )
     click.echo("------------------------------")
     click.echo(f"Cantidad de encuestas: {len(datos)}")
     ctx.exit(0)
@@ -263,7 +268,9 @@ def crear_enviar(ctx, test):
     for cita in citas.all():
 
         # Consultar las encuestas del cliente con estado PENDIENTE
-        encuestas = EncServicio.query.filter_by(cit_cliente_id=cita.cit_cliente_id).filter_by(estado="PENDIENTE").filter_by(estatus="A")
+        encuestas = (
+            EncServicio.query.filter_by(cit_cliente_id=cita.cit_cliente_id).filter_by(estado="PENDIENTE").filter_by(estatus="A")
+        )
 
         # Si el cliente tiene una encuesta PENDIENTE, no crear una nueva
         # Recuerde que un cliente puede tener ninguna o solo una encuesta pendiente
@@ -311,7 +318,9 @@ def cancelar(ctx, test):
     creado_hasta = datetime.now() - timedelta(days=7)
 
     # Consultar las encuestas PENDIENTE creadas antes de creado_hasta
-    encuestas = EncServicio.query.filter(EncServicio.creado <= creado_hasta).filter_by(estado="PENDIENTE").filter_by(estatus="A")
+    encuestas = (
+        EncServicio.query.filter(EncServicio.creado <= creado_hasta).filter_by(estado="PENDIENTE").filter_by(estatus="A")
+    )
 
     # Si la consulta no entrega nada, terminar
     if encuestas.count() == 0:

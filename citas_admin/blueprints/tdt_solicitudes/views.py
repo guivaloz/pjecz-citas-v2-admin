@@ -1,11 +1,12 @@
 """
 Tres de Tres - Solicitudes, vistas
 """
+
 import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from config.settings import TDT_SOLICITUD_VERIFY_URL
+from config.settings import get_settings
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message
 
@@ -88,7 +89,9 @@ def list_inactive():
 def detail(tdt_solicitud_id):
     """Detalle de una solicitud"""
     tdt_solicitud = TdtSolicitud.query.get_or_404(tdt_solicitud_id)
-    tdt_solicitud_verify_url = "" if TDT_SOLICITUD_VERIFY_URL == "" else TDT_SOLICITUD_VERIFY_URL + "/" + tdt_solicitud.encode_id()
+    tdt_solicitud_verify_url = (
+        "" if TDT_SOLICITUD_VERIFY_URL == "" else TDT_SOLICITUD_VERIFY_URL + "/" + tdt_solicitud.encode_id()
+    )
     return render_template(
         "tdt_solicitudes/detail.jinja2",
         tdt_solicitud=tdt_solicitud,

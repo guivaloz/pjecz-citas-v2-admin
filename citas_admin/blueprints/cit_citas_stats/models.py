@@ -1,12 +1,15 @@
 """
 Cit Citas, modelos
 """
-from collections import OrderedDict
-from citas_admin.extensions import db
+
+from sqlalchemy import Column, Enum, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class CitCitaStats(db.Model, UniversalMixin):
+class CitCitaStats(database.Model, UniversalMixin):
     """Registros de las estadísticas de Citas"""
 
     CAT_CITAS_TOTALES = "CITAS_TOTALES"
@@ -40,13 +43,13 @@ class CitCitaStats(db.Model, UniversalMixin):
     __tablename__ = "cit_citas_stats"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Columnas
-    etiqueta = db.Column(db.String(), nullable=False)
-    dato = db.Column(db.Integer(), nullable=False)
-    categoria = db.Column(db.Enum(*CATEGORIAS, name="subcategorias", native_enum=False), nullable=False)
-    subcategoria = db.Column(db.Enum(*SUBCATEGORIAS, name="subcategorias", native_enum=False), nullable=False)
+    etiqueta = Column(String(), nullable=False)
+    dato = Column(Integer(), nullable=False)
+    categoria = Column(Enum(*CATEGORIAS, name="subcategorias", native_enum=False), nullable=False)
+    subcategoria = Column(Enum(*SUBCATEGORIAS, name="subcategorias", native_enum=False), nullable=False)
 
     def __repr__(self):
         """Representación"""

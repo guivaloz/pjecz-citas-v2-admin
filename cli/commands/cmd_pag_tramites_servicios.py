@@ -3,6 +3,7 @@ Pagos Tramites y Servicios
 
 - alimentar
 """
+
 from pathlib import Path
 import csv
 import click
@@ -10,7 +11,7 @@ import click
 from lib.safe_string import safe_clave, safe_string, safe_url
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
 

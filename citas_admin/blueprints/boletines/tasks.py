@@ -1,6 +1,7 @@
 """
 Boletines, tareas en el fondo
 """
+
 from datetime import datetime
 import locale
 import logging
@@ -18,7 +19,7 @@ from citas_admin.blueprints.boletines.models import Boletin
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 locale.setlocale(locale.LC_TIME, "es_MX.utf8")
 
@@ -97,7 +98,14 @@ def enviar(boletin_id, cit_cliente_id=None, email=None):
             )
     else:
         # Consultar los clientes activos que quieren recibir el boletin
-        cit_clientes = CitCliente.query.filter_by(estatus="A").filter_by(enviar_boletin=True).filter(CitCliente.id > boletin.puntero).order_by(CitCliente.id).limit(CANTIDAD).all()
+        cit_clientes = (
+            CitCliente.query.filter_by(estatus="A")
+            .filter_by(enviar_boletin=True)
+            .filter(CitCliente.id > boletin.puntero)
+            .order_by(CitCliente.id)
+            .limit(CANTIDAD)
+            .all()
+        )
         # Si hay resultados, agregarlos al listado de destinatarios
         if cit_clientes:
             puntero = 0

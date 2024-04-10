@@ -1,22 +1,26 @@
 """
 Cit Días Inhabiles, modelos
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Column, Date, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class CitDiaInhabil(db.Model, UniversalMixin):
+class CitDiaInhabil(database.Model, UniversalMixin):
     """CitDiaInhabil"""
 
     # Nombre de la tabla
     __tablename__ = "cit_dias_inhabiles"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Columnas
-    fecha = db.Column(db.Date(), unique=True, nullable=False)
-    descripcion = db.Column(db.String(256), nullable=False)
+    fecha = Column(Date(), unique=True, nullable=False)
+    descripcion = Column(String(256), nullable=False)
 
     def __repr__(self):
         """Representación"""

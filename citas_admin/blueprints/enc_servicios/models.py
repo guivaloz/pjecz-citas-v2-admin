@@ -1,40 +1,41 @@
 """
 Encuesta Servicios, modelos
 """
-from collections import OrderedDict
-from citas_admin.extensions import db
+
+from sqlalchemy import Column, Enum, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class EncServicio(db.Model, UniversalMixin):
+class EncServicio(database.Model, UniversalMixin):
     """Encuesta del Servicio"""
 
-    ESTADOS = OrderedDict(
-        [
-            ("PENDIENTE", "Pendiente"),
-            ("CANCELADO", "Cancelado"),
-            ("CONTESTADO", "Contestado"),
-        ]
-    )
+    ESTADOS = {
+        "PENDIENTE": "Pendiente",
+        "CANCELADO": "Cancelado",
+        "CONTESTADO": "Contestado",
+    }
 
     # Nombre de la tabla
     __tablename__ = "enc_servicios"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Clave foránea
-    cit_cliente_id = db.Column(db.Integer, db.ForeignKey("cit_clientes.id"), nullable=False)
-    cit_cliente = db.relationship("CitCliente", back_populates="enc_servicios")
-    oficina_id = db.Column(db.Integer, db.ForeignKey("oficinas.id"), nullable=False)
-    oficina = db.relationship("Oficina", back_populates="enc_servicios")
+    cit_cliente_id = Column(Integer, ForeignKey("cit_clientes.id"), nullable=False)
+    cit_cliente = relationship("CitCliente", back_populates="enc_servicios")
+    oficina_id = Column(Integer, ForeignKey("oficinas.id"), nullable=False)
+    oficina = relationship("Oficina", back_populates="enc_servicios")
 
     # Columnas
-    respuesta_01 = db.Column(db.Integer(), nullable=True)
-    respuesta_02 = db.Column(db.Integer(), nullable=True)
-    respuesta_03 = db.Column(db.Integer(), nullable=True)
-    respuesta_04 = db.Column(db.String(512), nullable=True)
-    estado = db.Column(db.Enum(*ESTADOS, name="estados", native_enum=False))
+    respuesta_01 = Column(Integer(), nullable=True)
+    respuesta_02 = Column(Integer(), nullable=True)
+    respuesta_03 = Column(Integer(), nullable=True)
+    respuesta_04 = Column(String(512), nullable=True)
+    estado = Column(Enum(*ESTADOS, name="estados", native_enum=False))
 
     def __repr__(self):
         """Representación"""

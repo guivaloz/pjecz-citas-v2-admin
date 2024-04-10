@@ -1,24 +1,28 @@
 """
 Cit Categorias, modelos
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class CitCategoria(db.Model, UniversalMixin):
+class CitCategoria(database.Model, UniversalMixin):
     """CitCategoria"""
 
     # Nombre de la tabla
     __tablename__ = "cit_categorias"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Columnas
-    nombre = db.Column(db.String(64), unique=True, nullable=False)
+    nombre = Column(String(64), unique=True, nullable=False)
 
     # Hijos
-    cit_servicios = db.relationship("CitServicio", back_populates="cit_categoria")
+    cit_servicios = relationship("CitServicio", back_populates="cit_categoria")
 
     def __repr__(self):
         """Representación"""

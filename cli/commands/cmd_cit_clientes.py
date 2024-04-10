@@ -7,6 +7,7 @@ Cit Clientes
 - definir_booleanos: Define los booleanos es_adulto_mayor, es_mujer, etc
 - evaluar_asistencia: Penaliza o Premia al cliente dependiendo de su asistencia
 """
+
 from datetime import datetime, timedelta
 
 import click
@@ -18,7 +19,7 @@ from lib.pwgen import generar_contrasena
 from lib.safe_string import safe_string
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db, pwd_context
+from citas_admin.extensions import database, pwd_context
 
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_citas.models import CitCita
@@ -190,7 +191,9 @@ def eliminar_sin_cita(dias, test):
             creado_hasta = renglon["creado_hasta"]
 
         # Mostrar el resultado
-        click.echo(f"MODO DE PRUEBAS: Se podrían eliminar {cantidad} clientes sin citas que se crearon a partir del {creado_hasta}")
+        click.echo(
+            f"MODO DE PRUEBAS: Se podrían eliminar {cantidad} clientes sin citas que se crearon a partir del {creado_hasta}"
+        )
 
     else:  # Modo de realizar cambios
 
@@ -199,7 +202,15 @@ def eliminar_sin_cita(dias, test):
 
         # Consultar los clientes que se van a eliminar
         db = database.SessionLocal()
-        results = db.query(CitCliente, CitCita, PagPago).outerjoin(CitCita).outerjoin(PagPago).filter(CitCita.cit_cliente_id == None).filter(PagPago.cit_cliente_id == None).filter(CitCliente.creado <= creado_hasta).all()
+        results = (
+            db.query(CitCliente, CitCita, PagPago)
+            .outerjoin(CitCita)
+            .outerjoin(PagPago)
+            .filter(CitCita.cit_cliente_id == None)
+            .filter(PagPago.cit_cliente_id == None)
+            .filter(CitCliente.creado <= creado_hasta)
+            .all()
+        )
 
         # Inicializar el engine
         engine = database.engine
@@ -304,7 +315,12 @@ def cambiar_enviar_boletin_falso(dias, test):
     engine = database.engine
 
     # Actualizar los cliente con enviar_boletin en falso
-    comando = update(CitCliente).where(CitCliente.estatus == "A").filter(CitCliente.enviar_boletin == True).values(enviar_boletin=False)
+    comando = (
+        update(CitCliente)
+        .where(CitCliente.estatus == "A")
+        .filter(CitCliente.enviar_boletin == True)
+        .values(enviar_boletin=False)
+    )
     resultado = engine.execute(comando)
     click.echo(f"Se actualizaron {resultado.rowcount} clientes con enviar_boletin en falso")
 

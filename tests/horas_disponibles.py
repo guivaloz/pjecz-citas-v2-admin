@@ -1,11 +1,12 @@
 """
 Lectura de la Base de datos de la versión 1.0
 """
+
 from dotenv import load_dotenv
 from datetime import date, timedelta, datetime, time
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.oficinas.models import Oficina
@@ -70,7 +71,12 @@ def main():
 
     # Listar los servicios de la Oficina Seleccionada
     cit_servicio = None
-    cit_servicios = CitServicio.query.join(CitOficinaServicio).filter(CitOficinaServicio.oficina_id == oficina_id).filter(CitServicio.estatus == "A").all()
+    cit_servicios = (
+        CitServicio.query.join(CitOficinaServicio)
+        .filter(CitOficinaServicio.oficina_id == oficina_id)
+        .filter(CitServicio.estatus == "A")
+        .all()
+    )
     cit_servicios_disponibles = []
     print("--- Listado de Servicios ------")
     print(f"- ID | {'Clave':<16} | {'Nombre':<30} -")
@@ -94,7 +100,9 @@ def main():
     fecha = None
     dias_disponibles = []
     # consultar días inhábiles
-    dias_inhabiles_obj = CitDiaInhabil.query.filter(CitDiaInhabil.fecha > date.today()).filter(CitDiaInhabil.estatus == "A").all()
+    dias_inhabiles_obj = (
+        CitDiaInhabil.query.filter(CitDiaInhabil.fecha > date.today()).filter(CitDiaInhabil.estatus == "A").all()
+    )
     dias_inhabiles = [item.fecha for item in dias_inhabiles_obj]
     # Agregar cada día hasta el límite desde el día de mañana.
     for fecha in (date.today() + timedelta(n) for n in range(1, LIMITE_DIAS)):
@@ -140,7 +148,9 @@ def main():
     intervalo = datetime.strptime("00:15:00", "%H:%M:%S")  # cit_servicio.duracion
 
     # consultar horas bloquedas
-    horas_bloqueadas_obj = CitHoraBloqueada.query.filter(CitHoraBloqueada.fecha == fecha).filter(CitHoraBloqueada.estatus == "A").all()
+    horas_bloqueadas_obj = (
+        CitHoraBloqueada.query.filter(CitHoraBloqueada.fecha == fecha).filter(CitHoraBloqueada.estatus == "A").all()
+    )
     horas_bloqueadas = [item.hora for item in horas_bloqueadas_obj]
 
     # Revisar citas previas

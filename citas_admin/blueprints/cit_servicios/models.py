@@ -1,35 +1,39 @@
 """
 Cit Servicios, modelos
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Column, ForeignKey, Integer, String, Time
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class CitServicio(db.Model, UniversalMixin):
+class CitServicio(database.Model, UniversalMixin):
     """Cit Servicio"""
 
     # Nombre de la tabla
     __tablename__ = "cit_servicios"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Clave foránea
-    cit_categoria_id = db.Column(db.Integer, db.ForeignKey("cit_categorias.id"), index=True, nullable=False)
-    cit_categoria = db.relationship("CitCategoria", back_populates="cit_servicios")
+    cit_categoria_id = Column(Integer, ForeignKey("cit_categorias.id"), index=True, nullable=False)
+    cit_categoria = relationship("CitCategoria", back_populates="cit_servicios")
 
     # Columnas
-    clave = db.Column(db.String(32), unique=True, nullable=False)
-    descripcion = db.Column(db.String(64), nullable=False)
-    duracion = db.Column(db.Time(), nullable=False)
-    documentos_limite = db.Column(db.Integer, nullable=False)
-    desde = db.Column(db.Time(), nullable=True)
-    hasta = db.Column(db.Time(), nullable=True)
-    dias_habilitados = db.Column(db.String(7), nullable=False)
+    clave = Column(String(32), unique=True, nullable=False)
+    descripcion = Column(String(64), nullable=False)
+    duracion = Column(Time(), nullable=False)
+    documentos_limite = Column(Integer, nullable=False)
+    desde = Column(Time(), nullable=True)
+    hasta = Column(Time(), nullable=True)
+    dias_habilitados = Column(String(7), nullable=False)
 
     # Hijos
-    cit_citas = db.relationship("CitCita", back_populates="cit_servicio")
-    cit_oficinas_servicios = db.relationship("CitOficinaServicio", back_populates="cit_servicio")
+    cit_citas = relationship("CitCita", back_populates="cit_servicio")
+    cit_oficinas_servicios = relationship("CitOficinaServicio", back_populates="cit_servicio")
 
     @property
     def compuesto(self):

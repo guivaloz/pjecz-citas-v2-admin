@@ -1,27 +1,31 @@
 """
 Cit Oficinas-Servicios, modelos
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class CitOficinaServicio(db.Model, UniversalMixin):
+class CitOficinaServicio(database.Model, UniversalMixin):
     """CitOficinaServicio"""
 
     # Nombre de la tabla
     __tablename__ = "cit_oficinas_servicios"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Clave foránea
-    cit_servicio_id = db.Column(db.Integer, db.ForeignKey("cit_servicios.id"), index=True, nullable=False)
-    cit_servicio = db.relationship("CitServicio", back_populates="cit_oficinas_servicios")
-    oficina_id = db.Column(db.Integer, db.ForeignKey("oficinas.id"), index=True, nullable=False)
-    oficina = db.relationship("Oficina", back_populates="cit_oficinas_servicios")
+    cit_servicio_id = Column(Integer, ForeignKey("cit_servicios.id"), index=True, nullable=False)
+    cit_servicio = relationship("CitServicio", back_populates="cit_oficinas_servicios")
+    oficina_id = Column(Integer, ForeignKey("oficinas.id"), index=True, nullable=False)
+    oficina = relationship("Oficina", back_populates="cit_oficinas_servicios")
 
     # Columnas
-    descripcion = db.Column(db.String(256), nullable=False)
+    descripcion = Column(String(256), nullable=False)
 
     def __repr__(self):
         """Representación"""

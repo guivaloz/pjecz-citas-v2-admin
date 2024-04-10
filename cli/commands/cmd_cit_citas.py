@@ -10,12 +10,13 @@ Cit Citas
 - marcar_inasistencia: Marca citas pasadas y pendientes como inasistencia
 - contar_citas_dobles: Cuenta las citas que se crearon más de una vez
 """
+
 import click
 from datetime import date, datetime, timedelta
 from tabulate import tabulate
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.cit_dias_inhabiles.models import CitDiaInhabil
@@ -264,14 +265,18 @@ def marcar_inasistencia(ctx, test, enviar):
     click.echo(f"Fecha de Vencimiento: {fecha_limite}, citas anteriores a esta fecha.")
 
     # Conteo de citas para cambiar de PENDIENTE a INASISTENCIA
-    citas_count = CitCita.query.filter_by(estado="PENDIENTE").filter(CitCita.inicio <= fecha_limite).filter_by(estatus="A").count()
+    citas_count = (
+        CitCita.query.filter_by(estado="PENDIENTE").filter(CitCita.inicio <= fecha_limite).filter_by(estatus="A").count()
+    )
 
     if test:
         click.echo(f"MODO DE PRUEBA - citas a cambiar {citas_count}, No se hizo ningún cambio permanente.")
     else:
         # Enviar mensaje de INASISTENCIA al cliente
         if enviar is True:
-            citas = CitCita.query.filter_by(estado="PENDIENTE").filter(CitCita.inicio <= fecha_limite).filter_by(estatus="A").all()
+            citas = (
+                CitCita.query.filter_by(estado="PENDIENTE").filter(CitCita.inicio <= fecha_limite).filter_by(estatus="A").all()
+            )
             for cita in citas:
                 # Agregar tarea en el fondo para enviar el mensaje de inasistencia
                 app.task_queue.enqueue(
@@ -280,7 +285,12 @@ def marcar_inasistencia(ctx, test, enviar):
                 )
             click.echo(f"Se han enviado {len(citas)} mensajes de INASISTENCIA")
         else:
-            citas_count = CitCita.query.filter_by(estado="PENDIENTE").filter(CitCita.inicio <= fecha_limite).filter_by(estatus="A").count()
+            citas_count = (
+                CitCita.query.filter_by(estado="PENDIENTE")
+                .filter(CitCita.inicio <= fecha_limite)
+                .filter_by(estatus="A")
+                .count()
+            )
             click.echo(f"SIN ENVÍO: Se podrían enviar {citas_count} mensajes de correo a los clientes.")
 
     if citas_count > 0:
@@ -323,7 +333,11 @@ def contar_citas_dobles(ctx):
             count_citas_dobles += 1
         # Muestra de avance
         if contador % 1000 == 0:
-            click.echo("Progreso [{porcentaje:.2f}%] : conteo {contador}".format(porcentaje=((contador * 100) / len(citas)), contador=count_citas_dobles))
+            click.echo(
+                "Progreso [{porcentaje:.2f}%] : conteo {contador}".format(
+                    porcentaje=((contador * 100) / len(citas)), contador=count_citas_dobles
+                )
+            )
 
     click.echo(f"= RESULTADO: Se han encontrado {count_citas_dobles} citas dobles")
 

@@ -64,35 +64,12 @@ def safe_email(input_str, search_fragment=False) -> str:
     return final
 
 
-def safe_quincena(input_str) -> str:
-    """Safe quincena"""
-    final = input_str.strip()
-    if re.match(QUINCENA_REGEXP, final) is None:
-        raise ValueError("Quincena invalida")
-    return final
-
-
 def safe_message(input_str, max_len=250, default_output_str="Sin descripción") -> str:
     """Safe message"""
     message = str(input_str)
     if message == "":
         return default_output_str
     return (message[:max_len] + "...") if len(message) > max_len else message
-
-
-def safe_rfc(input_str, is_optional=False, search_fragment=False) -> str:
-    """Safe RFC"""
-    if not isinstance(input_str, str):
-        return ""
-    stripped = input_str.strip()
-    if is_optional and stripped == "":
-        return ""
-    clean_string = re.sub(r"[^a-zA-Z0-9]+", " ", unidecode(stripped))
-    without_spaces = re.sub(r"\s+", "", clean_string)
-    final = without_spaces.upper()
-    if search_fragment is False and re.match(RFC_REGEXP, final) is None:
-        raise ValueError("RFC inválido")
-    return final
 
 
 def safe_string(input_str, max_len=250, do_unidecode=True, save_enie=False, to_uppercase=True) -> str:
@@ -119,6 +96,29 @@ def safe_string(input_str, max_len=250, do_unidecode=True, save_enie=False, to_u
             new_string = re.sub(r"[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9.()/-]+", " ", input_str)
     removed_multiple_spaces = re.sub(r"\s+", " ", new_string)
     final = removed_multiple_spaces.strip()
+    if to_uppercase:
+        final = final.upper()
+    if max_len == 0:
+        return final
+    return (final[:max_len] + "...") if len(final) > max_len else final
+
+
+def safe_telefono(input_str):
+    """Safe Teléfono"""
+    if not isinstance(input_str, str):
+        return None
+    removed_spaces = re.sub(r"\s", "", input_str)
+    removed_simbols = re.sub(r"[()\[\]:/.-]+", "", removed_spaces)
+    removed_letters = re.sub(r"[a-zA-Z]+", "", removed_simbols)
+    return removed_letters.strip()
+
+
+def safe_text(input_str, max_len=4096, to_uppercase=True):
+    """Safe string"""
+    if not isinstance(input_str, str):
+        return ""
+    new_string = re.sub(r"[^a-zA-Z0-9@\n()\?=\[\]:/_.-]+", " ", unidecode(input_str))
+    final = new_string.strip()
     if to_uppercase:
         final = final.upper()
     if max_len == 0:

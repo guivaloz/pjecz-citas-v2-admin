@@ -1,48 +1,52 @@
 """
 Cit Clientes, modelos
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Boolean, Column, Date, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class CitCliente(db.Model, UniversalMixin):
+class CitCliente(database.Model, UniversalMixin):
     """CitCliente"""
 
     # Nombre de la tabla
     __tablename__ = "cit_clientes"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Columnas
-    nombres = db.Column(db.String(256), nullable=False)
-    apellido_primero = db.Column(db.String(256), nullable=False)
-    apellido_segundo = db.Column(db.String(256), nullable=False, default="", server_default="")
-    curp = db.Column(db.String(18), unique=True, nullable=False)
-    telefono = db.Column(db.String(64), nullable=False, default="", server_default="")
-    email = db.Column(db.String(256), unique=True, nullable=False)
-    contrasena_md5 = db.Column(db.String(256), nullable=False)
-    contrasena_sha256 = db.Column(db.String(256), nullable=False)
-    renovacion = db.Column(db.Date(), nullable=False)
-    limite_citas_pendientes = db.Column(db.Integer(), nullable=False)
+    nombres = Column(String(256), nullable=False)
+    apellido_primero = Column(String(256), nullable=False)
+    apellido_segundo = Column(String(256), nullable=False, default="", server_default="")
+    curp = Column(String(18), unique=True, nullable=False)
+    telefono = Column(String(64), nullable=False, default="", server_default="")
+    email = Column(String(256), unique=True, nullable=False)
+    contrasena_md5 = Column(String(256), nullable=False)
+    contrasena_sha256 = Column(String(256), nullable=False)
+    renovacion = Column(Date(), nullable=False)
+    limite_citas_pendientes = Column(Integer(), nullable=False)
 
     # Columnas booleanas
-    autoriza_mensajes = db.Column(db.Boolean(), nullable=False, default=True)
-    enviar_boletin = db.Column(db.Boolean(), nullable=False, default=False)
-    es_adulto_mayor = db.Column(db.Boolean(), nullable=False, default=False)
-    es_mujer = db.Column(db.Boolean(), nullable=False, default=False)
-    es_identidad = db.Column(db.Boolean(), nullable=False, default=False)
-    es_discapacidad = db.Column(db.Boolean(), nullable=False, default=False)
-    es_personal_interno = db.Column(db.Boolean(), nullable=False, default=False)
+    autoriza_mensajes = Column(Boolean(), nullable=False, default=True)
+    enviar_boletin = Column(Boolean(), nullable=False, default=False)
+    es_adulto_mayor = Column(Boolean(), nullable=False, default=False)
+    es_mujer = Column(Boolean(), nullable=False, default=False)
+    es_identidad = Column(Boolean(), nullable=False, default=False)
+    es_discapacidad = Column(Boolean(), nullable=False, default=False)
+    es_personal_interno = Column(Boolean(), nullable=False, default=False)
 
     # Hijos
-    cit_citas = db.relationship("CitCita", back_populates="cit_cliente")
-    cit_clientes_recuperaciones = db.relationship("CitClienteRecuperacion", back_populates="cit_cliente")
-    enc_servicios = db.relationship("EncServicio", back_populates="cit_cliente")
-    enc_sistemas = db.relationship("EncSistema", back_populates="cit_cliente")
-    pag_pagos = db.relationship("PagPago", back_populates="cit_cliente")
-    ppa_solicitudes = db.relationship("PpaSolicitud", back_populates="cit_cliente")
-    tdt_solicitudes = db.relationship("TdtSolicitud", back_populates="cit_cliente")
+    # cit_citas = relationship("CitCita", back_populates="cit_cliente")
+    # cit_clientes_recuperaciones = relationship("CitClienteRecuperacion", back_populates="cit_cliente")
+    # enc_servicios = relationship("EncServicio", back_populates="cit_cliente")
+    # enc_sistemas = relationship("EncSistema", back_populates="cit_cliente")
+    pag_pagos = relationship("PagPago", back_populates="cit_cliente")
+    # ppa_solicitudes = relationship("PpaSolicitud", back_populates="cit_cliente")
+    # tdt_solicitudes = relationship("TdtSolicitud", back_populates="cit_cliente")
 
     @property
     def nombre(self):

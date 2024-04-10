@@ -1,6 +1,7 @@
 """
 Generadores de contraseñas
 """
+
 import random
 import string
 
@@ -37,4 +38,11 @@ def generar_aleatorio(largo=16):
     digitos = string.digits
     todos = minusculas + mayusculas + digitos
     temp = random.sample(todos, largo)
+    return "".join(temp)
+
+
+def generar_codigo_asistencia(largo=4):
+    """Generar código asistencia"""
+    digitos = string.digits
+    temp = random.sample(digitos, largo)
     return "".join(temp)

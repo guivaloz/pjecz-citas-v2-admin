@@ -1,22 +1,22 @@
 """
 Cit Clientes, tareas para ejecutar en el fondo
 """
-from datetime import datetime, timedelta
+
+from datetime import datetime
 import json
 import locale
 import logging
 
 from sqlalchemy.sql import func
 
-from lib import database
+from lib.exceptions import MyFilenameError, MyNotAllowedExtensionError, MyUnknownExtensionError
 from lib.tasks import set_task_progress
-from lib.storage import GoogleCloudStorage, NotConfiguredError
-
-from citas_admin.blueprints.cit_clientes.models import CitCliente
-from citas_admin.blueprints.cit_citas.models import CitCita
+from lib.storage import GoogleCloudStorage
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.blueprints.cit_clientes.models import CitCliente
+from citas_admin.blueprints.cit_citas.models import CitCita
+from citas_admin.extensions import database
 
 from .reports import (
     ReporteCurpParecidos,
@@ -81,7 +81,7 @@ def refresh_report():
     # Subir el archivo a la nube (Google Storage)
     try:
         url = storage.upload_from_filename("pjecz-informatica", "json/" + FILE_NAME, "/tmp/" + FILE_NAME, "application/json")
-    except NotConfiguredError:
+    except (MyFilenameError, MyNotAllowedExtensionError, MyUnknownExtensionError):
         bitacora.warning("No se ha configurado el almacenamiento en la nube.")
     except Exception:
         bitacora.warning("Error al subir el archivo.")

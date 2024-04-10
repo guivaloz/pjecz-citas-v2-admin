@@ -6,13 +6,14 @@ Cit Clientes Registros
 - enviar: Enviar mensaje con URL de confirmacion
 - reenviar: Reenviar mensajes a quienes no han terminado su registro
 """
+
 import os
 import click
 from dotenv import load_dotenv
 from tabulate import tabulate
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.cit_clientes_registros.models import CitClienteRegistro
 
@@ -34,7 +35,9 @@ def cli():
 def consultar(id):
     """Consultar registros"""
     if id is None:
-        cit_clientes_registros = CitClienteRegistro.query.filter_by(estatus="A").filter_by(ya_registrado=False).order_by(CitClienteRegistro.id).all()
+        cit_clientes_registros = (
+            CitClienteRegistro.query.filter_by(estatus="A").filter_by(ya_registrado=False).order_by(CitClienteRegistro.id).all()
+        )
         if len(cit_clientes_registros) == 0:
             click.echo("No hay registros")
             return
@@ -51,7 +54,9 @@ def consultar(id):
                     cit_cliente_registro.mensajes_cantidad,
                 ]
             )
-        click.echo(tabulate(datos, headers=["id", "nombres", "apellido_primero", "apellido_segundo", "curp", "email", "cantidad"]))
+        click.echo(
+            tabulate(datos, headers=["id", "nombres", "apellido_primero", "apellido_segundo", "curp", "email", "cantidad"])
+        )
     else:
         cit_cliente_registro = CitClienteRegistro.query.get(id)
         url = f"{NEW_ACCOUNT_CONFIRM_URL}?hashid={cit_cliente_registro.encode_id()}&cadena_validar={cit_cliente_registro.cadena_validar}"

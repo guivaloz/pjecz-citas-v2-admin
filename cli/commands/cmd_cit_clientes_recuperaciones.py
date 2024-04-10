@@ -6,13 +6,14 @@ Cit Clientes Recuperaciones
 - enviar: Enviar mensaje con URL para definir contrasena
 - reenviar: Reenviar mensajes a quienes no han terminado su recuperacion
 """
+
 import os
 import click
 from dotenv import load_dotenv
 from tabulate import tabulate
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitClienteRecuperacion
 
@@ -34,7 +35,12 @@ def cli():
 def consultar(id):
     """Consultar recuperaciones"""
     if id is None:
-        cit_clientes_recuperaciones = CitClienteRecuperacion.query.filter_by(estatus="A").filter_by(ya_recuperado=False).order_by(CitClienteRecuperacion.id).all()
+        cit_clientes_recuperaciones = (
+            CitClienteRecuperacion.query.filter_by(estatus="A")
+            .filter_by(ya_recuperado=False)
+            .order_by(CitClienteRecuperacion.id)
+            .all()
+        )
         if len(cit_clientes_recuperaciones) == 0:
             click.echo("No hay registros")
             return
@@ -51,7 +57,9 @@ def consultar(id):
                     cit_cliente_recuperacion.mensajes_cantidad,
                 ]
             )
-        click.echo(tabulate(datos, headers=["id", "nombres", "apellido_primero", "apellido_segundo", "curp", "email", "cantidad"]))
+        click.echo(
+            tabulate(datos, headers=["id", "nombres", "apellido_primero", "apellido_segundo", "curp", "email", "cantidad"])
+        )
     else:
         cit_cliente_recuperacion = CitClienteRecuperacion.query.get(id)
         url = f"{RECOVER_ACCOUNT_CONFIRM_URL}?hashid={cit_cliente_recuperacion.encode_id()}&cadena_validar={cit_cliente_recuperacion.cadena_validar}"
@@ -88,7 +96,9 @@ def enviar(id):
         click.echo(f"No existe la recuperacion {id}")
         return
     click.echo(f"Por enviar un mensaje a: {cit_cliente_recuperacion.cit_cliente.email}")
-    click.echo(f"Con este URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_recuperacion.cadena_validar}")
+    click.echo(
+        f"Con este URL para confirmar: {RECOVER_ACCOUNT_CONFIRM_URL}?cadena_validar={cit_cliente_recuperacion.cadena_validar}"
+    )
     click.echo(f"El contador de mensajes sera: {cit_cliente_recuperacion.mensajes_cantidad + 1}")
     app.task_queue.enqueue(
         "citas_admin.blueprints.cit_clientes_recuperaciones.tasks.enviar",

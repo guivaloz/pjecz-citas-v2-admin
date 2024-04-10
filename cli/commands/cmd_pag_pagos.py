@@ -5,6 +5,7 @@ Pag Pagos
 - enviar_mensajes_comprobantes: Envía los mensajes de estado PAGADO pendientes por enviar antes de un tiempo indicado.
 - cancelar_solicitados_expirados : Cambia el estado a CANCELADO de los pagos SOLICITADOS creados antes de un tiempo indicado.
 """
+
 from datetime import datetime, timedelta
 
 import click
@@ -12,7 +13,7 @@ import click
 from citas_admin.blueprints.pag_pagos.models import PagPago
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 app = create_app()
 db.app = app
@@ -68,10 +69,18 @@ def enviar_mensaje_pagado(ctx, pag_pago_id, to_email=None):
 def enviar_mensajes_comprobantes(ctx, before_creado, to_email=None):
     """Enviar comprobante para pagos en estado de PAGADO y sin haber sido enviados previamente"""
     tiempo = datetime.now() - timedelta(minutes=before_creado)
-    click.echo(f"Envío de comprobantes de pago exitosos pendientes por enviar creados antes del {tiempo.strftime('%Y-%m-%d %H:%M:%S')}")
+    click.echo(
+        f"Envío de comprobantes de pago exitosos pendientes por enviar creados antes del {tiempo.strftime('%Y-%m-%d %H:%M:%S')}"
+    )
 
     # Conteo de registros a consultar
-    pagos_count = PagPago.query.filter_by(estatus="A").filter_by(estado="PAGADO").filter_by(ya_se_envio_comprobante=False).filter(PagPago.creado <= tiempo).count()
+    pagos_count = (
+        PagPago.query.filter_by(estatus="A")
+        .filter_by(estado="PAGADO")
+        .filter_by(ya_se_envio_comprobante=False)
+        .filter(PagPago.creado <= tiempo)
+        .count()
+    )
 
     # Agregar tarea en el fondo para cancelar los pagos
     app.task_queue.enqueue(

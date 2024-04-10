@@ -1,6 +1,7 @@
 """
 Cit Citas, tareas para ejecutar en el fondo
 """
+
 from datetime import datetime, timedelta
 import locale
 import logging
@@ -15,7 +16,7 @@ from sqlalchemy import text
 from lib.tasks import set_task_progress, set_task_error
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.cit_clientes.models import CitCliente

@@ -29,8 +29,8 @@ class Autoridad(database.Model, UniversalMixin):
     # Claves foráneas
     distrito_id = Column(Integer, ForeignKey("distritos.id"), index=True, nullable=False)
     distrito = relationship("Distrito", back_populates="autoridades")
-    # materia_id = Column(Integer, ForeignKey("materias.id"), index=True, nullable=False)
-    # materia = relationship("Materia", back_populates="autoridades")
+    materia_id = Column(Integer, ForeignKey("materias.id"), index=True, nullable=False)
+    materia = relationship("Materia", back_populates="autoridades")
 
     # Columnas
     clave = Column(String(16), nullable=False, unique=True)
@@ -46,8 +46,8 @@ class Autoridad(database.Model, UniversalMixin):
     )
 
     # Hijos
-    # pag_pagos = relationship("PagPago", back_populates="autoridad")
-    # ppa_solicitudes = relationship("PpaSolicitud", back_populates="autoridad")
+    pag_pagos = relationship("PagPago", back_populates="autoridad")
+    ppa_solicitudes = relationship("PpaSolicitud", back_populates="autoridad")
     usuarios = relationship("Usuario", back_populates="autoridad")
 
     def __repr__(self):

@@ -5,7 +5,7 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from config.settings import PPA_SOLICITUD_VERIFY_URL
+from config.settings import get_settings
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message
 

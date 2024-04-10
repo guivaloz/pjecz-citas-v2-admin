@@ -1,10 +1,11 @@
 """
 Citas, formularios
 """
+
 from xmlrpc.client import DateTime
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, DateField, SelectField, IntegerField, TimeField, RadioField
-from wtforms.validators import Length, Optional, Required
+from wtforms.validators import Length, Optional, DataRequired
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 
 from citas_admin.blueprints.distritos.models import Distrito
@@ -29,7 +30,14 @@ class CitCitaSearchAdminForm(FlaskForm):
     cliente = StringField("Cliente", validators=[Optional(), Length(max=64)])
     email = StringField("Email", validators=[Optional(), Length(max=64)])
     fecha = DateField("Fecha", validators=[Optional()])
-    distrito = QuerySelectField("Distrito", query_factory=distritos_opciones, get_label="nombre", allow_blank=True, blank_text="", validators=[Optional()])
+    distrito = QuerySelectField(
+        "Distrito",
+        query_factory=distritos_opciones,
+        get_label="nombre",
+        allow_blank=True,
+        blank_text="",
+        validators=[Optional()],
+    )
     oficina = SelectField(label="Oficina", coerce=int, validate_choice=False, validators=[Optional()])
     buscar = SubmitField("Buscar")
 
@@ -37,17 +45,17 @@ class CitCitaSearchAdminForm(FlaskForm):
 class CitCitaAssistance(FlaskForm):
     """Marcar asistencia con el código de verificación"""
 
-    cita_id = IntegerField("Cita ID", validators=[Required()])
+    cita_id = IntegerField("Cita ID", validators=[DataRequired()])
     cliente = StringField("Cliente", validators=[Optional()])
-    codigo = StringField("Código de Verificación", validators=[Required(), Length(min=4, max=4)])
+    codigo = StringField("Código de Verificación", validators=[DataRequired(), Length(min=4, max=4)])
     guardar = SubmitField("Marcar Asistencia")
 
 
 class CitCitaNew(FlaskForm):
     """Nueva cita inmediata"""
 
-    # cliente_id = IntegerField("Cliente ID", validators=[Required()])
-    oficina_id = IntegerField("Oficina ID", validators=[Required()])
-    servicio_id = IntegerField("Servicio ID", validators=[Required()])
-    horario = TimeField("Horario", validators=[Required()])
+    # cliente_id = IntegerField("Cliente ID", validators=[DataRequired()])
+    oficina_id = IntegerField("Oficina ID", validators=[DataRequired()])
+    servicio_id = IntegerField("Servicio ID", validators=[DataRequired()])
+    horario = TimeField("Horario", validators=[DataRequired()])
     btnEnviar = SubmitField("Crear")

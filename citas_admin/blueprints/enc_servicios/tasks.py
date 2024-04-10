@@ -1,6 +1,7 @@
 """
 Enc Servicios, tareas para ejecutar en el fondo
 """
+
 from datetime import datetime
 import locale
 import logging
@@ -14,7 +15,7 @@ from jinja2 import Environment, FileSystemLoader
 from lib.tasks import set_task_progress, set_task_error
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.enc_servicios.models import EncServicio
 from citas_admin.blueprints.cit_clientes.models import CitCliente

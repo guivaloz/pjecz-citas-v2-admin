@@ -1,24 +1,28 @@
 """
 Materias, modelos
 """
-from citas_admin.extensions import db
+
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
-class Materia(db.Model, UniversalMixin):
+class Materia(database.Model, UniversalMixin):
     """Materia"""
 
     # Nombre de la tabla
     __tablename__ = "materias"
 
     # Clave primaria
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # Columnas
-    nombre = db.Column(db.String(64), unique=True, nullable=False)
+    nombre = Column(String(64), unique=True, nullable=False)
 
     # Hijos
-    autoridades = db.relationship("Autoridad", back_populates="materia")
+    autoridades = relationship("Autoridad", back_populates="materia")
 
     def __repr__(self):
         """Representación"""

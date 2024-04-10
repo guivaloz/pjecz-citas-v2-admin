@@ -3,6 +3,7 @@ Tres de Tres - Partidos
 
 - alimentar: Alimentar los partidos a partir de un archivo CSV
 """
+
 from pathlib import Path
 import csv
 import click
@@ -10,7 +11,7 @@ import click
 from lib.safe_string import safe_string
 
 from citas_admin.app import create_app
-from citas_admin.extensions import db
+from citas_admin.extensions import database
 
 from citas_admin.blueprints.tdt_partidos.models import TdtPartido
 

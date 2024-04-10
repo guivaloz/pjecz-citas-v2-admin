@@ -1,28 +1,29 @@
 """
 Cit Clientes, vistas
 """
+
 import json
 import os
 from datetime import datetime, timedelta
 
 from flask import Blueprint, render_template, request, url_for, flash, redirect
 from flask_login import login_required, current_user
-
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_string, safe_text, safe_message, safe_email, safe_curp, safe_tel
-from lib.storage import GoogleCloudStorage, NotConfiguredError
-from citas_admin.extensions import pwd_context
 from sqlalchemy import or_
 
+from config.settings import get_settings
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.exceptions import MyFilenameError, MyNotAllowedExtensionError, MyUnknownExtensionError
+from lib.safe_string import safe_string, safe_text, safe_message, safe_email, safe_curp, safe_telefono
+from lib.storage import GoogleCloudStorage
+
+from citas_admin.blueprints.cit_clientes.forms import CitClienteEditForm, CitClienteNewForm
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitClienteRecuperacion
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-
-from citas_admin.blueprints.cit_clientes.forms import CitClienteEditForm, CitClienteNewForm
-from config.settings import LIMITE_CITAS_PENDIENTES
+from citas_admin.extensions import pwd_context
 
 FILE_NAME = "cit_clientes_reporte.json"
 MODULO = "CIT CLIENTES"
@@ -58,11 +59,17 @@ def datatable_json():
     if "curp" in request.form:
         consulta = consulta.filter(CitCliente.curp.contains(safe_string(request.form["curp"])))
     if "telefono" in request.form:
-        consulta = consulta.filter(CitCliente.telefono.contains(safe_tel(request.form["telefono"])))
+        consulta = consulta.filter(CitCliente.telefono.contains(safe_telefono(request.form["telefono"])))
     if "nombre_completo" in request.form:
         palabras = safe_string(request.form["nombre_completo"]).split(" ")
         for palabra in palabras:
-            consulta = consulta.filter(or_(CitCliente.nombres.contains(palabra), CitCliente.apellido_primero.contains(palabra), CitCliente.apellido_segundo.contains(palabra)))
+            consulta = consulta.filter(
+                or_(
+                    CitCliente.nombres.contains(palabra),
+                    CitCliente.apellido_primero.contains(palabra),
+                    CitCliente.apellido_segundo.contains(palabra),
+                )
+            )
     registros = consulta.order_by(CitCliente.modificado.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -118,7 +125,9 @@ def detail(cit_cliente_id):
     recuperacion = recuperacion.filter_by(ya_recuperado=False)
     recuperacion = recuperacion.first()
     if recuperacion and RECOVER_ACCOUNT_CONFIRM_URL != "":
-        url_recuperacion = f"{RECOVER_ACCOUNT_CONFIRM_URL}?hashid={recuperacion.encode_id()}&cadena_validar={recuperacion.cadena_validar}"
+        url_recuperacion = (
+            f"{RECOVER_ACCOUNT_CONFIRM_URL}?hashid={recuperacion.encode_id()}&cadena_validar={recuperacion.cadena_validar}"
+        )
 
     # Entregar
     return render_template(
@@ -191,7 +200,7 @@ def edit(cit_cliente_id):
         cliente.apellido_segundo = safe_string(form.apellido_segundo.data)
         cliente.curp = curp
         cliente.email = email
-        cliente.telefono = safe_tel(form.telefono.data)
+        cliente.telefono = safe_telefono(form.telefono.data)
         cliente.limite_citas_pendientes = form.limite_citas.data
         cliente.enviar_boletin = form.recibir_boletin.data
         cliente.save()
@@ -225,7 +234,7 @@ def _read_file_report():
     # Subir el archivo a la nube (Google Storage)
     try:
         contenido_json = storage.download_as_string("json/" + FILE_NAME)
-    except NotConfiguredError:
+    except (MyFilenameError, MyNotAllowedExtensionError, MyUnknownExtensionError):
         flash("No se ha configurado el almacenamiento en la nube.", "warning")
         return None
     except Exception:
@@ -337,7 +346,7 @@ def new():
             apellido_segundo=safe_string(form.apellido_segundo.data),
             curp=safe_string(form.curp.data),
             email=email,
-            telefono=safe_tel(form.telefono.data),
+            telefono=safe_telefono(form.telefono.data),
             contrasena_md5="",
             contrasena_sha256=pwd_context.hash(form.contrasena.data),
             renovacion=renovacion_fecha.date(),
