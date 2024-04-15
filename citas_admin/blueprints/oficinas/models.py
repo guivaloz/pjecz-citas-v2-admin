@@ -43,11 +43,6 @@ class Oficina(database.Model, UniversalMixin):
     enc_servicios = relationship("EncServicio", back_populates="oficina")
     usuarios_oficinas = relationship("UsuarioOficina", back_populates="oficina")
 
-    @property
-    def compuesto(self):
-        """Entregar clave - descripcion_corta para selects"""
-        return f"{self.clave} - {self.descripcion_corta}"
-
     def __repr__(self):
         """Representación"""
         return f"<Oficina> {self.clave}"

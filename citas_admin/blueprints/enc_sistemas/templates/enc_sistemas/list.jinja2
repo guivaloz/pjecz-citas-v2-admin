@@ -17,7 +17,6 @@
         {{ detail.label_value('Pregunta 02:', '¿Por qué?') }}
         {{ detail.label_value('Pregunta 03:', '¿Tienes algún comentario para nosotros?') }}
     {% endcall %}
-
     {% call list.card() %}
         <div class="row align-items-end">
             <div class="col">
@@ -131,12 +130,10 @@
                 }
             }
         ];
-
         let desde = document.getElementById('desde')?.value;
         let hasta = document.getElementById('hasta')?.value;
         let resp01Select = document.getElementById('resp01Select').value;
         let estadoSelect = document.getElementById('estadoSelect').value;
-
         if(desde != '')
             configDataTable['ajax']['data']['desde'] = desde;
         if(hasta != '')
@@ -145,7 +142,6 @@
             configDataTable['ajax']['data']['respuesta_01'] = resp01Select;
         if(estadoSelect != '')
             configDataTable['ajax']['data']['estado'] = estadoSelect;
-        
         $('#respuestas_datatable').DataTable(configDataTable);
     </script>
     <!-- Función de buscador -->
@@ -155,16 +151,12 @@
             let hasta = document.getElementById('hastaInput').value;
             let resp01Select = document.getElementById('resp01Select').value;
             let estadoSelect = document.getElementById('estadoSelect').value;
-
             if( configDataTable['ajax']['data']['desde'] === undefined && desde === '' &&
                 configDataTable['ajax']['data']['hasta'] === undefined && hasta === '' &&
                 configDataTable['ajax']['data']['respuesta_01'] === undefined && resp01Select === '' &&
                 configDataTable['ajax']['data']['estado'] === undefined && estadoSelect === ''
-            )
-                return false;
-
+            ) return false;
             $('#respuestas_datatable').DataTable().destroy();
-
             if(desde == '')
                 delete configDataTable['ajax']['data']['desde'];
             else
@@ -181,23 +173,18 @@
                 delete configDataTable['ajax']['data']['estado'];
             else
                 configDataTable['ajax']['data']['estado'] = estadoSelect;
-
             $('#respuestas_datatable').DataTable(configDataTable);
         };
-
         function limpiar()  {
             if( configDataTable['ajax']['data']['desde'] === undefined &&
                 configDataTable['ajax']['data']['hasta'] === undefined &&
                 configDataTable['ajax']['data']['respuesta_01'] === undefined &&
                 configDataTable['ajax']['data']['estado'] === undefined
-            )
-                return false;
-            
+            ) return false;
             delete configDataTable['ajax']['data']['desde'];
             delete configDataTable['ajax']['data']['hasta'];
             delete configDataTable['ajax']['data']['respuesta_01'];
             delete configDataTable['ajax']['data']['estado'];
-
             $('#respuestas_datatable').DataTable().destroy();
             $('#respuestas_datatable').DataTable(configDataTable);
         };

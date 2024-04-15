@@ -18,7 +18,6 @@
         {{ detail.label_value('Pregunta 03:', '¿Cómo calificarías tu experiencia con el servicio brindado?') }}
         {{ detail.label_value('Pregunta 04:', '¿Cómo podemos mejorar tu experiencia en el PJECZ?') }}
     {% endcall %}
-        
     {% call list.card() %}
         <form class="row g-1 mb-3" id="buscadorForm" method="POST" action="{{url_for('enc_servicios.report')}}">
             <input id="csrf_token" name="csrf_token" type="hidden" value="{{ csrf_token() }}">
@@ -216,7 +215,7 @@
             configDataTable['ajax']['data']['respuesta_03'] = resp03Select;
         if(estadoSelect != '')
             configDataTable['ajax']['data']['estado'] = estadoSelect;
-        
+
         $('#respuestas_datatable').DataTable(configDataTable);
     </script>
     <!-- Función de buscador -->
@@ -241,9 +240,7 @@
                 configDataTable['ajax']['data']['estado'] === undefined && estadoSelect === ''
             )
                 return false;
-
             $('#respuestas_datatable').DataTable().destroy();
-
             if(desde == '')
                 delete configDataTable['ajax']['data']['desde'];
             else
@@ -291,10 +288,8 @@
                 delete configDataTable['ajax']['data']['estado'];
             else
                 configDataTable['ajax']['data']['estado'] = estadoSelect;
-
             $('#respuestas_datatable').DataTable(configDataTable);
         };
-
         function limpiar()  {
             if( configDataTable['ajax']['data']['desde'] === undefined &&
                 configDataTable['ajax']['data']['hasta'] === undefined &&
@@ -304,9 +299,7 @@
                 configDataTable['ajax']['data']['respuesta_02'] === undefined &&
                 configDataTable['ajax']['data']['respuesta_03'] === undefined &&
                 configDataTable['ajax']['data']['estado'] === undefined
-            )
-                return false;
-            
+            ) return false;
             delete configDataTable['ajax']['data']['desde'];
             delete configDataTable['ajax']['data']['hasta'];
             delete configDataTable['ajax']['data']['distrito_id'];
@@ -315,12 +308,10 @@
             delete configDataTable['ajax']['data']['respuesta_02'];
             delete configDataTable['ajax']['data']['respuesta_03'];
             delete configDataTable['ajax']['data']['estado'];
-
             document.getElementById('distrito_nombre').value = "";
             document.getElementById('oficina_nombre').value = "";
             document.getElementById('oficinasSelect').disabled = true;
             limpiar_oficinas();
-
             $('#respuestas_datatable').DataTable().destroy();
             $('#respuestas_datatable').DataTable(configDataTable);
         };
@@ -366,7 +357,6 @@
                 }
             });
         };
-
         function limpiar_oficinas() {
             // Limpiamos el select
             for (let i = document.getElementById('oficinasSelect').options.length; i-- > 0;)

@@ -1,22 +1,25 @@
 """
 Usuarios Oficinas, formularios
 """
+
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
 
 from citas_admin.blueprints.oficinas.models import Oficina
-
-
-def oficinas_opciones():
-    """Oficinas: opciones para select"""
-    return Oficina.query.filter_by(estatus="A").order_by(Oficina.clave).all()
 
 
 class UsuarioOficinaWithUsuarioForm(FlaskForm):
     """Formulario UsuarioOficina"""
 
-    oficina = QuerySelectField("Oficina", query_factory=oficinas_opciones, get_label="compuesto")
+    oficina = SelectField("Oficina", coerce=int, validators=[DataRequired()])
     usuario = StringField("Usuario")  # Read only
     guardar = SubmitField("Guardar")
+
+    def __init__(self, *args, **kwargs):
+        """Inicializar y cargar opciones de oficinas"""
+        super().__init__(*args, **kwargs)
+        self.oficina.choices = [
+            (o.id, o.clave + " - " + o.descripcion_corta)
+            for o in Oficina.query.filter_by(estatus="A").order_by(Oficina.clave).all()
+        ]

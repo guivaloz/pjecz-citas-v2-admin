@@ -7,13 +7,10 @@ from datetime import datetime
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
-from lib.universal_mixin import UniversalMixin
-from citas_admin.extensions import database
-
 import pytz
 
-from citas_admin.extensions import database
 from lib.universal_mixin import UniversalMixin
+from citas_admin.extensions import database
 
 
 class CitCita(database.Model, UniversalMixin):

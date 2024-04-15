@@ -3,7 +3,6 @@ Cit Clientes Registros, modelos
 """
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
-from sqlalchemy.orm import relationship
 
 from lib.universal_mixin import UniversalMixin
 from citas_admin.extensions import database
