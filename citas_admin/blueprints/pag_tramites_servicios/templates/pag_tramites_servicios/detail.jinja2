@@ -10,6 +10,8 @@
         {{ topbar.button_previous('Trámites y Servicios', url_for('pag_tramites_servicios.list_active')) }}
         {% if current_user.can_edit('PAG TRAMITES SERVICIOS') %}
             {{ topbar.button_edit('Editar', url_for('pag_tramites_servicios.edit', pag_tramite_servicio_id=pag_tramite_servicio.id)) }}
+        {% endif %}
+        {% if current_user.can_admin('PAG TRAMITES SERVICIOS') %}
             {% if pag_tramite_servicio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('pag_tramites_servicios.delete', pag_tramite_servicio_id=pag_tramite_servicio.id)) }}{% endif %}
             {% if pag_tramite_servicio.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('pag_tramites_servicios.recover', pag_tramite_servicio_id=pag_tramite_servicio.id)) }}{% endif %}
         {% endif %}
@@ -25,7 +27,7 @@
 {% endblock %}
 
 {% block custom_javascript %}
-    {% if current_user.can_edit('PAG TRAMITES SERVICIOS') %}
+    {% if current_user.can_admin('PAG TRAMITES SERVICIOS') %}
         {% if pag_tramite_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + pag_tramite_servicio.clave + '?') }}{% endif %}
         {% if pag_tramite_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + pag_tramite_servicio.clave + '?') }}{% endif %}
     {% endif %}

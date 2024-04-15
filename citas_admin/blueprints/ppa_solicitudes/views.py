@@ -1,11 +1,11 @@
 """
 Pago de Pensiones Alimenticias - Solicitudes, vistas
 """
+
 import json
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from config.settings import get_settings
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message
 
@@ -87,7 +87,9 @@ def list_inactive():
 def detail(ppa_solicitud_id):
     """Detalle de una solicitud"""
     ppa_solicitud = PpaSolicitud.query.get_or_404(ppa_solicitud_id)
-    pps_solicitud_verify_url = "" if PPA_SOLICITUD_VERIFY_URL == "" else PPA_SOLICITUD_VERIFY_URL + "/" + ppa_solicitud.encode_id()
+    pps_solicitud_verify_url = ""
+    if current_app.config["PPA_SOLICITUD_VERIFY_URL"] != "":
+        pps_solicitud_verify_url = current_app.config["PPA_SOLICITUD_VERIFY_URL"] + "/" + ppa_solicitud.encode_id()
     return render_template(
         "ppa_solicitudes/detail.jinja2",
         ppa_solicitud=ppa_solicitud,
@@ -96,7 +98,7 @@ def detail(ppa_solicitud_id):
 
 
 @ppa_solicitudes.route("/ppa_solicitudes/eliminar/<int:ppa_solicitud_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(ppa_solicitud_id):
     """Eliminar solicitud"""
     ppa_solicitud = PpaSolicitud.query.get_or_404(ppa_solicitud_id)
@@ -114,7 +116,7 @@ def delete(ppa_solicitud_id):
 
 
 @ppa_solicitudes.route("/ppa_solicitudes/recuperar/<int:ppa_solicitud_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(ppa_solicitud_id):
     """Recuperar solicitud"""
     ppa_solicitud = PpaSolicitud.query.get_or_404(ppa_solicitud_id)

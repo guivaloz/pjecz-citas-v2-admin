@@ -16,10 +16,10 @@
                     {{ topbar.button('Marcar Asistencia', url_for('cit_citas.assistance', cit_cita_id=cit_cita.id), 'mdi:check-bold')}}
                 {% endif %}
             {% endif %}
-            {% if current_user.can_admin('CIT CITAS') %}
-                {% if cit_cita.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_citas.delete', cit_cita_id=cit_cita.id)) }}{% endif %}
-                {% if cit_cita.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_citas.recover', cit_cita_id=cit_cita.id)) }}{% endif %}
-            {% endif %}
+        {% endif %}
+        {% if current_user.can_admin('CIT CITAS') %}
+            {% if cit_cita.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_citas.delete', cit_cita_id=cit_cita.id)) }}{% endif %}
+            {% if cit_cita.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_citas.recover', cit_cita_id=cit_cita.id)) }}{% endif %}
         {% endif %}
     {% endcall %}
 {% endblock %}
@@ -84,7 +84,7 @@
 
 {% block custom_javascript %}
     {{ detail.moment_js(moment) }}
-    {% if current_user.can_edit('CIT CITAS') %}
+    {% if current_user.can_admin('CIT CITAS') %}
         {% if cit_cita.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar la cita ' + cit_cita.id | string + '?') }}{% endif %}
         {% if cit_cita.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar la cita ' + cit_cita.id | string + '?') }}{% endif %}
     {% endif %}

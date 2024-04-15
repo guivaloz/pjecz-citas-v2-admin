@@ -1,6 +1,7 @@
 """
 Usuarios Oficinas, vistas
 """
+
 import json
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -57,12 +58,16 @@ def datatable_json():
                 },
                 "usuario": {
                     "email": resultado.usuario.email,
-                    "url": url_for("usuarios.detail", usuario_id=resultado.usuario_id) if current_user.can_view("USUARIOS") else "",
+                    "url": (
+                        url_for("usuarios.detail", usuario_id=resultado.usuario_id) if current_user.can_view("USUARIOS") else ""
+                    ),
                 },
                 "usuario_nombre": resultado.usuario.nombre,
                 "oficina": {
                     "clave": resultado.oficina.clave,
-                    "url": url_for("oficinas.detail", oficina_id=resultado.oficina_id) if current_user.can_view("OFICINAS") else "",
+                    "url": (
+                        url_for("oficinas.detail", oficina_id=resultado.oficina_id) if current_user.can_view("OFICINAS") else ""
+                    ),
                 },
                 "oficina_descripcion_corta": resultado.oficina.descripcion_corta,
                 "oficina_limite_personas": resultado.oficina.limite_personas,
@@ -113,7 +118,9 @@ def new_with_usuario(usuario_id):
     if form.validate_on_submit():
         oficina = form.oficina.data
         descripcion = f"{usuario.email} en {oficina.descripcion_corta}"
-        puede_existir = UsuarioOficina.query.filter(UsuarioOficina.oficina == oficina).filter(UsuarioOficina.usuario == usuario).first()
+        puede_existir = (
+            UsuarioOficina.query.filter(UsuarioOficina.oficina == oficina).filter(UsuarioOficina.usuario == usuario).first()
+        )
         if puede_existir is not None:
             flash(f"CONFLICTO: Ya existe {descripcion}. Si aparece eliminado (oscuro), recupérelo.", "warning")
             return redirect(url_for("usuarios_oficinas.detail", usuario_oficina_id=puede_existir.id))
@@ -135,7 +142,7 @@ def new_with_usuario(usuario_id):
 
 
 @usuarios_oficinas.route("/usuarios_oficinas/eliminar/<int:usuario_oficina_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(usuario_oficina_id):
     """Eliminar Usuario Oficina"""
     usuario_oficina = UsuarioOficina.query.get_or_404(usuario_oficina_id)
@@ -153,7 +160,7 @@ def delete(usuario_oficina_id):
 
 
 @usuarios_oficinas.route("/usuarios_oficinas/recuperar/<int:usuario_oficina_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(usuario_oficina_id):
     """Recuperar Usuario Oficina"""
     usuario_oficina = UsuarioOficina.query.get_or_404(usuario_oficina_id)

@@ -1,6 +1,7 @@
 """
 Cit Dias Inhabiles, vistas
 """
+
 import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -134,7 +135,7 @@ def edit(cit_dia_inhabil_id):
 
 
 @cit_dias_inhabiles.route("/cit_dias_inhabiles/eliminar/<int:cit_dia_inhabil_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(cit_dia_inhabil_id):
     """Eliminar Dia Inhabil"""
     cit_dia_inhabil = CitDiaInhabil.query.get_or_404(cit_dia_inhabil_id)
@@ -152,7 +153,7 @@ def delete(cit_dia_inhabil_id):
 
 
 @cit_dias_inhabiles.route("/cit_dias_inhabiles/recuperar/<int:cit_dia_inhabil_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(cit_dia_inhabil_id):
     """Recuperar Dia Inhabil"""
     cit_dia_inhabil = CitDiaInhabil.query.get_or_404(cit_dia_inhabil_id)

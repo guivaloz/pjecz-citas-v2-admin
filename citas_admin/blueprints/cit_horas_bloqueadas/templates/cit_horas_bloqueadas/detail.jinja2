@@ -10,6 +10,8 @@
         {{ topbar.button_previous('Horas Bloqueada', url_for('cit_horas_bloqueadas.list_active')) }}
         {% if current_user.can_edit('CIT HORAS BLOQUEADAS') %}
             {{ topbar.button_edit('Editar', url_for('cit_horas_bloqueadas.edit', cit_hora_bloqueada_id=cit_hora_bloqueada.id)) }}
+        {% endif %}
+        {% if current_user.can_admin('CIT HORAS BLOQUEADAS') %}
             {% if cit_hora_bloqueada.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_horas_bloqueadas.delete', cit_hora_bloqueada_id=cit_hora_bloqueada.id)) }}{% endif %}
             {% if cit_hora_bloqueada.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_horas_bloqueadas.recover', cit_hora_bloqueada_id=cit_hora_bloqueada.id)) }}{% endif %}
         {% endif %}
@@ -28,7 +30,7 @@
 
 {% block custom_javascript %}
     {{ moment.include_moment() }}
-    {% if current_user.can_edit('CIT HORAS BLOQUEADAS') %}
+    {% if current_user.can_admin('CIT HORAS BLOQUEADAS') %}
         {% if cit_hora_bloqueada.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar hora bloqeuada ' + cit_hora_bloqueada.id | string + '?') }}{% endif %}
         {% if cit_hora_bloqueada.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar hora bloqeuada ' + cit_hora_bloqueada.id  | string + '?') }}{% endif %}
     {% endif %}

@@ -10,6 +10,8 @@
         {{ topbar.button_previous('Días Inhabiles', url_for('cit_dias_inhabiles.list_active')) }}
         {% if current_user.can_edit('CIT DIAS INHABILES') %}
             {{ topbar.button_edit('Editar', url_for('cit_dias_inhabiles.edit', cit_dia_inhabil_id=cit_dia_inhabil.id)) }}
+        {% endif %}
+        {% if current_user.can_admin('CIT DIAS INHABILES') %}
             {% if cit_dia_inhabil.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_dias_inhabiles.delete', cit_dia_inhabil_id=cit_dia_inhabil.id)) }}{% endif %}
             {% if cit_dia_inhabil.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_dias_inhabiles.recover', cit_dia_inhabil_id=cit_dia_inhabil.id)) }}{% endif %}
         {% endif %}
@@ -24,7 +26,7 @@
 {% endblock %}
 
 {% block custom_javascript %}
-    {% if current_user.can_edit('CIT DIAS INHABILES') %}
+    {% if current_user.can_admin('CIT DIAS INHABILES') %}
         {% if cit_dia_inhabil.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar ' + moment(cit_dia_inhabil.fecha).format('ll') + '?') }}{% endif %}
         {% if cit_dia_inhabil.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar ' + moment(cit_dia_inhabil.fecha).format('ll') + '?') }}{% endif %}
     {% endif %}

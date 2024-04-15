@@ -1,6 +1,7 @@
 """
 Cit Clientes Registros, vistas
 """
+
 import json
 import os
 
@@ -102,11 +103,13 @@ def detail(cit_cliente_registro_id):
     load_dotenv()  # Take environment variables from .env
     NEW_ACCOUNT_CONFIRM_URL = os.getenv("NEW_ACCOUNT_CONFIRM_URL", "")
     url_confirmacion = f"{NEW_ACCOUNT_CONFIRM_URL}?hashid={cit_cliente_registro.encode_id()}&cadena_validar={cit_cliente_registro.cadena_validar}"
-    return render_template("cit_clientes_registros/detail.jinja2", cit_cliente_registro=cit_cliente_registro, url_confirmacion=url_confirmacion)
+    return render_template(
+        "cit_clientes_registros/detail.jinja2", cit_cliente_registro=cit_cliente_registro, url_confirmacion=url_confirmacion
+    )
 
 
 @cit_clientes_registros.route("/cit_clientes_registros/eliminar/<int:cit_cliente_registro_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(cit_cliente_registro_id):
     """Eliminar Registro de Cliente"""
     cit_cliente_registro = CitClienteRegistro.query.get_or_404(cit_cliente_registro_id)
@@ -124,7 +127,7 @@ def delete(cit_cliente_registro_id):
 
 
 @cit_clientes_registros.route("/cit_clientes_registros/recuperar/<int:cit_cliente_registro_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(cit_cliente_registro_id):
     """Recuperar Registro de Cliente"""
     cit_cliente_registro = CitClienteRegistro.query.get_or_404(cit_cliente_registro_id)

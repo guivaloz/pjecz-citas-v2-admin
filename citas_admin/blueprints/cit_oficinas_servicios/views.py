@@ -1,6 +1,7 @@
 """
 Cit Oficinas-Servicios, vistas
 """
+
 import json
 from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -11,7 +12,12 @@ from lib.safe_string import safe_message, safe_string
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.cit_categorias.models import CitCategoria
 from citas_admin.blueprints.cit_oficinas_servicios.models import CitOficinaServicio
-from citas_admin.blueprints.cit_oficinas_servicios.forms import CitOficinaServicioFormWithOficina, CitOficinaServicioFormWithCitServicio, CitOficinaServicioFormWithCitCategoria, CitOficinaServicioFormWithDistrito
+from citas_admin.blueprints.cit_oficinas_servicios.forms import (
+    CitOficinaServicioFormWithOficina,
+    CitOficinaServicioFormWithCitServicio,
+    CitOficinaServicioFormWithCitCategoria,
+    CitOficinaServicioFormWithDistrito,
+)
 from citas_admin.blueprints.cit_servicios.models import CitServicio
 from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.modulos.models import Modulo
@@ -118,7 +124,11 @@ def new_with_oficina(oficina_id):
     if form.validate_on_submit():
         cit_servicio = form.cit_servicio.data
         descripcion = safe_string(f"{oficina.clave} con {cit_servicio.clave}")
-        cit_oficina_servicio_existente = CitOficinaServicio.query.filter(CitOficinaServicio.oficina == oficina).filter(CitOficinaServicio.cit_servicio == cit_servicio).first()
+        cit_oficina_servicio_existente = (
+            CitOficinaServicio.query.filter(CitOficinaServicio.oficina == oficina)
+            .filter(CitOficinaServicio.cit_servicio == cit_servicio)
+            .first()
+        )
         if cit_oficina_servicio_existente is not None:
             flash(f"CONFLICTO: Ya existe {descripcion}. Si esta eliminado, recupere.", "warning")
             return redirect(url_for("cit_oficinas_servicios.detail", cit_oficina_servicio_id=cit_oficina_servicio_existente.id))
@@ -154,7 +164,11 @@ def new_with_cit_servicio(cit_servicio_id):
     if form.validate_on_submit():
         oficina = form.oficina.data
         descripcion = safe_string(f"{oficina.clave} con {cit_servicio.clave}")
-        cit_oficina_servicio_existente = CitOficinaServicio.query.filter(CitOficinaServicio.oficina == oficina).filter(CitOficinaServicio.cit_servicio == cit_servicio).first()
+        cit_oficina_servicio_existente = (
+            CitOficinaServicio.query.filter(CitOficinaServicio.oficina == oficina)
+            .filter(CitOficinaServicio.cit_servicio == cit_servicio)
+            .first()
+        )
         if cit_oficina_servicio_existente is not None:
             flash(f"CONFLICTO: Ya existe {descripcion}. Si esta eliminado, recupere.", "warning")
             return redirect(url_for("cit_oficinas_servicios.detail", cit_oficina_servicio_id=cit_oficina_servicio_existente.id))
@@ -181,7 +195,9 @@ def new_with_cit_servicio(cit_servicio_id):
     )
 
 
-@cit_oficinas_servicios.route("/cit_oficinas_servicios/asignar_cit_categoria_a_distrito/<int:distrito_id>", methods=["GET", "POST"])
+@cit_oficinas_servicios.route(
+    "/cit_oficinas_servicios/asignar_cit_categoria_a_distrito/<int:distrito_id>", methods=["GET", "POST"]
+)
 @permission_required(MODULO, Permiso.CREAR)
 def add_cit_categoria_to_distrito(distrito_id):
     """Asignar servicios de una categoria a todas las oficinas de un distrito"""
@@ -194,13 +210,18 @@ def add_cit_categoria_to_distrito(distrito_id):
             cit_categoria_id=cit_categoria.id,
             distrito_id=distrito.id,
         )
-        flash(f"Tarea en el fondo lanzada: Asignar servicios de {cit_categoria.nombre} a todas las oficinas de {distrito.nombre}", "success")
+        flash(
+            f"Tarea en el fondo lanzada: Asignar servicios de {cit_categoria.nombre} a todas las oficinas de {distrito.nombre}",
+            "success",
+        )
         return redirect(url_for("distritos.detail", distrito_id=distrito.id))
     form.distrito.data = distrito.nombre  # Read only
     return render_template("cit_oficinas_servicios/add_cit_categoria_to_distrito.jinja2", form=form, distrito=distrito)
 
 
-@cit_oficinas_servicios.route("/cit_oficinas_servicios/asignar_distrito_a_cit_categoria/<int:cit_categoria_id>", methods=["GET", "POST"])
+@cit_oficinas_servicios.route(
+    "/cit_oficinas_servicios/asignar_distrito_a_cit_categoria/<int:cit_categoria_id>", methods=["GET", "POST"]
+)
 @permission_required(MODULO, Permiso.CREAR)
 def add_distrito_to_cit_categoria(cit_categoria_id):
     """Asignar a todas las oficinas de un distrito los servicios de una categoria"""
@@ -213,14 +234,19 @@ def add_distrito_to_cit_categoria(cit_categoria_id):
             cit_categoria_id=cit_categoria.id,
             distrito_id=distrito.id,
         )
-        flash(f"Tarea en el fondo lanzada: Asignar a todas las oficinas de {distrito.nombre} los servicios de {cit_categoria.nombre}", "success")
+        flash(
+            f"Tarea en el fondo lanzada: Asignar a todas las oficinas de {distrito.nombre} los servicios de {cit_categoria.nombre}",
+            "success",
+        )
         return redirect(url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id))
     form.cit_categoria.data = cit_categoria.nombre  # Read only
-    return render_template("cit_oficinas_servicios/add_distrito_to_cit_categoria.jinja2", form=form, cit_categoria=cit_categoria)
+    return render_template(
+        "cit_oficinas_servicios/add_distrito_to_cit_categoria.jinja2", form=form, cit_categoria=cit_categoria
+    )
 
 
 @cit_oficinas_servicios.route("/cit_oficinas_servicios/eliminar/<int:cit_oficina_servicio_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(cit_oficina_servicio_id):
     """Eliminar Oficina-Servicio"""
     cit_oficina_servicio = CitOficinaServicio.query.get_or_404(cit_oficina_servicio_id)
@@ -238,7 +264,7 @@ def delete(cit_oficina_servicio_id):
 
 
 @cit_oficinas_servicios.route("/cit_oficinas_servicios/recuperar/<int:cit_oficina_servicio_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(cit_oficina_servicio_id):
     """Recuperar Oficina-Servicio"""
     cit_oficina_servicio = CitOficinaServicio.query.get_or_404(cit_oficina_servicio_id)

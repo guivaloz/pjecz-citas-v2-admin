@@ -1,6 +1,7 @@
 """
 Cit Categorias, vistas
 """
+
 import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -143,7 +144,7 @@ def edit(cit_categoria_id):
 
 
 @cit_categorias.route("/cit_categorias/eliminar/<int:cit_categoria_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(cit_categoria_id):
     """Eliminar Categoria"""
     cit_categoria = CitCategoria.query.get_or_404(cit_categoria_id)
@@ -161,7 +162,7 @@ def delete(cit_categoria_id):
 
 
 @cit_categorias.route("/cit_categorias/recuperar/<int:cit_categoria_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(cit_categoria_id):
     """Recuperar Categoria"""
     cit_categoria = CitCategoria.query.get_or_404(cit_categoria_id)

@@ -1,6 +1,7 @@
 """
 Cit Horas Bloqueadas, vistas
 """
+
 import json
 from datetime import datetime, time
 from flask import Blueprint, flash, redirect, render_template, request, url_for, abort
@@ -51,8 +52,15 @@ def datatable_json():
     for resultado in registros:
         data.append(
             {
-                "detalle": {"fecha": resultado.fecha.strftime("%Y/%m/%d, %a"), "url": url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=resultado.id)},
-                "oficina": {"clave": resultado.oficina.clave, "descripcion": resultado.oficina.descripcion, "url": url_for("oficinas.detail", oficina_id=resultado.oficina.id)},
+                "detalle": {
+                    "fecha": resultado.fecha.strftime("%Y/%m/%d, %a"),
+                    "url": url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=resultado.id),
+                },
+                "oficina": {
+                    "clave": resultado.oficina.clave,
+                    "descripcion": resultado.oficina.descripcion,
+                    "url": url_for("oficinas.detail", oficina_id=resultado.oficina.id),
+                },
                 "inicio": resultado.inicio.strftime("%H:%M"),
                 "termino": resultado.termino.strftime("%H:%M"),
                 "descripcion": resultado.descripcion,
@@ -130,7 +138,9 @@ def new():
         es_valido = True
         # Validar que el inicio sea igual o posterior a la apertura de la oficina
         if form.inicio_tiempo.data < current_user.oficina.apertura:
-            flash(f"El inicio debe ser igual o posterior a la apertura de la oficina {current_user.oficina.apertura}", "warning")
+            flash(
+                f"El inicio debe ser igual o posterior a la apertura de la oficina {current_user.oficina.apertura}", "warning"
+            )
             es_valido = False
         # Validar que el termino sea igual o anterior al cierre de la oficina
         if form.termino_tiempo.data > current_user.oficina.cierre:
@@ -190,7 +200,9 @@ def edit(cit_hora_bloqueada_id):
         es_valido = True
         # Validar que el inicio sea igual o posterior a la apertura de la oficina
         if form.inicio_tiempo.data < current_user.oficina.apertura:
-            flash(f"El inicio debe ser igual o posterior a la apertura de la oficina {current_user.oficina.apertura}", "warning")
+            flash(
+                f"El inicio debe ser igual o posterior a la apertura de la oficina {current_user.oficina.apertura}", "warning"
+            )
             es_valido = False
         # Validar que el termino sea igual o anterior al cierre de la oficina
         if form.termino_tiempo.data > current_user.oficina.cierre:
@@ -211,7 +223,9 @@ def edit(cit_hora_bloqueada_id):
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
                 usuario=current_user,
-                descripcion=safe_message(f"Editado Hora Bloqueada {cit_hora_bloqueada.fecha} a las {cit_hora_bloqueada.inicio}"),
+                descripcion=safe_message(
+                    f"Editado Hora Bloqueada {cit_hora_bloqueada.fecha} a las {cit_hora_bloqueada.inicio}"
+                ),
                 url=url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=cit_hora_bloqueada.id),
             )
             bitacora.save()
@@ -232,7 +246,7 @@ def edit(cit_hora_bloqueada_id):
 
 
 @cit_horas_bloqueadas.route("/cit_horas_bloqueadas/eliminar/<int:cit_hora_bloqueada_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(cit_hora_bloqueada_id):
     """Eliminar Hora Bloqueada"""
     cit_hora_bloqueada = CitHoraBloqueada.query.get_or_404(cit_hora_bloqueada_id)
@@ -255,7 +269,7 @@ def delete(cit_hora_bloqueada_id):
 
 
 @cit_horas_bloqueadas.route("/cit_horas_bloqueadas/recuperar/<int:cit_hora_bloqueada_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(cit_hora_bloqueada_id):
     """Recuperar Hora Bloqueada"""
     cit_hora_bloqueada = CitHoraBloqueada.query.get_or_404(cit_hora_bloqueada_id)

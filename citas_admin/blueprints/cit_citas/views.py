@@ -1,6 +1,7 @@
 """
 Cit Citas, vistas
 """
+
 from datetime import datetime, timedelta
 import json
 
@@ -72,7 +73,13 @@ def datatable_json():
         palabras = safe_string(request.form["nombre_completo"]).split(" ")
         consulta = consulta.join(CitCliente)
         for palabra in palabras:
-            consulta = consulta.filter(or_(CitCliente.nombres.contains(palabra), CitCliente.apellido_primero.contains(palabra), CitCliente.apellido_segundo.contains(palabra)))
+            consulta = consulta.filter(
+                or_(
+                    CitCliente.nombres.contains(palabra),
+                    CitCliente.apellido_primero.contains(palabra),
+                    CitCliente.apellido_segundo.contains(palabra),
+                )
+            )
     if "cit_servicio_id" in request.form:
         consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
     else:
@@ -108,11 +115,19 @@ def datatable_json():
                 },
                 "cit_cliente": {
                     "nombre": cita.cit_cliente.nombre,
-                    "url": url_for("cit_clientes.detail", cit_cliente_id=cita.cit_cliente.id) if current_user.can_view("CIT CLIENTES") else "",
+                    "url": (
+                        url_for("cit_clientes.detail", cit_cliente_id=cita.cit_cliente.id)
+                        if current_user.can_view("CIT CLIENTES")
+                        else ""
+                    ),
                 },
                 "cit_servicio": {
                     "clave": cita.cit_servicio.clave,
-                    "url": url_for("cit_servicios.detail", cit_servicio_id=cita.cit_servicio.id) if current_user.can_view("CIT SERVICIOS") else "",
+                    "url": (
+                        url_for("cit_servicios.detail", cit_servicio_id=cita.cit_servicio.id)
+                        if current_user.can_view("CIT SERVICIOS")
+                        else ""
+                    ),
                     "descripcion": cita.cit_servicio.descripcion,
                 },
                 "oficina": {
@@ -171,7 +186,13 @@ def list_active():
         )
 
     # Verificamos si tiene asignadas varias oficinas
-    oficinas_usr = UsuarioOficina.query.join(Oficina).filter(UsuarioOficina.usuario_id == current_user.id).filter_by(estatus="A").order_by(Oficina.descripcion_corta).all()
+    oficinas_usr = (
+        UsuarioOficina.query.join(Oficina)
+        .filter(UsuarioOficina.usuario_id == current_user.id)
+        .filter_by(estatus="A")
+        .order_by(Oficina.descripcion_corta)
+        .all()
+    )
 
     # NO es administrador, entregar las citas de su propia oficina
     return render_template(
@@ -255,7 +276,9 @@ def detail(cit_cita_id):
         return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
 
     # Si tiene acceso a varias oficinas
-    oficinas = UsuarioOficina.query.filter_by(usuario=current_user).filter_by(oficina=cit_cita.oficina).filter_by(estatus="A").first()
+    oficinas = (
+        UsuarioOficina.query.filter_by(usuario=current_user).filter_by(oficina=cit_cita.oficina).filter_by(estatus="A").first()
+    )
     if oficinas is not None:
         return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita, marcar_asistencia=marcar_asistencia)
 
@@ -264,7 +287,7 @@ def detail(cit_cita_id):
 
 
 @cit_citas.route("/cit_citas/eliminar/<int:cit_cita_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(cit_cita_id):
     """Eliminar Cita"""
 
@@ -290,7 +313,7 @@ def delete(cit_cita_id):
 
 
 @cit_citas.route("/cit_citas/recuperar/<int:cit_cita_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(cit_cita_id):
     """Recuperar Cita"""
 
@@ -508,7 +531,9 @@ def new(cit_cliente_id):
         if oficina is None:
             flash(f"Error: el ID de la Oficina {request.form['oficina_id']} no existe.", "danger")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
-        oficina_user = UsuarioOficina.query.filter_by(usuario_id=current_user.id).filter_by(oficina=oficina).filter_by(estatus="A").first()
+        oficina_user = (
+            UsuarioOficina.query.filter_by(usuario_id=current_user.id).filter_by(oficina=oficina).filter_by(estatus="A").first()
+        )
         if oficina_user is None:
             flash(f"Error: Usted no tiene acceso a agendar citas en esta oficina {oficina.clave}.", "warning")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
@@ -519,7 +544,9 @@ def new(cit_cliente_id):
         if servicio is None:
             flash(f"Error: el ID del Servicio {request.form['servicio_id']} no existe.", "danger")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
-        oficina_servicio = CitOficinaServicio.query.filter_by(oficina=oficina).filter_by(cit_servicio=servicio).filter_by(estatus="A").first()
+        oficina_servicio = (
+            CitOficinaServicio.query.filter_by(oficina=oficina).filter_by(cit_servicio=servicio).filter_by(estatus="A").first()
+        )
         if oficina_servicio is None:
             flash(f"Error: Este servicio {servicio.clave} no se atiende en la oficina {oficina.clave}.", "warning")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)
@@ -538,7 +565,13 @@ def new(cit_cliente_id):
         )
 
         # Validar si se puede agendar la cita
-        count_citas = CitCita.query.filter_by(oficina=oficina).filter_by(inicio=horario).filter(CitCita.estado != "CANCELO").filter_by(estatus="A").count()
+        count_citas = (
+            CitCita.query.filter_by(oficina=oficina)
+            .filter_by(inicio=horario)
+            .filter(CitCita.estado != "CANCELO")
+            .filter_by(estatus="A")
+            .count()
+        )
         if count_citas >= LIMITE_CITAS:
             flash(f"Error: Ya se alcanzó el límite de citas para ese horario. Límite: {LIMITE_CITAS}", "warning")
             return render_template("cit_citas/new.jinja2", cit_cliente=cliente, oficinas=oficinas, form=form)

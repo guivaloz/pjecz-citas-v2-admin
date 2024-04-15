@@ -1,6 +1,7 @@
 """
 Pagos Tramites y Servicios, vistas
 """
+
 import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -160,7 +161,7 @@ def edit(pag_tramite_servicio_id):
 
 
 @pag_tramites_servicios.route("/pag_tramites_servicios/eliminar/<int:pag_tramite_servicio_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(pag_tramite_servicio_id):
     """Eliminar Tramite y Servicio"""
     pag_tramite_servicio = PagTramiteServicio.query.get_or_404(pag_tramite_servicio_id)
@@ -178,7 +179,7 @@ def delete(pag_tramite_servicio_id):
 
 
 @pag_tramites_servicios.route("/pag_tramites_servicios/recuperar/<int:pag_tramite_servicio_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(pag_tramite_servicio_id):
     """Recuperar Tramite y Servicio"""
     pag_tramite_servicio = PagTramiteServicio.query.get_or_404(pag_tramite_servicio_id)

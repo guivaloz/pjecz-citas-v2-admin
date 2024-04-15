@@ -8,7 +8,7 @@
 {% block topbar_actions %}
     {% call topbar.page_buttons('Solicitud ' + tdt_solicitud.id | string) %}
         {{ topbar.button_previous('Solicitudes', url_for('tdt_solicitudes.list_active')) }}
-        {% if current_user.can_edit('TDT SOLICITUDES') %}
+        {% if current_user.can_admin('TDT SOLICITUDES') %}
             {% if tdt_solicitud.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('tdt_solicitudes.delete', tdt_solicitud_id=tdt_solicitud.id)) }}{% endif %}
             {% if tdt_solicitud.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('tdt_solicitudes.recover', tdt_solicitud_id=tdt_solicitud.id)) }}{% endif %}
         {% endif %}
@@ -58,7 +58,7 @@
 {% endblock %}
 
 {% block custom_javascript %}
-    {% if current_user.can_edit('TDT SOLICITUDES') %}
+    {% if current_user.can_admin('TDT SOLICITUDES') %}
         {% if tdt_solicitud.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + tdt_solicitud.id + '?') }}{% endif %}
         {% if tdt_solicitud.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + tdt_solicitud.id + '?') }}{% endif %}
     {% endif %}

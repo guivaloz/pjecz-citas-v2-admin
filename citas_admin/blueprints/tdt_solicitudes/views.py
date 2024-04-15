@@ -3,7 +3,7 @@ Tres de Tres - Solicitudes, vistas
 """
 
 import json
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from config.settings import get_settings
@@ -89,9 +89,9 @@ def list_inactive():
 def detail(tdt_solicitud_id):
     """Detalle de una solicitud"""
     tdt_solicitud = TdtSolicitud.query.get_or_404(tdt_solicitud_id)
-    tdt_solicitud_verify_url = (
-        "" if TDT_SOLICITUD_VERIFY_URL == "" else TDT_SOLICITUD_VERIFY_URL + "/" + tdt_solicitud.encode_id()
-    )
+    tdt_solicitud_verify_url = ""
+    if current_app.config["TDT_SOLICITUD_VERIFY_URL"] != "":
+        tdt_solicitud_verify_url = current_app.config["TDT_SOLICITUD_VERIFY_URL"] + "/" + tdt_solicitud.encode_id()
     return render_template(
         "tdt_solicitudes/detail.jinja2",
         tdt_solicitud=tdt_solicitud,
@@ -100,7 +100,7 @@ def detail(tdt_solicitud_id):
 
 
 @tdt_solicitudes.route("/tdt_solicitudes/eliminar/<int:tdt_solicitud_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(tdt_solicitud_id):
     """Eliminar solicitud"""
     tdt_solicitud = TdtSolicitud.query.get_or_404(tdt_solicitud_id)
@@ -118,7 +118,7 @@ def delete(tdt_solicitud_id):
 
 
 @tdt_solicitudes.route("/tdt_solicitudes/recuperar/<int:tdt_solicitud_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(tdt_solicitud_id):
     """Recuperar solicitud"""
     tdt_solicitud = TdtSolicitud.query.get_or_404(tdt_solicitud_id)

@@ -10,6 +10,8 @@
         {{ topbar.button_previous('Servicios', url_for('cit_servicios.list_active')) }}
         {% if current_user.can_edit('CIT SERVICIOS') %}
             {{ topbar.button_edit('Editar', url_for('cit_servicios.edit', cit_servicio_id=cit_servicio.id)) }}
+        {% endif %}
+        {% if current_user.can_admin('CIT SERVICIOS') %}
             {% if cit_servicio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_servicios.delete', cit_servicio_id=cit_servicio.id)) }}{% endif %}
             {% if cit_servicio.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_servicios.recover', cit_servicio_id=cit_servicio.id)) }}{% endif %}
         {% endif %}
@@ -67,7 +69,7 @@
 {% endblock %}
 
 {% block custom_javascript %}
-    {% if current_user.can_edit('CIT SERVICIOS') %}
+    {% if current_user.can_admin('CIT SERVICIOS') %}
         {% if cit_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar ' + cit_servicio.clave + '?') }}{% endif %}
         {% if cit_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar ' + cit_servicio.clave + '?') }}{% endif %}
     {% endif %}

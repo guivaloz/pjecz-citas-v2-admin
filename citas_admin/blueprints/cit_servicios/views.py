@@ -1,6 +1,7 @@
 """
 Cit Servicios, vistas
 """
+
 import json
 from datetime import time
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -62,7 +63,11 @@ def datatable_json():
                 },
                 "desde": "-" if resultado.desde is None else resultado.desde.strftime("%H:%M"),
                 "hasta": "-" if resultado.hasta is None else resultado.hasta.strftime("%H:%M"),
-                "dias_habilitados": "-" if resultado.dias_habilitados == "" else _conversion_dias_habilitados_numero_letra_abreviada(resultado.dias_habilitados),
+                "dias_habilitados": (
+                    "-"
+                    if resultado.dias_habilitados == ""
+                    else _conversion_dias_habilitados_numero_letra_abreviada(resultado.dias_habilitados)
+                ),
             }
         )
     # Entregar JSON
@@ -309,7 +314,7 @@ def _conversion_dias_habilitados_numero_letra_abreviada(texto: str):
 
 
 @cit_servicios.route("/cit_servicios/eliminar/<int:cit_servicio_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(cit_servicio_id):
     """Eliminar Servicio"""
     cit_servicio = CitServicio.query.get_or_404(cit_servicio_id)
@@ -327,7 +332,7 @@ def delete(cit_servicio_id):
 
 
 @cit_servicios.route("/cit_servicios/recuperar/<int:cit_servicio_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(cit_servicio_id):
     """Recuperar Servicio"""
     cit_servicio = CitServicio.query.get_or_404(cit_servicio_id)

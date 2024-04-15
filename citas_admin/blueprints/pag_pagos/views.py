@@ -165,7 +165,7 @@ def detail(pag_pago_id):
 
 
 @pag_pagos.route("/pag_pagos/eliminar/<int:pag_pago_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(pag_pago_id):
     """Eliminar pago"""
     pag_pago = PagPago.query.get_or_404(pag_pago_id)
@@ -183,7 +183,7 @@ def delete(pag_pago_id):
 
 
 @pag_pagos.route("/pag_pagos/recuperar/<int:pag_pago_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(pag_pago_id):
     """Recuperar pago"""
     pag_pago = PagPago.query.get_or_404(pag_pago_id)

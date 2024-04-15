@@ -1,6 +1,7 @@
 """
 Boletines, vistas
 """
+
 from datetime import datetime
 import json
 
@@ -192,7 +193,7 @@ def edit(boletin_id):
 
 
 @boletines.route("/boletines/eliminar/<int:boletin_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(boletin_id):
     """Eliminar Boletin"""
     boletin = Boletin.query.get_or_404(boletin_id)
@@ -210,7 +211,7 @@ def delete(boletin_id):
 
 
 @boletines.route("/boletines/recuperar/<int:boletin_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(boletin_id):
     """Recuperar Boletin"""
     boletin = Boletin.query.get_or_404(boletin_id)

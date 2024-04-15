@@ -21,6 +21,8 @@
                     Pagado
                 </a>
             {% endif %}
+        {% endif %}
+        {% if current_user.can_admin('PAG PAGOS') %}
             {% if pag_pago.estatus == 'A' %}
                 {{ topbar.button_delete('Eliminar', url_for('pag_pagos.delete', pag_pago_id=pag_pago.id)) }}
             {% endif %}
@@ -138,6 +140,8 @@
         {% if pag_pago.estado == 'ENTREGADO' %}
             {{ modals.custom_javascript('Pagado', '¿Desea cambiar el estado de este pago a PAGADO?', id="Paid") }}
         {% endif %}
+    {% endif %}
+    {% if current_user.can_admin('PAG PAGOS') %}
         {% if pag_pago.estatus == 'A' %}
             {{ modals.custom_javascript_delete('Eliminar', '¿Eliminar este pago?') }}
         {% endif %}

@@ -1,6 +1,7 @@
 """
 Domicilios, vistas
 """
+
 import json
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -216,7 +217,7 @@ def edit(domicilio_id):
 
 
 @domicilios.route("/domicilios/eliminar/<int:domicilio_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def delete(domicilio_id):
     """Eliminar Domicilio"""
     domicilio = Domicilio.query.get_or_404(domicilio_id)
@@ -234,7 +235,7 @@ def delete(domicilio_id):
 
 
 @domicilios.route("/domicilios/recuperar/<int:domicilio_id>")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def recover(domicilio_id):
     """Recuperar Domicilio"""
     domicilio = Domicilio.query.get_or_404(domicilio_id)

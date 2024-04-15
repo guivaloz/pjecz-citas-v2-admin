@@ -10,6 +10,8 @@
         {{ topbar.button_previous('Categorias', url_for('cit_categorias.list_active')) }}
         {% if current_user.can_edit('CIT CATEGORIAS') %}
             {{ topbar.button_edit('Editar', url_for('cit_categorias.edit', cit_categoria_id=cit_categoria.id)) }}
+        {% endif %}
+        {% if current_user.can_admin('CIT CATEGORIAS') %}
             {% if cit_categoria.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_categorias.delete', cit_categoria_id=cit_categoria.id)) }}{% endif %}
             {% if cit_categoria.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_categorias.recover', cit_categoria_id=cit_categoria.id)) }}{% endif %}
         {% endif %}
@@ -45,7 +47,7 @@
 {% endblock %}
 
 {% block custom_javascript %}
-    {% if current_user.can_edit('CIT CATEGORIAS') %}
+    {% if current_user.can_admin('CIT CATEGORIAS') %}
         {% if cit_categoria.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_categoria.nombre + '?') }}{% endif %}
         {% if cit_categoria.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_categoria.nombre + '?') }}{% endif %}
     {% endif %}
