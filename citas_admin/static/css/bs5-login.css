@@ -10,7 +10,7 @@ body {
   height: 100%;
   margin: 0;
   align-items: center;
-  background-color: #166000;
+  background-color: #26bdc2;
 }
 
 main {
@@ -29,7 +29,7 @@ main {
   background-size: cover;
   height: 100%;
   position: relative;
-  filter: hue-rotate(40deg);
+  filter: hue-rotate(340deg);
 }
 
 .form-signin {
