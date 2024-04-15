@@ -9,14 +9,13 @@ import csv
 import click
 
 from lib.safe_string import safe_string
-
 from citas_admin.app import create_app
 from citas_admin.extensions import database
-
 from citas_admin.blueprints.municipios.models import Municipio
 
 app = create_app()
-db.app = app
+app.app_context().push()
+database.app = app
 
 
 @click.group()

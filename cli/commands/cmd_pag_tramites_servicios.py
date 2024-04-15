@@ -5,18 +5,18 @@ Pagos Tramites y Servicios
 """
 
 from pathlib import Path
+
 import csv
 import click
 
-from lib.safe_string import safe_clave, safe_string, safe_url
-
+from lib.safe_string import safe_clave, safe_string
 from citas_admin.app import create_app
 from citas_admin.extensions import database
-
 from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
 
 app = create_app()
-db.app = app
+app.app_context().push()
+database.app = app
 
 
 @click.group()
@@ -44,7 +44,7 @@ def alimentar(entrada_csv):
                 clave=safe_clave(row["clave"]),
                 descripcion=safe_string(row["descripcion"], to_uppercase=True, save_enie=True),
                 costo=float(row["costo"]),
-                url=safe_url(row["url"]),
+                url=row["url"],
                 estatus=row["estatus"],
             ).save()
             contador += 1

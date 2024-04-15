@@ -11,12 +11,12 @@ from datetime import datetime, timedelta
 import click
 
 from citas_admin.blueprints.pag_pagos.models import PagPago
-
 from citas_admin.app import create_app
 from citas_admin.extensions import database
 
 app = create_app()
-db.app = app
+app.app_context().push()
+database.app = app
 
 
 @click.group()

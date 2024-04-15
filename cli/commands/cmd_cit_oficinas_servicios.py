@@ -8,12 +8,12 @@ import click
 
 from citas_admin.app import create_app
 from citas_admin.extensions import database
-
 from citas_admin.blueprints.cit_categorias.models import CitCategoria
 from citas_admin.blueprints.distritos.models import Distrito
 
 app = create_app()
-db.app = app
+app.app_context().push()
+database.app = app
 
 
 @click.group()

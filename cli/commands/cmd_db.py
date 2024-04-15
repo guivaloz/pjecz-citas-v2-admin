@@ -8,11 +8,11 @@ Base de datos
 """
 
 import os
+
 import click
 
 from citas_admin.app import create_app
 from citas_admin.extensions import database
-
 from cli.commands.alimentar_autoridades import alimentar_autoridades
 from cli.commands.alimentar_cit_dias_inhabiles import alimentar_cit_dias_inhabiles
 from cli.commands.alimentar_distritos import alimentar_distritos, eliminar_distritos_sin_autoridades
@@ -27,12 +27,9 @@ from cli.commands.alimentar_permisos import alimentar_permisos
 from cli.commands.alimentar_roles import alimentar_roles
 from cli.commands.alimentar_usuarios import alimentar_usuarios
 from cli.commands.alimentar_usuarios_roles import alimentar_usuarios_roles
-
 from cli.commands.respaldar_autoridades import respaldar_autoridades
 from cli.commands.respaldar_distritos import respaldar_distritos
 from cli.commands.respaldar_domicilios import respaldar_domicilios
-
-# from cli.commands.respaldar_cit_categorias import respaldar_cit_categorias
 from cli.commands.respaldar_cit_servicios import respaldar_cit_servicios
 from cli.commands.respaldar_pag_tramites_servicios import respaldar_pag_tramites_servicios
 from cli.commands.respaldar_materias import respaldar_materias
@@ -42,7 +39,8 @@ from cli.commands.respaldar_roles_permisos import respaldar_roles_permisos
 from cli.commands.respaldar_usuarios_roles import respaldar_usuarios_roles
 
 app = create_app()
-db.app = app
+app.app_context().push()
+database.app = app
 
 entorno_implementacion = os.environ.get("DEPLOYMENT_ENVIRONMENT", "develop").upper()
 
@@ -58,8 +56,8 @@ def inicializar():
     if entorno_implementacion == "PRODUCTION":
         click.echo("PROHIBIDO: No se inicializa porque este es el servidor de producción.")
         return
-    db.drop_all()
-    db.create_all()
+    database.drop_all()
+    database.create_all()
     click.echo("Termina inicializar.")
 
 

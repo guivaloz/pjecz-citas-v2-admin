@@ -11,18 +11,19 @@ Cit Citas
 - contar_citas_dobles: Cuenta las citas que se crearon más de una vez
 """
 
-import click
 from datetime import date, datetime, timedelta
+
+import click
 from tabulate import tabulate
 
 from citas_admin.app import create_app
 from citas_admin.extensions import database
-
 from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.cit_dias_inhabiles.models import CitDiaInhabil
 
 app = create_app()
-db.app = app
+app.app_context().push()
+database.app = app
 
 OFFSET = 0
 LIMIT = 40

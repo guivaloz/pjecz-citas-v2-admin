@@ -14,19 +14,18 @@ import click
 from tabulate import tabulate
 from sqlalchemy import text, update
 
-from lib import database
 from lib.pwgen import generar_contrasena
 from lib.safe_string import safe_string
 
 from citas_admin.app import create_app
 from citas_admin.extensions import database, pwd_context
-
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.pag_pagos.models import PagPago
 
 app = create_app()
-db.app = app
+app.app_context().push()
+database.app = app
 
 
 @click.group()

@@ -11,12 +11,12 @@ import click
 from tabulate import tabulate
 
 from citas_admin.blueprints.boletines.models import Boletin
-
 from citas_admin.app import create_app
 from citas_admin.extensions import database
 
 app = create_app()
-db.app = app
+app.app_context().push()
+database.app = app
 
 
 @click.group()

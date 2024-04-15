@@ -5,11 +5,10 @@ Pagos Pagos, vistas
 from datetime import datetime
 import json
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 
-from config.settings import get_settings
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_message, safe_string
 
@@ -155,7 +154,9 @@ def list_inactive():
 def detail(pag_pago_id):
     """Detalle de un pago"""
     pag_pago = PagPago.query.get_or_404(pag_pago_id)
-    pag_pago_verify_url = "" if PAGO_VERIFY_URL == "" else PAGO_VERIFY_URL + "/" + pag_pago.encode_id()
+    pag_pago_verify_url = ""
+    if current_app.config["PAGO_VERIFY_URL"] != "":
+        pag_pago_verify_url = current_app.config["PAGO_VERIFY_URL"] + "/" + pag_pago.encode_id()
     return render_template(
         "pag_pagos/detail.jinja2",
         pag_pago=pag_pago,

@@ -8,17 +8,18 @@ Cit Clientes Recuperaciones
 """
 
 import os
+
 import click
 from dotenv import load_dotenv
 from tabulate import tabulate
 
 from citas_admin.app import create_app
 from citas_admin.extensions import database
-
 from citas_admin.blueprints.cit_clientes_recuperaciones.models import CitClienteRecuperacion
 
 app = create_app()
-db.app = app
+app.app_context().push()
+database.app = app
 
 load_dotenv()  # Take environment variables from .env
 

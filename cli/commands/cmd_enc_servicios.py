@@ -17,14 +17,14 @@ from tabulate import tabulate
 
 from citas_admin.app import create_app
 from citas_admin.extensions import database
-
 from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.enc_servicios.models import EncServicio
 from citas_admin.blueprints.oficinas.models import Oficina
 
 app = create_app()
-db.app = app
+app.app_context().push()
+database.app = app
 
 load_dotenv()  # Take environment variables from .env
 
