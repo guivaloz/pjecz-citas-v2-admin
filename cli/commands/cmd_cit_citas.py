@@ -30,8 +30,7 @@ LIMIT = 40
 
 
 @click.group()
-@click.pass_context
-def cli(ctx):
+def cli():
     """Cit Citas"""
 
 

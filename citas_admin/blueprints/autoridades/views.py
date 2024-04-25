@@ -36,6 +36,7 @@ def datatable_json():
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
     consulta = Autoridad.query
+    # Primero filtrar por columnas propias
     if "estatus" in request.form:
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
@@ -50,7 +51,15 @@ def datatable_json():
         except ValueError:
             pass
     if "descripcion" in request.form:
-        consulta = consulta.filter(Autoridad.descripcion.contains(safe_string(request.form["descripcion"], to_uppercase=False)))
+        descripcion = safe_string(request.form["descripcion"], save_enie=True)
+        if descripcion != "":
+            consulta = consulta.filter(Autoridad.descripcion.contains(descripcion))
+    # Luego filtrar por columnas de otras tablas
+    if "distrito_nombre" in request.form:
+        distrito_nombre = safe_string(request.form["distrito_nombre"], save_enie=True)
+        if distrito_nombre != "":
+            consulta = consulta.join(Distrito).filter(Distrito.nombre.contains(distrito_nombre))
+    # Ordenar y paginar
     registros = consulta.order_by(Autoridad.clave).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -124,7 +133,7 @@ def new():
             distrito=distrito,
             clave=clave,
             descripcion=safe_string(form.descripcion.data, save_enie=True),
-            descripcion_corta=safe_string(form.descripcion_corta.data, save_enie=True),
+            descripcion_corta=safe_string(form.descripcion_corta.data, save_enie=True, max_len=64),
             es_extinto=form.es_extinto.data,
         )
         autoridad.save()
@@ -161,7 +170,7 @@ def edit(autoridad_id):
             autoridad.distrito = distrito
             autoridad.clave = clave
             autoridad.descripcion = safe_string(form.descripcion.data, save_enie=True)
-            autoridad.descripcion_corta = safe_string(form.descripcion_corta.data, save_enie=True)
+            autoridad.descripcion_corta = safe_string(form.descripcion_corta.data, save_enie=True, max_len=64)
             autoridad.es_extinto = form.es_extinto.data
             autoridad.save()
             bitacora = Bitacora(

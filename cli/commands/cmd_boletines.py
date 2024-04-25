@@ -20,8 +20,7 @@ database.app = app
 
 
 @click.group()
-@click.pass_context
-def cli(ctx):
+def cli():
     """Boletines"""
 
 

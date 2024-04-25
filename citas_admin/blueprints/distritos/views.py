@@ -35,10 +35,23 @@ def datatable_json():
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
     consulta = Distrito.query
+    # Primero filtrar por columnas propias
     if "estatus" in request.form:
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
+    if "clave" in request.form:
+        try:
+            clave = safe_clave(request.form["clave"], max_len=24)
+            if clave != "":
+                consulta = consulta.filter(Distrito.clave.contains(clave))
+        except ValueError:
+            pass
+    if "nombre" in request.form:
+        nombre = safe_string(request.form["nombre"], save_enie=True)
+        if nombre != "":
+            consulta = consulta.filter(Distrito.nombre.contains(nombre))
+    # Ordenar y paginar
     registros = consulta.order_by(Distrito.clave).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -112,7 +125,8 @@ def new():
             distrito = Distrito(
                 clave=clave,
                 nombre=nombre,
-                nombre_corto=safe_string(form.nombre_corto.data, save_enie=True),
+                nombre_corto=safe_string(form.nombre_corto.data, save_enie=True, max_len=64),
+                es_distrito_judicial=form.es_distrito_judicial.data,
                 es_distrito=form.es_distrito.data,
                 es_jurisdiccional=form.es_jurisdiccional.data,
             )
@@ -155,7 +169,8 @@ def edit(distrito_id):
         if es_valido:
             distrito.clave = clave
             distrito.nombre = nombre
-            distrito.nombre_corto = safe_string(form.nombre_corto.data, save_enie=True)
+            distrito.nombre_corto = safe_string(form.nombre_corto.data, save_enie=True, max_len=64)
+            distrito.es_distrito_judicial = form.es_distrito_judicial.data
             distrito.es_distrito = form.es_distrito.data
             distrito.es_jurisdiccional = form.es_jurisdiccional.data
             distrito.save()
@@ -171,6 +186,7 @@ def edit(distrito_id):
     form.clave.data = distrito.clave
     form.nombre.data = distrito.nombre
     form.nombre_corto.data = distrito.nombre_corto
+    form.es_distrito_judicial.data = distrito.es_distrito_judicial
     form.es_distrito.data = distrito.es_distrito
     form.es_jurisdiccional.data = distrito.es_jurisdiccional
     return render_template("distritos/edit.jinja2", form=form, distrito=distrito)
