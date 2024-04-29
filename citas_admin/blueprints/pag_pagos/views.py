@@ -132,7 +132,7 @@ def list_active():
         titulo="Pagos",
         estatus="A",
         estados=PagPago.ESTADOS,
-        tramites_y_servicios=PagTramiteServicio.query.filter_by(estatus="A").all(),
+        pag_tramites_servicios=PagTramiteServicio.query.filter_by(estatus="A").order_by(PagTramiteServicio.clave).all(),
     )
 
 
@@ -146,7 +146,7 @@ def list_inactive():
         titulo="Pagos inactivos",
         estatus="B",
         estados=PagPago.ESTADOS,
-        tramites_y_servicios=PagTramiteServicio.query.filter_by(estatus="A").all(),
+        pag_tramites_servicios=PagTramiteServicio.query.filter_by(estatus="A").order_by(PagTramiteServicio.clave).all(),
     )
 
 

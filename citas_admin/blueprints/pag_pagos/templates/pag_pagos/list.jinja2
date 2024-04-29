@@ -15,63 +15,75 @@
 
 {% block content %}
     {% call list.card() %}
-    <!-- Formulario de Filtrado -->
-    <div class="row">
-        <div class="col">
-            <form class="row g-1 mb-3" id="buscadorForm" onsubmit="buscar(); return false;">
-                <div class="col-3">
-                    <div class="form-floating">
-                        <input id="idInput" type="text" class="form-control" placeholder="id" aria-label="text" aria-describedby="button-buscar" style="text-transform: lowercase">
-                        <label for="idInput">ID</label>
+        <!-- Filtros pag_pagos -->
+        <div class="row">
+            <div class="col">
+                <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosPagPagos.buscar(); return false;">
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <input id="filtroPagPagoId" type="text" class="form-control" aria-label="ID">
+                            <label for="filtroPagPagoId">ID</label>
+                        </div>
                     </div>
-                </div>
-                <div class="col-6">
-                    <div class="form-floating">
-                        <input id="nombreInput" type="text" class="form-control" placeholder="cliente" aria-label="text" aria-describedby="button-buscar" style="text-transform: uppercase">
-                        <label for="nombreInput">Cliente</label>
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="filtroPagPagoFechaDesde" type="date" class="form-control" aria-label="Desde">
+                            <label for="filtroPagPagoFechaDesde">Desde</label>
+                        </div>
                     </div>
-                </div>
-                <div class="col-3">
-                    <div class="form-floating">
-                        <select class="form-select" id="estadoSelect" name="estado_id" aria-label="Todos" onchange="buscar(); return false;" style="flex: inherit;">
-                            <option selected value="">Todos</option>
-                            {% for estado in estados %}
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="filtroPagPagoFechaHasta" type="date" class="form-control" aria-label="Hasta">
+                            <label for="filtroPagPagoFechaHasta">Hasta</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-floating">
+                            <input id="filtroPagPagoCitClienteEmail" type="date" class="form-control" aria-label="e-mail">
+                            <label for="filtroPagPagoCitClienteEmail">e-mail</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-floating">
+                            <input id="filtroPagPagoCitClienteNombre" type="date" class="form-control" aria-label="Nombre" style="text-transform: uppercase">
+                            <label for="filtroPagPagoCitClienteNombre">Nombre</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-floating">
+                            <select id="filtroPagTramiteServicioId" class="form-select" aria-label="Trámite o Servicio">
+                                <option selected value="">Todos los trámites y servicios</option>
+                                {% for pag_tramite_servicio in pag_tramites_servicios %}
+                                    {% if pag_tramite_servicio.descripcion | length > 24 %}
+                                        {% set descripcion = pag_tramite_servicio.descripcion[:24] + '...' %}
+                                    {% else %}
+                                        {% set descripcion = pag_tramite_servicio.descripcion %}
+                                    {% endif %}
+                                    <option value="{{pag_tramite_servicio.id}}">{{pag_tramite_servicio.clave}} : {{descripcion}}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="filtroPagTramiteServicioId">Trámite o Servicio</label>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <select id="filtroPagPagoEstado" class="form-select" aria-label="Estado">
+                                <option selected value="">Todos los estados</option>
+                                {% for estado in estados %}
                                 <option value="{{estado}}">{{estado}}</option>
-                            {% endfor %}
-                        </select>
-                        <label for="estadoSelect">Estado</label>
+                                {% endfor %}
+                            </select>
+                            <label for="filtroPagPagoEstado">Estado</label>
+                        </div>
                     </div>
-                </div>
-                <div class="col-3">
-                    <div class="form-floating">
-                        <input id="fechaInput" type="date" class="form-control" aria-label="desde" aria-describedby="button-buscar" onchange="buscar(); return false;">
-                        <label for="fechaInput">Fecha</label>
+                    <div class="col-2 text-end">
+                        <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosPagPagos.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                        <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosPagPagos.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
                     </div>
-                </div>
-                <div class="col-7">
-                    <div class="form-floating">
-                        <select class="form-select" id="servicioSelect" name="servicio_id" aria-label="Todos" onchange="buscar(); return false;" style="flex: inherit;">
-                            <option selected value="">Todos</option>
-                            {% for servicio in tramites_y_servicios %}
-                                {% if servicio.descripcion | length > 35 %}
-                                    {% set descripcion = servicio.descripcion[:35] | lower + '...' %}
-                                {% else %}
-                                    {% set descripcion = servicio.descripcion | lower %}
-                                {% endif %}
-                                <option value="{{servicio.id}}">{{servicio.clave}} : {{descripcion}}</option>
-                            {% endfor %}
-                        </select>
-                        <label for="servicioSelect">Trámite y Servicio</label>
-                    </div>
-                </div>
-                <div class="col-2 text-end">
-                    <button title="Buscar" class="btn btn-primary btn-lg" onclick="buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
-                    <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
-    </div>
-        <!-- Tabla -->
+        <!-- Datatable pag_pagos -->
         <table id="pag_pagos_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -93,8 +105,12 @@
 {% endblock %}
 
 {% block custom_javascript %}
-    {{ list.config_datatable() }}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
     <script>
+        // DataTable pag_pagos_datatable
+        const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+        let configDataTable = constructorDataTable.config();
         configDataTable['ajax']['url'] = '/pag_pagos/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
@@ -225,6 +241,21 @@
 
         // Datatable
         $('#pag_pagos_datatable').DataTable(configDataTable);
+
+        // Filtros pag_tramites_servicios
+        const filtrosPagPagos = new FiltrosDataTable('#pag_pagos_datatable', configDataTable);
+        filtrosPagPagos.agregarInput('filtroPagPagoId', 'id');
+        filtrosPagPagos.agregarInput('filtroPagPagoFechaDesde', 'fecha_desde');
+        filtrosPagPagos.agregarInput('filtroPagPagoFechaHasta', 'fecha_hasta');
+        filtrosPagPagos.agregarInput('filtroPagPagoCitClienteEmail', 'cit_cliente_email');
+        filtrosPagPagos.agregarInput('filtroPagPagoCitClienteNombre', 'cit_cliente_nombre');
+        filtrosPagPagos.agregarInput('filtroPagTramiteServicioId', 'pag_tramite_servicio_id');
+        filtrosPagPagos.agregarInput('filtroPagPagoEstado', 'estado');
+        filtrosPagPagos.precargar();
+
+
+
+
     </script>
     <!-- Función de buscador -->
     <script type="text/javascript">
