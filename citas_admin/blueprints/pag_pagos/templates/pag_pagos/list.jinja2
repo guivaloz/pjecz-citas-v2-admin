@@ -39,20 +39,20 @@
                     </div>
                     <div class="col-4">
                         <div class="form-floating">
-                            <input id="filtroPagPagoCitClienteEmail" type="date" class="form-control" aria-label="e-mail">
+                            <input id="filtroPagPagoCitClienteEmail" type="text" class="form-control" aria-label="e-mail">
                             <label for="filtroPagPagoCitClienteEmail">e-mail</label>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="form-floating">
-                            <input id="filtroPagPagoCitClienteNombre" type="date" class="form-control" aria-label="Nombre" style="text-transform: uppercase">
+                            <input id="filtroPagPagoCitClienteNombre" type="text" class="form-control" aria-label="Nombre" style="text-transform: uppercase">
                             <label for="filtroPagPagoCitClienteNombre">Nombre</label>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="form-floating">
                             <select id="filtroPagTramiteServicioId" class="form-select" aria-label="Trámite o Servicio">
-                                <option selected value="">Todos los trámites y servicios</option>
+                                <option selected value="">Todos</option>
                                 {% for pag_tramite_servicio in pag_tramites_servicios %}
                                     {% if pag_tramite_servicio.descripcion | length > 24 %}
                                         {% set descripcion = pag_tramite_servicio.descripcion[:24] + '...' %}
@@ -68,7 +68,7 @@
                     <div class="col-2">
                         <div class="form-floating">
                             <select id="filtroPagPagoEstado" class="form-select" aria-label="Estado">
-                                <option selected value="">Todos los estados</option>
+                                <option selected value="">Todos</option>
                                 {% for estado in estados %}
                                 <option value="{{estado}}">{{estado}}</option>
                                 {% endfor %}
@@ -108,7 +108,7 @@
     <script src="/static/js/datatables-constructor.js"></script>
     <script src="/static/js/datatables-filtros.js"></script>
     <script>
-        // DataTable pag_pagos_datatable
+        // DataTable pag_pagos
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
         let configDataTable = constructorDataTable.config();
         configDataTable['ajax']['url'] = '/pag_pagos/datatable_json';
@@ -126,7 +126,6 @@
             { data: 'total', className: "text-end" },
             { data: 'estado' },
         ];
-        configDataTable['iDisplayLength'] = 15;
         configDataTable['columnDefs'] = [
             {
                 targets: 0, // detalle
@@ -139,7 +138,7 @@
                 targets: 1, // fecha
                 type: 'date',
                 render: function (data, type, row) {
-                    return moment.utc(data).local().format("YYYY/MM/DD hh:mm A");
+                    return moment.utc(data).local().format("YYYY/MM/DD HH:mm");
                 }
             },
             {
@@ -221,28 +220,7 @@
                 case "FALLIDO":    $(row).addClass("table-danger");    break;
             }
         };
-        // Búsqueda
-        let idBuscar = document.getElementById('idInput').value
-        let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
-        let fechaBuscar = document.getElementById('fechaInput').value
-        let estadoSelect = document.getElementById('estadoSelect').value;
-        let servicioSelect = document.getElementById('servicioSelect').value;
-
-        if(idBuscar != '')
-            configDataTable['ajax']['data']['id'] = idBuscar;
-        if(nombreBuscar != '')
-            configDataTable['ajax']['data']['nombre_completo'] = nombreBuscar;
-        if(fechaBuscar != '')
-            configDataTable['ajax']['data']['fecha'] = fechaBuscar;
-        if(estadoSelect != '')
-            configDataTable['ajax']['data']['estado'] = estadoSelect;
-        if(servicioSelect != '')
-            configDataTable['ajax']['data']['pag_tramite_servicio_id'] = servicioSelect;
-
-        // Datatable
-        $('#pag_pagos_datatable').DataTable(configDataTable);
-
-        // Filtros pag_tramites_servicios
+        // Filtros pag_pagos
         const filtrosPagPagos = new FiltrosDataTable('#pag_pagos_datatable', configDataTable);
         filtrosPagPagos.agregarInput('filtroPagPagoId', 'id');
         filtrosPagPagos.agregarInput('filtroPagPagoFechaDesde', 'fecha_desde');
@@ -252,70 +230,5 @@
         filtrosPagPagos.agregarInput('filtroPagTramiteServicioId', 'pag_tramite_servicio_id');
         filtrosPagPagos.agregarInput('filtroPagPagoEstado', 'estado');
         filtrosPagPagos.precargar();
-
-
-
-
-    </script>
-    <!-- Función de buscador -->
-    <script type="text/javascript">
-
-        function buscar() {
-            let idBuscar = document.getElementById('idInput').value
-            let nombreBuscar = document.getElementById('nombreInput').value.toUpperCase();
-            let fechaBuscar = document.getElementById('fechaInput').value
-            let estadoSelect = document.getElementById('estadoSelect').value;
-            let servicioSelect = document.getElementById('servicioSelect').value;
-
-            if( configDataTable['ajax']['data']['id'] === undefined && idBuscar === '' &&
-                configDataTable['ajax']['data']['nombre_completo'] === undefined && nombreBuscar === '' &&
-                configDataTable['ajax']['data']['fecha'] === undefined && fechaBuscar === '' &&
-                configDataTable['ajax']['data']['estado'] === undefined && estadoSelect === '' &&
-                configDataTable['ajax']['data']['pag_tramite_servicio_id'] === undefined && servicioSelect === ''
-            ) return false;
-
-            $('#pag_pagos_datatable').DataTable().destroy();
-
-            if(idBuscar == '')
-                delete configDataTable['ajax']['data']['id'];
-            else
-                configDataTable['ajax']['data']['id'] = idBuscar;
-            if(nombreBuscar == '')
-                delete configDataTable['ajax']['data']['nombre_completo'];
-            else
-                configDataTable['ajax']['data']['nombre_completo'] = nombreBuscar;
-            if(fechaBuscar == '')
-                delete configDataTable['ajax']['data']['fecha'];
-            else
-                configDataTable['ajax']['data']['fecha'] = fechaBuscar;
-            if(estadoSelect == '')
-                delete configDataTable['ajax']['data']['estado'];
-            else
-                configDataTable['ajax']['data']['estado'] = estadoSelect;
-            if(servicioSelect == '')
-                delete configDataTable['ajax']['data']['pag_tramite_servicio_id'];
-            else
-                configDataTable['ajax']['data']['pag_tramite_servicio_id'] = servicioSelect;
-
-            $('#pag_pagos_datatable').DataTable(configDataTable);
-        };
-
-        function limpiar()  {
-            if( configDataTable['ajax']['data']['id'] === undefined &&
-                configDataTable['ajax']['data']['nombre_completo'] === undefined &&
-                configDataTable['ajax']['data']['fecha'] === undefined &&
-                configDataTable['ajax']['data']['estado'] === undefined &&
-                configDataTable['ajax']['data']['pag_tramite_servicio_id'] === undefined
-            ) return false;
-
-            delete configDataTable['ajax']['data']['id'];
-            delete configDataTable['ajax']['data']['nombre_completo'];
-            delete configDataTable['ajax']['data']['fecha'];
-            delete configDataTable['ajax']['data']['estado'];
-            delete configDataTable['ajax']['data']['pag_tramite_servicio_id'];
-
-            $('#pag_pagos_datatable').DataTable().destroy();
-            $('#pag_pagos_datatable').DataTable(configDataTable);
-        };
     </script>
 {% endblock %}
