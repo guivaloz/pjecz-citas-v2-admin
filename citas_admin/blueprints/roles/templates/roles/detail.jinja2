@@ -27,8 +27,8 @@
                     <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosPermisos.buscar(); return false;">
                         <div class="col-3">
                             <div class="form-floating">
-                                <input id="filtroPermisoDescripcion" type="text" class="form-control" aria-label="Descripción" style="text-transform: uppercase;">
-                                <label for="filtroPermisoDescripcion">Descripción</label>
+                                <input id="filtroPermisoNombre" type="text" class="form-control" aria-label="Nombre" style="text-transform: uppercase;">
+                                <label for="filtroPermisoNombre">Nombre</label>
                             </div>
                         </div>
                         <div class="col-3">
@@ -57,7 +57,7 @@
             <table id="permisos_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
-                        <th>Descripción</th>
+                        <th>Nombre</th>
                         <th>Módulo</th>
                         <th>Nivel</th>
                     </tr>
@@ -70,13 +70,13 @@
     {% endif %}
     {% if current_user.can_view('USUARIOS ROLES') %}
         {% call detail.card('Usuarios') %}
-            <!-- Filtros usuarios -->
+            <!-- Filtros usuarios-roles -->
             <div class="row">
                 <div class="col">
                     <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosUsuarios.buscar(); return false;">
                         <div class="col-4">
                             <div class="form-floating">
-                                <input id="filtroEMail" type="text" class="form-control" aria-label="Clave" style="text-transform: uppercase;">
+                                <input id="filtroEMail" type="text" class="form-control" aria-label="e-mail">
                                 <label for="filtroEMail">e-mail</label>
                             </div>
                         </div>
@@ -89,7 +89,7 @@
                         <div class="col-3">
                             <div class="form-floating">
                                 <input id="filtroApellidoPrimero" type="text" class="form-control" aria-label="Apellido primero" style="text-transform: uppercase;">
-                                <label for="filtroApellidoPrimero">Primer apellido</label>
+                                <label for="filtroApellidoPrimero">Apellido primero</label>
                             </div>
                         </div>
                         <div class="col-2 text-end">
@@ -99,7 +99,7 @@
                     </form>
                 </div>
             </div>
-            <!-- Datatable usuarios -->
+            <!-- Datatable usuarios-roles -->
             <table id="usuarios_roles_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
@@ -160,7 +160,7 @@
             ];
             // Filtros permisos
             const filtrosPermisos = new FiltrosDataTable('#permisos_datatable', configDTPermisos);
-            filtrosPermisos.agregarInput('filtroPermisoDescripcion', 'descripcion');
+            filtrosPermisos.agregarInput('filtroPermisoNombre', 'nombre');
             filtrosPermisos.agregarInput('filtroPermisoModuloNombre', 'modulo_nombre');
             filtrosPermisos.agregarInput('filtroPermisoNivel', 'nivel');
             filtrosPermisos.precargar();
@@ -168,7 +168,7 @@
     {% endif %}
     {% if current_user.can_view('USUARIOS ROLES') %}
         <script>
-            // DataTable usuarios
+            // DataTable usuarios-roles
             let configDTUsuarios = constructorDataTable.config();
             configDTUsuarios['ajax']['url'] = '/usuarios_roles/datatable_json';
             configDTUsuarios['ajax']['data'] = { 'estatus': "A", 'rol_id': {{ rol.id}} };
@@ -205,8 +205,8 @@
                     }
                 }
             ];
-            // Filtros usuarios
-            const filtrosUsuarios = new FiltrosDataTable('#usuarios_datatable', configDTUsuarios);
+            // Filtros usuarios-roles
+            const filtrosUsuarios = new FiltrosDataTable('#usuarios_roles_datatable', configDTUsuarios);
             filtrosUsuarios.agregarInput('filtroEMail', 'email');
             filtrosUsuarios.agregarInput('filtroNombres', 'nombres');
             filtrosUsuarios.agregarInput('filtroApellidoPrimero', 'apellido_paterno');
