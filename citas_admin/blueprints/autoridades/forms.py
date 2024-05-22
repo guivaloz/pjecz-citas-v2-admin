@@ -7,7 +7,9 @@ from wtforms import BooleanField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional, Regexp
 
 from lib.safe_string import CLAVE_REGEXP
+from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.distritos.models import Distrito
+from citas_admin.blueprints.materias.models import Materia
 
 
 class AutoridadForm(FlaskForm):
@@ -20,12 +22,17 @@ class AutoridadForm(FlaskForm):
     es_jurisdiccional = BooleanField("Es Jurisdiccional", validators=[Optional()])
     es_notaria = BooleanField("Es Notaría", validators=[Optional()])
     es_organo_especializado = BooleanField("Es Órgano Especializado", validators=[Optional()])
+    materia = SelectField("Materia", coerce=int, validators=[DataRequired()])
+    organo_jurisdiccional = SelectField(
+        "Órgano Jurisdiccional", choices=Autoridad.ORGANOS_JURISDICCIONALES.items(), validators=[DataRequired()]
+    )
     guardar = SubmitField("Guardar")
 
     def __init__(self, *args, **kwargs):
-        """Inicializar y cargar opciones de distritos"""
+        """Inicializar y cargar opciones de distritos y materias"""
         super().__init__(*args, **kwargs)
         self.distrito.choices = [
             (d.id, d.clave + " - " + d.nombre_corto)
             for d in Distrito.query.filter_by(estatus="A").order_by(Distrito.clave).all()
         ]
+        self.materia.choices = [(m.id, m.nombre) for m in Materia.query.filter_by(estatus="A").order_by(Materia.nombre).all()]

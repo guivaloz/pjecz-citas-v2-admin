@@ -1,6 +1,7 @@
 """
 Domicilios, formularios
 """
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, Length, Optional
@@ -17,14 +18,3 @@ class DomicilioForm(FlaskForm):
     colonia = StringField("Colonia", validators=[Optional(), Length(max=256)])
     cp = IntegerField("CP", validators=[DataRequired()])
     guardar = SubmitField("Guardar")
-
-
-class DomicilioSearchForm(FlaskForm):
-    """Formulario para Buscar Domicilios"""
-
-    estado = StringField("Estado", validators=[Optional(), Length(max=64)])
-    municipio = StringField("Municipio", validators=[Optional(), Length(max=64)])
-    calle = StringField("Calle", validators=[Optional(), Length(max=256)])
-    colonia = StringField("Colonia", validators=[Optional(), Length(max=256)])
-    cp = IntegerField("CP", validators=[Optional()])
-    buscar = SubmitField("Buscar")

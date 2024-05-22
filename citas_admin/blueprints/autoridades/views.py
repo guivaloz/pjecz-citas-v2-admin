@@ -169,6 +169,8 @@ def new():
             es_jurisdiccional=form.es_jurisdiccional.data,
             es_notaria=form.es_notaria.data,
             es_organo_especializado=form.es_organo_especializado.data,
+            materia=form.materia.data,
+            organo_jurisdiccional=form.organo_jurisdiccional.data,
         )
         autoridad.save()
         bitacora = Bitacora(
@@ -208,6 +210,8 @@ def edit(autoridad_id):
             autoridad.es_jurisdiccional = form.es_jurisdiccional.data
             autoridad.es_notaria = form.es_notaria.data
             autoridad.es_organo_especializado = form.es_organo_especializado.data
+            autoridad.materia = form.materia.data
+            autoridad.organo_jurisdiccional = form.organo_jurisdiccional.data
             autoridad.save()
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
@@ -225,6 +229,8 @@ def edit(autoridad_id):
     form.es_jurisdiccional.data = autoridad.es_jurisdiccional
     form.es_notaria.data = autoridad.es_notaria
     form.es_organo_especializado.data = autoridad.es_organo_especializado
+    form.materia.data = autoridad.materia_id  # Usa id porque es un SelectField
+    form.organo_jurisdiccional.data = autoridad.organo_jurisdiccional
     return render_template("autoridades/edit.jinja2", form=form, autoridad=autoridad)
 
 

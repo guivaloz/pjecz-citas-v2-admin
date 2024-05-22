@@ -26,7 +26,7 @@ from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.usuarios_oficinas.models import UsuarioOficina
 
-from citas_admin.blueprints.cit_citas.forms import CitCitaSearchForm, CitCitaSearchAdminForm, CitCitaAssistance, CitCitaNew
+from citas_admin.blueprints.cit_citas.forms import CitCitaAssistance, CitCitaNew
 
 HUSO_HORARIO = "America/Mexico_City"
 LIMITE_CITAS = 5
@@ -434,52 +434,6 @@ def pending(cit_cita_id):
 
     # Entregar
     return redirect(url_for("cit_citas.detail", cit_cita_id=cit_cita.id))
-
-
-@cit_citas.route("/cit_citas/buscar", methods=["GET", "POST"])
-def search():
-    """Buscar cit_citas"""
-    if current_user.can_admin(MODULO):
-        form_search = CitCitaSearchAdminForm()
-    else:
-        form_search = CitCitaSearchForm()
-    if form_search.validate_on_submit():
-        busqueda = {"estatus": "A"}
-        titulos = []
-        if form_search.cliente.data:
-            cliente = safe_string(form_search.cliente.data)
-            if cliente != "":
-                busqueda["cit_cliente"] = cliente
-                titulos.append("cit_cliente " + cliente)
-        if form_search.email.data:
-            email = safe_text(form_search.email.data, to_uppercase=False)
-            if email != "":
-                busqueda["cit_cliente_email"] = email
-                titulos.append("email " + email)
-        if "fecha" in request.form and form_search.fecha.data:
-            fecha = form_search.fecha.data
-            if fecha != "":
-                busqueda["fecha"] = fecha.strftime("%Y-%m-%d")
-                titulos.append("fecha " + fecha.strftime("%Y-%m-%d"))
-        if "oficina" in request.form and form_search.oficina.data:
-            oficina_id = form_search.oficina.data
-            if oficina_id != "":
-                busqueda["oficina_id"] = oficina_id
-                oficina = Oficina.query.get_or_404(oficina_id)
-                titulos.append("oficina " + oficina.clave)
-        else:
-            if "distrito" in request.form and form_search.distrito.data:
-                distrito = form_search.distrito.data
-                if distrito != "":
-                    busqueda["distrito_id"] = distrito.id
-                    titulos.append("distrito " + distrito.nombre_corto)
-        return render_template(
-            "cit_citas/list_search.jinja2",
-            filtros=json.dumps(busqueda),
-            titulo="Citas con " + ", ".join(titulos),
-            estatus="A",
-        )
-    return render_template("cit_citas/search.jinja2", form=form_search)
 
 
 @cit_citas.route("/cit_citas/asistencia/<string:cit_cita_id_encode>")

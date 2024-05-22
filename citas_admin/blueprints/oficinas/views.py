@@ -13,7 +13,7 @@ from lib.safe_string import safe_clave, safe_message, safe_string
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
-from citas_admin.blueprints.oficinas.forms import OficinaForm, OficinaSearchForm
+from citas_admin.blueprints.oficinas.forms import OficinaForm
 from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
@@ -110,37 +110,6 @@ def list_inactive():
         titulo="Oficinas inactivas",
         estatus="B",
     )
-
-
-@oficinas.route("/oficinas/buscar", methods=["GET", "POST"])
-def search():
-    """Buscar Oficinas"""
-    form_search = OficinaSearchForm()
-    if form_search.validate_on_submit():
-        busqueda = {"estatus": "A"}
-        titulos = []
-        if form_search.clave.data:
-            clave = safe_string(form_search.clave.data)
-            if clave != "":
-                busqueda["clave"] = clave
-                titulos.append("clave " + clave)
-        if form_search.descripcion.data:
-            descripcion = safe_string(form_search.descripcion.data)
-            if descripcion != "":
-                busqueda["descripcion"] = descripcion
-                titulos.append("descripción " + descripcion)
-        if form_search.distrito.data:
-            distrito = form_search.distrito.data
-            if distrito != "":
-                busqueda["distrito_id"] = distrito.id
-                titulos.append("distrito " + distrito.nombre)
-        return render_template(
-            "oficinas/list.jinja2",
-            filtros=json.dumps(busqueda),
-            titulo="Oficinas con " + ", ".join(titulos),
-            estatus="A",
-        )
-    return render_template("oficinas/search.jinja2", form=form_search)
 
 
 @oficinas.route("/oficinas/<int:oficina_id>")

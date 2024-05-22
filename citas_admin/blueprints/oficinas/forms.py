@@ -35,19 +35,3 @@ class OficinaForm(FlaskForm):
         self.domicilio.choices = [
             (d.id, d.completo) for d in Domicilio.query.filter_by(estatus="A").order_by(Domicilio.completo).all()
         ]
-
-
-class OficinaSearchForm(FlaskForm):
-    """Buscar Oficinas"""
-
-    clave = StringField("Clave", validators=[Optional(), Length(max=32)])
-    descripcion = StringField("Descripción", validators=[Optional(), Length(max=512)])
-    distrito = SelectField("Distrito", coerce=int, validators=[Optional()])
-    buscar = SubmitField("Buscar")
-
-    def __init__(self, *args, **kwargs):
-        """Inicializar y cargar opciones de distritos"""
-        super().__init__(*args, **kwargs)
-        self.distrito.choices = [
-            (d.id, d.nombre_corto) for d in Distrito.query.filter_by(estatus="A").order_by(Distrito.nombre).all()
-        ]

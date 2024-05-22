@@ -28,6 +28,15 @@
         {% endif %}
         {{ detail.label_value('Descripción', autoridad.descripcion) }}
         {{ detail.label_value('Descripción corta', autoridad.descripcion_corta) }}
+        {{ detail.label_value_boolean('Es Jurisdiccional', autoridad.es_jurisdiccional) }}
+        {{ detail.label_value_boolean('Es Notaría', autoridad.es_notaria) }}
+        {{ detail.label_value_boolean('Es Órgano Especializado', autoridad.es_organo_especializado) }}
+        {% if current_user.can_view("MATERIAS") %}
+            {{ detail.label_value('Materia', autoridad.materia.nombre, url_for('materias.detail', materia_id=autoridad.materia_id)) }}
+        {% else %}
+            {{ detail.label_value('Materia', autoridad.materia.nombre) }}
+        {% endif %}
+        {{ detail.label_value('Órgano Jurisdiccional', autoridad.organo_jurisdiccional) }}
         {# detail.label_value('Creado', moment(autoridad.creado).format('llll')) #}
     {% endcall %}
     {% if current_user.can_view('USUARIOS') %}

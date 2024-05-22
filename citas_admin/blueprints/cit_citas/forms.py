@@ -9,33 +9,6 @@ from wtforms.validators import Length, Optional, DataRequired
 from citas_admin.blueprints.distritos.models import Distrito
 
 
-class CitCitaSearchForm(FlaskForm):
-    """Buscar CitCita - Juzgados"""
-
-    cliente = StringField("Cliente", validators=[Optional(), Length(max=64)])
-    email = StringField("Email", validators=[Optional(), Length(max=64)])
-    buscar = SubmitField("Buscar")
-
-
-class CitCitaSearchAdminForm(FlaskForm):
-    """Buscar CitCita - Administradores"""
-
-    cliente = StringField("Cliente", validators=[Optional(), Length(max=64)])
-    email = StringField("Email", validators=[Optional(), Length(max=64)])
-    fecha = DateField("Fecha", validators=[Optional()])
-    distrito = SelectField("Distrito", coerce=int, validators=[DataRequired()])
-    oficina = SelectField("Oficina", coerce=int, validate_choice=False, validators=[Optional()])
-    buscar = SubmitField("Buscar")
-
-    def __init__(self, *args, **kwargs):
-        """Inicializar y cargar opciones de distritos"""
-        super().__init__(*args, **kwargs)
-        self.distrito.choices = [
-            (d.id, d.clave + " - " + d.nombre_corto)
-            for d in Distrito.query.filter_by(estatus="A").order_by(Distrito.clave).all()
-        ]
-
-
 class CitCitaAssistance(FlaskForm):
     """Marcar asistencia con el código de verificación"""
 

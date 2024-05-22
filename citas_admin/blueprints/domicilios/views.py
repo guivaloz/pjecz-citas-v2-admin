@@ -11,7 +11,7 @@ from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_message
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
-from citas_admin.blueprints.domicilios.forms import DomicilioForm, DomicilioSearchForm
+from citas_admin.blueprints.domicilios.forms import DomicilioForm
 from citas_admin.blueprints.domicilios.models import Domicilio
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
@@ -95,47 +95,6 @@ def list_inactive():
         titulo="Domicilios inactivos",
         estatus="B",
     )
-
-
-@domicilios.route("/domicilios/buscar", methods=["GET", "POST"])
-def search():
-    """Buscar Domicilios"""
-    form_search = DomicilioSearchForm()
-    if form_search.validate_on_submit():
-        busqueda = {"estatus": "A"}
-        titulos = []
-        if form_search.estado.data:
-            estado = safe_string(form_search.estado.data)
-            if estado != "":
-                busqueda["estado"] = estado
-                titulos.append("estado " + estado)
-        if form_search.municipio.data:
-            municipio = safe_string(form_search.municipio.data)
-            if municipio != "":
-                busqueda["municipio"] = municipio
-                titulos.append("municipio " + municipio)
-        if form_search.calle.data:
-            calle = safe_string(form_search.calle.data)
-            if calle != "":
-                busqueda["calle"] = calle
-                titulos.append("calle " + calle)
-        if form_search.colonia.data:
-            colonia = safe_string(form_search.colonia.data)
-            if colonia != "":
-                busqueda["colonia"] = colonia
-                titulos.append("colonia " + colonia)
-        if form_search.cp.data:
-            cp = int(form_search.cp.data)
-            if cp:
-                busqueda["cp"] = cp
-                titulos.append("C.P. " + cp)
-        return render_template(
-            "domicilios/list.jinja2",
-            filtros=json.dumps(busqueda),
-            titulo="Domicilios con " + ", ".join(titulos),
-            estatus="A",
-        )
-    return render_template("domicilios/search.jinja2", form=form_search)
 
 
 @domicilios.route("/domicilios/<int:domicilio_id>")
