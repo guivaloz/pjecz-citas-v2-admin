@@ -55,7 +55,7 @@
 {% endblock %}
 
 {% block custom_javascript %}
-    {% if current_user.can_edit('AUTORIDADES') %}
+    {% if current_user.can_admin('AUTORIDADES') %}
         {% if autoridad.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + autoridad.clave + '?') }}{% endif %}
         {% if autoridad.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + autoridad.clave + '?') }}{% endif %}
     {% endif %}

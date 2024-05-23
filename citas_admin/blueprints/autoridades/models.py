@@ -46,8 +46,6 @@ class Autoridad(database.Model, UniversalMixin):
     )
 
     # Hijos
-    pag_pagos = relationship("PagPago", back_populates="autoridad")
-    ppa_solicitudes = relationship("PpaSolicitud", back_populates="autoridad")
     usuarios = relationship("Usuario", back_populates="autoridad")
 
     def __repr__(self):

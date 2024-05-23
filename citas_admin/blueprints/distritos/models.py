@@ -21,15 +21,13 @@ class Distrito(database.Model, UniversalMixin):
     # Columnas
     clave = Column(String(16), nullable=False, unique=True)
     nombre = Column(String(256), nullable=False, unique=True)
-    nombre_corto = Column(String(64), nullable=False, default="", server_default="")
+    nombre_corto = Column(String(64), nullable=False)
     es_distrito_judicial = Column(Boolean, nullable=False, default=False)
     es_distrito = Column(Boolean, nullable=False, default=False)
     es_jurisdiccional = Column(Boolean, nullable=False, default=False)
 
     # Hijos
     autoridades = relationship("Autoridad", back_populates="distrito")
-    oficinas = relationship("Oficina", back_populates="distrito")
-    pag_pagos = relationship("PagPago", back_populates="distrito")
 
     def __repr__(self):
         """Representación"""

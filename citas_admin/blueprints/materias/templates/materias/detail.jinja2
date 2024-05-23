@@ -3,7 +3,7 @@
 {% import 'macros/modals.jinja2' as modals %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Materia{% endblock %}
+{% block title %}Materia {{ materia.nombre }}{% endblock %}
 
 {% block topbar_actions %}
     {% call topbar.page_buttons('Materia ' + materia.nombre) %}
@@ -40,9 +40,13 @@
         {% if materia.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + materia.nombre + '?') }}{% endif %}
         {% if materia.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + materia.nombre + '?') }}{% endif %}
     {% endif %}
-    {{ detail.config_datatable() }}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
     {% if current_user.can_view('AUTORIDADES') %}
         <script>
+            // DataTable Autoridades
+            const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+            let configDataTable = constructorDataTable.config();
             configDataTable['ajax']['url'] = '/autoridades/datatable_json';
             configDataTable['ajax']['data'] = { 'estatus': "A", 'materia_id': {{ materia.id}} };
             configDataTable['columns'] = [
@@ -70,7 +74,9 @@
                     }
                 }
             ];
-            $('#autoridades_datatable').DataTable(configDataTable);
+            // Filtros Autoridades
+            const filtrosAutoridades = new FiltrosDataTable('#autoridades_datatable', configDataTable);
+            filtrosAutoridades.precargar();
         </script>
     {% endif %}
 {% endblock %}

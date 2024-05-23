@@ -19,7 +19,7 @@ class Materia(database.Model, UniversalMixin):
     id = Column(Integer, primary_key=True)
 
     # Columnas
-    nombre = Column(String(64), unique=True, nullable=False)
+    nombre = Column(String(64), nullable=False, unique=True)
 
     # Hijos
     autoridades = relationship("Autoridad", back_populates="materia")

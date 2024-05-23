@@ -10,8 +10,8 @@ from lib.safe_string import safe_email, safe_string
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
-from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.usuarios.models import Usuario
+from citas_admin.blueprints.usuarios.decorators import permission_required
 
 MODULO = "BITACORAS"
 
@@ -33,14 +33,10 @@ def datatable_json():
     # Consultar
     consulta = Bitacora.query
     # Primero filtrar por columnas propias
-    if "estatus" in request.form:
-        consulta = consulta.filter_by(estatus=request.form["estatus"])
-    else:
-        consulta = consulta.filter_by(estatus="A")
     if "modulo_id" in request.form:
-        consulta = consulta.filter_by(modulo_id=request.form["modulo_id"])
+        consulta = consulta.filter(Bitacora.modulo_id == request.form["modulo_id"])
     if "usuario_id" in request.form:
-        consulta = consulta.filter_by(usuario_id=request.form["usuario_id"])
+        consulta = consulta.filter(Bitacora.usuario_id == request.form["usuario_id"])
     # Luego filtrar por columnas de otras tablas
     if "modulo_nombre" in request.form:
         modulo_nombre = safe_string(request.form["modulo_nombre"], save_enie=True)

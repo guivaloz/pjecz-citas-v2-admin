@@ -19,6 +19,7 @@ from lib.safe_next_url import safe_next_url
 from lib.safe_string import CONTRASENA_REGEXP, EMAIL_REGEXP, TOKEN_REGEXP, safe_email, safe_message, safe_string
 from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.entradas_salidas.models import EntradaSalida
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso

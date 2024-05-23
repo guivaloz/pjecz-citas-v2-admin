@@ -1,3 +1,0 @@
-"""
-Respaldar Cit Dias Inhabiles
-"""

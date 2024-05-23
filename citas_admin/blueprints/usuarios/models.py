@@ -26,17 +26,14 @@ class Usuario(database.Model, UserMixin, UniversalMixin):
     # Claves foráneas
     autoridad_id = Column(Integer, ForeignKey("autoridades.id"), index=True, nullable=False)
     autoridad = relationship("Autoridad", back_populates="usuarios")
-    oficina_id = Column(Integer, ForeignKey("oficinas.id"), index=True, nullable=False)
-    oficina = relationship("Oficina", back_populates="usuarios")
 
     # Columnas
     email = Column(String(256), nullable=False, unique=True, index=True)
     nombres = Column(String(256), nullable=False)
     apellido_paterno = Column(String(256), nullable=False)
-    apellido_materno = Column(String(256), default="", server_default="")
+    apellido_materno = Column(String(256))
     curp = Column(String(18), default="", server_default="")
     puesto = Column(String(256), default="", server_default="")
-    telefono_celular = Column(String(256), default="", server_default="")
 
     # Columnas que no deben ser expuestas
     api_key = Column(String(128), nullable=False)
@@ -48,7 +45,6 @@ class Usuario(database.Model, UserMixin, UniversalMixin):
     entradas_salidas = relationship("EntradaSalida", back_populates="usuario", lazy="noload")
     tareas = relationship("Tarea", back_populates="usuario")
     usuarios_roles = relationship("UsuarioRol", back_populates="usuario")
-    usuarios_oficinas = relationship("UsuarioOficina", back_populates="usuario")
 
     # Propiedades
     modulos_menu_principal_consultados = []

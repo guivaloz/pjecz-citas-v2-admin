@@ -4,7 +4,7 @@ Arrancar el servidor de la aplicación Flask
 https://stackoverflow.com/questions/51395936/how-to-get-flask-app-running-with-gunicorn
 """
 
-from citas_admin.app import create_app
+from citas_admin_flask.app import create_app
 
 if __name__ == "__main__":
     # Running the server locally

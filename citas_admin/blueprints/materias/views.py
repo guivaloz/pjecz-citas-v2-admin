@@ -8,18 +8,17 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_message, safe_string
-
+from lib.safe_string import safe_string, safe_message
 from citas_admin.blueprints.bitacoras.models import Bitacora
-from citas_admin.blueprints.materias.models import Materia
 from citas_admin.blueprints.materias.forms import MateriaForm
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-
-materias = Blueprint("materias", __name__, template_folder="templates")
+from citas_admin.blueprints.materias.models import Materia
 
 MODULO = "MATERIAS"
+
+materias = Blueprint("materias", __name__, template_folder="templates")
 
 
 @materias.before_request
@@ -36,10 +35,12 @@ def datatable_json():
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
     consulta = Materia.query
+    # Primero filtrar por columnas propias
     if "estatus" in request.form:
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
+    # Ordenar y paginar
     registros = consulta.order_by(Materia.nombre).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
@@ -59,7 +60,7 @@ def datatable_json():
 
 @materias.route("/materias")
 def list_active():
-    """Listado de Materias activos"""
+    """Listado de Materias activas"""
     return render_template(
         "materias/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
@@ -69,9 +70,9 @@ def list_active():
 
 
 @materias.route("/materias/inactivos")
-@permission_required(MODULO, Permiso.MODIFICAR)
+@permission_required(MODULO, Permiso.ADMINISTRAR)
 def list_inactive():
-    """Listado de Materias inactivos"""
+    """Listado de Materias inactivas"""
     return render_template(
         "materias/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
