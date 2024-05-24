@@ -42,20 +42,10 @@ def datatable_json():
         consulta = consulta.filter_by(estatus="A")
     if "edificio" in request.form:
         consulta = consulta.filter(Domicilio.edificio.contains(safe_string(request.form["edificio"])))
-    if "estado" in request.form:
-        consulta = consulta.filter(Domicilio.estado.contains(safe_string(request.form["estado"])))
-    if "municipio" in request.form:
-        consulta = consulta.filter(Domicilio.municipio.contains(safe_string(request.form["municipio"])))
     if "calle" in request.form:
         consulta = consulta.filter(Domicilio.calle.contains(safe_string(request.form["calle"])))
     if "colonia" in request.form:
         consulta = consulta.filter(Domicilio.colonia.contains(safe_string(request.form["colonia"])))
-    if "cp" in request.form:
-        consulta = consulta.filter_by(colonia=int(request.form["cp"]))
-    # Luego filtrar por columnas de otras tablas
-    # if "persona_rfc" in request.form:
-    #     consulta = consulta.join(Persona)
-    #     consulta = consulta.filter(Persona.rfc.contains(safe_rfc(request.form["persona_rfc"], search_fragment=True)))
     # Ordenar y paginar
     registros = consulta.order_by(Domicilio.edificio).offset(start).limit(rows_per_page).all()
     total = consulta.count()

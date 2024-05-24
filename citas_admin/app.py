@@ -14,6 +14,7 @@ from citas_admin.blueprints.domicilios.views import domicilios
 from citas_admin.blueprints.entradas_salidas.views import entradas_salidas
 from citas_admin.blueprints.materias.views import materias
 from citas_admin.blueprints.modulos.views import modulos
+from citas_admin.blueprints.municipios.views import municipios
 from citas_admin.blueprints.permisos.views import permisos
 from citas_admin.blueprints.roles.views import roles
 from citas_admin.blueprints.sistemas.views import sistemas
@@ -44,6 +45,7 @@ def create_app():
     app.register_blueprint(entradas_salidas)
     app.register_blueprint(materias)
     app.register_blueprint(modulos)
+    app.register_blueprint(municipios)
     app.register_blueprint(permisos)
     app.register_blueprint(roles)
     app.register_blueprint(sistemas)
