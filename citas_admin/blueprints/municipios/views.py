@@ -3,14 +3,12 @@ Municipios, vistas
 """
 
 import json
-from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_login import current_user, login_required
+from flask import Blueprint, render_template, request, url_for
+from flask_login import login_required
 
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_message
 
-from citas_admin.blueprints.bitacoras.models import Bitacora
-from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.municipios.models import Municipio

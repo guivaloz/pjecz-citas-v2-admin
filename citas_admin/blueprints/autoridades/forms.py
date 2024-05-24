@@ -29,10 +29,9 @@ class AutoridadForm(FlaskForm):
     guardar = SubmitField("Guardar")
 
     def __init__(self, *args, **kwargs):
-        """Inicializar y cargar opciones de distritos y materias"""
+        """Inicializar y cargar opciones en distrito y materia"""
         super().__init__(*args, **kwargs)
         self.distrito.choices = [
-            (d.id, d.clave + " - " + d.nombre_corto)
-            for d in Distrito.query.filter_by(estatus="A").order_by(Distrito.clave).all()
+            (d.id, d.nombre_corto) for d in Distrito.query.filter_by(estatus="A").order_by(Distrito.nombre_corto).all()
         ]
         self.materia.choices = [(m.id, m.nombre) for m in Materia.query.filter_by(estatus="A").order_by(Materia.nombre).all()]

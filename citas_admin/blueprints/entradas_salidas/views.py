@@ -7,6 +7,7 @@ from flask_login import login_required
 
 from lib.safe_string import safe_email
 from lib.datatables import get_datatable_parameters, output_datatable_json
+
 from citas_admin.blueprints.entradas_salidas.models import EntradaSalida
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required

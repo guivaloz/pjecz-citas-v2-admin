@@ -6,11 +6,11 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from citas_admin.blueprints.domicilios.forms import DomicilioForm
 from lib.datatables import get_datatable_parameters, output_datatable_json
 from lib.safe_string import safe_string, safe_message
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.domicilios.forms import DomicilioForm
 from citas_admin.blueprints.domicilios.models import Domicilio
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso

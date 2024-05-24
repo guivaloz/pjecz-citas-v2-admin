@@ -24,8 +24,8 @@ class DomicilioForm(FlaskForm):
     guardar = SubmitField("Guardar")
 
     def __init__(self, *args, **kwargs):
-        """Inicializar y cargar opciones de distritos y materias"""
+        """Inicializar y cargar opciones en distrito"""
         super().__init__(*args, **kwargs)
         self.distrito.choices = [
-            (d.id, d.nombre_corto) for d in Distrito.query.filter_by(estatus="A").order_by(Distrito.clave).all()
+            (d.id, d.nombre_corto) for d in Distrito.query.filter_by(estatus="A").order_by(Distrito.nombre_corto).all()
         ]
