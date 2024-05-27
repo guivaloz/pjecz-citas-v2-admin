@@ -15,12 +15,14 @@ from citas_admin.blueprints.entradas_salidas.views import entradas_salidas
 from citas_admin.blueprints.materias.views import materias
 from citas_admin.blueprints.modulos.views import modulos
 from citas_admin.blueprints.municipios.views import municipios
+from citas_admin.blueprints.oficinas.views import oficinas
 from citas_admin.blueprints.permisos.views import permisos
 from citas_admin.blueprints.roles.views import roles
 from citas_admin.blueprints.sistemas.views import sistemas
 from citas_admin.blueprints.tareas.views import tareas
 from citas_admin.blueprints.usuarios.views import usuarios
 from citas_admin.blueprints.usuarios.models import Usuario
+from citas_admin.blueprints.usuarios_oficinas.views import usuarios_oficinas
 from citas_admin.blueprints.usuarios_roles.views import usuarios_roles
 from citas_admin.extensions import csrf, database, login_manager, moment
 
@@ -46,11 +48,13 @@ def create_app():
     app.register_blueprint(materias)
     app.register_blueprint(modulos)
     app.register_blueprint(municipios)
+    app.register_blueprint(oficinas)
     app.register_blueprint(permisos)
     app.register_blueprint(roles)
     app.register_blueprint(sistemas)
     app.register_blueprint(tareas)
     app.register_blueprint(usuarios)
+    app.register_blueprint(usuarios_oficinas)
     app.register_blueprint(usuarios_roles)
 
     # Inicializar extensiones

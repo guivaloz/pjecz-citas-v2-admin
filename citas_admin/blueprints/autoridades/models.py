@@ -35,7 +35,7 @@ class Autoridad(database.Model, UniversalMixin):
     # Columnas
     clave = Column(String(16), nullable=False, unique=True)
     descripcion = Column(String(256), nullable=False)
-    descripcion_corta = Column(String(64), nullable=False, default="", server_default="")
+    descripcion_corta = Column(String(64), nullable=False)
     es_jurisdiccional = Column(Boolean, nullable=False, default=False)
     es_notaria = Column(Boolean, nullable=False, default=False)
     es_organo_especializado = Column(Boolean, nullable=False, default=False)

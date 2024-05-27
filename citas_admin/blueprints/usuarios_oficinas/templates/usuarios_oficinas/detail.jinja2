@@ -1,0 +1,43 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Usuario-Oficina {{ usuario_oficina.descripcion }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Usuario-Oficina ' + usuario_oficina.descripcion) %}
+        {{ topbar.button_previous('Usuarios-Oficinas', url_for('usuarios_oficinas.list_active')) }}
+        {% if current_user.can_edit('USUARIOS OFICINAS') %}
+            {{ topbar.button_edit('Editar', url_for('usuarios_oficinas.edit', usuario_oficina_id=usuario_oficina.id)) }}
+        {% endif %}
+        {% if current_user.can_admin('USUARIOS OFICINAS') %}
+            {% if usuario_oficina.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('usuarios_oficinas.delete', usuario_oficina_id=usuario_oficina.id)) }}{% endif %}
+            {% if usuario_oficina.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('usuarios_oficinas.recover', usuario_oficina_id=usuario_oficina.id)) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=usuario_oficina.estatus) %}
+        {% if current_user.can_view("OFICINAS") %}
+            {{ detail.label_value('Oficina', usuario_oficina.oficina.descripcion_corta, url_for('roles.detail', rol_id=usuario_oficina.oficina_id)) }}
+        {% else %}
+            {{ detail.label_value('Oficina', usuario_oficina.oficina.descripcion_corta) }}
+        {% endif %}
+        {% if current_user.can_view("USUARIOS") %}
+            {{ detail.label_value('Usuario', usuario_oficina.usuario.nombre, url_for('usuarios.detail', usuario_id=usuario_oficina.usuario_id)) }}
+        {% else %}
+            {{ detail.label_value('Usuario', usuario_oficina.usuario.nombre) }}
+        {% endif %}
+        {% detail.label_value('Creado', moment(usuario_oficina.creado).format('llll')) %}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {% if current_user.can_admin('USUARIOS OFICINAS') %}
+        {% if usuario_oficina.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + usuario_oficina.descripcion + '?') }}{% endif %}
+        {% if usuario_oficina.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + usuario_oficina.descripcion + '?') }}{% endif %}
+    {% endif %}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

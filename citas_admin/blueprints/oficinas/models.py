@@ -14,7 +14,7 @@ class Oficina(database.Model, UniversalMixin):
     """Oficina"""
 
     # Nombre de la tabla
-    __tablename__ = "oficina"
+    __tablename__ = "oficinas"
 
     # Clave primaria
     id = Column(Integer, primary_key=True)
@@ -33,16 +33,16 @@ class Oficina(database.Model, UniversalMixin):
     puede_agendar_citas = Column(Boolean, nullable=False, default=False)
     apertura = Column(Time(), nullable=False)
     cierre = Column(Time(), nullable=False)
-    limite_personas = Column(Integer(), nullable=False)
-    puede_enviar_qr = Column(Boolean(), nullable=False, default=False)
+    limite_personas = Column(Integer, nullable=False)
+    puede_enviar_qr = Column(Boolean, nullable=False, default=False)
 
     # Hijos
-    # usuarios = relationship("Usuario", back_populates="oficina")
+    usuarios = relationship("Usuario", back_populates="oficina")
     # cit_citas = relationship("CitCita", back_populates="oficina")
     # cit_horas_bloqueadas = relationship("CitHoraBloqueada", back_populates="oficina")
     # cit_oficinas_servicios = relationship("CitOficinaServicio", back_populates="oficina")
     # enc_servicios = relationship("EncServicio", back_populates="oficina")
-    # usuarios_oficinas = relationship("UsuarioOficina", back_populates="oficina")
+    usuarios_oficinas = relationship("UsuarioOficina", back_populates="oficina")
 
     def __repr__(self):
         """Representación"""

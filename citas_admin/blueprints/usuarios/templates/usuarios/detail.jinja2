@@ -59,9 +59,13 @@
         {% if usuario.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + usuario.nombre + '?') }}{% endif %}
     {% endif %}
     {{ detail.moment_js(moment) }}
-    {{ detail.config_datatable() }}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
     {% if current_user.can_view('USUARIOS ROLES') %}
         <script>
+            // DataTable Usuarios-Roles
+            const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+            let configDataTable = constructorDataTable.config();
             configDataTable['ajax']['url'] = '/usuarios_roles/datatable_json';
             configDataTable['ajax']['data'] = { 'estatus': "A", 'usuario_id': {{ usuario.id}} };
             configDataTable['columns'] = [
@@ -88,7 +92,9 @@
                     }
                 }
             ];
-            $('#usuarios_roles_datatable').DataTable(configDataTable);
+            // Filtros Usuarios-Roles
+            const filtrosObjetos = new FiltrosDataTable('#usuarios_roles_datatable', configDataTable);
+            filtrosObjetos.precargar();
         </script>
     {% endif %}
 {% endblock %}

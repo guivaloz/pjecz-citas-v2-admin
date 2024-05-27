@@ -1,0 +1,23 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/form.jinja2' as f with context %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(titulo) %}
+        {{ topbar.button_cancel() }}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call f.card() %}
+        {% set form_kwargs = {'usuario_id': usuario.id} %}
+        {% call f.form_tag('usuarios_oficinas.new_with_usuario', fid='usuario_oficina_form', **form_kwargs) %}
+            {% call f.form_group(form.oficina) %}{% endcall %}
+            {% call f.form_group(form.usuario_email, readonly=true) %}{% endcall %}
+            {% call f.form_group(form.usuario_nombre, readonly=true) %}{% endcall %}
+            {% call f.form_group(form.guardar) %}{% endcall %}
+        {% endcall %}
+    {% endcall %}
+{% endblock %}

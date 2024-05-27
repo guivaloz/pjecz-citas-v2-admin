@@ -30,8 +30,12 @@
 {% endblock %}
 
 {% block custom_javascript %}
-    {{ list.config_datatable() }}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
     <script>
+        // DataTable Tareas
+        const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+        let configDataTable = constructorDataTable.config();
         configDataTable['ajax']['url'] = '/tareas/datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
@@ -78,6 +82,8 @@
                 }
             }
         ];
-        $('#tareas_datatable').DataTable(configDataTable);
+        // Filtros Tareas
+        const filtrosObjetos = new FiltrosDataTable('#tareas_datatable', configDataTable);
+        filtrosObjetos.precargar();
     </script>
 {% endblock %}

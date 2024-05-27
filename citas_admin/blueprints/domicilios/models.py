@@ -35,7 +35,26 @@ class Domicilio(database.Model, UniversalMixin):
     completo = Column(String(1024), nullable=False)
 
     # Hijos
-    # oficinas = relationship("Oficina", back_populates="domicilio")
+    oficinas = relationship("Oficina", back_populates="domicilio")
+
+    def elaborar_completo(self):
+        """Elaborar completo"""
+        elementos = []
+        if self.calle and self.num_ext and self.num_int:
+            elementos.append(f"{self.calle} #{self.num_ext}-{self.num_int}")
+        elif self.calle and self.num_ext:
+            elementos.append(f"{self.calle} #{self.num_ext}")
+        elif self.calle:
+            elementos.append(self.calle)
+        if self.colonia:
+            elementos.append(self.colonia)
+        if self.municipio:
+            elementos.append(self.municipio)
+        if self.estado and self.cp > 0:
+            elementos.append(f"{self.estado}, C.P. {self.cp}")
+        elif self.estado:
+            elementos.append(self.estado)
+        return ", ".join(elementos)
 
     def __repr__(self):
         """Representación"""

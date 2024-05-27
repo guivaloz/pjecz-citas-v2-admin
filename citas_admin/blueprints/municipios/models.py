@@ -23,7 +23,7 @@ class Municipio(database.Model, UniversalMixin):
     nombre = Column(String(256), unique=True, nullable=False)
 
     # Hijos
-    tdt_solicitudes = relationship("TdtSolicitud", back_populates="municipio")
+    # tdt_solicitudes = relationship("TdtSolicitud", back_populates="municipio")
 
     def __repr__(self):
         """Representación"""

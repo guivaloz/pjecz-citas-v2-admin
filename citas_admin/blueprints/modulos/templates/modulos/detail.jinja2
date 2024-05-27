@@ -49,9 +49,13 @@
         {% if modulo.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + modulo.nombre + '?') }}{% endif %}
     {% endif %}
     {{ detail.moment_js(moment) }}
-    {{ detail.config_datatable() }}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
     {% if current_user.can_view('PERMISOS') %}
         <script>
+            // DataTable Permisos
+            const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+            let configDataTable = constructorDataTable.config();
             configDataTable['ajax']['url'] = '/permisos/datatable_json';
             configDataTable['ajax']['data'] = { 'estatus': "A", 'modulo_id': {{ modulo.id}} };
             configDataTable['columns'] = [
@@ -78,7 +82,9 @@
                     }
                 }
             ];
-            $('#permisos_datatable').DataTable(configDataTable);
+            // Filtros Permisos
+            const filtrosObjetos = new FiltrosDataTable('#permisos_datatable', configDataTable);
+            filtrosObjetos.precargar();
         </script>
     {% endif %}
 {% endblock %}
