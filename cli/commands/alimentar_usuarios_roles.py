@@ -38,7 +38,6 @@ def alimentar_usuarios_roles():
                 rol_nombre = rol_nombre.strip().upper()
                 rol = Rol.query.filter_by(nombre=rol_nombre).first()
                 if rol is None:
-                    click.echo(f"  AVISO: Falta el rol {rol_nombre}")
                     continue
                 UsuarioRol(
                     usuario=usuario,

@@ -10,7 +10,7 @@ import sys
 import click
 
 from lib.pwgen import generar_contrasena
-from lib.safe_string import safe_clave, safe_email, safe_string, safe_telefono
+from lib.safe_string import safe_clave, safe_email, safe_string
 from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.usuarios.models import Usuario
