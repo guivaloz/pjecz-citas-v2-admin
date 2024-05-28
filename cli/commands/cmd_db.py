@@ -3,7 +3,10 @@ CLI Base de Datos
 """
 
 import os
+import sys
+
 import click
+from dotenv import load_dotenv
 
 from cli.commands.alimentar_autoridades import alimentar_autoridades
 from cli.commands.alimentar_distritos import alimentar_distritos, eliminar_distritos_sin_autoridades
@@ -15,12 +18,22 @@ from cli.commands.alimentar_permisos import alimentar_permisos
 from cli.commands.alimentar_roles import alimentar_roles
 from cli.commands.alimentar_usuarios import alimentar_usuarios
 from cli.commands.alimentar_usuarios_roles import alimentar_usuarios_roles
+from cli.commands.respaldar_autoridades import respaldar_autoridades
+from cli.commands.respaldar_distritos import respaldar_distritos
+from cli.commands.respaldar_domicilios import respaldar_domicilios
+from cli.commands.respaldar_materias import respaldar_materias
+from cli.commands.respaldar_modulos import respaldar_modulos
+from cli.commands.respaldar_oficinas import respaldar_oficinas
+from cli.commands.respaldar_roles_permisos import respaldar_roles_permisos
+from cli.commands.respaldar_usuarios_roles import respaldar_usuarios_roles
 from citas_admin.app import create_app
 from citas_admin.extensions import database
 
 app = create_app()
 app.app_context().push()
 database.app = app
+
+load_dotenv()  # Take environment variables from .env
 
 entorno_implementacion = os.environ.get("DEPLOYMENT_ENVIRONMENT", "develop").upper()
 
@@ -35,7 +48,7 @@ def inicializar():
     """Inicializar"""
     if entorno_implementacion == "PRODUCTION":
         click.echo("PROHIBIDO: No se inicializa porque este es el servidor de producción.")
-        return
+        sys.exit(1)
     database.drop_all()
     database.create_all()
     click.echo("Termina inicializar.")
@@ -46,7 +59,7 @@ def alimentar():
     """Alimentar"""
     if entorno_implementacion == "PRODUCTION":
         click.echo("PROHIBIDO: No se alimenta porque este es el servidor de producción.")
-        return
+        sys.exit(1)
     alimentar_materias()
     alimentar_modulos()
     alimentar_roles()
@@ -72,6 +85,14 @@ def reiniciar(ctx):
 @click.command()
 def respaldar():
     """Respaldar"""
+    respaldar_autoridades()
+    respaldar_distritos()
+    respaldar_domicilios()
+    respaldar_materias()
+    respaldar_modulos()
+    respaldar_oficinas()
+    respaldar_roles_permisos()
+    respaldar_usuarios_roles()
     click.echo("Termina respaldar.")
 
 

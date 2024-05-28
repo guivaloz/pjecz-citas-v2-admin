@@ -22,10 +22,10 @@ def alimentar_oficinas():
     ruta = Path(OFICINAS_CSV)
     if not ruta.exists():
         click.echo(f"AVISO: {ruta.name} no se encontró.")
-        return
+        sys.exit(1)
     if not ruta.is_file():
         click.echo(f"AVISO: {ruta.name} no es un archivo.")
-        return
+        sys.exit(1)
     click.echo("Alimentando oficinas: ", nl=False)
     contador = 0
     with open(ruta, encoding="utf8") as puntero:

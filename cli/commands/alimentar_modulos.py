@@ -19,10 +19,10 @@ def alimentar_modulos():
     ruta_csv = Path(MODULOS_CSV)
     if not ruta_csv.exists():
         click.echo(f"AVISO: {ruta_csv.name} no se encontró.")
-        return
+        sys.exit(1)
     if not ruta_csv.is_file():
         click.echo(f"AVISO: {ruta_csv.name} no es un archivo.")
-        return
+        sys.exit(1)
     click.echo("Alimentando modulos: ", nl=False)
     contador = 0
     with open(ruta_csv, encoding="utf8") as puntero:

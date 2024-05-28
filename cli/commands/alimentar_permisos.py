@@ -20,10 +20,10 @@ def alimentar_permisos():
     ruta = Path(PERMISOS_CSV)
     if not ruta.exists():
         click.echo(f"AVISO: {ruta.name} no se encontró.")
-        return
+        sys.exit(1)
     if not ruta.is_file():
         click.echo(f"AVISO: {ruta.name} no es un archivo.")
-        return
+        sys.exit(1)
     modulos = Modulo.query.all()
     if len(modulos) == 0:
         click.echo(click.style("  AVISO: No hay modulos alimentados.", fg="red"))
