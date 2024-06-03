@@ -2,12 +2,14 @@
 Pag Pagos, modelos
 """
 
-from sqlalchemy import Boolean, Column, Date, DateTime, Enum, ForeignKey, Integer, Numeric, String, Text
-from sqlalchemy.orm import relationship
+from datetime import date, datetime
+from typing import Optional
 
-from lib.universal_mixin import UniversalMixin
+from sqlalchemy import Boolean, Column, Date, DateTime, Enum, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database
+from lib.universal_mixin import UniversalMixin
 
 
 class PagPago(database.Model, UniversalMixin):
@@ -25,29 +27,29 @@ class PagPago(database.Model, UniversalMixin):
     __tablename__ = "pag_pagos"
 
     # Clave primaria
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     # Claves foráneas
-    autoridad_id = Column(Integer, ForeignKey("autoridades.id"), index=True, nullable=False)
-    autoridad = relationship("Autoridad", back_populates="pag_pagos")  # Esta quien debe de entregar el trámite o servicio
-    distrito_id = Column(Integer, ForeignKey("distritos.id"), index=True, nullable=False)
-    distrito = relationship("Distrito", back_populates="pag_pagos")  # Distrito donde se solicita el trámite o servicio
-    cit_cliente_id = Column(Integer, ForeignKey("cit_clientes.id"), index=True, nullable=False)
-    cit_cliente = relationship("CitCliente", back_populates="pag_pagos")
-    pag_tramite_servicio_id = Column(Integer, ForeignKey("pag_tramites_servicios.id"), index=True, nullable=False)
-    pag_tramite_servicio = relationship("PagTramiteServicio", back_populates="pag_pagos")
+    autoridad_id: Mapped[int] = mapped_column(ForeignKey("autoridades.id"))
+    autoridad: Mapped["Autoridad"] = relationship(back_populates="pag_pagos")  # Quien debe de entregar el trámite o servicio
+    distrito_id: Mapped[int] = mapped_column(ForeignKey("distritos.id"))
+    distrito: Mapped["Distrito"] = relationship(back_populates="pag_pagos")  # Donde se solicita el trámite o servicio
+    cit_cliente_id: Mapped[int] = mapped_column(ForeignKey("cit_clientes.id"))
+    cit_cliente: Mapped["CitCliente"] = relationship(back_populates="pag_pagos")
+    pag_tramite_servicio_id: Mapped[int] = mapped_column(ForeignKey("pag_tramites_servicios.id"))
+    pag_tramite_servicio: Mapped["PagTramiteServicio"] = relationship(back_populates="pag_pagos")
 
     # Columnas
-    caducidad = Column(Date, nullable=False)
-    cantidad = Column(Integer, nullable=False, default=1)
-    descripcion = Column(String(256), nullable=False)
-    estado = Column(Enum(*ESTADOS, name="estados", native_enum=False), nullable=False)
-    email = Column(String(256), nullable=False)  # Opcional si el cliente desea que se le envie el comprobante a otra dirección
-    folio = Column(String(256), nullable=False)
-    resultado_tiempo = Column(DateTime, nullable=True)
-    resultado_xml = Column(Text, nullable=True)
-    total = Column(Numeric(precision=8, scale=2, decimal_return_scale=2), nullable=False)
-    ya_se_envio_comprobante = Column(Boolean, nullable=False, default=False)
+    caducidad: Mapped[date] = mapped_column(Date)
+    cantidad: Mapped[int] = mapped_column(default=1)
+    descripcion: Mapped[str] = mapped_column(String(256))
+    estado: Mapped[str] = mapped_column(Enum(*ESTADOS, name="estados", native_enum=False), index=True)
+    email: Mapped[Optional[str]] = mapped_column(String(256))  # Si el cliente desea que se le envie el comprobante a otro email
+    folio: Mapped[str] = mapped_column(String(256))
+    resultado_tiempo: Mapped[datetime]
+    resultado_xml: Mapped[str] = mapped_column(Text)
+    total: Mapped[float] = mapped_column(Numeric(precision=8, scale=2, decimal_return_scale=2))
+    ya_se_envio_comprobante: Mapped[bool] = mapped_column(default=False)
 
     def __repr__(self):
         """Representación"""

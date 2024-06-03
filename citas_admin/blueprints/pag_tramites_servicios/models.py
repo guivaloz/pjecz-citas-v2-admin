@@ -2,12 +2,13 @@
 Pag Tramites Servicios, modelos
 """
 
-from sqlalchemy import Column, Numeric, Integer, String
-from sqlalchemy.orm import relationship
+from typing import List
 
-from lib.universal_mixin import UniversalMixin
+from sqlalchemy import Column, Integer, Numeric, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database
+from lib.universal_mixin import UniversalMixin
 
 
 class PagTramiteServicio(database.Model, UniversalMixin):
@@ -17,16 +18,16 @@ class PagTramiteServicio(database.Model, UniversalMixin):
     __tablename__ = "pag_tramites_servicios"
 
     # Clave primaria
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     # Columnas
-    clave = Column(String(16), nullable=False, unique=True)
-    descripcion = Column(String(256), nullable=False)
-    costo = Column(Numeric(precision=8, scale=2, decimal_return_scale=2), nullable=False)
-    url = Column(String(256), nullable=False)
+    clave: Mapped[str] = mapped_column(String(16), unique=True)
+    descripcion: Mapped[str] = mapped_column(String(256))
+    costo: Mapped[float] = mapped_column(Numeric(precision=8, scale=2, decimal_return_scale=2))
+    url: Mapped[str] = mapped_column(String(256))
 
     # Hijos
-    pag_pagos = relationship("PagPago", back_populates="pag_tramite_servicio")
+    pag_pagos: Mapped[List["PagPago"]] = relationship("PagPago", back_populates="pag_tramite_servicio")
 
     def __repr__(self):
         """Representación"""

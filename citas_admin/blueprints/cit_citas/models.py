@@ -2,12 +2,13 @@
 Cit Citas, modelos
 """
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
+from datetime import datetime
 
-from lib.universal_mixin import UniversalMixin
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database
+from lib.universal_mixin import UniversalMixin
 
 
 class CitCita(database.Model, UniversalMixin):
@@ -24,24 +25,24 @@ class CitCita(database.Model, UniversalMixin):
     __tablename__ = "cit_citas"
 
     # Clave primaria
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     # Clave foránea
-    cit_cliente_id = Column(Integer, ForeignKey("cit_clientes.id"), index=True, nullable=False)
-    cit_cliente = relationship("CitCliente", back_populates="cit_citas")
-    cit_servicio_id = Column(Integer, ForeignKey("cit_servicios.id"), index=True, nullable=False)
-    cit_servicio = relationship("CitServicio", back_populates="cit_citas")
-    oficina_id = Column(Integer, ForeignKey("oficinas.id"), index=True, nullable=False)
-    oficina = relationship("Oficina", back_populates="cit_citas")
+    cit_cliente_id: Mapped[int] = mapped_column(ForeignKey("cit_clientes.id"))
+    cit_cliente: Mapped["CitCliente"] = relationship(back_populates="cit_citas")
+    cit_servicio_id: Mapped[int] = mapped_column(ForeignKey("cit_servicios.id"))
+    cit_servicio: Mapped["CitServicio"] = relationship(back_populates="cit_citas")
+    oficina_id: Mapped[int] = mapped_column(ForeignKey("oficinas.id"))
+    oficina: Mapped["Oficina"] = relationship(back_populates="cit_citas")
 
     # Columnas
-    inicio = Column(DateTime, nullable=False)
-    termino = Column(DateTime, nullable=False)
-    notas = Column(Text, nullable=False)
-    estado = Column(Enum(*ESTADOS, name="estados", native_enum=False))
-    asistencia = Column(Boolean, nullable=False, default=False)
-    codigo_asistencia = Column(String(4))
-    cancelar_antes = Column(DateTime)
+    inicio: Mapped[datetime]
+    termino: Mapped[datetime]
+    notas: Mapped[str] = mapped_column(Text)
+    estado: Mapped[str] = mapped_column(Enum(*ESTADOS, name="estados", native_enum=False), index=True)
+    asistencia: Mapped[bool] = mapped_column(default=False)
+    codigo_asistencia: Mapped[str] = mapped_column(String(4))
+    cancelar_antes: Mapped[datetime]
 
     def __repr__(self):
         """Representación"""

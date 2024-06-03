@@ -3,11 +3,10 @@ Municipios, modelos
 """
 
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
-
-from lib.universal_mixin import UniversalMixin
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database
+from lib.universal_mixin import UniversalMixin
 
 
 class Municipio(database.Model, UniversalMixin):
@@ -17,14 +16,11 @@ class Municipio(database.Model, UniversalMixin):
     __tablename__ = "municipios"
 
     # Clave primaria
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     # Columnas
-    nombre = Column(String(256), unique=True, nullable=False)
-
-    # Hijos
-    # tdt_solicitudes = relationship("TdtSolicitud", back_populates="municipio")
+    nombre: Mapped[str] = mapped_column(String(256), unique=True)
 
     def __repr__(self):
         """Representación"""
-        return f"<Municipio {self.id}>"
+        return f"<Municipio {self.nombre}>"

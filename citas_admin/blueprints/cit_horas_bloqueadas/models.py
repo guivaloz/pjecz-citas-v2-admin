@@ -1,13 +1,13 @@
 """
 Cit Horas Bloqueadas, modelos
 """
+from datetime import date, time
 
 from sqlalchemy import Column, Date, ForeignKey, Integer, String, Time
-from sqlalchemy.orm import relationship
-
-from lib.universal_mixin import UniversalMixin
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database
+from lib.universal_mixin import UniversalMixin
 
 
 class CitHoraBloqueada(database.Model, UniversalMixin):
@@ -17,17 +17,17 @@ class CitHoraBloqueada(database.Model, UniversalMixin):
     __tablename__ = "cit_horas_bloqueadas"
 
     # Clave primaria
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     # Clave foránea
-    oficina_id = Column(Integer, ForeignKey("oficinas.id"), index=True, nullable=False)
-    oficina = relationship("Oficina", back_populates="cit_horas_bloqueadas")
+    oficina_id: Mapped[int] = mapped_column(ForeignKey("oficinas.id"))
+    oficina: Mapped["Oficina"] = relationship(back_populates="cit_horas_bloqueadas")
 
     # Columnas
-    fecha = Column(Date, nullable=False, index=True)
-    inicio = Column(Time, nullable=False)
-    termino = Column(Time, nullable=False)
-    descripcion = Column(String(256), nullable=False)
+    fecha: Mapped[date]
+    inicio: Mapped[time]
+    termino: Mapped[time]
+    descripcion: Mapped[str] = mapped_column(String(256))
 
     def __repr__(self):
         """Representación"""

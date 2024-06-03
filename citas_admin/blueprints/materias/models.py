@@ -2,11 +2,13 @@
 Materias, modelos
 """
 
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
+from typing import List
 
-from lib.universal_mixin import UniversalMixin
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from citas_admin.extensions import database
+from lib.universal_mixin import UniversalMixin
 
 
 class Materia(database.Model, UniversalMixin):
@@ -16,13 +18,13 @@ class Materia(database.Model, UniversalMixin):
     __tablename__ = "materias"
 
     # Clave primaria
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     # Columnas
-    nombre = Column(String(64), nullable=False, unique=True)
+    nombre: Mapped[str] = mapped_column(String(64), unique=True)
 
     # Hijos
-    autoridades = relationship("Autoridad", back_populates="materia")
+    autoridades: Mapped[List["Autoridad"]] = relationship("Autoridad", back_populates="materia")
 
     def __repr__(self):
         """Representación"""

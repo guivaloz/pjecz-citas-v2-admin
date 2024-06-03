@@ -2,12 +2,13 @@
 Cit Categorias, modelos
 """
 
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
+from typing import List
 
-from lib.universal_mixin import UniversalMixin
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database
+from lib.universal_mixin import UniversalMixin
 
 
 class CitCategoria(database.Model, UniversalMixin):
@@ -17,13 +18,13 @@ class CitCategoria(database.Model, UniversalMixin):
     __tablename__ = "cit_categorias"
 
     # Clave primaria
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     # Columnas
-    nombre = Column(String(64), unique=True, nullable=False)
+    nombre: Mapped[str] = mapped_column(String(64), unique=True)
 
     # Hijos
-    cit_servicios = relationship("CitServicio", back_populates="cit_categoria")
+    cit_servicios: Mapped[List["CitServicio"]] = relationship(back_populates="cit_categoria")
 
     def __repr__(self):
         """Representación"""
