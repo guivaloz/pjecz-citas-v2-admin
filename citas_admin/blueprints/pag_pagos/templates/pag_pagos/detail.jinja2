@@ -1,0 +1,126 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Pago {{ pag_pago.id }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Pago ' + pag_pago.id | string) %}
+        {{ topbar.button_previous('Pagos', url_for('pag_pagos.list_active')) }}
+        {# if current_user.can_edit('PAG PAGOS') %}
+            {{ topbar.button_edit('Editar', url_for('pag_pagos.edit', pag_pago_id=pag_pago.id)) }}
+        {% endif #}
+        {# if current_user.can_admin('PAG PAGOS') %}
+            {% if pag_pago.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('pag_pagos.delete', pag_pago_id=pag_pago.id)) }}{% endif %}
+            {% if pag_pago.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('pag_pagos.recover', pag_pago_id=pag_pago.id)) }}{% endif %}
+        {% endif #}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {# Color de fondo #}
+    {% if pag_pago.estatus == 'A' %}
+        {% if pag_pago.estado == "SOLICITADO" %}
+            {% set estado_bgcolor = "#fff3cd" %}
+        {% elif pag_pago.estado == "CANCELADO" %}
+            {% set estado_bgcolor = "#f8f9fa" %}
+        {% elif pag_pago.estado == "FALLIDO" %}
+            {% set estado_bgcolor = "#f8d7da" %}
+        {% elif pag_pago.estado == "PAGADO" %}
+            {% set estado_bgcolor = "#d1e7dd" %}
+        {% elif pag_pago.estado == "ENTREGADO" %}
+            {% set estado_bgcolor = "#c7f6ff" %}
+        {% endif %}
+    {% else %}
+        {% set estado_bgcolor = "#212529; color: #FFF;" %}
+    {% endif %}
+    {# Color del estado #}
+    {% if pag_pago.estado == "SOLICITADO" %}
+        {% set estado_class = "bg-warning text-dark" %}
+    {% elif pag_pago.estado == "CANCELADO" %}
+        {% set estado_class = "bg-secondary" %}
+    {% elif pag_pago.estado == "FALLIDO" %}
+        {% set estado_class = "bg-danger" %}
+    {% elif pag_pago.estado == "PAGADO" %}
+        {% set estado_class = "bg-success" %}
+    {% elif pag_pago.estado == "ENTREGADO" %}
+        {% set estado_class = "bg-info" %}
+    {% else %}
+        {% set estado_class = "" %}
+    {% endif %}
+    {# Datos del Cliente #}
+    {% call detail.card(title='Datos del cliente', background_color=estado_bgcolor) %}
+        {% if current_user.can_view('CIT CLIENTES') %}
+            {{ detail.label_value('Cliente', pag_pago.cit_cliente.nombre, url_for('cit_clientes.detail', cit_cliente_id=pag_pago.cit_cliente_id)) }}
+        {% else %}
+            {{ detail.label_value('Cliente', pag_pago.cit_cliente.nombre) }}
+        {% endif %}
+        {{ detail.label_value('e-mail', pag_pago.email) }}
+    {% endcall %}
+    {# Tramite o servicio #}
+    {% call detail.card(title='Trámite o servicio', background_color=estado_bgcolor) %}
+        {% if current_user.can_view('PAG TRAMITES SERVICIOS') %}
+            {{ detail.label_value('Trámite y Servicio', pag_pago.pag_tramite_servicio.descripcion, url_for('pag_tramites_servicios.detail', pag_tramite_servicio_id=pag_pago.pag_tramite_servicio_id)) }}
+        {% else %}
+            {{ detail.label_value('Trámite y Servicio', pag_pago.pag_tramite_servicio.descripcion) }}
+        {% endif %}
+        {{ detail.label_value('Descripción', pag_pago.descripcion) }}
+        {% if current_user.can_view('DISTRITOS') %}
+            {{ detail.label_value('Distrito', pag_pago.distrito.nombre, url_for('distritos.detail', distrito_id=pag_pago.distrito_id)) }}
+        {% else %}
+            {{ detail.label_value('Distrito', pag_pago.distrito.nombre) }}
+        {% endif %}
+        {% if current_user.can_view('AUTORIDADES') %}
+            {{ detail.label_value('Autoridad', pag_pago.autoridad.descripcion, url_for('autoridades.detail', autoridad_id=pag_pago.autoridad_id)) }}
+        {% else %}
+            {{ detail.label_value('Autoridad', pag_pago.autoridad.descripcion) }}
+        {% endif %}
+        {{ detail.label_value('Cantidad', pag_pago.cantidad) }}
+        {{ detail.label_value_big('Total', '$ ' + pag_pago.total | string) }}
+        {{ detail.label_value('Caducidad', moment(pag_pago.caducidad).format('DD MMM YYYY')) }}
+    {% endcall %}
+    {# Banca electrónica #}
+    {% call detail.card(title='Banca electrónica', background_color=estado_bgcolor) %}
+        {# Estado #}
+        <div class="row">
+            <div class="col-md-3 text-end">
+                <span style="font-size:1.5em">Estado</span>
+            </div>
+            <div class="col-md-9">
+                {% if pag_pago.estatus == 'A' %}
+                    <span class="badge rounded-pill {{estado_class}}" style="font-size:1.5em">{{pag_pago.estado}}</span>
+                {% else %}
+                    <span class="badge rounded-pill bg-danger" style="font-size:1.5em">ELIMINADO</span>
+                {% endif %}
+            </div>
+        </div>
+        {# Comprobante #}
+        <div class="row">
+            <div class="col-md-3 text-end">
+                <span>Comprobante</span>
+            </div>
+            <div class="col-md-9">
+                {% if pag_pago_verify_url %}
+                    <a href="{{ pag_pago_verify_url }}" target="_blank">{{ pag_pago_verify_url }}</a>
+                {% endif %}
+                {% if pag_pago.ya_se_envio_comprobante %}
+                    <span class="badge rounded-pill bg-primary ps-3">ENVIADO <span class="iconify" data-icon="mdi:check-circle" style="font-size: 1.4em; margin-right: 4px;"></span></span>
+                {% else %}
+                    <span class="badge rounded-pill bg-secondary ps-3"><strong>por enviar</strong> <span class="iconify" data-icon="mdi:cancel" style="font-size: 1.4em; margin-right: 4px;"></span></span>
+                {% endif %}
+            </div>
+        </div>
+        {# Folio y tiempo #}
+        {{ detail.label_value('Folio', pag_pago.folio) }}
+        {{ detail.label_value('Operación hecha el', moment(pag_pago.resultado_tiempo, local=True).format('DD MMM YYYY hh:mm a')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {# if current_user.can_admin('PAG PAGOS') %}
+        {% if pag_pago.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + pag_pago.id + '?') }}{% endif %}
+        {% if pag_pago.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + pag_pago.id + '?') }}{% endif %}
+    {% endif #}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

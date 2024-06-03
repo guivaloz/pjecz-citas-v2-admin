@@ -1,0 +1,115 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/list.jinja2' as list %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(titulo) %}
+        {% if current_user.can_admin('CIT CLIENTES REGISTROS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_clientes_registros.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_clientes_registros.list_active')) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call list.card() %}
+        <!-- Filtros Cit Clientes Registros -->
+        <div class="row">
+            <div class="col">
+                <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitClientesRegistros.buscar(); return false;">
+                    <div class="col-4">
+                        <div class="form-floating">
+                            <input id="filtroEMail" type="text" class="form-control" aria-label="Clave" style="text-transform: uppercase;">
+                            <label for="filtroEMail">e-mail</label>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="filtroNombres" type="text" class="form-control" aria-label="Nombres" style="text-transform: uppercase;">
+                            <label for="filtroNombres">Nombres</label>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="filtroApellidoPrimero" type="text" class="form-control" aria-label="Apellido primero" style="text-transform: uppercase;">
+                            <label for="filtroApellidoPrimero">Primer apellido</label>
+                        </div>
+                    </div>
+                    <div class="col-2 text-end">
+                        <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosCitClientesRegistros.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                        <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosCitClientesRegistros.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- DataTable Cit Clientes Registros -->
+        <table id="cit_clientes_registros_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombres</th>
+                    <th>Apellido primero</th>
+                    <th>Apellido segundo</th>
+                    <th>Correo electrónico</th>
+                    <th>Expiración</th>
+                    <th>Ya registrado</th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
+    <script>
+        // DataTable Cit Clientes Registros
+        const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+        let configDataTable = constructorDataTable.config();
+        configDataTable['ajax']['url'] = '/cit_clientes_registros/datatable_json';
+        configDataTable['ajax']['data'] = {{ filtros }};
+        configDataTable['columns'] = [
+            { data: 'detalle' },
+            { data: 'nombres' },
+            { data: 'apellido_primero' },
+            { data: 'apellido_segundo' },
+            { data: 'email' },
+            { data: 'expiracion' },
+            { data: 'ya_registrado' }
+        ];
+        configDataTable['columnDefs'] = [
+            {
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.id + '</a>';
+                }
+            },
+            {
+                targets: 5, // expiracion
+                type: "date",
+                render: function (data, type, row) {
+                    return moment.utc(data).local().format("YYYY-MM-DD HH:mm:ss");
+                }
+            },
+            {
+                targets: 6, // ya_registrado
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data) {
+                        return '<span class="badge rounded-pill bg-success px-3 ms-3">Sí</span>';
+                    }
+                    return '<span class="badge rounded-pill bg-danger px-3 ms-3">No</span>';
+                }
+            }
+        ];
+        // Filtros Cit Clientes Registros
+        const filtrosCitClientesRegistros = new FiltrosDataTable('#cit_clientes_registros_datatable', configDataTable);
+        filtrosCitClientesRegistros.agregarInput('filtroEMail', 'email');
+        filtrosCitClientesRegistros.agregarInput('filtroNombres', 'nombres');
+        filtrosCitClientesRegistros.agregarInput('filtroApellidoPrimero', 'apellido_paterno');
+        filtrosCitClientesRegistros.precargar();
+    </script>
+{% endblock %}

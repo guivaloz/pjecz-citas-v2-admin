@@ -31,17 +31,16 @@ class Oficina(database.Model, UniversalMixin):
     descripcion_corta = Column(String(64), nullable=False)
     es_jurisdiccional = Column(Boolean, nullable=False, default=False)
     puede_agendar_citas = Column(Boolean, nullable=False, default=False)
-    apertura = Column(Time(), nullable=False)
-    cierre = Column(Time(), nullable=False)
+    apertura = Column(Time, nullable=False)
+    cierre = Column(Time, nullable=False)
     limite_personas = Column(Integer, nullable=False)
     puede_enviar_qr = Column(Boolean, nullable=False, default=False)
 
     # Hijos
     usuarios = relationship("Usuario", back_populates="oficina")
-    # cit_citas = relationship("CitCita", back_populates="oficina")
-    # cit_horas_bloqueadas = relationship("CitHoraBloqueada", back_populates="oficina")
-    # cit_oficinas_servicios = relationship("CitOficinaServicio", back_populates="oficina")
-    # enc_servicios = relationship("EncServicio", back_populates="oficina")
+    cit_citas = relationship("CitCita", back_populates="oficina")
+    cit_horas_bloqueadas = relationship("CitHoraBloqueada", back_populates="oficina")
+    cit_oficinas_servicios = relationship("CitOficinaServicio", back_populates="oficina")
     usuarios_oficinas = relationship("UsuarioOficina", back_populates="oficina")
 
     def __repr__(self):

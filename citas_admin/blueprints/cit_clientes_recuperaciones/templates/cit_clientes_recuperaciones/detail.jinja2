@@ -1,0 +1,41 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Cliente Recuperaciones {{ cit_cliente_recuperacion.id }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Cliente Recuperaciones ' + cit_cliente_recuperacion.id) %}
+        {{ topbar.button_previous('Clientes Recuperaciones', url_for('cit_clientes_recuperaciones.list_active')) }}
+        {# if current_user.can_edit('CIT CLIENTES RECUPERACIONES') %}
+            {{ topbar.button_edit('Editar', url_for('cit_clientes_recuperaciones.edit', cit_cliente_recuperacion_id=cit_cliente_recuperacion.id)) }}
+        {% endif #}
+        {# if current_user.can_admin('CIT CLIENTES RECUPERACIONES') %}
+            {% if cit_cliente_recuperacion.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_clientes_recuperaciones.delete', cit_cliente_recuperacion_id=cit_cliente_recuperacion.id)) }}{% endif %}
+            {% if cit_cliente_recuperacion.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_clientes_recuperaciones.recover', cit_cliente_recuperacion_id=cit_cliente_recuperacion.id)) }}{% endif %}
+        {% endif #}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=cit_cliente_recuperacion.estatus) %}
+        {% if current_user.can_view('CIT CLIENTES') %}
+            {{ detail.label_value('Cliente', cit_cliente_recuperacion.cit_cliente.email, url_for('cit_clientes.detail', cit_cliente_id=cit_cliente_recuperacion.cit_cliente_id)) }}
+        {% else %}
+            {{ detail.label_value('Cliente', cit_cliente_recuperacion.cit_cliente.email) }}
+        {% endif %}
+        {{ detail.label_value('Expiracion', moment(cit_cliente_recuperacion.expiracion, local=True).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Cantidad de mensajes', cit_cliente_recuperacion.mensajes_cantidad) }}
+        {{ detail.label_value_boolean('Ya recuperado', cit_cliente_recuperacion.ya_recuperado) }}
+        {{ detail.label_value('Creado', moment(cit_cliente_recuperacion.creado, local=True).format('DD MMM YYYY')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {# if current_user.can_admin('CIT CLIENTES RECUPERACIONES') %}
+        {% if cit_cliente_recuperacion.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_cliente_recuperacion.id + '?') }}{% endif %}
+        {% if cit_cliente_recuperacion.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_cliente_recuperacion.id + '?') }}{% endif %}
+    {% endif #}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

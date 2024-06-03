@@ -1,0 +1,43 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Servicio {{ cit_servicio.clave }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Servicio ' + cit_servicio.clave) %}
+        {{ topbar.button_previous('Servicios', url_for('cit_servicios.list_active')) }}
+        {# if current_user.can_edit('CIT SERVICIOS') %}
+            {{ topbar.button_edit('Editar', url_for('cit_servicios.edit', cit_servicio_id=cit_servicio.id)) }}
+        {% endif #}
+        {# if current_user.can_admin('CIT SERVICIOS') %}
+            {% if cit_servicio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_servicios.delete', cit_servicio_id=cit_servicio.id)) }}{% endif %}
+            {% if cit_servicio.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_servicios.recover', cit_servicio_id=cit_servicio.id)) }}{% endif %}
+        {% endif #}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=cit_servicio.estatus) %}
+        {% if current_user.can_view('CIT CATEGORIAS') %}
+            {{ detail.label_value('Categoria', cit_servicio.cit_categoria.nombre, url_for('cit_categorias.detail', cit_categoria_id=cit_servicio.cit_categoria_id)) }}
+        {% else %}
+            {{ detail.label_value('Categoria', cit_servicio.cit_categoria.nombre) }}
+        {% endif %}
+        {{ detail.label_value('Descripcion', cit_servicio.descripcion) }}
+        {{ detail.label_value('Duración', cit_servicio.duracion.strftime("%H:%M")) }}
+        {{ detail.label_value('Documentos Limite', cit_servicio.documentos_limite) }}
+        {{ detail.label_value('Horario', horario) }}
+        {{ detail.label_value('Días Hábiles', dias_habilitados ) }}
+        {{ detail.label_value('Creado', moment(cit_servicio.creado, local=True).format('DD MMM YYYY')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {# if current_user.can_admin('CIT SERVICIOS') %}
+        {% if cit_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_servicio.clave + '?') }}{% endif %}
+        {% if cit_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_servicio.clave + '?') }}{% endif %}
+    {% endif #}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Oficina-Servicio {{ cit_oficina_servicio.id }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Oficina-Servicio ' + cit_oficina_servicio.id | string) %}
+        {{ topbar.button_previous('Oficinas-Servicios', url_for('cit_oficinas_servicios.list_active')) }}
+        {# if current_user.can_edit('CIT OFICINAS SERVICIOS') %}
+            {{ topbar.button_edit('Editar', url_for('cit_oficinas_servicios.edit', cit_oficina_servicio_id=cit_oficina_servicio.id)) }}
+        {% endif #}
+        {# if current_user.can_admin('CIT OFICINAS SERVICIOS') %}
+            {% if cit_oficina_servicio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_oficinas_servicios.delete', cit_oficina_servicio_id=cit_oficina_servicio.id)) }}{% endif %}
+            {% if cit_oficina_servicio.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_oficinas_servicios.recover', cit_oficina_servicio_id=cit_oficina_servicio.id)) }}{% endif %}
+        {% endif #}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=cit_oficina_servicio.estatus) %}
+        {% if current_user.can_view('OFICINAS') %}
+            {{ detail.label_value_big('Oficina', cit_oficina_servicio.oficina.clave + ' - ' + cit_oficina_servicio.oficina.descripcion_corta, url_for('oficinas.detail', oficina_id=cit_oficina_servicio.oficina_id)) }}
+        {% else %}
+            {{ detail.label_value_big('Oficina', cit_oficina_servicio.oficina.clave + ' - ' + cit_oficina_servicio.oficina.descripcion_corta) }}
+        {% endif %}
+        {{ detail.label_value('Descripción', cit_oficina_servicio.oficina.descripcion_corta) }}
+        {% if current_user.can_view('DISTRITOS') %}
+            {{ detail.label_value('Distrito', cit_oficina_servicio.oficina.distrito.nombre, url_for()) }}
+        {% else %}
+            {{ detail.label_value('Distrito', cit_oficina_servicio.oficina.distrito.nombre) }}
+        {% endif %}
+        {% if current_user.can_view('CIT SERVICIOS') %}
+            {{ detail.label_value('Servicio', cit_oficina_servicio.cit_servicio.clave + ' - ' + cit_oficina_servicio.cit_servicio.descripcion, url_for('cit_servicios.detail', cit_servicio_id=cit_oficina_servicio.cit_servicio_id)) }}
+        {% else %}
+            {{ detail.label_value('Servicio', cit_oficina_servicio.cit_servicio.clave + ' - ' + cit_oficina_servicio.cit_servicio.descripcion) }}
+        {% endif %}
+        {{ detail.label_value('Descripción', cit_oficina_servicio.cit_servicio.descripcion) }}
+        {{ detail.label_value('Creado', moment(cit_oficina_servicio.creado, local=True).format('DD MMM YYYY')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {# if current_user.can_admin('CIT OFICINAS SERVICIOS') %}
+        {% if cit_oficina_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_oficina_servicio.id + '?') }}{% endif %}
+        {% if cit_oficina_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_oficina_servicio.id + '?') }}{% endif %}
+    {% endif #}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

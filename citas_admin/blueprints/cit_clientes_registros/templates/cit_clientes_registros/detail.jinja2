@@ -1,0 +1,42 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Cliente Registro {{ cit_cliente_registro.id }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Cliente Registro ' + cit_cliente_registro.id) %}
+        {{ topbar.button_previous('Clientes Registros', url_for('cit_clientes_registros.list_active')) }}
+        {# if current_user.can_edit('CIT CLIENTES REGISTROS') %}
+            {{ topbar.button_edit('Editar', url_for('cit_clientes_registros.edit', cit_cliente_registro_id=cit_cliente_registro.id)) }}
+        {% endif #}
+        {# if current_user.can_admin('CIT CLIENTES REGISTROS') %}
+            {% if cit_cliente_registro.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_clientes_registros.delete', cit_cliente_registro_id=cit_cliente_registro.id)) }}{% endif %}
+            {% if cit_cliente_registro.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_clientes_registros.recover', cit_cliente_registro_id=cit_cliente_registro.id)) }}{% endif %}
+        {% endif #}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=cit_cliente_registro.estatus) %}
+        {{ detail.label_value('Nombres', cit_cliente_registro.nombres) }}
+        {{ detail.label_value('Apellido primero', cit_cliente_registro.apellido_primero) }}
+        {{ detail.label_value('Apellido segundo', cit_cliente_registro.apellido_segundo) }}
+        {{ detail.label_value('CURP', cit_cliente_registro.curp) }}
+        {{ detail.label_value('Telefono', cit_cliente_registro.telefono) }}
+        {{ detail.label_value('Expiracion', moment(cit_cliente_registro.expiracion).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Cadena validar', cit_cliente_registro.cadena_validar) }}
+        {{ detail.label_value('Cantidad de mensajes', cit_cliente_registro.mensajes_cantidad) }}
+        {{ detail.label_value_boolean('Ya registrado', cit_cliente_registro.ya_registrado) }}
+        {{ detail.label_value('Creado', moment(cit_cliente_registro.creado, local=True).format('DD MMM YYYY')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {# if current_user.can_admin('CIT CLIENTES REGISTROS') %}
+        {% if cit_cliente_registro.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_cliente_registro.id + '?') }}{% endif %}
+        {% if cit_cliente_registro.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_cliente_registro.id + '?') }}{% endif %}
+    {% endif #}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

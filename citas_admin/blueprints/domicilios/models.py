@@ -31,7 +31,7 @@ class Domicilio(database.Model, UniversalMixin):
     num_ext = Column(String(24), nullable=False)
     num_int = Column(String(24), nullable=False)
     colonia = Column(String(256), nullable=False)
-    cp = Column(Integer(), nullable=False)
+    cp = Column(Integer, nullable=False)
     completo = Column(String(1024), nullable=False)
 
     # Hijos

@@ -30,6 +30,7 @@ class Distrito(database.Model, UniversalMixin):
     autoridades = relationship("Autoridad", back_populates="distrito")
     domicilios = relationship("Domicilio", back_populates="distrito")
     oficinas = relationship("Oficina", back_populates="distrito")
+    pag_pagos = relationship("PagPago", back_populates="distrito")
 
     def __repr__(self):
         """Representación"""

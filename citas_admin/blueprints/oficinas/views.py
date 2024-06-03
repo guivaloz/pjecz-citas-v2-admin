@@ -73,7 +73,7 @@ def datatable_json():
                 },
                 "descripcion_corta": resultado.descripcion_corta,
                 "domicilio": {
-                    "completo": resultado.domicilio.completo,
+                    "edificio": resultado.domicilio.edificio,
                     "url": (
                         url_for("domicilios.detail", domicilio_id=resultado.domicilio_id)
                         if current_user.can_view("DOMICILIOS")

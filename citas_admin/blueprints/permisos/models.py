@@ -38,7 +38,7 @@ class Permiso(database.Model, UniversalMixin):
 
     # Columnas
     nombre = Column(String(256), nullable=False, unique=True)
-    nivel = Column(Integer(), nullable=False)
+    nivel = Column(Integer, nullable=False)
 
     @property
     def rol_nombre(self):

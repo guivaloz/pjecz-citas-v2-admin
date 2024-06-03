@@ -1,0 +1,129 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/list.jinja2' as list %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(titulo) %}
+        {% if current_user.can_admin('CIT OFICINAS SERVICIOS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_oficinas_servicios.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_oficinas_servicios.list_active')) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call list.card() %}
+        <!-- Filtros Cit Oficinas Servicios -->
+        <div class="row">
+            <div class="col">
+                <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitOficinasServicios.buscar(); return false;">
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <input id="filtroOficinaClave" type="text" class="form-control" aria-label="Oficina Clave" style="text-transform: uppercase;">
+                            <label for="filtroOficinaClave">Oficina Clave</label>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="filtroOficinaDescripcionCorta" type="text" class="form-control" aria-label="Oficina Descripción Corta" style="text-transform: uppercase;">
+                            <label for="filtroOficinaDescripcionCorta">Oficina Descripción</label>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <input id="filtroCitServicioClave" type="text" class="form-control" aria-label="Servicio Clave" style="text-transform: uppercase;">
+                            <label for="filtroCitServicioClave">Servicio Clave</label>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="filtroCitServicioDescripcion" type="text" class="form-control" aria-label="Servicio Descripción" style="text-transform: uppercase;">
+                            <label for="filtroCitServicioDescripcion">Servicio Descripción</label>
+                        </div>
+                    </div>
+                    <div class="col-2 text-end">
+                        <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosCitOficinasServicios.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                        <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosCitOficinasServicios.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- DataTable Cit Oficinas Servicios -->
+        <table id="cit_oficinas_servicios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Oficina</th>
+                    <th>Descripción corta</th>
+                    <th>Es J.</th>
+                    <th>P.A.C.</th>
+                    <th>Servicio</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
+    <script>
+        // DataTable Cit Oficinas Servicios
+        const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+        let configDataTable = constructorDataTable.config();
+        configDataTable['ajax']['url'] = '/cit_oficinas_servicios/datatable_json';
+        configDataTable['ajax']['data'] = {{ filtros }};
+        configDataTable['columns'] = [
+            { data: 'detalle' },
+            { data: 'oficina' },
+            { data: 'oficina_descripcion_corta' },
+            { data: 'oficina_es_jurisdiccional' },
+            { data: 'oficina_puede_agendar_citas' },
+            { data: 'cit_servicio' },
+            { data: 'cit_servicio_descripcion' }
+        ];
+        configDataTable['columnDefs'] = [
+            {
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: [1, 5], // oficina, cit_servicio
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: [2, 6], // oficina_descripcion_corta, cit_servicio_descripcion
+                data: null,
+                render: function(data, type, row, meta) {
+                    return (data.length > 32 ? data.substr(0, 32) + '…' : data);
+                }
+            },
+            {
+                targets: [3, 4], // oficina_es_jurisdiccional, ofcina_puede_agendar_citas
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data) {
+                        return 'SI';
+                    }
+                    return '';
+                }
+            }
+        ];
+        // Filtros Cit Oficinas Servicios
+        const filtrosCitOficinasServicios = new FiltrosDataTable('#cit_oficinas_servicios_datatable', configDataTable);
+        filtrosCitOficinasServicios.agregarInput('filtroOficinaClave', 'oficina_clave');
+        filtrosCitOficinasServicios.agregarInput('filtroOficinaDescripcionCorta', 'oficina_descripcion_corta');
+        filtrosCitOficinasServicios.agregarInput('filtroCitServicioClave', 'cit_servicio_clave');
+        filtrosCitOficinasServicios.agregarInput('filtroCitServicioDescripcion', 'cit_servicio_descripcion');
+        filtrosCitOficinasServicios.precargar();
+    </script>
+{% endblock %}

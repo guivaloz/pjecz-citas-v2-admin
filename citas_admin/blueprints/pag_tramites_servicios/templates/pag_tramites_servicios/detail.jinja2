@@ -1,0 +1,37 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Trámite y Servicio {{ pag_tramite_servicio.clave }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Trámite y Servicio ' + pag_tramite_servicio.clave) %}
+        {{ topbar.button_previous('Trámites y Servicios', url_for('pag_tramites_servicios.list_active')) }}
+        {# if current_user.can_edit('PAG TRAMITES SERVICIOS') %}
+            {{ topbar.button_edit('Editar', url_for('pag_tramites_servicios.edit', pag_tramite_servicio_id=pag_tramite_servicio.id)) }}
+        {% endif #}
+        {# if current_user.can_admin('PAG TRAMITES SERVICIOS') %}
+            {% if pag_tramite_servicio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('pag_tramites_servicios.delete', pag_tramite_servicio_id=pag_tramite_servicio.id)) }}{% endif %}
+            {% if pag_tramite_servicio.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('pag_tramites_servicios.recover', pag_tramite_servicio_id=pag_tramite_servicio.id)) }}{% endif %}
+        {% endif #}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=pag_tramite_servicio.estatus) %}
+        {{ detail.label_value_big('Clave', pag_tramite_servicio.clave) }}
+        {{ detail.label_value('Descripción', pag_tramite_servicio.descripcion) }}
+        {{ detail.label_value('Costo', '$ ' + pag_tramite_servicio.costo | string) }}
+        {{ detail.label_value('URL', pag_tramite_servicio.url, pag_tramite_servicio.url) }}
+        {{ detail.label_value('Creado', moment(pag_tramite_servicio.creado, local=True).format('DD MMM YYYY')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {# if current_user.can_admin('PAG TRAMITES SERVICIOS') %}
+        {% if pag_tramite_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + pag_tramite_servicio.clave + '?') }}{% endif %}
+        {% if pag_tramite_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + pag_tramite_servicio.clave + '?') }}{% endif %}
+    {% endif #}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/list.jinja2' as list %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons(titulo) %}
+        {% if current_user.can_admin('CIT CITAS') %}
+            {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_citas.list_inactive')) }}{% endif %}
+            {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_citas.list_active')) }}{% endif %}
+        {% endif %}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call list.card() %}
+        <!-- Filtros Cit Citas -->
+        <div class="row">
+            <div class="col">
+                <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitCitas.buscar(); return false;">
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <input id="filtroId" type="text" class="form-control" aria-label="ID">
+                            <label for="filtroId">ID</label>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <input id="filtroCitClienteEmail" type="text" class="form-control" aria-label="Correo Electrónico">
+                            <label for="filtroCitClienteEmail">Correo Electrónico</label>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="filtroCitClienteNombres" type="text" class="form-control" aria-label="Nombres" style="text-transform: uppercase;">
+                            <label for="filtroCitClienteNombres">Nombres</label>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="filtroCitClientePrimerApellido" type="text" class="form-control" aria-label="Primer Apellido" style="text-transform: uppercase;">
+                            <label for="filtroCitClientePrimerApellido">Primer Apellido</label>
+                        </div>
+                    </div>
+                    <div class="col-2 text-end">
+                        <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosCitCitas.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                        <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosCitCitas.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- DataTable Cit Citas -->
+        <table id="cit_citas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Inicio</th>
+                    <th>Termino</th>
+                    <th>Cliente</th>
+                    <th>Oficina</th>
+                    <th>Servicio</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
+    <script>
+        // DataTable Cit Citas
+        const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+        let configDataTable = constructorDataTable.config();
+        configDataTable['ajax']['url'] = '/cit_citas/datatable_json';
+        configDataTable['ajax']['data'] = {{ filtros }};
+        configDataTable['columns'] = [
+            { data: "detalle" },
+            { data: "fecha" },
+            { data: "inicio" },
+            { data: "termino" },
+            { data: "cit_cliente" },
+            { data: "oficina" },
+            { data: "cit_servicio" },
+            { data: "estado" }
+        ];
+        configDataTable['columnDefs'] = [
+            {
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.id + '</a>';
+                }
+            },
+            {
+                targets: 1, // fecha
+                type: 'date',
+                render: function (data, type, row) {
+                    return moment.utc(data).local().format("DD MMM YYYY");
+                }
+            },
+            {
+                targets: 4, // cit_cliente
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.url != '') {
+                        return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                    }
+                    return data.nombre
+                }
+            },
+            {
+                targets: [5, 6], // oficina y cit_servicio
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.url != '') {
+                        return '<span title="' + data.descripcion + '">' + '<a href="' + data.url + '">' + data.clave + '</a></span>';
+                    }
+                    return '<span title="' + data.descripcion + '">' + data.clave + '</span>'
+                }
+            },
+            {
+                targets: 7, // Estado
+                data: null,
+                render: function(data, type, row, meta) {
+                    switch (data)    {
+                        case "ASISTIO":     return '<span class="badge rounded-pill bg-success px-3 ms-3">Asistió</span>'; break;
+                        case "PENDIENTE":   return '<span class="badge rounded-pill bg-warning px-3 ms-3 text-dark">Pendiente</span>'; break;
+                        case "CANCELO":     return '<span class="badge rounded-pill bg-danger px-3 ms-4">Cancelo</span>'; break;
+                        case "INASISTENCIA":return '<span class="badge rounded-pill bg-secondary px-3 ms-4">NO Asistió</span>'; break;
+                    }
+                    return data;
+                }
+            }
+        ];
+        // Filtros Cit Citas
+        const filtrosCitCitas = new FiltrosDataTable('#cit_citas_datatable', configDataTable);
+        filtrosCitCitas.agregarInput('filtroId', 'id');
+        filtrosCitCitas.agregarInput('filtroCitClienteEmail', 'cit_cliente_email');
+        filtrosCitCitas.agregarInput('filtroCitClienteNombres', 'cit_cliente_nombres');
+        filtrosCitCitas.agregarInput('filtroCitClientePrimerApellido', 'cit_cliente_primer_apellido');
+        filtrosCitCitas.precargar();
+    </script>
+{% endblock %}

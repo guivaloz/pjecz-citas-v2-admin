@@ -1,0 +1,46 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/detail.jinja2' as detail %}
+{% import 'macros/modals.jinja2' as modals %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Cliente {{ cit_cliente.email }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Cliente ' + cit_cliente.email) %}
+        {{ topbar.button_previous('Clientes', url_for('cit_clientes.list_active')) }}
+        {# if current_user.can_edit('CIT CLIENTES') %}
+            {{ topbar.button_edit('Editar', url_for('cit_clientes.edit', cit_cliente_id=cit_cliente.id)) }}
+        {% endif #}
+        {# if current_user.can_admin('CIT CLIENTES') %}
+            {% if cit_cliente.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_clientes.delete', cit_cliente_id=cit_cliente.id)) }}{% endif %}
+            {% if cit_cliente.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_clientes.recover', cit_cliente_id=cit_cliente.id)) }}{% endif %}
+        {% endif #}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call detail.card(estatus=cit_cliente.estatus) %}
+        {{ detail.label_value_big('Nombre', cit_cliente.nombre) }}
+        {{ detail.label_value('Email', cit_cliente.email) }}
+        {{ detail.label_value('CURP', cit_cliente.curp) }}
+        {{ detail.label_value('Teléfono', cit_cliente.telefono_formato) }}
+        {{ detail.label_value('Renovación', moment(cit_cliente.renovacion).format('ll')) }}
+        {{ detail.label_value('Creado', moment(cit_cliente.creado).format('llll')) }}
+        {% if cit_cliente.limite_citas_pendientes == 0 %}
+            {{ detail.label_value('Límite de Citas', 'Por defecto') }}
+        {% else %}
+            {{ detail.label_value('Límite de Citas', cit_cliente.limite_citas_pendientes) }}
+        {% endif %}
+        {{ detail.label_value_boolean('Autoriza mensajes', cit_cliente.autoriza_mensajes) }}
+        {{ detail.label_value_boolean('Recibir boletín', cit_cliente.enviar_boletin) }}
+        {{ detail.label_value('Creado', moment(cit_cliente.creado, local=True).format('DD MMM YYYY')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    {# if current_user.can_admin('CIT CLIENTES') %}
+        {% if cit_cliente.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_cliente.email + '?') }}{% endif %}
+        {% if cit_cliente.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_cliente.email + '?') }}{% endif %}
+    {% endif #}
+    {{ detail.moment_js(moment) }}
+{% endblock %}

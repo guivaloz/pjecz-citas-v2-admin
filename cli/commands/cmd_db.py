@@ -18,6 +18,7 @@ from cli.commands.alimentar_permisos import alimentar_permisos
 from cli.commands.alimentar_roles import alimentar_roles
 from cli.commands.alimentar_usuarios import alimentar_usuarios
 from cli.commands.alimentar_usuarios_roles import alimentar_usuarios_roles
+from cli.commands.copiar import copiar_tabla
 from cli.commands.respaldar_autoridades import respaldar_autoridades
 from cli.commands.respaldar_distritos import respaldar_distritos
 from cli.commands.respaldar_domicilios import respaldar_domicilios
@@ -96,7 +97,25 @@ def respaldar():
     click.echo("Termina respaldar.")
 
 
+@click.command()
+def copiar():
+    """Copiar los registros de varias tablas desde la BD de origen a la BD de destino"""
+    copiar_tabla("cit_categorias")
+    copiar_tabla("cit_servicios")
+    copiar_tabla("cit_oficinas_servicios")
+    copiar_tabla("cit_clientes")
+    copiar_tabla("cit_clientes_recuperaciones")
+    copiar_tabla("cit_clientes_registros")
+    copiar_tabla("cit_dias_inhabiles")
+    copiar_tabla("cit_horas_bloqueadas")
+    copiar_tabla("cit_citas")
+    copiar_tabla("pag_tramites_servicios")
+    copiar_tabla("pag_pagos")
+    click.echo("Termina copiar.")
+
+
 cli.add_command(inicializar)
 cli.add_command(alimentar)
 cli.add_command(reiniciar)
 cli.add_command(respaldar)
+cli.add_command(copiar)
