@@ -26,7 +26,7 @@
         {{ detail.label_value_boolean('Es Distrito Judicial (pjecz.gob.mx)', distrito.es_distrito_judicial) }}
         {{ detail.label_value_boolean('Es Distrito (geográfico)', distrito.es_distrito) }}
         {{ detail.label_value_boolean('Es Jurisdiccional', distrito.es_jurisdiccional) }}
-        {{ detail.label_value('Creado', moment(distrito.creado).format('llll')) }}
+        {{ detail.label_value('Creado', moment(distrito.creado, local=True).format('llll')) }}
     {% endcall %}
     {% if current_user.can_view('AUTORIDADES') %}
         {% call detail.card('Autoridades') %}

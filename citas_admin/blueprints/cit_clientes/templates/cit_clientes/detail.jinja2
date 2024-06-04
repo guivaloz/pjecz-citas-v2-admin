@@ -24,8 +24,7 @@
         {{ detail.label_value('Email', cit_cliente.email) }}
         {{ detail.label_value('CURP', cit_cliente.curp) }}
         {{ detail.label_value('Teléfono', cit_cliente.telefono_formato) }}
-        {{ detail.label_value('Renovación', moment(cit_cliente.renovacion).format('ll')) }}
-        {{ detail.label_value('Creado', moment(cit_cliente.creado).format('llll')) }}
+        {{ detail.label_value('Renovación', moment(cit_cliente.renovacion, local=True).format('ll')) }}
         {% if cit_cliente.limite_citas_pendientes == 0 %}
             {{ detail.label_value('Límite de Citas', 'Por defecto') }}
         {% else %}
@@ -33,7 +32,7 @@
         {% endif %}
         {{ detail.label_value_boolean('Autoriza mensajes', cit_cliente.autoriza_mensajes) }}
         {{ detail.label_value_boolean('Recibir boletín', cit_cliente.enviar_boletin) }}
-        {{ detail.label_value('Creado', moment(cit_cliente.creado, local=True).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Creado', moment(cit_cliente.creado, local=True).format('llll')) }}
     {% endcall %}
 {% endblock %}
 

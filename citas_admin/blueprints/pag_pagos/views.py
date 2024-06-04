@@ -2,21 +2,20 @@
 Pag Pagos, vistas
 """
 
-from datetime import datetime
 import json
 import re
+from datetime import datetime
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_string, safe_message
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
+from citas_admin.blueprints.pag_pagos.models import PagPago
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.pag_pagos.models import PagPago
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_message, safe_string
 
 MODULO = "PAG PAGOS"
 
@@ -90,6 +89,7 @@ def datatable_json():
                 "email": resultado.cit_cliente.email,
                 "distrito": {
                     "clave": resultado.distrito.clave,
+                    "nombre_corto": resultado.distrito.nombre_corto,
                     "url": (
                         url_for("distritos.detail", distrito_id=resultado.distrito_id)
                         if current_user.can_view("DISTRITOS")
@@ -99,6 +99,7 @@ def datatable_json():
                 "cantidad": resultado.cantidad,
                 "pag_tramite_servicio": {
                     "clave": resultado.pag_tramite_servicio.clave,
+                    "descripcion": resultado.pag_tramite_servicio.descripcion,
                     "url": (
                         url_for("pag_tramites_servicios.detail", pag_tramite_servicio_id=resultado.pag_tramite_servicio_id)
                         if current_user.can_view("PAG TRAMITES SERVICIOS")
@@ -107,6 +108,7 @@ def datatable_json():
                 },
                 "autoridad": {
                     "clave": resultado.autoridad.clave,
+                    "descripcion": resultado.autoridad.descripcion,
                     "url": (
                         url_for("autoridades.detail", autoridad_id=resultado.autoridad_id)
                         if current_user.can_view("AUTORIDADES")

@@ -30,7 +30,7 @@
         {{ detail.label_value('Documentos Limite', cit_servicio.documentos_limite) }}
         {{ detail.label_value('Horario', horario) }}
         {{ detail.label_value('Días Hábiles', dias_habilitados ) }}
-        {{ detail.label_value('Creado', moment(cit_servicio.creado, local=True).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Creado', moment(cit_servicio.creado, local=True).format('llll')) }}
     {% endcall %}
 {% endblock %}
 

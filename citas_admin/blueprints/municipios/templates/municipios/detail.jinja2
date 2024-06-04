@@ -13,7 +13,7 @@
 {% block content %}
     {% call detail.card() %}
         {{ detail.label_value_big('Nombre', municipio.nombre) }}
-        {{ detail.label_value('Creado', moment(municipio.creado, local=True).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Creado', moment(municipio.creado, local=True).format('llll')) }}
     {% endcall %}
 {% endblock %}
 

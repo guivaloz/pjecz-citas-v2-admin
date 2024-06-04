@@ -6,7 +6,7 @@
 {% block title %}Día Inhábil {{ cit_dia_inhabil.fecha }}{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons('Día Inhábil ' + cit_dia_inhabil.fecha) %}
+    {% call topbar.page_buttons('Día Inhábil ' + cit_dia_inhabil.fecha | string) %}
         {{ topbar.button_previous('Días Inhábiles', url_for('cit_dias_inhabiles.list_active')) }}
         {# if current_user.can_edit('CIT DIAS INHABILES') %}
             {{ topbar.button_edit('Editar', url_for('cit_dias_inhabiles.edit', cit_dia_inhabil_id=cit_dia_inhabil.id)) }}
@@ -20,9 +20,9 @@
 
 {% block content %}
     {% call detail.card(estatus=cit_dia_inhabil.estatus) %}
-        {{ detail.label_value_big('Fecha', cit_dia_inhabil.fecha) }}
+        {{ detail.label_value_big('Fecha', moment(cit_dia_inhabil.fecha, local=True).format('ll')) }}
         {{ detail.label_value('Descripción', cit_dia_inhabil.descripcion) }}
-        {{ detail.label_value('Creado', moment(cit_dia_inhabil.creado, local=True).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Creado', moment(cit_dia_inhabil.creado, local=True).format('llll')) }}
     {% endcall %}
 {% endblock %}
 

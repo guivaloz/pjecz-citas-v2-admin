@@ -25,11 +25,11 @@
         {{ detail.label_value('Apellido segundo', cit_cliente_registro.apellido_segundo) }}
         {{ detail.label_value('CURP', cit_cliente_registro.curp) }}
         {{ detail.label_value('Telefono', cit_cliente_registro.telefono) }}
-        {{ detail.label_value('Expiracion', moment(cit_cliente_registro.expiracion).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Expiracion', moment(cit_cliente_registro.expiracion, local=True).format('llll')) }}
         {{ detail.label_value('Cadena validar', cit_cliente_registro.cadena_validar) }}
         {{ detail.label_value('Cantidad de mensajes', cit_cliente_registro.mensajes_cantidad) }}
         {{ detail.label_value_boolean('Ya registrado', cit_cliente_registro.ya_registrado) }}
-        {{ detail.label_value('Creado', moment(cit_cliente_registro.creado, local=True).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Creado', moment(cit_cliente_registro.creado, local=True).format('llll')) }}
     {% endcall %}
 {% endblock %}
 

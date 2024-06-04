@@ -21,7 +21,7 @@
 {% block content %}
     {% call detail.card(estatus=cit_categoria.estatus) %}
         {{ detail.label_value_big('Nombre', cit_categoria.nombre) }}
-        {{ detail.label_value('Creado', moment(cit_categoria.creado, local=True).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Creado', moment(cit_categoria.creado, local=True).format('llll')) }}
     {% endcall %}
 {% endblock %}
 

@@ -30,7 +30,7 @@
         {% else %}
             {{ detail.label_value('Usuario', usuario_oficina.usuario.nombre) }}
         {% endif %}
-        {{ detail.label_value('Creado', moment(usuario_oficina.creado).format('llll')) }}
+        {{ detail.label_value('Creado', moment(usuario_oficina.creado, local=True).format('llll')) }}
     {% endcall %}
 {% endblock %}
 

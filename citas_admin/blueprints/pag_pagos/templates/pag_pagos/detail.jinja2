@@ -78,7 +78,7 @@
         {% endif %}
         {{ detail.label_value('Cantidad', pag_pago.cantidad) }}
         {{ detail.label_value_big('Total', '$ ' + pag_pago.total | string) }}
-        {{ detail.label_value('Caducidad', moment(pag_pago.caducidad).format('DD MMM YYYY')) }}
+        {{ detail.label_value('Caducidad', moment(pag_pago.caducidad, local=True).format('llll')) }}
     {% endcall %}
     {# Banca electrónica #}
     {% call detail.card(title='Banca electrónica', background_color=estado_bgcolor) %}
@@ -113,7 +113,7 @@
         </div>
         {# Folio y tiempo #}
         {{ detail.label_value('Folio', pag_pago.folio) }}
-        {{ detail.label_value('Operación hecha el', moment(pag_pago.resultado_tiempo, local=True).format('DD MMM YYYY hh:mm a')) }}
+        {{ detail.label_value('Operación hecha el', moment(pag_pago.resultado_tiempo, local=True).format('llll')) }}
     {% endcall %}
 {% endblock %}
 
