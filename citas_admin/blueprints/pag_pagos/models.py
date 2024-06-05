@@ -43,11 +43,11 @@ class PagPago(database.Model, UniversalMixin):
     caducidad: Mapped[date] = mapped_column(Date)
     cantidad: Mapped[int] = mapped_column(default=1)
     descripcion: Mapped[str] = mapped_column(String(256))
-    estado: Mapped[str] = mapped_column(Enum(*ESTADOS, name="estados", native_enum=False), index=True)
+    estado: Mapped[str] = mapped_column(Enum(*ESTADOS, name="pag_pagos_estados", native_enum=False), index=True)
     email: Mapped[Optional[str]] = mapped_column(String(256))  # Si el cliente desea que se le envie el comprobante a otro email
     folio: Mapped[str] = mapped_column(String(256))
-    resultado_tiempo: Mapped[datetime]
-    resultado_xml: Mapped[str] = mapped_column(Text)
+    resultado_tiempo: Mapped[Optional[datetime]]
+    resultado_xml: Mapped[Optional[str]] = mapped_column(Text)
     total: Mapped[float] = mapped_column(Numeric(precision=8, scale=2, decimal_return_scale=2))
     ya_se_envio_comprobante: Mapped[bool] = mapped_column(default=False)
 

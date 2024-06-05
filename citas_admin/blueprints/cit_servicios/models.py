@@ -3,7 +3,7 @@ Cit Servicios, modelos
 """
 
 from datetime import time
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -30,8 +30,8 @@ class CitServicio(database.Model, UniversalMixin):
     descripcion: Mapped[str] = mapped_column(String(64))
     duracion: Mapped[time]
     documentos_limite: Mapped[int]
-    desde: Mapped[time]
-    hasta: Mapped[time]
+    desde: Mapped[Optional[time]]
+    hasta: Mapped[Optional[time]]
     dias_habilitados: Mapped[str] = mapped_column(String(7))
 
     # Hijos

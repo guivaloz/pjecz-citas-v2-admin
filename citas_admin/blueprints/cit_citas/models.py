@@ -3,6 +3,7 @@ Cit Citas, modelos
 """
 
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -39,10 +40,10 @@ class CitCita(database.Model, UniversalMixin):
     inicio: Mapped[datetime]
     termino: Mapped[datetime]
     notas: Mapped[str] = mapped_column(Text)
-    estado: Mapped[str] = mapped_column(Enum(*ESTADOS, name="estados", native_enum=False), index=True)
+    estado: Mapped[str] = mapped_column(Enum(*ESTADOS, name="cit_citas_estados", native_enum=False), index=True)
     asistencia: Mapped[bool] = mapped_column(default=False)
-    codigo_asistencia: Mapped[str] = mapped_column(String(4))
-    cancelar_antes: Mapped[datetime]
+    codigo_asistencia: Mapped[Optional[str]] = mapped_column(String(4))
+    cancelar_antes: Mapped[Optional[datetime]]
 
     def __repr__(self):
         """Representación"""
