@@ -3,17 +3,18 @@ Cit Categorias, vistas
 """
 
 import json
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_string, safe_message
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_categorias.forms import CitCategoriaForm
+from citas_admin.blueprints.cit_categorias.models import CitCategoria
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.cit_categorias.models import CitCategoria
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_message, safe_string
 
 MODULO = "CIT CATEGORIAS"
 
@@ -84,9 +85,112 @@ def list_inactive():
     )
 
 
-@cit_categorias.route('/cit_categorias/<int:cit_categoria_id>')
+@cit_categorias.route("/cit_categorias/<int:cit_categoria_id>")
 def detail(cit_categoria_id):
-    """ Detalle de un Cit Categoria """
+    """Detalle de un Cit Categoria"""
     cit_categoria = CitCategoria.query.get_or_404(cit_categoria_id)
-    return render_template('cit_categorias/detail.jinja2', cit_categoria=cit_categoria)
+    return render_template("cit_categorias/detail.jinja2", cit_categoria=cit_categoria)
 
+
+@cit_categorias.route("/cit_categorias/nuevo", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.CREAR)
+def new():
+    """Nuevo Cit Categoria"""
+    form = CitCategoriaForm()
+    if form.validate_on_submit():
+        es_valido = True
+        # Validar nombre
+        nombre = safe_string(form.nombre.data, save_enie=True, max_len=64)
+        if nombre == "":
+            es_valido = False
+            flash("El nombre es incorrecto o está vacío", "warning")
+        # Validar que el nombre sea único
+        if CitCategoria.query.filter_by(nombre=nombre).first():
+            es_valido = False
+            flash("Ese nombre ya está en uso. Debe de ser único.", "warning")
+        # Si es válido, guardar
+        if es_valido:
+            cit_categoria = CitCategoria(nombre=nombre)
+            cit_categoria.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Nuevo Cit Categoria {cit_categoria.nombre}"),
+                url=url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
+    return render_template("cit_categorias/new.jinja2", form=form)
+
+
+@cit_categorias.route("/cit_categorias/edicion/<int:cit_categoria_id>", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.MODIFICAR)
+def edit(cit_categoria_id):
+    """Editar Cit Categoria"""
+    cit_categoria = CitCategoria.query.get_or_404(cit_categoria_id)
+    form = CitCategoriaForm()
+    if form.validate_on_submit():
+        es_valido = True
+        # Validar nombre
+        nombre = safe_string(form.nombre.data, save_enie=True, max_len=64)
+        if nombre == "":
+            es_valido = False
+            flash("El nombre es incorrecto o está vacío", "warning")
+        # Si cambia el nombre verificar que no este en uso
+        if cit_categoria.nombre != nombre:
+            cit_categoria_existente = CitCategoria.query.filter_by(nombre=nombre).first()
+            if cit_categoria_existente and cit_categoria_existente.id != cit_categoria.id:
+                es_valido = False
+                flash("El nombre ya está en uso. Debe de ser único.", "warning")
+        # Si es válido, actualizar
+        if es_valido:
+            cit_categoria.nombre = nombre
+            cit_categoria.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Editado Cit Categoria {cit_categoria.nombre}"),
+                url=url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
+    form.nombre.data = cit_categoria.nombre
+    return render_template("cit_categorias/edit.jinja2", form=form, cit_categoria=cit_categoria)
+
+
+@cit_categorias.route("/cit_categorias/eliminar/<int:cit_categoria_id>")
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def delete(cit_categoria_id):
+    """Eliminar Cit Categoria"""
+    cit_categoria = CitCategoria.query.get_or_404(cit_categoria_id)
+    if cit_categoria.estatus == "A":
+        cit_categoria.delete()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Eliminado Cit Categoria {cit_categoria.nombre}"),
+            url=url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id))
+
+
+@cit_categorias.route("/cit_categorias/recuperar/<int:cit_categoria_id>")
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def recover(cit_categoria_id):
+    """Recuperar Cit Categoria"""
+    cit_categoria = CitCategoria.query.get_or_404(cit_categoria_id)
+    if cit_categoria.estatus == "B":
+        cit_categoria.recover()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Recuperado Cit Categoria {cit_categoria.nombre}"),
+            url=url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id))

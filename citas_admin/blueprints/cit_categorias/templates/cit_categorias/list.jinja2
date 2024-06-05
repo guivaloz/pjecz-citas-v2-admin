@@ -6,13 +6,16 @@
 
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
+        {% if current_user.can_view('CIT SERVICIOS') %}
+            {{ topbar.button('Citas Servicios', url_for('cit_servicios.list_active'), 'mdi:shape') }}
+        {% endif %}
         {% if current_user.can_admin('CIT CATEGORIAS') %}
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_categorias.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_categorias.list_active')) }}{% endif %}
         {% endif %}
-        {# if current_user.can_insert('CIT CATEGORIAS') %}
+        {% if current_user.can_insert('CIT CATEGORIAS') %}
             {{ topbar.button_new('Nueva Categoría', url_for('cit_categorias.new')) }}
-        {% endif #}
+        {% endif %}
     {% endcall %}
 {% endblock %}
 
