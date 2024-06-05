@@ -4,7 +4,7 @@ Cit Dias Inhabiles, modelos
 
 from datetime import date
 
-from sqlalchemy import Column, Date, Integer, String
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from citas_admin.extensions import database

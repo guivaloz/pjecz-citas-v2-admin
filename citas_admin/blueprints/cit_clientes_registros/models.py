@@ -4,7 +4,7 @@ Cit Clientes Registros, modelos
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from citas_admin.extensions import database

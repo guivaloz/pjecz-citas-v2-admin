@@ -1,9 +1,10 @@
 """
 Cit Horas Bloqueadas, modelos
 """
+
 from datetime import date, time
 
-from sqlalchemy import Column, Date, ForeignKey, Integer, String, Time
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database

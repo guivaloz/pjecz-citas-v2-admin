@@ -4,7 +4,7 @@ Distritos
 
 from typing import List
 
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database

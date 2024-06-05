@@ -5,7 +5,7 @@ Cit Clientes, modelos
 from datetime import date
 from typing import List
 
-from sqlalchemy import Boolean, Column, Date, Integer, String
+from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database

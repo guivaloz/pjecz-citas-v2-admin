@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from flask import current_app
 from flask_login import UserMixin
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.blueprints.permisos.models import Permiso

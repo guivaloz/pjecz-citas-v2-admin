@@ -2,7 +2,7 @@
 Bitácora
 """
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database

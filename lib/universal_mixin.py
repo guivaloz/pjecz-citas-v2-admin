@@ -8,6 +8,7 @@ from hashids import Hashids
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
+from sqlalchemy.types import CHAR
 
 from citas_admin.extensions import database
 from config.settings import get_settings
@@ -21,7 +22,7 @@ class UniversalMixin:
 
     creado: Mapped[datetime] = mapped_column(default=func.now(), nullable=False)
     modificado: Mapped[datetime] = mapped_column(default=func.now(), onupdate=func.now(), nullable=False)
-    estatus: Mapped[str] = mapped_column(String(1), default="A", nullable=False)
+    estatus: Mapped[str] = mapped_column(CHAR, default="A", nullable=False)
 
     def delete(self):
         """Eliminar registro"""

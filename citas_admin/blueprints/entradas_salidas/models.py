@@ -2,7 +2,7 @@
 Entradas-Salidas
 """
 
-from sqlalchemy import Column, Enum, ForeignKey, Integer, String
+from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database

@@ -4,7 +4,7 @@ Cit Categorias, modelos
 
 from typing import List
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database
