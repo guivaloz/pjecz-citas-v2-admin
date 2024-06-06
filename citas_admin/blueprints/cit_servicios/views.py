@@ -3,18 +3,28 @@ Cit Servicios, vistas
 """
 
 import json
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_clave, safe_string, safe_message
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_servicios.forms import CitServicioForm
+from citas_admin.blueprints.cit_servicios.models import CitServicio
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.cit_servicios.models import CitServicio
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_clave, safe_message, safe_string
 
+DIAS_SEMANA = {
+    0: "DOMINGO",
+    1: "LUNES",
+    2: "MARTES",
+    3: "MIERCOLES",
+    4: "JUEVES",
+    5: "VIERNES",
+    6: "SABADO",
+}
 MODULO = "CIT SERVICIOS"
 
 cit_servicios = Blueprint("cit_servicios", __name__, template_folder="templates")
@@ -105,5 +115,184 @@ def list_inactive():
 @cit_servicios.route("/cit_servicios/<int:cit_servicio_id>")
 def detail(cit_servicio_id):
     """Detalle de un Cit Servicio"""
+    # Consultar
     cit_servicio = CitServicio.query.get_or_404(cit_servicio_id)
-    return render_template("cit_servicios/detail.jinja2", cit_servicio=cit_servicio)
+    # Convertir los dias habilitados a textos, por ejemplo "23" a "MARTES, MIERCOLES"
+    dias_habilitados = ""
+    for valor, dia in DIAS_SEMANA.items():
+        if str(valor) in cit_servicio.dias_habilitados:
+            dias_habilitados += f"{dia}, "
+    if dias_habilitados == "":
+        dias_habilitados = "De lunes a viernes"
+    # Entregar
+    return render_template("cit_servicios/detail.jinja2", cit_servicio=cit_servicio, dias_habilitados=dias_habilitados)
+
+
+@cit_servicios.route("/cit_servicios/nuevo", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.CREAR)
+def new():
+    """Nuevo Cit Servicio"""
+    form = CitServicioForm()
+    if form.validate_on_submit():
+        es_valido = True
+        # Validar clave
+        clave = safe_clave(form.clave.data)
+        if clave == "":
+            es_valido = False
+            flash("La clave es incorrecta o está vacía", "warning")
+        # Validar que la clave sea única
+        if CitServicio.query.filter_by(clave=clave).first():
+            es_valido = False
+            flash("La clave ya está en uso. Debe de ser único.", "warning")
+        # Si documento limite es menor a 1, cambiar a 0
+        documentos_limite = form.documentos_limite.data
+        if documentos_limite < 1:
+            documentos_limite = 0
+        # Tomar los tiempos desde y hasta
+        desde = form.desde.data
+        hasta = form.hasta.data
+        # Si desde y hasta NO están vacíos, cambiar el desde y hasta si los valores estan invertidos
+        if desde is not None and hasta is not None:
+            if desde > hasta:
+                desde, hasta = hasta, desde
+        # Transformar el texto de los días habilitados, por ejemplo "MARTES, MIERCOLES" a "23"
+        dias_habilitados = ""
+        dias_habilitados_input = form.dias_habilitados.data.strip()
+        if dias_habilitados_input != "":
+            for dia_seleccionado in dias_habilitados_input.split(","):
+                dia_seleccionado = dia_seleccionado.strip().upper()
+                for valor, dia in DIAS_SEMANA.items():
+                    if dia == dia_seleccionado:
+                        dias_habilitados += str(valor)
+        # Si es válido, guardar
+        if es_valido:
+            cit_servicio = CitServicio(
+                cit_categoria_id=form.cit_categoria.data,
+                clave=clave,
+                descripcion=safe_string(form.descripcion.data, save_enie=True, max_len=64),
+                duracion=form.duracion.data,
+                documentos_limite=documentos_limite,
+                desde=desde,
+                hasta=hasta,
+                dias_habilitados=dias_habilitados,
+            )
+            cit_servicio.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Nuevo Servicio {cit_servicio.clave}"),
+                url=url_for("cit_servicios.detail", cit_servicio_id=cit_servicio.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
+    return render_template("cit_servicios/new.jinja2", form=form)
+
+
+@cit_servicios.route("/cit_servicios/edicion/<int:cit_servicio_id>", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.MODIFICAR)
+def edit(cit_servicio_id):
+    """Editar Cit Servicio"""
+    cit_servicio = CitServicio.query.get_or_404(cit_servicio_id)
+    form = CitServicioForm()
+    if form.validate_on_submit():
+        es_valido = True
+        # Validar clave
+        clave = safe_clave(form.clave.data)
+        if clave == "":
+            es_valido = False
+            flash("La clave es incorrecta o está vacía", "warning")
+        # Si cambia la clave verificar que no este en uso
+        if cit_servicio.clave != clave:
+            cit_servicio_existente = CitServicio.query.filter_by(clave=clave).first()
+            if cit_servicio_existente and cit_servicio_existente.id != cit_servicio.id:
+                es_valido = False
+                flash("La clave ya está en uso. Debe de ser única.", "warning")
+        # Tomar los tiempos desde y hasta
+        desde = form.desde.data
+        hasta = form.hasta.data
+        # Si desde y hasta NO están vacíos, cambiar el desde y hasta si los valores estan invertidos
+        if desde is not None and hasta is not None:
+            if desde > hasta:
+                desde, hasta = hasta, desde
+        # Transformar el texto de los días habilitados, por ejemplo "MARTES, MIERCOLES" a "23"
+        dias_habilitados = ""
+        dias_habilitados_input = form.dias_habilitados.data.strip()
+        if dias_habilitados_input != "":
+            for dia_seleccionado in dias_habilitados_input.split(","):
+                dia_seleccionado = dia_seleccionado.strip().upper()
+                for valor, dia in DIAS_SEMANA.items():
+                    if dia == dia_seleccionado:
+                        dias_habilitados += str(valor)
+        # Si es válido, actualizar
+        if es_valido:
+            cit_servicio.cit_categoria_id = form.cit_categoria.data  # Select que tiene el Id de cit_categoria
+            cit_servicio.clave = clave
+            cit_servicio.descripcion = safe_string(form.descripcion.data, save_enie=True, max_len=64)
+            cit_servicio.duracion = form.duracion.data
+            cit_servicio.documentos_limite = form.documentos_limite.data
+            cit_servicio.desde = desde
+            cit_servicio.hasta = hasta
+            cit_servicio.dias_habilitados = dias_habilitados
+            cit_servicio.save()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Editado Servicio {cit_servicio.clave}"),
+                url=url_for("cit_servicios.detail", cit_servicio_id=cit_servicio.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(bitacora.url)
+    # Convertir los dias habilitados a textos, por ejemplo "23" a "MARTES, MIERCOLES"
+    dias_habilitados = ""
+    for valor, dia in DIAS_SEMANA.items():
+        if str(valor) in cit_servicio.dias_habilitados:
+            dias_habilitados += f"{dia}, "
+    # Definir valores en el formulario
+    form.cit_categoria.data = cit_servicio.cit_categoria_id  # Select que necesita el ID de cit_categoria
+    form.clave.data = cit_servicio.clave
+    form.descripcion.data = cit_servicio.descripcion
+    form.duracion.data = cit_servicio.duracion
+    form.documentos_limite.data = cit_servicio.documentos_limite
+    form.desde.data = cit_servicio.desde
+    form.hasta.data = cit_servicio.hasta
+    form.dias_habilitados.data = dias_habilitados
+    # Entregar formulario
+    return render_template("cit_servicios/edit.jinja2", form=form, cit_servicio=cit_servicio)
+
+
+@cit_servicios.route("/cit_servicios/eliminar/<int:cit_servicio_id>")
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def delete(cit_servicio_id):
+    """Eliminar Cit Servicio"""
+    cit_servicio = CitServicio.query.get_or_404(cit_servicio_id)
+    if cit_servicio.estatus == "A":
+        cit_servicio.delete()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Eliminado Servicio {cit_servicio.clave}"),
+            url=url_for("cit_servicios.detail", cit_servicio_id=cit_servicio.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("cit_servicios.detail", cit_servicio_id=cit_servicio.id))
+
+
+@cit_servicios.route("/cit_servicios/recuperar/<int:cit_servicio_id>")
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def recover(cit_servicio_id):
+    """Recuperar Cit Servicio"""
+    cit_servicio = CitServicio.query.get_or_404(cit_servicio_id)
+    if cit_servicio.estatus == "B":
+        cit_servicio.recover()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Recuperado Servicio {cit_servicio.clave}"),
+            url=url_for("cit_servicios.detail", cit_servicio_id=cit_servicio.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("cit_servicios.detail", cit_servicio_id=cit_servicio.id))

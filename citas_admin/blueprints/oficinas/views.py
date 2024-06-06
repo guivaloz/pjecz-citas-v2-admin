@@ -3,11 +3,9 @@ Oficinas, vistas
 """
 
 import json
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_clave, safe_string, safe_message
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
@@ -15,6 +13,8 @@ from citas_admin.blueprints.oficinas.forms import OficinaForm
 from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_clave, safe_message, safe_string
 
 MODULO = "OFICINAS"
 
@@ -106,7 +106,7 @@ def list_active():
     return render_template(
         "oficinas/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Oficina",
+        titulo="Oficinas",
         estatus="A",
     )
 

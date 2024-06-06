@@ -107,7 +107,7 @@ def new():
         # Validar que el nombre sea único
         if CitCategoria.query.filter_by(nombre=nombre).first():
             es_valido = False
-            flash("Ese nombre ya está en uso. Debe de ser único.", "warning")
+            flash("El nombre ya está en uso. Debe de ser único.", "warning")
         # Si es válido, guardar
         if es_valido:
             cit_categoria = CitCategoria(nombre=nombre)
@@ -115,7 +115,7 @@ def new():
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
                 usuario=current_user,
-                descripcion=safe_message(f"Nuevo Cit Categoria {cit_categoria.nombre}"),
+                descripcion=safe_message(f"Nueva Categoria {cit_categoria.nombre}"),
                 url=url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id),
             )
             bitacora.save()
@@ -150,7 +150,7 @@ def edit(cit_categoria_id):
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
                 usuario=current_user,
-                descripcion=safe_message(f"Editado Cit Categoria {cit_categoria.nombre}"),
+                descripcion=safe_message(f"Editado Categoria {cit_categoria.nombre}"),
                 url=url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id),
             )
             bitacora.save()
@@ -170,7 +170,7 @@ def delete(cit_categoria_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Eliminado Cit Categoria {cit_categoria.nombre}"),
+            descripcion=safe_message(f"Eliminado Categoria {cit_categoria.nombre}"),
             url=url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id),
         )
         bitacora.save()
@@ -188,7 +188,7 @@ def recover(cit_categoria_id):
         bitacora = Bitacora(
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
-            descripcion=safe_message(f"Recuperado Cit Categoria {cit_categoria.nombre}"),
+            descripcion=safe_message(f"Recuperado Categoria {cit_categoria.nombre}"),
             url=url_for("cit_categorias.detail", cit_categoria_id=cit_categoria.id),
         )
         bitacora.save()

@@ -7,7 +7,7 @@
 {% block topbar_actions %}
     {% call topbar.page_buttons(titulo) %}
         {% if current_user.can_view('CIT SERVICIOS') %}
-            {{ topbar.button('Citas Servicios', url_for('cit_servicios.list_active'), 'mdi:shape') }}
+            {{ topbar.button('Servicios', url_for('cit_servicios.list_active'), 'mdi:shape') }}
         {% endif %}
         {% if current_user.can_admin('CIT CATEGORIAS') %}
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_categorias.list_inactive')) }}{% endif %}

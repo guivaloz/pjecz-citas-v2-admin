@@ -3,17 +3,17 @@ Pag Tramites Servicios, vistas
 """
 
 import json
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_clave, safe_string, safe_message
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
+from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_clave, safe_message, safe_string
 
 MODULO = "PAG TRAMITES SERVICIOS"
 
@@ -74,7 +74,7 @@ def list_active():
     return render_template(
         "pag_tramites_servicios/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Pag Tramites Servicios",
+        titulo="Trámites y Servicios",
         estatus="A",
     )
 
@@ -86,7 +86,7 @@ def list_inactive():
     return render_template(
         "pag_tramites_servicios/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
-        titulo="Pag Tramites Servicios inactivos",
+        titulo="Trámites y Servicios inactivos",
         estatus="B",
     )
 

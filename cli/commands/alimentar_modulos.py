@@ -2,14 +2,14 @@
 Alimentar Modulos
 """
 
-from pathlib import Path
 import csv
 import sys
+from pathlib import Path
 
 import click
 
-from lib.safe_string import safe_string
 from citas_admin.blueprints.modulos.models import Modulo
+from lib.safe_string import safe_string
 
 MODULOS_CSV = "seed/modulos.csv"
 
@@ -30,7 +30,7 @@ def alimentar_modulos():
         for row in rows:
             modulo_id = int(row["modulo_id"])
             nombre = safe_string(row["nombre"], save_enie=True)
-            nombre_corto = safe_string(row["nombre_corto"], save_enie=True, to_uppercase=False)
+            nombre_corto = safe_string(row["nombre_corto"], do_unidecode=False, save_enie=True, to_uppercase=False)
             icono = row["icono"]
             ruta = row["ruta"]
             en_navegacion = row["en_navegacion"] == "1"

@@ -8,13 +8,13 @@
 {% block topbar_actions %}
     {% call topbar.page_buttons('Servicio ' + cit_servicio.clave) %}
         {{ topbar.button_previous('Servicios', url_for('cit_servicios.list_active')) }}
-        {# if current_user.can_edit('CIT SERVICIOS') %}
+        {% if current_user.can_edit('CIT SERVICIOS') %}
             {{ topbar.button_edit('Editar', url_for('cit_servicios.edit', cit_servicio_id=cit_servicio.id)) }}
-        {% endif #}
-        {# if current_user.can_admin('CIT SERVICIOS') %}
+        {% endif %}
+        {% if current_user.can_admin('CIT SERVICIOS') %}
             {% if cit_servicio.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('cit_servicios.delete', cit_servicio_id=cit_servicio.id)) }}{% endif %}
             {% if cit_servicio.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('cit_servicios.recover', cit_servicio_id=cit_servicio.id)) }}{% endif %}
-        {% endif #}
+        {% endif %}
     {% endcall %}
 {% endblock %}
 
@@ -28,16 +28,24 @@
         {{ detail.label_value('Descripcion', cit_servicio.descripcion) }}
         {{ detail.label_value('Duración', cit_servicio.duracion.strftime("%H:%M")) }}
         {{ detail.label_value('Documentos Limite', cit_servicio.documentos_limite) }}
-        {{ detail.label_value('Horario', horario) }}
+        {% if cit_servicio.desde and cit_servicio.hasta %}
+            {{ detail.label_value('Horario', cit_servicio.desde.strftime("%H:%M") + ' - ' + cit_servicio.hasta.strftime("%H:%M")) }}
+        {% elif cit_servicio.desde %}
+            {{ detail.label_value('Horario', 'Desde ' + cit_servicio.desde.strftime("%H:%M")) }}
+        {% elif cit_servicio.hasta %}
+            {{ detail.label_value('Horario', 'Hasta ' + cit_servicio.hasta.strftime("%H:%M")) }}
+        {% else %}
+            {{ detail.label_value('Horario', 'Sin horario') }}
+        {% endif %}
         {{ detail.label_value('Días Hábiles', dias_habilitados ) }}
         {{ detail.label_value('Creado', moment(cit_servicio.creado, local=True).format('llll')) }}
     {% endcall %}
 {% endblock %}
 
 {% block custom_javascript %}
-    {# if current_user.can_admin('CIT SERVICIOS') %}
+    {% if current_user.can_admin('CIT SERVICIOS') %}
         {% if cit_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_servicio.clave + '?') }}{% endif %}
         {% if cit_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_servicio.clave + '?') }}{% endif %}
-    {% endif #}
+    {% endif %}
     {{ detail.moment_js(moment) }}
 {% endblock %}

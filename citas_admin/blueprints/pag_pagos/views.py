@@ -130,7 +130,7 @@ def list_active():
     return render_template(
         "pag_pagos/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Pag Pagos",
+        titulo="Pagos",
         estatus="A",
     )
 
@@ -142,7 +142,7 @@ def list_inactive():
     return render_template(
         "pag_pagos/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
-        titulo="Pag Pagos inactivos",
+        titulo="Pagos inactivos",
         estatus="B",
     )
 

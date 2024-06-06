@@ -29,10 +29,10 @@ class CitServicio(database.Model, UniversalMixin):
     clave: Mapped[str] = mapped_column(String(32), unique=True)
     descripcion: Mapped[str] = mapped_column(String(64))
     duracion: Mapped[time]
-    documentos_limite: Mapped[int]
+    documentos_limite: Mapped[int] = mapped_column(default=0)
     desde: Mapped[Optional[time]]
     hasta: Mapped[Optional[time]]
-    dias_habilitados: Mapped[str] = mapped_column(String(7))
+    dias_habilitados: Mapped[str] = mapped_column(String(7), default="")
 
     # Hijos
     cit_citas: Mapped[List["CitCita"]] = relationship(back_populates="cit_servicio")

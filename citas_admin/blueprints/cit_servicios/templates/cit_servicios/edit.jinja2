@@ -1,0 +1,91 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/form.jinja2' as f with context %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Editar Servicio {{ cit_servicio.clave }}{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Editar ' + cit_servicio.clave) %}
+        {{ topbar.button_cancel() }}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call f.card() %}
+        {% set form_kwargs = {'cit_servicio_id': cit_servicio.id} %}
+        {% call f.form_tag('cit_servicios.edit', fid='cit_servicio_form', **form_kwargs) %}
+            <div class="row">
+                <div class="col-md-6">
+                    {% call f.form_group(form.cit_categoria) %}{% endcall %}
+                    {% call f.form_group(form.clave) %}{% endcall %}
+                    {% call f.form_group(form.descripcion) %}{% endcall %}
+                    {% call f.form_group(form.documentos_limite) %}{% endcall %}
+                </div>
+                <div class="col-md-6">
+                    <span class="form-text">Si ve 12:30 AM es porque su navegador cambia la presentación de 00:30.</span>
+                    {% call f.form_group(form.duracion) %}{% endcall %}
+                    <span class="form-text">Si se dejan vacíos los horarios se usarán los de la oficina.</span>
+                    {% call f.form_group(form.desde) %}{% endcall %}
+                    {% call f.form_group(form.hasta) %}{% endcall %}
+                    <span class="form-text">Si se deja vacío se usarán los cinco días hábiles.</span>
+                    {% call f.form_group(form.dias_habilitados, readonly=true) %}{% endcall %}
+                    <div class="btn-group mb-2">
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="button" disabled>Domingo</button>
+                        <input type="checkbox" class="btn-check" id="btn-check-lunes" autocomplete="off" onchange="toggle_btn('LUNES', this);">
+                        <label class="btn btn-outline-primary btn-sm" for="btn-check-lunes">Lunes</label>
+                        <input type="checkbox" class="btn-check" id="btn-check-martes" autocomplete="off" onchange="toggle_btn('MARTES', this);">
+                        <label class="btn btn-outline-primary btn-sm" for="btn-check-martes">Martes</label>
+                        <input type="checkbox" class="btn-check" id="btn-check-miercoles" autocomplete="off" onchange="toggle_btn('MIERCOLES', this);">
+                        <label class="btn btn-outline-primary btn-sm" for="btn-check-miercoles">Miércoles</label>
+                        <input type="checkbox" class="btn-check" id="btn-check-jueves" autocomplete="off" onchange="toggle_btn('JUEVES', this);">
+                        <label class="btn btn-outline-primary btn-sm" for="btn-check-jueves">Jueves</label>
+                        <input type="checkbox" class="btn-check" id="btn-check-viernes" autocomplete="off" onchange="toggle_btn('VIERNES', this);">
+                        <label class="btn btn-outline-primary btn-sm" for="btn-check-viernes">Viernes</label>
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="button" disabled>Sábado</button>
+                    </div>
+                </div>
+            </div>
+            {% call f.form_group(form.guardar) %}{% endcall %}
+        {% endcall %}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    <!-- Script para habilitar y deshabilitar los días de la semana -->
+    <script>
+        // Elemento input para almacenar los días hábiles
+        const dias_habilitados_input = document.getElementById('dias_habilitados');
+        // Función para agregar o quitar días hábiles
+        function toggle_btn(dia, btn) {
+            if (btn.checked === true)  {
+                dias_habilitados_input.value += dia + ', ';
+            } else {
+                console.log(dias_habilitados_input.value);
+                console.log(dia + ', ');
+                dias_habilitados_input.value = dias_habilitados_input.value.replaceAll(dia + ', ', '');
+            }
+        };
+        // Elementos checkbox para días hábiles
+        const btn_check_lunes = document.getElementById('btn-check-lunes');
+        const btn_check_martes = document.getElementById('btn-check-martes');
+        const btn_check_miercoles = document.getElementById('btn-check-miercoles');
+        const btn_check_jueves = document.getElementById('btn-check-jueves');
+        const btn_check_viernes = document.getElementById('btn-check-viernes');
+        // Carga inicial de valores para días Hábiles
+        if (dias_habilitados.value == '') {
+            // Si no hay días hábiles, se seleccionan todos por defecto
+            btn_check_lunes.checked = true;      toggle_btn('LUNES', btn_check_lunes);
+            btn_check_martes.checked = true;     toggle_btn('MARTES', btn_check_martes);
+            btn_check_miercoles.checked = true;  toggle_btn('MIERCOLES', btn_check_miercoles);
+            btn_check_jueves.checked = true;     toggle_btn('JUEVES', btn_check_jueves);
+            btn_check_viernes.checked = true;    toggle_btn('VIERNES', btn_check_viernes);
+        } else {
+            // Si hay días hábiles, se seleccionan los que estén en la lista
+            if (dias_habilitados_input.value.includes('LUNES'))     btn_check_lunes.checked = true;
+            if (dias_habilitados_input.value.includes('MARTES'))    btn_check_martes.checked = true;
+            if (dias_habilitados_input.value.includes('MIERCOLES')) btn_check_miercoles.checked = true;
+            if (dias_habilitados_input.value.includes('JUEVES'))    btn_check_jueves.checked = true;
+            if (dias_habilitados_input.value.includes('VIERNES'))   btn_check_viernes.checked = true;
+        }
+    </script>
+{% endblock %}

@@ -6,9 +6,8 @@ import os
 import sys
 
 import click
-
-from dotenv import load_dotenv
 import psycopg2
+from dotenv import load_dotenv
 
 load_dotenv()  # Take environment variables from .env
 
@@ -16,7 +15,7 @@ load_dotenv()  # Take environment variables from .env
 def copiar_tabla(tabla: str):
     """Copiar tabla de una base de datos a la que usamos"""
 
-    # Define source connection parameters
+    # Definir los parametros de conexion a la base de datos de origen
     source_conn_params = {
         "dbname": os.environ.get("DB_SOURCE_NAME", ""),
         "user": os.environ.get("DB_SOURCE_USER", ""),
@@ -25,7 +24,7 @@ def copiar_tabla(tabla: str):
         "port": os.environ.get("DB_SOURCE_PORT", "5432"),
     }
 
-    # Define destination connection parameters
+    # Definir los parametros de conexion a la base de datos de destino
     destination_conn_params = {
         "dbname": os.environ.get("DB_NAME", ""),
         "user": os.environ.get("DB_USER", ""),
@@ -34,7 +33,7 @@ def copiar_tabla(tabla: str):
         "port": os.environ.get("DB_PORT", "5432"),
     }
 
-    # Connect to source and destination databases
+    # Conectar a las bases de datos
     try:
         click.echo("Conectando a la BD de origen... ", nl=False)
         source_conn = psycopg2.connect(**source_conn_params)
@@ -55,24 +54,40 @@ def copiar_tabla(tabla: str):
         source_cursor = source_conn.cursor()
         destination_cursor = destination_conn.cursor()
 
-        # Fetch data from source table
+        # Obtener los registros
         source_cursor.execute(f"SELECT * FROM {tabla}")
         rows = source_cursor.fetchall()
 
-        # Get column names from source table
+        # Definir los nombres de las columnas
         colnames = [desc[0] for desc in source_cursor.description]
 
-        # Construct insert query for destination table
+        # Elaborar comandos SQL para insertar
         insert_query = f"INSERT INTO {tabla} ({', '.join(colnames)}) VALUES %s"
 
-        # Insert data into destination table
+        # Insertar registros
         psycopg2.extras.execute_values(destination_cursor, insert_query, rows)
 
-        # Commit after each table's data is copied
+        # Ejecutar las operaciones
         destination_conn.commit()
 
         # Incrementar contador
         contador += len(rows)
+
+        # Actualizar la secuencia al valor mas alto de la columna id
+        destination_cursor.execute(
+            f"""
+            do $$
+            declare nextid int;
+            begin
+                select max(id) + 1 from {tabla} into nextid;
+                execute 'alter SEQUENCE {tabla}_id_seq RESTART with '|| nextid;
+            end;
+            $$ language plpgsql
+        """
+        )
+
+        # Ejecutar la operacion
+        destination_conn.commit()
 
     finally:
         source_cursor.close()
