@@ -2,16 +2,16 @@
 Alimentar Autoridades
 """
 
-from pathlib import Path
 import csv
 import sys
+from pathlib import Path
 
 import click
 
+from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.materias.models import Materia
 from lib.safe_string import safe_clave, safe_string
-from citas_admin.blueprints.autoridades.models import Autoridad
 
 AUTORIDADES_CSV = "seed/autoridades.csv"
 
