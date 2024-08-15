@@ -121,7 +121,7 @@
                     targets: 1, // descripcion_corta
                     data: null,
                     render: function(data, type, row, meta) {
-                        return (data.length > 32 ? data.substr(0, 32) + '…' : data);
+                        return (data.length > 32 ? data.substring(0, 32) + '…' : data);
                     }
                 },
                 {

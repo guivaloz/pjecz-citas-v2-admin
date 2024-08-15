@@ -97,7 +97,7 @@
                 targets: [1, 2], // nombre, puesto
                 data: null,
                 render: function(data, type, row, meta) {
-                    return (data.length > 48 ? data.substr(0, 48) + '…' : data);
+                    return (data.length > 48 ? data.substring(0, 48) + '…' : data);
                 }
             },
             {

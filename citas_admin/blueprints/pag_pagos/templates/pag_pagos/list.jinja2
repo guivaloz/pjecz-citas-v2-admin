@@ -156,7 +156,7 @@
                 render: function(data, type, row, meta) {
                     let texto = data.nombre;
                     if (texto.length > 16 ) {
-                        texto = data.nombre.substr(0, 16) + '…'
+                        texto = data.nombre.substring(0, 16) + '…'
                     }
                     if (data.url == '') {
                         return '<span title="' + data.nombre + '">' + texto + '</span>';
@@ -172,7 +172,7 @@
                     if (data.length < 16 ) {
                         return '<a href="mailto:' + data + '">' + data + '</a>';
                     }
-                    return '<a href="mailto:' + data + '"><span title="' + data + '">' + data.substr(0, 16) + '…' + '</span></a>';
+                    return '<a href="mailto:' + data + '"><span title="' + data + '">' + data.substring(0, 16) + '…' + '</span></a>';
                 }
             },
             {

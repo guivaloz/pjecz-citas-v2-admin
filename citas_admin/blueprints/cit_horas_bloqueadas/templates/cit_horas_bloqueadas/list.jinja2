@@ -98,7 +98,7 @@
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data.length > 32) {
-                        return '<span title="' + data + '">' + data.substr(0, 32) + '…' + '</span>';
+                        return '<span title="' + data + '">' + data.substring(0, 32) + '…' + '</span>';
                     }
                     return data;
                 }

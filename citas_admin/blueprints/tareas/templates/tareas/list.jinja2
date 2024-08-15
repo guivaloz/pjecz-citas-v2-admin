@@ -64,7 +64,7 @@
                 targets: 2, // mensaje
                 data: null,
                 render: function(data, type, row, meta) {
-                    return (data.length > 48 ? '<span title="'+ data +'">' + data.substr(0, 48) + '…</span>' : data);
+                    return (data.length > 48 ? '<span title="'+ data +'">' + data.substring(0, 48) + '…</span>' : data);
                 }
             },
             {

@@ -76,7 +76,7 @@
                 targets: 2, // usuario_nombre
                 data: null,
                 render: function(data, type, row, meta) {
-                    return (data.length > 24 ? data.substr(0, 24) + '…' : data);
+                    return (data.length > 24 ? data.substring(0, 24) + '…' : data);
                 }
             },
             {
