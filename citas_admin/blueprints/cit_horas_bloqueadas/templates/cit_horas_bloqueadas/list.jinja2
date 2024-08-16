@@ -18,7 +18,7 @@
 
 {% block content %}
     {% call list.card() %}
-        <!-- Filtros Cit Horas Bloqueadas -->
+        <!-- Filtros CitHorasBloqueadas -->
         <div class="row">
             <div class="col">
                 <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitHorasBloqueadas.buscar(); return false;">
@@ -47,7 +47,7 @@
                 </form>
             </div>
         </div>
-        <!-- DataTable Cit Horas Bloqueadas -->
+        <!-- DataTable CitHorasBloqueadas -->
         <table id="cit_horas_bloqueadas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -66,7 +66,7 @@
     <script src="/static/js/datatables-constructor.js"></script>
     <script src="/static/js/datatables-filtros.js"></script>
     <script>
-        // DataTable Cit Horas Bloqueadas
+        // DataTable CitHorasBloqueadas
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
         let configDataTable = constructorDataTable.config();
         configDataTable['ajax']['url'] = '/cit_horas_bloqueadas/datatable_json';
@@ -104,7 +104,7 @@
                 }
             }
         ];
-        // Filtros Cit Horas Bloqueadas
+        // Filtros CitHorasBloqueadas
         const filtrosCitHorasBloqueadas = new FiltrosDataTable('#cit_horas_bloqueadas_datatable', configDataTable);
         filtrosCitHorasBloqueadas.agregarInput('filtroOficinaClave', 'oficina_clave');
         filtrosCitHorasBloqueadas.agregarInput('filtroOficinaDescripcionCorta', 'oficina_descripcion_corta');

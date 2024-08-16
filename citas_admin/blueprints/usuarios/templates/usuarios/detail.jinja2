@@ -67,7 +67,7 @@
             const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
             let configDataTable = constructorDataTable.config();
             configDataTable['ajax']['url'] = '/usuarios_roles/datatable_json';
-            configDataTable['ajax']['data'] = { 'estatus': "A", 'usuario_id': {{ usuario.id}} };
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'usuario_id': {{ usuario.id }} };
             configDataTable['columns'] = [
                 { data: "detalle" },
                 { data: "rol" }
@@ -84,7 +84,7 @@
                     targets: 1, // rol
                     data: null,
                     render: function(data, type, row, meta) {
-                        if (data.url == '') {
+                        if (data.url === '') {
                             return data.nombre;
                         } else {
                             return '<a href="' + data.url + '">' + data.nombre + '</a>';

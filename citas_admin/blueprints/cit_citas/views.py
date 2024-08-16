@@ -3,20 +3,20 @@ Cit Citas, vistas
 """
 
 import json
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_email, safe_string, safe_message
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_citas.models import CitCita
 from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.cit_servicios.models import CitServicio
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.cit_citas.models import CitCita
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_email, safe_message, safe_string
 
 MODULO = "CIT CITAS"
 
@@ -45,6 +45,8 @@ def datatable_json():
     if "id" in request.form:
         consulta = consulta.filter_by(id=request.form["id"])
     else:
+        if "cit_servicio_id" in request.form:
+            consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
         # Luego filtrar por columnas de otras tablas
         cit_cliente_email = ""
         if "cit_cliente_email" in request.form:

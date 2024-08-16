@@ -12,6 +12,7 @@ from flask_login import current_user, login_required
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.pag_pagos.models import PagPago
+from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from lib.datatables import get_datatable_parameters, output_datatable_json
@@ -127,11 +128,19 @@ def datatable_json():
 @pag_pagos.route("/pag_pagos")
 def list_active():
     """Listado de Pag Pagos activos"""
+    # Consultar PagTramiteServicio para las opciones del filtro
+    pag_tramites_servicios = PagTramiteServicio.query.filter_by(estatus="A").order_by(PagTramiteServicio.clave).all()
+    opciones_pag_tramites_servicios = []
+    for ts in pag_tramites_servicios:
+        opciones_pag_tramites_servicios.append({"id": ts.id, "clave": ts.clave, "descripcion": ts.descripcion})
+    # Entregar
     return render_template(
         "pag_pagos/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
         titulo="Pagos",
         estatus="A",
+        estados=PagPago.ESTADOS,
+        pag_tramites_servicios=opciones_pag_tramites_servicios,
     )
 
 
@@ -139,11 +148,19 @@ def list_active():
 @permission_required(MODULO, Permiso.ADMINISTRAR)
 def list_inactive():
     """Listado de Pag Pagos inactivos"""
+    # Consultar PagTramiteServicio para las opciones del filtro
+    pag_tramites_servicios = PagTramiteServicio.query.filter_by(estatus="A").order_by(PagTramiteServicio.clave).all()
+    opciones_pag_tramites_servicios = []
+    for ts in pag_tramites_servicios:
+        opciones_pag_tramites_servicios.append({"id": ts.id, "clave": ts.clave, "descripcion": ts.descripcion})
+    # Entregar
     return render_template(
         "pag_pagos/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
         titulo="Pagos inactivos",
         estatus="B",
+        estados=PagPago.ESTADOS,
+        pag_tramites_servicios=opciones_pag_tramites_servicios,
     )
 
 

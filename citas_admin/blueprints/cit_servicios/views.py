@@ -49,6 +49,8 @@ def datatable_json():
         consulta = consulta.filter_by(estatus=request.form["estatus"])
     else:
         consulta = consulta.filter_by(estatus="A")
+    if "cit_categoria_id" in request.form:
+        consulta = consulta.filter_by(cit_categoria_id=request.form["cit_categoria_id"])
     if "clave" in request.form:
         clave = safe_clave(request.form["clave"])
         if clave != "":

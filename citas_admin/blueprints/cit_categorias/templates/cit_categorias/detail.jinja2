@@ -20,15 +20,90 @@
 
 {% block content %}
     {% call detail.card(estatus=cit_categoria.estatus) %}
-        {{ detail.label_value_big('Nombre', cit_categoria.nombre) }}
+        {{ detail.label_value('Nombre', cit_categoria.nombre) }}
         {{ detail.label_value('Creado', moment(cit_categoria.creado, local=True).format('llll')) }}
     {% endcall %}
+    {% if current_user.can_view('CIT SERVICIOS') %}
+        {% call detail.card('Servicios') %}
+            <!-- Filtros CitServicios -->
+            <div class="row">
+                <div class="col">
+                    <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitServicios.buscar(); return false;">
+                        <div class="col-4">
+                            <div class="form-floating">
+                                <input id="filtroClave" type="text" class="form-control" aria-label="Clave" style="text-transform: uppercase;">
+                                <label for="filtroClave">Clave</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <input id="filtroDescripcion" type="text" class="form-control" aria-label="Descripción" style="text-transform: uppercase;">
+                                <label for="filtroDescripcion">Descripción</label>
+                            </div>
+                        </div>
+                        <div class="col-2 text-end">
+                            <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosCitServicios.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                            <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosCitServicios.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- DataTable CitServicios -->
+            <table id="cit_servicios_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Clave</th>
+                        <th>Descripción</th>
+                        <th>Duración</th>
+                        <th>L. de D.</th>
+                        <th>Desde</th>
+                        <th>Hasta</th>
+                        <th>Dias Habilitados</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
     {% if current_user.can_admin('CIT CATEGORIAS') %}
         {% if cit_categoria.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_categoria.nombre + '?') }}{% endif %}
         {% if cit_categoria.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_categoria.nombre + '?') }}{% endif %}
+    {% endif %}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
+    {% if current_user.can_view('CIT SERVICIOS') %}
+        <script>
+            // DataTable CitServicios
+            const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+            let configDataTable = constructorDataTable.config();
+            configDataTable['ajax']['url'] = '/cit_servicios/datatable_json';
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'cit_categoria_id': {{ cit_categoria.id }} };
+            configDataTable['columns'] = [
+                { data: 'detalle' },
+                { data: 'descripcion' },
+                { data: 'duracion' },
+                { data: 'documentos_limite' },
+                { data: 'desde' },
+                { data: 'hasta' },
+                { data: 'dias_habilitados' }
+            ];
+            configDataTable['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.clave + '</a>';
+                    }
+                }
+            ];
+            // Filtros CitServicios
+            const filtrosCitServicios = new FiltrosDataTable('#cit_servicios_datatable', configDataTable);
+            filtrosCitServicios.agregarInput('filtroClave', 'clave');
+            filtrosCitServicios.agregarInput('filtroDescripcion', 'descripcion');
+            filtrosCitServicios.precargar();
+        </script>
     {% endif %}
     {{ detail.moment_js(moment) }}
 {% endblock %}

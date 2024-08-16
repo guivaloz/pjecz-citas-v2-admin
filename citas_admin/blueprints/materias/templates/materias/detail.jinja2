@@ -48,7 +48,7 @@
             const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
             let configDataTable = constructorDataTable.config();
             configDataTable['ajax']['url'] = '/autoridades/datatable_json';
-            configDataTable['ajax']['data'] = { 'estatus': "A", 'materia_id': {{ materia.id}} };
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'materia_id': {{ materia.id }} };
             configDataTable['columns'] = [
                 { data: "detalle" },
                 { data: "descripcion_corta" },
@@ -67,7 +67,7 @@
                     targets: 3, // distrito
                     data: null,
                     render: function(data, type, row, meta) {
-                        if (data.url == '') {
+                        if (data.url === '') {
                             return data.nombre_corto;
                         }
                         return '<a href="' + data.url + '">' + data.nombre_corto + '</a>';

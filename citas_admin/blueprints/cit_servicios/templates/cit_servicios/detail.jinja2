@@ -40,12 +40,145 @@
         {{ detail.label_value('Días Hábiles', dias_habilitados ) }}
         {{ detail.label_value('Creado', moment(cit_servicio.creado, local=True).format('llll')) }}
     {% endcall %}
+    {% if current_user.can_view('CIT CITAS') %}
+        {% call detail.card('Citas') %}
+            <!-- Filtros CitCitas -->
+            <div class="row">
+                <div class="col">
+                    <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitCitas.buscar(); return false;">
+                        <div class="col-2">
+                            <div class="form-floating">
+                                <input id="filtroId" type="text" class="form-control" aria-label="ID">
+                                <label for="filtroId">ID</label>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="form-floating">
+                                <input id="filtroCitClienteEmail" type="text" class="form-control" aria-label="Correo Electrónico">
+                                <label for="filtroCitClienteEmail">Correo Electrónico</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-floating">
+                                <input id="filtroCitClienteNombres" type="text" class="form-control" aria-label="Nombres" style="text-transform: uppercase;">
+                                <label for="filtroCitClienteNombres">Nombres</label>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-floating">
+                                <input id="filtroCitClientePrimerApellido" type="text" class="form-control" aria-label="Primer Apellido" style="text-transform: uppercase;">
+                                <label for="filtroCitClientePrimerApellido">Primer Apellido</label>
+                            </div>
+                        </div>
+                        <div class="col-2 text-end">
+                            <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosCitCitas.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                            <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosCitCitas.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- DataTable CitCitas -->
+            <table id="cit_citas_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Inicio</th>
+                        <th>Termino</th>
+                        <th>Cliente</th>
+                        <th>Oficina</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
+    {% if current_user.can_view('CIT OFICINAS SERVICIOS') %}
+    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
     {% if current_user.can_admin('CIT SERVICIOS') %}
         {% if cit_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_servicio.clave + '?') }}{% endif %}
         {% if cit_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_servicio.clave + '?') }}{% endif %}
+    {% endif %}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
+    {% if current_user.can_view('CIT CITAS') %}
+        <script>
+            // DataTable CitCitas
+            const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+            let configDTCitCitas = constructorDataTable.config();
+            configDTCitCitas['ajax']['url'] = '/cit_citas/datatable_json';
+            configDTCitCitas['ajax']['data'] = { 'estatus': "A", 'cit_servicio_id': {{ cit_servicio.id }} };
+            configDTCitCitas['columns'] = [
+                { data: "detalle" },
+                { data: "fecha" },
+                { data: "inicio" },
+                { data: "termino" },
+                { data: "cit_cliente" },
+                { data: "oficina" },
+                { data: "estado" }
+            ];
+            configDTCitCitas['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.id + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // fecha
+                    type: 'date',
+                    render: function (data, type, row) {
+                        return moment.utc(data).format('YYYY-MM-DD, ddd');
+                    }
+                },
+                {
+                    targets: 4, // cit_cliente
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url !== '') {
+                            return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                        }
+                        return data.nombre
+                    }
+                },
+                {
+                    targets: 5, // oficina
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url !== '') {
+                            return '<span title="' + data.descripcion + '">' + '<a href="' + data.url + '">' + data.clave + '</a></span>';
+                        }
+                        return '<span title="' + data.descripcion + '">' + data.clave + '</span>'
+                    }
+                },
+                {
+                    targets: 6, // Estado
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        switch (data)    {
+                            case "ASISTIO":     return '<span class="badge rounded-pill bg-success px-3 ms-3">Asistió</span>'; break;
+                            case "PENDIENTE":   return '<span class="badge rounded-pill bg-warning px-3 ms-3 text-dark">Pendiente</span>'; break;
+                            case "CANCELO":     return '<span class="badge rounded-pill bg-danger px-3 ms-4">Cancelo</span>'; break;
+                            case "INASISTENCIA":return '<span class="badge rounded-pill bg-secondary px-3 ms-4">NO Asistió</span>'; break;
+                        }
+                        return data;
+                    }
+                }
+            ];
+            // Filtros CitCitas
+            const filtrosCitCitas = new FiltrosDataTable('#cit_citas_datatable', configDTCitCitas);
+            filtrosCitCitas.agregarInput('filtroId', 'id');
+            filtrosCitCitas.agregarInput('filtroCitClienteEmail', 'cit_cliente_email');
+            filtrosCitCitas.agregarInput('filtroCitClienteNombres', 'cit_cliente_nombres');
+            filtrosCitCitas.agregarInput('filtroCitClientePrimerApellido', 'cit_cliente_primer_apellido');
+            filtrosCitCitas.precargar();
+        </script>
+    {% endif %}
+    {% if current_user.can_view('CIT OFICINAS SERVICIOS') %}
     {% endif %}
     {{ detail.moment_js(moment) }}
 {% endblock %}

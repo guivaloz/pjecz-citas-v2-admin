@@ -39,6 +39,140 @@
         {{ detail.label_value_boolean('Puede agendar citas', oficina.puede_agendar_citas) }}
         {{ detail.label_value_boolean('Puede enviar códigos QR', oficina.puede_enviar_qr) }}
     {% endcall %}
+    {% call list.card('Citas') %}
+        <!-- Filtros CitCitas -->
+        <div class="row">
+            <div class="col">
+                <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitCitas.buscar(); return false;">
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <input id="filtroId" type="text" class="form-control" aria-label="ID">
+                            <label for="filtroId">ID</label>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <input id="filtroCitClienteEmail" type="text" class="form-control" aria-label="Correo Electrónico">
+                            <label for="filtroCitClienteEmail">Correo Electrónico</label>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="filtroCitClienteNombres" type="text" class="form-control" aria-label="Nombres" style="text-transform: uppercase;">
+                            <label for="filtroCitClienteNombres">Nombres</label>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <input id="filtroCitClientePrimerApellido" type="text" class="form-control" aria-label="Primer Apellido" style="text-transform: uppercase;">
+                            <label for="filtroCitClientePrimerApellido">Primer Apellido</label>
+                        </div>
+                    </div>
+                    <div class="col-2 text-end">
+                        <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosCitCitas.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                        <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosCitCitas.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- DataTable CitCitas -->
+        <table id="cit_citas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Inicio</th>
+                    <th>Termino</th>
+                    <th>Cliente</th>
+                    <th>Servicio</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
+    {% call list.card('Horas Bloqueadas') %}
+        <!-- Filtros CitHorasBloqueadas -->
+        <div class="row">
+            <div class="col">
+                <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitHorasBloqueadas.buscar(); return false;">
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <input id="filtroOficinaClave" type="text" class="form-control" aria-label="Oficina Clave" style="text-transform: uppercase;">
+                            <label for="filtroOficinaClave">Oficina Clave</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-floating">
+                            <input id="filtroOficinaDescripcionCorta" type="text" class="form-control" aria-label="Oficina Descripción Corta" style="text-transform: uppercase;">
+                            <label for="filtroOficinaDescripcionCorta">Oficina Descripción</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-floating">
+                            <input id="filtroDescripcion" type="text" class="form-control" aria-label="Descripción" style="text-transform: uppercase;">
+                            <label for="filtroDescripcion">Descripción</label>
+                        </div>
+                    </div>
+                    <div class="col-2 text-end">
+                        <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosCitHorasBloqueadas.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                        <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosCitHorasBloqueadas.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- DataTable CitHorasBloqueadas -->
+        <table id="cit_horas_bloqueadas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Inicio</th>
+                    <th>Termino</th>
+                    <th>Oficina</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
+    {% call list.card('Servicios') %}
+        <!-- Filtros CitServicios -->
+        <div class="row">
+            <div class="col">
+                <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitServicios.buscar(); return false;">
+                    <div class="col-4">
+                        <div class="form-floating">
+                            <input id="filtroClave" type="text" class="form-control" aria-label="Clave" style="text-transform: uppercase;">
+                            <label for="filtroClave">Clave</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input id="filtroDescripcion" type="text" class="form-control" aria-label="Descripción" style="text-transform: uppercase;">
+                            <label for="filtroDescripcion">Descripción</label>
+                        </div>
+                    </div>
+                    <div class="col-2 text-end">
+                        <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosCitServicios.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                        <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosCitServicios.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- DataTable CitServicios -->
+        <table id="cit_servicios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Clave</th>
+                    <th>Descripción</th>
+                    <th>Duración</th>
+                    <th>L. de D.</th>
+                    <th>Categoría</th>
+                    <th>Desde</th>
+                    <th>Hasta</th>
+                    <th>Dias Habilitados</th>
+                </tr>
+            </thead>
+        </table>
+    {% endcall %}
 {% endblock %}
 
 {% block custom_javascript %}
@@ -46,5 +180,166 @@
         {% if oficina.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + oficina.clave + '?') }}{% endif %}
         {% if oficina.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + oficina.clave + '?') }}{% endif %}
     {% endif %}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
+    <script>
+        const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+    </script>
+    <script>
+        // DataTable CitCitas
+        let configDTCitCitas = constructorDataTable.config();
+        configDTCitCitas['ajax']['url'] = '/cit_citas/datatable_json';
+        configDTCitCitas['ajax']['data'] = { 'estatus': "A", 'oficina_id': {{ oficina.id }} };
+        configDTCitCitas['columns'] = [
+            { data: "detalle" },
+            { data: "fecha" },
+            { data: "inicio" },
+            { data: "termino" },
+            { data: "cit_cliente" },
+            { data: "oficina" },
+            { data: "cit_servicio" },
+            { data: "estado" }
+        ];
+        configDTCitCitas['columnDefs'] = [
+            {
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.id + '</a>';
+                }
+            },
+            {
+                targets: 1, // fecha
+                type: 'date',
+                render: function (data, type, row) {
+                    return moment.utc(data).format('YYYY-MM-DD, ddd');
+                }
+            },
+            {
+                targets: 4, // cit_cliente
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.url !== '') {
+                        return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                    }
+                    return data.nombre
+                }
+            },
+            {
+                targets: [5, 6], // oficina y cit_servicio
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.url !== '') {
+                        return '<span title="' + data.descripcion + '">' + '<a href="' + data.url + '">' + data.clave + '</a></span>';
+                    }
+                    return '<span title="' + data.descripcion + '">' + data.clave + '</span>'
+                }
+            },
+            {
+                targets: 7, // Estado
+                data: null,
+                render: function(data, type, row, meta) {
+                    switch (data)    {
+                        case "ASISTIO":     return '<span class="badge rounded-pill bg-success px-3 ms-3">Asistió</span>'; break;
+                        case "PENDIENTE":   return '<span class="badge rounded-pill bg-warning px-3 ms-3 text-dark">Pendiente</span>'; break;
+                        case "CANCELO":     return '<span class="badge rounded-pill bg-danger px-3 ms-4">Cancelo</span>'; break;
+                        case "INASISTENCIA":return '<span class="badge rounded-pill bg-secondary px-3 ms-4">NO Asistió</span>'; break;
+                    }
+                    return data;
+                }
+            }
+        ];
+        // Filtros CitCitas
+        const filtrosCitCitas = new FiltrosDataTable('#cit_citas_datatable', configDTCitCitas);
+        filtrosCitCitas.agregarInput('filtroId', 'id');
+        filtrosCitCitas.agregarInput('filtroCitClienteEmail', 'cit_cliente_email');
+        filtrosCitCitas.agregarInput('filtroCitClienteNombres', 'cit_cliente_nombres');
+        filtrosCitCitas.agregarInput('filtroCitClientePrimerApellido', 'cit_cliente_primer_apellido');
+        filtrosCitCitas.precargar();
+    </script>
+    <script>
+        // DataTable CitHorasBloqueadas
+        let configDTCitHorasBloquedas = constructorDataTable.config();
+        configDTCitHorasBloquedas['ajax']['url'] = '/cit_horas_bloqueadas/datatable_json';
+        configDTCitHorasBloquedas['ajax']['data'] = { 'estatus': "A", 'oficina_id': {{ oficina.id }} };
+        configDTCitHorasBloquedas['columns'] = [
+            { data: 'detalle' },
+            { data: 'inicio' },
+            { data: 'termino' },
+            { data: 'descripcion' }
+        ];
+        configDTCitHorasBloquedas['columnDefs'] = [
+            {
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + moment.utc(data.fecha).format('YYYY-MM-DD, ddd') + '</a>';
+                }
+            },
+            {
+                targets: 3, // oficina
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: 3, // descripción
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.length > 32) {
+                        return '<span title="' + data + '">' + data.substring(0, 32) + '…' + '</span>';
+                    }
+                    return data;
+                }
+            }
+        ];
+        // Filtros CitHorasBloqueadas
+        const filtrosCitHorasBloqueadas = new FiltrosDataTable('#cit_horas_bloqueadas_datatable', configDTCitHorasBloquedas);
+        filtrosCitHorasBloqueadas.agregarInput('filtroOficinaClave', 'oficina_clave');
+        filtrosCitHorasBloqueadas.agregarInput('filtroOficinaDescripcionCorta', 'oficina_descripcion_corta');
+        filtrosCitHorasBloqueadas.agregarInput('filtroDescripcion', 'descripcion');
+        filtrosCitHorasBloqueadas.precargar();
+    </script>
+    <script>
+        // DataTable CitServicios
+        let configDTCitServicios = constructorDataTable.config();
+        configDTCitServicios['ajax']['url'] = '/cit_servicios/datatable_json';
+        configDTCitServicios['ajax']['data'] = { 'estatus': "A", 'oficina_id': {{ oficina.id }} };
+        configDTCitServicios['columns'] = [
+            { data: 'detalle' },
+            { data: 'descripcion' },
+            { data: 'duracion' },
+            { data: 'documentos_limite' },
+            { data: 'cit_categoria' },
+            { data: 'desde' },
+            { data: 'hasta' },
+            { data: 'dias_habilitados' }
+        ];
+        configDTCitServicios['columnDefs'] = [
+            {
+                targets: 0, // detalle
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: 4, // cit_categoria
+                data: null,
+                render: function(data, type, row, meta) {
+                    if (data.url !== '') {
+                        return '<a href="' + data.url + '">' + data.nombre + '</a>';
+                    }
+                    return data.clave;
+                }
+            }
+        ];
+        // Filtros CitServicios
+        const filtrosCitServicios = new FiltrosDataTable('#cit_servicios_datatable', configDTCitServicios);
+        filtrosCitServicios.agregarInput('filtroClave', 'clave');
+        filtrosCitServicios.agregarInput('filtroDescripcion', 'descripcion');
+        filtrosCitServicios.precargar();
+    </script>
     {{ detail.moment_js(moment) }}
 {% endblock %}

@@ -80,7 +80,7 @@
             const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
             let configDataTable = constructorDataTable.config();
             configDataTable['ajax']['url'] = '/autoridades/datatable_json';
-            configDataTable['ajax']['data'] = { 'estatus': "A", 'distrito_id': {{ distrito.id}} };
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'distrito_id': {{ distrito.id }} };
             configDataTable['columns'] = [
                 { data: "detalle" },
                 { data: "descripcion_corta" }
