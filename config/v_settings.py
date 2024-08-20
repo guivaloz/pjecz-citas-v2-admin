@@ -1,8 +1,8 @@
 """
 Configuración para producción
 """
-import os
 
+import os
 
 # Google Cloud SQL
 DB_USER = os.environ.get("DB_USER", "nouser")

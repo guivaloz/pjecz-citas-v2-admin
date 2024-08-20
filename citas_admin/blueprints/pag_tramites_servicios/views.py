@@ -9,6 +9,7 @@ from flask_login import current_user, login_required
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
+from citas_admin.blueprints.pag_pagos.models import PagPago
 from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
@@ -95,4 +96,8 @@ def list_inactive():
 def detail(pag_tramite_servicio_id):
     """Detalle de un Pag Tramite Servicio"""
     pag_tramite_servicio = PagTramiteServicio.query.get_or_404(pag_tramite_servicio_id)
-    return render_template("pag_tramites_servicios/detail.jinja2", pag_tramite_servicio=pag_tramite_servicio)
+    return render_template(
+        "pag_tramites_servicios/detail.jinja2",
+        pag_tramite_servicio=pag_tramite_servicio,
+        pag_pagos_estados=PagPago.ESTADOS,
+    )

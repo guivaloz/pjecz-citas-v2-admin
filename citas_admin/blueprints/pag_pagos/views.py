@@ -10,6 +10,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.pag_pagos.models import PagPago
 from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
@@ -39,13 +40,21 @@ def datatable_json():
     consulta = PagPago.query
     # Primero filtrar por columnas propias
     if "estatus" in request.form:
-        consulta = consulta.filter_by(estatus=request.form["estatus"])
+        consulta = consulta.filter(PagPago.estatus == request.form["estatus"])
     else:
-        consulta = consulta.filter_by(estatus="A")
+        consulta = consulta.filter(PagPago.estatus == "A")
     if "id" in request.form:
-        consulta = consulta.filter_by(id=request.form["id"])
+        consulta = consulta.filter(PagPago.id == request.form["id"])
     else:
-        # Filtrar por fechas, si vienen invertidas se corrigen
+        # Filtrar por ids que ya tenemos en esta tabla
+        if "cit_cliente_id" in request.form:
+            consulta = consulta.filter(PagPago.cit_cliente_id == request.form["cit_cliente_id"])
+        if "pag_tramite_servicio_id" in request.form:
+            consulta = consulta.filter(PagPago.pag_tramite_servicio_id == request.form["pag_tramite_servicio_id"])
+        # Filtrar por estado que es un select
+        if "estado" in request.form:
+            consulta = consulta.filter_by(estado=request.form["estado"])
+        # Filtrar por las fechas, si vienen invertidas se corrigen
         fecha_desde = None
         fecha_hasta = None
         if "fecha_desde" in request.form and re.match(r"\d{4}-\d{2}-\d{2}", request.form["fecha_desde"]):
@@ -58,10 +67,6 @@ def datatable_json():
             consulta = consulta.filter(PagPago.fecha >= fecha_desde)
         if fecha_hasta:
             consulta = consulta.filter(PagPago.fecha <= fecha_hasta)
-        if "pag_tramite_servicio_id" in request.form:
-            consulta = consulta.filter_by(pag_tramite_servicio_id=request.form["pag_tramite_servicio_id"])
-        if "estado" in request.form:
-            consulta = consulta.filter_by(estado=request.form["estado"])
         # Luego filtrar por columnas de otras tablas
         # TODO: Filtrar por cit_cliente_email
         # TODO: Filtrar por cit_cliente_nombres
@@ -88,15 +93,6 @@ def datatable_json():
                     ),
                 },
                 "email": resultado.cit_cliente.email,
-                "distrito": {
-                    "clave": resultado.distrito.clave,
-                    "nombre_corto": resultado.distrito.nombre_corto,
-                    "url": (
-                        url_for("distritos.detail", distrito_id=resultado.distrito_id)
-                        if current_user.can_view("DISTRITOS")
-                        else ""
-                    ),
-                },
                 "cantidad": resultado.cantidad,
                 "pag_tramite_servicio": {
                     "clave": resultado.pag_tramite_servicio.clave,
@@ -107,18 +103,27 @@ def datatable_json():
                         else ""
                     ),
                 },
+                "distrito": {
+                    "clave": resultado.distrito.clave,
+                    "nombre_corto": resultado.distrito.nombre_corto,
+                    "url": (
+                        url_for("distritos.detail", distrito_id=resultado.distrito_id)
+                        if current_user.can_view("DISTRITOS")
+                        else ""
+                    ),
+                },
                 "autoridad": {
                     "clave": resultado.autoridad.clave,
-                    "descripcion": resultado.autoridad.descripcion,
+                    "nombre_corto": resultado.autoridad.descripcion_corta,
                     "url": (
                         url_for("autoridades.detail", autoridad_id=resultado.autoridad_id)
                         if current_user.can_view("AUTORIDADES")
                         else ""
                     ),
                 },
-                "estado": resultado.estado,
                 "folio": resultado.folio,
                 "total": resultado.total,
+                "estado": resultado.estado,
             }
         )
     # Entregar JSON
@@ -139,7 +144,7 @@ def list_active():
         filtros=json.dumps({"estatus": "A"}),
         titulo="Pagos",
         estatus="A",
-        estados=PagPago.ESTADOS,
+        pag_pagos_estados=PagPago.ESTADOS,
         pag_tramites_servicios=opciones_pag_tramites_servicios,
     )
 
@@ -159,7 +164,7 @@ def list_inactive():
         filtros=json.dumps({"estatus": "B"}),
         titulo="Pagos inactivos",
         estatus="B",
-        estados=PagPago.ESTADOS,
+        pag_pagos_estados=PagPago.ESTADOS,
         pag_tramites_servicios=opciones_pag_tramites_servicios,
     )
 

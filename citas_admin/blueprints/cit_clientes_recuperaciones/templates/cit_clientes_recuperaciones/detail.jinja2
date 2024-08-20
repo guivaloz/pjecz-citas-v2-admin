@@ -3,10 +3,10 @@
 {% import 'macros/modals.jinja2' as modals %}
 {% import 'macros/topbar.jinja2' as topbar %}
 
-{% block title %}Cliente Recuperaciones {{ cit_cliente_recuperacion.id }}{% endblock %}
+{% block title %}Cliente Recuperación {{ cit_cliente_recuperacion.id }}{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons('Cliente Recuperaciones ' + cit_cliente_recuperacion.id) %}
+    {% call topbar.page_buttons('Cliente Recuperación ' + cit_cliente_recuperacion.id | string) %}
         {{ topbar.button_previous('Clientes Recuperaciones', url_for('cit_clientes_recuperaciones.list_active')) }}
         {# if current_user.can_edit('CIT CLIENTES RECUPERACIONES') %}
             {{ topbar.button_edit('Editar', url_for('cit_clientes_recuperaciones.edit', cit_cliente_recuperacion_id=cit_cliente_recuperacion.id)) }}

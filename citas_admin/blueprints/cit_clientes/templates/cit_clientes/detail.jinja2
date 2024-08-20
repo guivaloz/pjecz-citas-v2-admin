@@ -23,7 +23,7 @@
         {{ detail.label_value_big('Nombre', cit_cliente.nombre) }}
         {{ detail.label_value('Email', cit_cliente.email) }}
         {{ detail.label_value('CURP', cit_cliente.curp) }}
-        {{ detail.label_value('Teléfono', cit_cliente.telefono_formato) }}
+        {{ detail.label_value('Teléfono', cit_cliente.telefono) }}
         {{ detail.label_value('Renovación', moment(cit_cliente.renovacion, local=True).format('ll')) }}
         {% if cit_cliente.limite_citas_pendientes == 0 %}
             {{ detail.label_value('Límite de Citas', 'Por defecto') }}
@@ -34,6 +34,117 @@
         {{ detail.label_value_boolean('Recibir boletín', cit_cliente.enviar_boletin) }}
         {{ detail.label_value('Creado', moment(cit_cliente.creado, local=True).format('llll')) }}
     {% endcall %}
+    {% if current_user.can_view('CIT CITAS') %}
+        {% call detail.card('Citas') %}
+            <!-- Filtros CitCitas -->
+            <div class="row">
+                <div class="col">
+                    <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitCitas.buscar(); return false;">
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <input id="filtroId" type="text" class="form-control" aria-label="ID">
+                                <label for="filtroId">ID</label>
+                            </div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosCitCitas.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                            <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosCitCitas.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- DataTable CitCitas -->
+            <table id="cit_citas_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Inicio</th>
+                        <th>Termino</th>
+                        <th>Oficina</th>
+                        <th>Servicio</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
+    {% if current_user.can_view('PAG PAGOS') %}
+        {% call detail.card('Pagos') %}
+            <!-- Filtros Pag Pagos -->
+            <div class="row">
+                <div class="col">
+                    <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosPagPagos.buscar(); return false;">
+                        <div class="col-2">
+                            <div class="form-floating">
+                                <input id="filtroPagPagoId" type="text" class="form-control" aria-label="ID">
+                                <label for="filtroPagPagoId">ID</label>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="form-floating">
+                                <input id="filtroPagPagoFechaDesde" type="date" class="form-control" aria-label="Desde">
+                                <label for="filtroPagPagoFechaDesde">Desde</label>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="form-floating">
+                                <input id="filtroPagPagoFechaHasta" type="date" class="form-control" aria-label="Hasta">
+                                <label for="filtroPagPagoFechaHasta">Hasta</label>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="form-floating">
+                                <select id="filtroPagTramiteServicioId" class="form-select" aria-label="Trámite o Servicio">
+                                    <option selected value="">Todos</option>
+                                    {% for pag_tramite_servicio in pag_tramites_servicios %}
+                                        {% if pag_tramite_servicio.descripcion | length > 24 %}
+                                            {% set descripcion = pag_tramite_servicio.descripcion[:24] + '...' %}
+                                        {% else %}
+                                            {% set descripcion = pag_tramite_servicio.descripcion %}
+                                        {% endif %}
+                                        <option value="{{pag_tramite_servicio.id}}">{{pag_tramite_servicio.clave}} : {{descripcion}}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="filtroPagTramiteServicioId">Trámite o Servicio</label>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="form-floating">
+                                <select id="filtroPagPagoEstado" class="form-select" aria-label="Estado">
+                                    <option selected value="">Todos</option>
+                                    {% for estado in pag_pagos_estados %}
+                                    <option value="{{estado}}">{{estado}}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="filtroPagPagoEstado">Estado</label>
+                            </div>
+                        </div>
+                        <div class="col-2 text-end">
+                            <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosPagPagos.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                            <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosPagPagos.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- DataTable Pag Pagos -->
+            <table id="pag_pagos_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Cantidad</th>
+                        <th>Trámite o Servicio</th>
+                        <th>Distrito</th>
+                        <th>Autoridad</th>
+                        <th>Folio</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
@@ -41,5 +152,155 @@
         {% if cit_cliente.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_cliente.email + '?') }}{% endif %}
         {% if cit_cliente.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_cliente.email + '?') }}{% endif %}
     {% endif #}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
+    <script>
+        const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+    </script>
+    {% if current_user.can_view('CIT CITAS') %}
+        <script>
+            // DataTable CitCitas
+            let configDTCitCitas = constructorDataTable.config();
+            configDTCitCitas['ajax']['url'] = '/cit_citas/datatable_json';
+            configDTCitCitas['ajax']['data'] = { 'estatus': "A", 'cit_cliente_id': {{ cit_cliente.id }} };
+            configDTCitCitas['columns'] = [
+                { data: "detalle" },
+                { data: "fecha" },
+                { data: "inicio" },
+                { data: "termino" },
+                { data: "oficina" },
+                { data: "cit_servicio" },
+                { data: "estado" }
+            ];
+            configDTCitCitas['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.id + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // fecha
+                    type: 'date',
+                    render: function (data, type, row) {
+                        return moment.utc(data).format('YYYY-MM-DD, ddd');
+                    }
+                },
+                {
+                    targets: [4, 5], // oficina y cit_servicio
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url !== '') {
+                            return '<span title="' + data.descripcion + '">' + '<a href="' + data.url + '">' + data.clave + '</a></span>';
+                        }
+                        return '<span title="' + data.descripcion + '">' + data.clave + '</span>'
+                    }
+                },
+                {
+                    targets: 6, // Estado
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        switch (data)    {
+                            case "ASISTIO":     return '<span class="badge rounded-pill bg-success px-3 ms-3">Asistió</span>'; break;
+                            case "PENDIENTE":   return '<span class="badge rounded-pill bg-warning px-3 ms-3 text-dark">Pendiente</span>'; break;
+                            case "CANCELO":     return '<span class="badge rounded-pill bg-danger px-3 ms-4">Cancelo</span>'; break;
+                            case "INASISTENCIA":return '<span class="badge rounded-pill bg-secondary px-3 ms-4">NO Asistió</span>'; break;
+                        }
+                        return data;
+                    }
+                }
+            ];
+            // Filtros CitCitas
+            const filtrosCitCitas = new FiltrosDataTable('#cit_citas_datatable', configDTCitCitas);
+            filtrosCitCitas.agregarInput('filtroId', 'id');
+            filtrosCitCitas.precargar();
+        </script>
+    {% endif %}
+    {% if current_user.can_view('PAG PAGOS') %}
+        <script>
+            // DataTable Pag Pagos
+            let configDTPagPagos = constructorDataTable.config();
+            configDTPagPagos['ajax']['url'] = '/pag_pagos/datatable_json';
+            configDTPagPagos['ajax']['data'] = { 'estatus': "A", 'cit_cliente_id': {{ cit_cliente.id }} };
+            configDTPagPagos['columns'] = [
+                { data: 'detalle' },
+                { data: 'fecha' },
+                { data: 'cantidad', className: "text-end" },
+                { data: 'pag_tramite_servicio' },
+                { data: 'distrito' },
+                { data: 'autoridad' },
+                { data: 'folio' },
+                { data: 'total', className: "text-end" },
+                { data: 'estado' }
+            ];
+            configDTPagPagos['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.id + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // fecha
+                    type: 'date',
+                    render: function (data, type, row) {
+                        return moment.utc(data).format("YYYY-MM-DD HH:mm");
+                    }
+                },
+                {
+                    targets: 3, // pag_tramite_servicio
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url === '') {
+                            return data.clave;
+                        }
+                        return '<a href="' + data.url + '"><span title="' + data.descripcion + '">' + data.clave + '</span></a>';
+                    }
+                },
+                {
+                    targets: [4, 5], // distrito, autoridad
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url === '') {
+                            return data.nombre_corto;
+                        }
+                        return '<a href="' + data.url + '"><span title="' + data.nombre_corto + '">' + data.clave + '</span></a>';
+                    }
+                },
+                {
+                    targets: 7, // total
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '$ ' + data;
+                    }
+                },
+                {
+                    targets: 8, // Estado
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        let color = "black";
+                        switch (data)    {
+                            case "SOLICITADO": font_color = "#7d6608"; bg_class = "bg-warning text-dark"; break;
+                            case "PAGADO":     font_color = "#0b5345"; bg_class = "bg-success"; break;
+                            case "ENTREGADO":  font_color = "#c7f6ff"; bg_class = "bg-info"; break;
+                            case "CANCELADO":  font_color = "#e53935"; bg_class = "bg-secondary"; break;
+                            case "FALLIDO":    font_color = "#e53935"; bg_class = "bg-danger"; break;
+                        }
+                        return '<span class="badge rounded-pill ' + bg_class + ' px-3">' + data + '</span>';
+                    }
+                }
+            ];
+            // Filtros Pag Pagos
+            const filtrosPagPagos = new FiltrosDataTable('#pag_pagos_datatable', configDTPagPagos);
+            filtrosPagPagos.agregarInput('filtroPagPagoId', 'id');
+            filtrosPagPagos.agregarInput('filtroPagPagoFechaDesde', 'fecha_desde');
+            filtrosPagPagos.agregarInput('filtroPagPagoFechaHasta', 'fecha_hasta');
+            filtrosPagPagos.agregarInput('filtroPagTramiteServicioId', 'pag_tramite_servicio_id');
+            filtrosPagPagos.agregarInput('filtroPagPagoEstado', 'estado');
+            filtrosPagPagos.precargar();
+        </script>
+    {% endif %}
     {{ detail.moment_js(moment) }}
 {% endblock %}

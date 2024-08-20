@@ -6,7 +6,7 @@
 {% block title %}Cliente Registro {{ cit_cliente_registro.id }}{% endblock %}
 
 {% block topbar_actions %}
-    {% call topbar.page_buttons('Cliente Registro ' + cit_cliente_registro.id) %}
+    {% call topbar.page_buttons('Cliente Registro ' + cit_cliente_registro.id | string) %}
         {{ topbar.button_previous('Clientes Registros', url_for('cit_clientes_registros.list_active')) }}
         {# if current_user.can_edit('CIT CLIENTES REGISTROS') %}
             {{ topbar.button_edit('Editar', url_for('cit_clientes_registros.edit', cit_cliente_registro_id=cit_cliente_registro.id)) }}

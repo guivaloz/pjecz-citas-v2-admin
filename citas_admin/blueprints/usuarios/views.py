@@ -12,11 +12,6 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from pytz import timezone
 
-from config.firebase import get_firebase_settings
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.pwgen import generar_contrasena
-from lib.safe_next_url import safe_next_url
-from lib.safe_string import CONTRASENA_REGEXP, EMAIL_REGEXP, TOKEN_REGEXP, safe_email, safe_message, safe_string
 from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.distritos.models import Distrito
@@ -26,6 +21,11 @@ from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import anonymous_required, permission_required
 from citas_admin.blueprints.usuarios.forms import AccesoForm, UsuarioForm
 from citas_admin.blueprints.usuarios.models import Usuario
+from config.firebase import get_firebase_settings
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.pwgen import generar_contrasena
+from lib.safe_next_url import safe_next_url
+from lib.safe_string import CONTRASENA_REGEXP, EMAIL_REGEXP, TOKEN_REGEXP, safe_email, safe_message, safe_string
 
 HTTP_REQUEST = google.auth.transport.requests.Request()
 
@@ -147,6 +147,8 @@ def datatable_json():
         consulta = consulta.filter_by(estatus="A")
     if "autoridad_id" in request.form:
         consulta = consulta.filter_by(autoridad_id=request.form["autoridad_id"])
+    if "oficina_id" in request.form:
+        consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
     if "nombres" in request.form:
         consulta = consulta.filter(Usuario.nombres.contains(safe_string(request.form["nombres"])))
     if "apellido_paterno" in request.form:
@@ -179,6 +181,12 @@ def datatable_json():
                         url_for("autoridades.detail", autoridad_id=resultado.autoridad_id)
                         if current_user.can_view("AUTORIDADES")
                         else ""
+                    ),
+                },
+                "oficina": {
+                    "clave": resultado.oficina.clave,
+                    "url": (
+                        url_for("oficinas.detail", oficina_id=resultado.oficina_id) if current_user.can_view("OFICINAS") else ""
                     ),
                 },
             }

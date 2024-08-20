@@ -8,7 +8,9 @@ Ejemplo
     tiempo = datetime.strptime(en_texto, "%Y-%m-%d %H:%M:%S")
     local_to_utc(tiempo)
 """
-from datetime import datetime, date, time, timedelta
+
+from datetime import date, datetime, time, timedelta
+
 import pytz
 
 LIMITE_DIAS = 30  # Cantidad de días al pasado y al futuro que se permiten
@@ -34,7 +36,9 @@ def combine_to_utc(tiempo_fecha: date, tiempo_horas_minutos: time, validar_rango
 
     # Validar tiempo_horas_minutos
     if validar_rango and not TIEMPO_DESDE <= tiempo_horas_minutos <= TIEMPO_HASTA:
-        raise ValueError(f"La hora:minutos está fuera de rango. Debe ser entre {TIEMPO_DESDE.strftime('%H:%M')} y {TIEMPO_HASTA.strftime('%H:%M')}.")
+        raise ValueError(
+            f"La hora:minutos está fuera de rango. Debe ser entre {TIEMPO_DESDE.strftime('%H:%M')} y {TIEMPO_HASTA.strftime('%H:%M')}."
+        )
 
     # Combinar
     combinado = datetime.combine(tiempo_fecha, tiempo_horas_minutos)
@@ -45,7 +49,9 @@ def combine_to_utc(tiempo_fecha: date, tiempo_horas_minutos: time, validar_rango
     desde_dt = hoy_dt + timedelta(days=-LIMITE_DIAS)
     hasta_dt = hoy_dt + timedelta(days=LIMITE_DIAS)
     if validar_rango and not desde_dt <= combinado <= hasta_dt:
-        raise ValueError(f"La fecha está fuera de rango. Debe ser entre {desde_dt.strftime('%Y-%m-%d')} y {hasta_dt.strftime('%Y-%m-%d')}.")
+        raise ValueError(
+            f"La fecha está fuera de rango. Debe ser entre {desde_dt.strftime('%Y-%m-%d')} y {hasta_dt.strftime('%Y-%m-%d')}."
+        )
 
     # Entregar datetime en UTC
     return ZONA_HORARIA.normalize(ZONA_HORARIA.localize(combinado)).astimezone(pytz.utc)

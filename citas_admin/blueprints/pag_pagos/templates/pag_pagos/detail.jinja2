@@ -50,7 +50,7 @@
         {% set estado_class = "" %}
     {% endif %}
     {# Datos del Cliente #}
-    {% call detail.card(title='Datos del cliente', background_color=estado_bgcolor) %}
+    {% call detail.card(title='Datos del cliente') %}
         {% if current_user.can_view('CIT CLIENTES') %}
             {{ detail.label_value('Cliente', pag_pago.cit_cliente.nombre, url_for('cit_clientes.detail', cit_cliente_id=pag_pago.cit_cliente_id)) }}
         {% else %}
@@ -59,7 +59,7 @@
         {{ detail.label_value('e-mail', pag_pago.email) }}
     {% endcall %}
     {# Tramite o servicio #}
-    {% call detail.card(title='Trámite o servicio', background_color=estado_bgcolor) %}
+    {% call detail.card(title='Trámite o servicio') %}
         {% if current_user.can_view('PAG TRAMITES SERVICIOS') %}
             {{ detail.label_value('Trámite y Servicio', pag_pago.pag_tramite_servicio.descripcion, url_for('pag_tramites_servicios.detail', pag_tramite_servicio_id=pag_pago.pag_tramite_servicio_id)) }}
         {% else %}
@@ -81,7 +81,7 @@
         {{ detail.label_value('Caducidad', moment(pag_pago.caducidad, local=True).format('llll')) }}
     {% endcall %}
     {# Banca electrónica #}
-    {% call detail.card(title='Banca electrónica', background_color=estado_bgcolor) %}
+    {% call detail.card(title='Banca electrónica') %}
         {# Estado #}
         <div class="row">
             <div class="col-md-3 text-end">

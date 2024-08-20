@@ -28,7 +28,7 @@ class CitCita(database.Model, UniversalMixin):
     # Clave primaria
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    # Clave foránea
+    # Claves foráneas
     cit_cliente_id: Mapped[int] = mapped_column(ForeignKey("cit_clientes.id"))
     cit_cliente: Mapped["CitCliente"] = relationship(back_populates="cit_citas")
     cit_servicio_id: Mapped[int] = mapped_column(ForeignKey("cit_servicios.id"))

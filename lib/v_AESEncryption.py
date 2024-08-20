@@ -9,13 +9,13 @@
 # Documentacion cryptography https://cryptography.io/
 # Diciembre 2020
 
-import os
-import logging
 import base64
+import logging
+import os
 
-from cryptography.hazmat.primitives.ciphers.modes import CBC
-from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.ciphers.algorithms import AES
+from cryptography.hazmat.primitives.ciphers.modes import CBC
 
 # logging.basicConfig(level=#logging.INFO)
 
@@ -88,7 +88,9 @@ class AES128Encryption:
         else:
             key_error = True
         if key_error:
-            raise Exception("ENCRYPTION ERROR: Key Must be a 32 chars even len Hex String, Example: 1460C8BD91DB352E78604983F82CDA3A")
+            raise Exception(
+                "ENCRYPTION ERROR: Key Must be a 32 chars even len Hex String, Example: 1460C8BD91DB352E78604983F82CDA3A"
+            )
         if len(plaintext) < 1:
             raise Exception("ENCRYPTION ERROR: Plaintext Must not be Empty")
 
@@ -106,7 +108,9 @@ class AES128Encryption:
         else:
             key_error = True
         if key_error:
-            raise Exception("DECRYPTION ERROR: Key Must be a 32 chars len even Hex String, Example: 1460C8BD91DB352E78604983F82CDA3A")
+            raise Exception(
+                "DECRYPTION ERROR: Key Must be a 32 chars len even Hex String, Example: 1460C8BD91DB352E78604983F82CDA3A"
+            )
         # Data representation Validation
         try:
             base64.b64decode(ciphertext)

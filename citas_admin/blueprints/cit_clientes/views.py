@@ -3,17 +3,19 @@ Cit Clientes, vistas
 """
 
 import json
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_email, safe_string, safe_message
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_clientes.models import CitCliente
 from citas_admin.blueprints.modulos.models import Modulo
+from citas_admin.blueprints.pag_pagos.models import PagPago
+from citas_admin.blueprints.pag_tramites_servicios.models import PagTramiteServicio
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.cit_clientes.models import CitCliente
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_email, safe_message, safe_string
 
 MODULO = "CIT CLIENTES"
 
@@ -29,7 +31,7 @@ def before_request():
 
 @cit_clientes.route("/cit_clientes/datatable_json", methods=["GET", "POST"])
 def datatable_json():
-    """DataTable JSON para listado de Cit Clientes"""
+    """DataTable JSON para listado de CitCliente"""
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
@@ -74,7 +76,7 @@ def datatable_json():
 
 @cit_clientes.route("/cit_clientes")
 def list_active():
-    """Listado de Cit Clientes activos"""
+    """Listado de CitCliente activos"""
     return render_template(
         "cit_clientes/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
@@ -86,7 +88,7 @@ def list_active():
 @cit_clientes.route("/cit_clientes/inactivos")
 @permission_required(MODULO, Permiso.ADMINISTRAR)
 def list_inactive():
-    """Listado de Cit Clientes inactivos"""
+    """Listado de CitCliente inactivos"""
     return render_template(
         "cit_clientes/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
@@ -97,6 +99,18 @@ def list_inactive():
 
 @cit_clientes.route("/cit_clientes/<int:cit_cliente_id>")
 def detail(cit_cliente_id):
-    """Detalle de un Cit Cliente"""
+    """Detalle de un CitCliente"""
+    # Consultar
     cit_cliente = CitCliente.query.get_or_404(cit_cliente_id)
-    return render_template("cit_clientes/detail.jinja2", cit_cliente=cit_cliente)
+    # Consultar PagTramiteServicio para las opciones del filtro
+    pag_tramites_servicios = PagTramiteServicio.query.filter_by(estatus="A").order_by(PagTramiteServicio.clave).all()
+    opciones_pag_tramites_servicios = []
+    for ts in pag_tramites_servicios:
+        opciones_pag_tramites_servicios.append({"id": ts.id, "clave": ts.clave, "descripcion": ts.descripcion})
+    # Entregar
+    return render_template(
+        "cit_clientes/detail.jinja2",
+        cit_cliente=cit_cliente,
+        pag_pagos_estados=PagPago.ESTADOS,
+        pag_tramites_servicios=opciones_pag_tramites_servicios,
+    )

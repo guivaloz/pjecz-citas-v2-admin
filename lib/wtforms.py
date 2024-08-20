@@ -1,8 +1,10 @@
 """
 WTForms
 """
-from wtforms import fields
+
 import json
+
+from wtforms import fields
 
 
 class JSONField(fields.StringField):

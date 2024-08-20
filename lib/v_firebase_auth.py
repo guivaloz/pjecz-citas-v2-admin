@@ -1,8 +1,8 @@
 """
 Firebase Auth
 """
-import os
 
+import os
 
 firebase_auth = {
     "apiKey": os.environ.get("FIREBASE_APIKEY", ""),

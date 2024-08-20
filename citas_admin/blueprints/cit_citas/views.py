@@ -45,8 +45,12 @@ def datatable_json():
     if "id" in request.form:
         consulta = consulta.filter_by(id=request.form["id"])
     else:
+        if "cit_cliente_id" in request.form:
+            consulta = consulta.filter_by(cit_cliente_id=request.form["cit_cliente_id"])
         if "cit_servicio_id" in request.form:
             consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
+        if "oficina_id" in request.form:
+            consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
         # Luego filtrar por columnas de otras tablas
         cit_cliente_email = ""
         if "cit_cliente_email" in request.form:

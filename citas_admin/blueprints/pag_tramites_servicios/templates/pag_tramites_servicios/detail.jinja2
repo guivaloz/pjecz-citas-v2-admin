@@ -26,6 +26,85 @@
         {{ detail.label_value('URL', pag_tramite_servicio.url, pag_tramite_servicio.url) }}
         {{ detail.label_value('Creado', moment(pag_tramite_servicio.creado, local=True).format('llll')) }}
     {% endcall %}
+    {% if current_user.can_view('PAG PAGOS') %}
+        {% call detail.card('Pagos') %}
+            <!-- Filtros PagPagos -->
+            <div class="row">
+                <div class="col">
+                    <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosPagPagos.buscar(); return false;">
+                        <div class="col-4">
+                            <div class="form-floating">
+                                <input id="filtroPagPagoCitClienteEmail" type="text" class="form-control" aria-label="e-mail">
+                                <label for="filtroPagPagoCitClienteEmail">e-mail</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-floating">
+                                <input id="filtroPagPagoCitClienteNombres" type="text" class="form-control" aria-label="Nombres" style="text-transform: uppercase">
+                                <label for="filtroPagPagoCitClienteNombres">Nombres</label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-floating">
+                                <input id="filtroPagPagoCitClientePrimerApellido" type="text" class="form-control" aria-label="Primer Apellido" style="text-transform: uppercase">
+                                <label for="filtroPagPagoCitClientePrimerApellido">Primer Apellido</label>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="form-floating">
+                                <input id="filtroPagPagoId" type="text" class="form-control" aria-label="ID">
+                                <label for="filtroPagPagoId">ID</label>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="form-floating">
+                                <input id="filtroPagPagoFechaDesde" type="date" class="form-control" aria-label="Desde">
+                                <label for="filtroPagPagoFechaDesde">Desde</label>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="form-floating">
+                                <input id="filtroPagPagoFechaHasta" type="date" class="form-control" aria-label="Hasta">
+                                <label for="filtroPagPagoFechaHasta">Hasta</label>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="form-floating">
+                                <select id="filtroPagPagoEstado" class="form-select" aria-label="Estado">
+                                    <option selected value="">Todos</option>
+                                    {% for estado in pag_pagos_estados %}
+                                    <option value="{{estado}}">{{estado}}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="filtroPagPagoEstado">Estado</label>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <button title="Buscar" class="btn btn-primary btn-lg" onclick="filtrosPagPagos.buscar(); return false;" id="button-buscar"><span class="iconify" data-icon="mdi:magnify"></span></button>
+                            <button title="Limpiar" class="btn btn-warning btn-lg" type="reset" onclick="filtrosPagPagos.limpiar();" id="button-limpiar"><span class="iconify" data-icon="mdi:broom"></span></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- DataTable PagPagos -->
+            <table id="pag_pagos_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Cantidad</th>
+                        <th>Distrito</th>
+                        <th>Autoridad</th>
+                        <th>Folio</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+            </table>
+        {% endcall %}
+    {% endif %}
 {% endblock %}
 
 {% block custom_javascript %}
@@ -33,5 +112,110 @@
         {% if pag_tramite_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + pag_tramite_servicio.clave + '?') }}{% endif %}
         {% if pag_tramite_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + pag_tramite_servicio.clave + '?') }}{% endif %}
     {% endif #}
+    <script src="/static/js/datatables-constructor.js"></script>
+    <script src="/static/js/datatables-filtros.js"></script>
+    {% if current_user.can_view('PAG PAGOS') %}
+        <script>
+            // DataTable PagPagos
+            const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+            let configDataTable = constructorDataTable.config();
+            configDataTable['ajax']['url'] = '/pag_pagos/datatable_json';
+            configDataTable['ajax']['data'] = { 'estatus': "A", 'pag_tramite_servicio_id': {{ pag_tramite_servicio.id }} };
+            configDataTable['columns'] = [
+                { data: 'detalle' },
+                { data: 'fecha' },
+                { data: 'cit_cliente' },
+                { data: 'email' },
+                { data: 'cantidad', className: "text-end" },
+                { data: 'distrito' },
+                { data: 'autoridad' },
+                { data: 'folio' },
+                { data: 'total', className: "text-end" },
+                { data: 'estado' }
+            ];
+            configDataTable['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.id + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // fecha
+                    type: 'date',
+                    render: function (data, type, row) {
+                        return moment.utc(data).format("YYYY-MM-DD HH:mm");
+                    }
+                },
+                {
+                    targets: 2, // cit_cliente
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        let texto = data.nombre;
+                        if (texto.length > 16 ) {
+                            texto = data.nombre.substring(0, 16) + '…'
+                        }
+                        if (data.url === '') {
+                            return '<span title="' + data.nombre + '">' + texto + '</span>';
+                        }
+                        return '<a href="' + data.url + '"><span title="' + data.nombre + '">' + texto + '</span></a>';
+                    }
+                },
+                {
+                    targets: 3, // email
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.length < 16 ) {
+                            return '<a href="mailto:' + data + '">' + data + '</a>';
+                        }
+                        return '<a href="mailto:' + data + '"><span title="' + data + '">' + data.substring(0, 16) + '…' + '</span></a>';
+                    }
+                },
+                {
+                    targets: [5, 6], // distrito, autoridad
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url === '') {
+                            return data.nombre_corto;
+                        }
+                        return '<a href="' + data.url + '"><span title="' + data.nombre_corto + '">' + data.clave + '</span></a>';
+                    }
+                },
+                {
+                    targets: 8, // total
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '$ ' + data;
+                    }
+                },
+                {
+                    targets: 9, // Estado
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        let color = "black";
+                        switch (data)    {
+                            case "SOLICITADO": font_color = "#7d6608"; bg_class = "bg-warning text-dark"; break;
+                            case "PAGADO":     font_color = "#0b5345"; bg_class = "bg-success"; break;
+                            case "ENTREGADO":  font_color = "#c7f6ff"; bg_class = "bg-info"; break;
+                            case "CANCELADO":  font_color = "#e53935"; bg_class = "bg-secondary"; break;
+                            case "FALLIDO":    font_color = "#e53935"; bg_class = "bg-danger"; break;
+                        }
+                        return '<span class="badge rounded-pill ' + bg_class + ' px-3">' + data + '</span>';
+                    }
+                }
+            ];
+            // Filtros PagPagos
+            const filtrosPagPagos = new FiltrosDataTable('#pag_pagos_datatable', configDataTable);
+            filtrosPagPagos.agregarInput('filtroPagPagoId', 'id');
+            filtrosPagPagos.agregarInput('filtroPagPagoFechaDesde', 'fecha_desde');
+            filtrosPagPagos.agregarInput('filtroPagPagoFechaHasta', 'fecha_hasta');
+            filtrosPagPagos.agregarInput('filtroPagPagoCitClienteEmail', 'cit_cliente_email');
+            filtrosPagPagos.agregarInput('filtroPagPagoCitClienteNombres', 'cit_cliente_nombres');
+            filtrosPagPagos.agregarInput('filtroPagPagoCitClientePrimerApellido', 'cit_cliente_primer_apellido');
+            filtrosPagPagos.agregarInput('filtroPagPagoEstado', 'estado');
+            filtrosPagPagos.precargar();
+        </script>
+    {% endif %}
     {{ detail.moment_js(moment) }}
 {% endblock %}

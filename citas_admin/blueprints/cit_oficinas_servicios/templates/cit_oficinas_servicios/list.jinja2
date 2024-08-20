@@ -15,7 +15,7 @@
 
 {% block content %}
     {% call list.card() %}
-        <!-- Filtros Cit Oficinas Servicios -->
+        <!-- Filtros CitOficinasServicios -->
         <div class="row">
             <div class="col">
                 <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitOficinasServicios.buscar(); return false;">
@@ -50,7 +50,7 @@
                 </form>
             </div>
         </div>
-        <!-- DataTable Cit Oficinas Servicios -->
+        <!-- DataTable CitOficinasServicios -->
         <table id="cit_oficinas_servicios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -71,7 +71,7 @@
     <script src="/static/js/datatables-constructor.js"></script>
     <script src="/static/js/datatables-filtros.js"></script>
     <script>
-        // DataTable Cit Oficinas Servicios
+        // DataTable CitOficinasServicios
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
         let configDataTable = constructorDataTable.config();
         configDataTable['ajax']['url'] = '/cit_oficinas_servicios/datatable_json';
@@ -90,14 +90,17 @@
                 targets: 0, // detalle
                 data: null,
                 render: function(data, type, row, meta) {
-                    return '<a href="' + data.url + '">' + data.clave + '</a>';
+                    return '<a href="' + data.url + '">' + data.id + '</a>';
                 }
             },
             {
                 targets: [1, 5], // oficina, cit_servicio
                 data: null,
                 render: function(data, type, row, meta) {
-                    return '<a href="' + data.url + '">' + data.clave + '</a>';
+                    if (data.url === '') {
+                        return data.clave;
+                    }
+                    return '<a href="' + data.url + '">' + data.clave + '</a>'
                 }
             },
             {
@@ -108,7 +111,7 @@
                 }
             },
             {
-                targets: [3, 4], // oficina_es_jurisdiccional, ofcina_puede_agendar_citas
+                targets: [3, 4], // oficina_es_jurisdiccional, oficina_puede_agendar_citas
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data) {
@@ -118,7 +121,7 @@
                 }
             }
         ];
-        // Filtros Cit Oficinas Servicios
+        // Filtros CitOficinasServicios
         const filtrosCitOficinasServicios = new FiltrosDataTable('#cit_oficinas_servicios_datatable', configDataTable);
         filtrosCitOficinasServicios.agregarInput('filtroOficinaClave', 'oficina_clave');
         filtrosCitOficinasServicios.agregarInput('filtroOficinaDescripcionCorta', 'oficina_descripcion_corta');

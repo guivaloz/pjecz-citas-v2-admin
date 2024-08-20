@@ -18,7 +18,7 @@
 
 {% block content %}
     {% call list.card() %}
-        <!-- Filtros Pag Pagos -->
+        <!-- Filtros PagPagos -->
         <div class="row">
             <div class="col">
                 <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosPagPagos.buscar(); return false;">
@@ -78,7 +78,7 @@
                         <div class="form-floating">
                             <select id="filtroPagPagoEstado" class="form-select" aria-label="Estado">
                                 <option selected value="">Todos</option>
-                                {% for estado in estados %}
+                                {% for estado in pag_pagos_estados %}
                                 <option value="{{estado}}">{{estado}}</option>
                                 {% endfor %}
                             </select>
@@ -92,7 +92,7 @@
                 </form>
             </div>
         </div>
-        <!-- DataTable Pag Pagos -->
+        <!-- DataTable PagPagos -->
         <table id="pag_pagos_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -100,9 +100,9 @@
                     <th>Fecha</th>
                     <th>Nombre</th>
                     <th>Email</th>
-                    <th>Distrito</th>
                     <th>Cantidad</th>
-                    <th>Trámite y Servicio</th>
+                    <th>Trámite o Servicio</th>
+                    <th>Distrito</th>
                     <th>Autoridad</th>
                     <th>Folio</th>
                     <th>Total</th>
@@ -117,7 +117,7 @@
     <script src="/static/js/datatables-constructor.js"></script>
     <script src="/static/js/datatables-filtros.js"></script>
     <script>
-        // DataTable Pag Pagos
+        // DataTable PagPagos
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
         let configDataTable = constructorDataTable.config();
         configDataTable['ajax']['url'] = '/pag_pagos/datatable_json';
@@ -127,9 +127,9 @@
             { data: 'fecha' },
             { data: 'cit_cliente' },
             { data: 'email' },
-            { data: 'distrito' },
-            { data: 'cantidad' },
+            { data: 'cantidad', className: "text-end" },
             { data: 'pag_tramite_servicio' },
+            { data: 'distrito' },
             { data: 'autoridad' },
             { data: 'folio' },
             { data: 'total', className: "text-end" },
@@ -158,11 +158,10 @@
                     if (texto.length > 16 ) {
                         texto = data.nombre.substring(0, 16) + '…'
                     }
-                    if (data.url == '') {
+                    if (data.url === '') {
                         return '<span title="' + data.nombre + '">' + texto + '</span>';
-                    } else {
-                        return '<a href="' + data.url + '"><span title="' + data.nombre + '">' + texto + '</span></a>';
                     }
+                    return '<a href="' + data.url + '"><span title="' + data.nombre + '">' + texto + '</span></a>';
                 }
             },
             {
@@ -176,25 +175,23 @@
                 }
             },
             {
-                targets: 4, // distrito
+                targets: 5, // pag_tramite_servicio
                 data: null,
                 render: function(data, type, row, meta) {
-                    if (data.url == '') {
-                        return data.nombre_corto;
-                    } else {
-                        return '<a href="' + data.url + '"><span title="' + data.nombre_corto + '">' + data.clave + '</span></a>';
+                    if (data.url === '') {
+                        return data.clave;
                     }
+                    return '<a href="' + data.url + '"><span title="' + data.descripcion + '">' + data.clave + '</span></a>';
                 }
             },
             {
-                targets: [6, 7], // pag_tramite_servicio, autoridad
+                targets: [6, 7], // distrito, autoridad
                 data: null,
                 render: function(data, type, row, meta) {
-                    if (data.url == '') {
-                        return data.clave;
-                    } else {
-                        return '<a href="' + data.url + '"><span title="' + data.descripcion + '">' + data.clave + '</span></a>';
+                    if (data.url === '') {
+                        return data.nombre_corto;
                     }
+                    return '<a href="' + data.url + '"><span title="' + data.nombre_corto + '">' + data.clave + '</span></a>';
                 }
             },
             {
@@ -220,7 +217,7 @@
                 }
             }
         ];
-        // Filtros Pag Pagos
+        // Filtros PagPagos
         const filtrosPagPagos = new FiltrosDataTable('#pag_pagos_datatable', configDataTable);
         filtrosPagPagos.agregarInput('filtroPagPagoId', 'id');
         filtrosPagPagos.agregarInput('filtroPagPagoFechaDesde', 'fecha_desde');

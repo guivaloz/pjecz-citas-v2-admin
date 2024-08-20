@@ -3,19 +3,19 @@ Cit Oficinas Servicios, vistas
 """
 
 import json
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_clave, safe_string, safe_message
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_oficinas_servicios.models import CitOficinaServicio
 from citas_admin.blueprints.cit_servicios.models import CitServicio
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.cit_oficinas_servicios.models import CitOficinaServicio
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_clave, safe_message, safe_string
 
 MODULO = "CIT OFICINAS SERVICIOS"
 
@@ -38,10 +38,15 @@ def datatable_json():
     consulta = CitOficinaServicio.query
     # Primero filtrar por columnas propias
     if "estatus" in request.form:
-        consulta = consulta.filter_by(estatus=request.form["estatus"])
+        consulta = consulta.filter(CitOficinaServicio.estatus == request.form["estatus"])
     else:
-        consulta = consulta.filter_by(estatus="A")
-    # Luego filtrar por columnas de otras tablas
+        consulta = consulta.filter(CitOficinaServicio.estatus == "A")
+    # Filtrar por los ids que ya tenemos en esta tabla
+    if "cit_servicio_id" in request.form:
+        consulta = consulta.filter(CitOficinaServicio.cit_servicio_id == request.form["cit_servicio_id"])
+    if "oficina_id" in request.form:
+        consulta = consulta.filter(CitOficinaServicio.oficina_id == request.form["oficina_id"])
+    # Filtrar por clave o descripcion corta de la oficina
     oficina_clave = ""
     if "oficina_clave" in request.form:
         oficina_clave = safe_clave(request.form["oficina_clave"])
@@ -54,6 +59,7 @@ def datatable_json():
             consulta = consulta.filter(Oficina.clave.contains(oficina_clave))
         if oficina_descripcion_corta != "":
             consulta = consulta.filter(Oficina.descripcion_corta.contains(oficina_descripcion_corta))
+    # Filtrar por clave o descripcion del servicio
     cit_servicio_clave = ""
     if "cit_servicio_clave" in request.form:
         cit_servicio_clave = safe_clave(request.form["cit_servicio_clave"])
@@ -75,9 +81,27 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "nombre": resultado.nombre,
+                    "id": resultado.id,
                     "url": url_for("cit_oficinas_servicios.detail", cit_oficina_servicio_id=resultado.id),
                 },
+                "oficina": {
+                    "clave": resultado.oficina.clave,
+                    "url": (
+                        url_for("oficinas.detail", oficina_id=resultado.oficina_id) if current_user.can_view("OFICINAS") else ""
+                    ),
+                },
+                "oficina_descripcion_corta": resultado.oficina.descripcion_corta,
+                "oficina_es_jurisdiccional": resultado.oficina.es_jurisdiccional,
+                "oficina_puede_agendar_citas": resultado.oficina.puede_agendar_citas,
+                "cit_servicio": {
+                    "clave": resultado.cit_servicio.clave,
+                    "url": (
+                        url_for("cit_servicios.detail", cit_servicio_id=resultado.cit_servicio_id)
+                        if current_user.can_view("CIT SERVICIOS")
+                        else ""
+                    ),
+                },
+                "cit_servicio_descripcion": resultado.cit_servicio.descripcion,
             }
         )
     # Entregar JSON
