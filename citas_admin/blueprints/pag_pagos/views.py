@@ -33,7 +33,7 @@ def before_request():
 
 @pag_pagos.route("/pag_pagos/datatable_json", methods=["GET", "POST"])
 def datatable_json():
-    """DataTable JSON para listado de Pag Pagos"""
+    """DataTable JSON para listado de PagPago"""
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
@@ -132,7 +132,7 @@ def datatable_json():
 
 @pag_pagos.route("/pag_pagos")
 def list_active():
-    """Listado de Pag Pagos activos"""
+    """Listado de PagPago activos"""
     # Consultar PagTramiteServicio para las opciones del filtro
     pag_tramites_servicios = PagTramiteServicio.query.filter_by(estatus="A").order_by(PagTramiteServicio.clave).all()
     opciones_pag_tramites_servicios = []
@@ -152,7 +152,7 @@ def list_active():
 @pag_pagos.route("/pag_pagos/inactivos")
 @permission_required(MODULO, Permiso.ADMINISTRAR)
 def list_inactive():
-    """Listado de Pag Pagos inactivos"""
+    """Listado de PagPago inactivos"""
     # Consultar PagTramiteServicio para las opciones del filtro
     pag_tramites_servicios = PagTramiteServicio.query.filter_by(estatus="A").order_by(PagTramiteServicio.clave).all()
     opciones_pag_tramites_servicios = []
@@ -171,12 +171,12 @@ def list_inactive():
 
 @pag_pagos.route("/pag_pagos/<int:pag_pago_id>")
 def detail(pag_pago_id):
-    """Detalle de un Pag Pago"""
+    """Detalle de un PagPago"""
     pag_pago = PagPago.query.get_or_404(pag_pago_id)
     return render_template("pag_pagos/detail.jinja2", pag_pago=pag_pago)
 
 
 @pag_pagos.route("/pag_pagos/tablero")
 def dashboard():
-    """Tablero de Pag Pagos"""
+    """Tablero de PagPago"""
     return render_template("pag_pagos/dashboard.jinja2")
