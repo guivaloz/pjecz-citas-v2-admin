@@ -1,0 +1,29 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/card.jinja2' as card %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Tablero de Trámites y Servicios{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Tablero de Trámites y Servicios') %}
+        {{ topbar.button_list_active('Listado', url_for('pag_tramites_servicios.list_active')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    {% call card.container_row() %}
+        <!-- Bucle por cada trámite o servicio -->
+        {% for pag_tramite_servicio in pag_tramites_servicios %}
+            {% call card.col_md(4) %}
+                {% call card.card(pag_tramite_servicio.clave) %}
+                    {% call card.card_body(button_text='Generar reporte') %}
+                        {% call card.list_unstyled() %}
+                            <li>{{ pag_tramite_servicio.descripcion }}</li>
+                            <li>Hay 000 registros pagados y/o entregados.</li>
+                        {% endcall %}
+                    {% endcall %}
+                {% endcall %}
+            {% endcall %}
+        {% endfor %}
+    {% endcall %}
+{% endblock %}

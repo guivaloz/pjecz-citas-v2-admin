@@ -174,3 +174,9 @@ def detail(pag_pago_id):
     """Detalle de un Pag Pago"""
     pag_pago = PagPago.query.get_or_404(pag_pago_id)
     return render_template("pag_pagos/detail.jinja2", pag_pago=pag_pago)
+
+
+@pag_pagos.route("/pag_pagos/tablero")
+def dashboard():
+    """Tablero de Pag Pagos"""
+    return render_template("pag_pagos/dashboard.jinja2")

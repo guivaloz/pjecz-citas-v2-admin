@@ -1,0 +1,77 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/card.jinja2' as card %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Tablero de Pagos{% endblock %}
+
+{% block topbar_actions %}
+    {% call topbar.page_buttons('Tablero de Pagos') %}
+        {{ topbar.button_list_active('Listado', url_for('pag_pagos.list_active')) }}
+    {% endcall %}
+{% endblock %}
+
+{% block content %}
+    <!-- Tarjetas con estadisticas de PagPagos -->
+    {% call card.container_row() %}
+        {% call card.col_md() %}
+            {% call card.card('Pagados y/o entregados el mes anterior') %}
+                {% call card.card_body(button_text='Descargar reporte de julio') %}
+                    Del 1 al 31 de julio hay 504 pagos que dan un gran total de $52,184.00.
+                {% endcall %}
+            {% endcall %}
+        {% endcall %}
+        {% call card.col_md() %}
+            {% call card.card('Pagados y/o entregados este mes') %}
+                {% call card.card_body(button_text='Descargar reporte de agosto') %}
+                    Desde el 1 de agosto de 2024 a hoy hay 455 registros que dan un gran total de $34,221.00.
+                {% endcall %}
+            {% endcall %}
+        {% endcall %}
+        {% call card.col_md() %}
+            {% call card.card('Cancelados') %}
+                {% call card.card_body() %}
+                    Al dia de hoy hay 214 registros cancelados.
+                {% endcall %}
+            {% endcall %}
+        {% endcall %}
+    {% endcall %}
+    <!-- Grafica de barras de PagPagos por mes -->
+    {% call card.card('Pagos pagados y/o entregados por mes') %}
+        <canvas class="my-4 w-100" id="canvasPagPagosPorMes" width="900" height="240"></canvas>
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous"></script>
+    <script>
+        (() => {
+            'use strict'
+            // Obtener el contexto del canvas
+            const ctx = document.getElementById('canvasPagPagosPorMes')
+            // Grafica de barras
+            const configChart = {
+                type: 'bar',
+                data: {
+                    labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio'],
+                    datasets: [{
+                        label: 'Pagos',
+                        data: [12, 19, 3, 5, 2, 3, 7],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            }
+            // Crear la grafica
+            const chart = new Chart(ctx, configChart)
+        })();
+    </script>
+{% endblock %}

@@ -30,7 +30,7 @@ def before_request():
 
 @pag_tramites_servicios.route("/pag_tramites_servicios/datatable_json", methods=["GET", "POST"])
 def datatable_json():
-    """DataTable JSON para listado de Pag Tramites Servicios"""
+    """DataTable JSON para listado de PagTramiteServicio"""
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
@@ -71,7 +71,7 @@ def datatable_json():
 
 @pag_tramites_servicios.route("/pag_tramites_servicios")
 def list_active():
-    """Listado de Pag Tramites Servicios activos"""
+    """Listado de PagTramiteServicio activos"""
     return render_template(
         "pag_tramites_servicios/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
@@ -83,7 +83,7 @@ def list_active():
 @pag_tramites_servicios.route("/pag_tramites_servicios/inactivos")
 @permission_required(MODULO, Permiso.ADMINISTRAR)
 def list_inactive():
-    """Listado de Pag Tramites Servicios inactivos"""
+    """Listado de PagTramiteServicio inactivos"""
     return render_template(
         "pag_tramites_servicios/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
@@ -94,10 +94,19 @@ def list_inactive():
 
 @pag_tramites_servicios.route("/pag_tramites_servicios/<int:pag_tramite_servicio_id>")
 def detail(pag_tramite_servicio_id):
-    """Detalle de un Pag Tramite Servicio"""
+    """Detalle de un PagTramiteServicio"""
     pag_tramite_servicio = PagTramiteServicio.query.get_or_404(pag_tramite_servicio_id)
     return render_template(
         "pag_tramites_servicios/detail.jinja2",
         pag_tramite_servicio=pag_tramite_servicio,
         pag_pagos_estados=PagPago.ESTADOS,
+    )
+
+
+@pag_tramites_servicios.route("/pag_tramites_servicios/tablero")
+def dashboard():
+    """Tablero de PagTramiteServicio"""
+    return render_template(
+        "pag_tramites_servicios/dashboard.jinja2",
+        pag_tramites_servicios=PagTramiteServicio.query.filter_by(estatus="A").order_by(PagTramiteServicio.clave).all(),
     )
