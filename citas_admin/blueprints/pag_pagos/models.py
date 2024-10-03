@@ -40,7 +40,7 @@ class PagPago(database.Model, UniversalMixin):
     pag_tramite_servicio: Mapped["PagTramiteServicio"] = relationship(back_populates="pag_pagos")
 
     # Columnas
-    caducidad: Mapped[date] = mapped_column(Date)
+    caducidad: Mapped[date]
     cantidad: Mapped[int] = mapped_column(default=1)
     descripcion: Mapped[str] = mapped_column(String(256))
     estado: Mapped[str] = mapped_column(Enum(*ESTADOS, name="pag_pagos_estados", native_enum=False), index=True)

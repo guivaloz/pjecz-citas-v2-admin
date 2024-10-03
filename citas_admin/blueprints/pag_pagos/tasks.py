@@ -59,7 +59,9 @@ def exportar_xlsx(desde: date = None, hasta: date = None) -> tuple[str, str, str
         desde = datetime(year=hoy.year, month=hoy.month, day=1, tzinfo=pytz.timezone(TIMEZONE)) - timedelta(days=1)
         desde = desde.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         # Definir hasta con el último día del mes anterior a las 23:59:59
-        hasta = datetime(year=hoy.year, month=hoy.month, day=1, tzinfo=pytz.timezone(TIMEZONE)) - timedelta(seconds=1)
+        hasta = datetime(
+            year=hoy.year, month=hoy.month, day=1, hour=23, minute=59, second=59, tzinfo=pytz.timezone(TIMEZONE)
+        ) - timedelta(seconds=1)
     else:
         # Convertir desde a timestamp con hora 00:00:00
         desde = datetime(year=desde.year, month=desde.month, day=desde.day, hour=0, minute=0, second=0)
