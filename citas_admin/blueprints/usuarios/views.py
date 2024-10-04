@@ -17,6 +17,7 @@ from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.entradas_salidas.models import EntradaSalida
 from citas_admin.blueprints.modulos.models import Modulo
+from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import anonymous_required, permission_required
 from citas_admin.blueprints.usuarios.forms import AccesoForm, UsuarioForm
@@ -340,9 +341,9 @@ def new():
             flash("El e-mail ya está en uso. Debe de ser único.", "warning")
             return render_template("usuarios/new.jinja2", form=form)
         # Guadar
-        autoridad = Autoridad.query.get_or_404(form.autoridad.data)
         usuario = Usuario(
-            autoridad=autoridad,
+            autoridad_id=form.autoridad.data,
+            oficina_id=form.oficina.data,
             email=email,
             nombres=safe_string(form.nombres.data, save_enie=True),
             apellido_paterno=safe_string(form.apellido_paterno.data, save_enie=True),
@@ -363,13 +364,22 @@ def new():
         bitacora.save()
         flash(bitacora.descripcion, "success")
         return redirect(bitacora.url)
-    # Consultar el distrito por defecto
+    # Consultar el distrito por defecto con clave ND
     distrito_por_defecto_id = 1
     distrito_por_defecto = Distrito.query.filter_by(clave="ND").first()
     if distrito_por_defecto is not None:
         distrito_por_defecto_id = distrito_por_defecto.id
+    # Consultar la oficina por defecto con clave ND
+    oficina_por_defecto = Oficina.query.filter_by(clave="ND").first()
+    if oficina_por_defecto is None:
+        oficina_por_defecto = None
     # Entregar
-    return render_template("usuarios/new.jinja2", form=form, distrito_por_defecto_id=distrito_por_defecto_id)
+    return render_template(
+        "usuarios/new.jinja2",
+        form=form,
+        distrito_por_defecto_id=distrito_por_defecto_id,
+        oficina_por_defecto=oficina_por_defecto,
+    )
 
 
 @usuarios.route("/usuarios/edicion/<int:usuario_id>", methods=["GET", "POST"])
@@ -390,8 +400,8 @@ def edit(usuario_id):
                 flash("La e-mail ya está en uso. Debe de ser único.", "warning")
         # Si es valido actualizar
         if es_valido:
-            autoridad = Autoridad.query.get_or_404(form.autoridad.data)
-            usuario.autoridad = autoridad
+            usuario.autoridad_id = form.autoridad.data  # Combo select distrito-autoridad
+            usuario.oficina_id = form.oficina.data  # Select2
             usuario.email = email
             usuario.nombres = safe_string(form.nombres.data, save_enie=True)
             usuario.apellido_paterno = safe_string(form.apellido_paterno.data, save_enie=True)
@@ -408,6 +418,8 @@ def edit(usuario_id):
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
+    # No es necesario pasar autoridad_id porque se va a tomar de usuario con JS
+    # Tampoco es necesario pasar oficina_id porque se va a tomar de usuario con JS
     form.email.data = usuario.email
     form.nombres.data = usuario.nombres
     form.apellido_paterno.data = usuario.apellido_paterno

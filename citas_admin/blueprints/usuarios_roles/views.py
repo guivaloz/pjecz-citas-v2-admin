@@ -44,9 +44,9 @@ def datatable_json():
     #     consulta = consulta.filter_by(estatus="A")
     # Primero filtrar por columnas propias
     if "usuario_id" in request.form:
-        consulta = consulta.filter_by(usuario_id=request.form["usuario_id"])
+        consulta = consulta.filter(UsuarioRol.usuario_id == request.form["usuario_id"])
     if "rol_id" in request.form:
-        consulta = consulta.filter_by(rol_id=request.form["rol_id"])
+        consulta = consulta.filter(UsuarioRol.rol_id == request.form["rol_id"])
     # Luego filtrar por columnas de otras tablas
     if "email" in request.form:
         try:

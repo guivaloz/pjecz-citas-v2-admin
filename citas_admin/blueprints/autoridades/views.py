@@ -7,9 +7,6 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_clave, safe_message, safe_string
-
 from citas_admin.blueprints.autoridades.forms import AutoridadForm
 from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.bitacoras.models import Bitacora
@@ -17,6 +14,8 @@ from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_clave, safe_message, safe_string
 
 MODULO = "AUTORIDADES"
 
@@ -85,38 +84,6 @@ def datatable_json():
         )
     # Entregar JSON
     return output_datatable_json(draw, total, data)
-
-
-@autoridades.route("/autoridades/select_json/<int:distrito_id>", methods=["GET", "POST"])
-def select_json(distrito_id):
-    """Select JSON para Autoridades"""
-    # Consultar (como hay usuarios en autoridades dadas de baja, no se filtra por estatus)
-    consulta = Autoridad.query.filter_by(distrito_id=distrito_id)
-    # Si viene es_jurisdiccional como parametro en el URL como true o false
-    if "es_jurisdiccional" in request.args:
-        es_jurisdiccional = request.args["es_jurisdiccional"] == "true"
-        consulta = consulta.filter_by(es_jurisdiccional=es_jurisdiccional)
-    # Si viene es_notaria como parametro en el URL como true o false
-    if "es_notaria" in request.args:
-        es_notaria = request.args["es_notaria"] == "true"
-        consulta = consulta.filter_by(es_notaria=es_notaria)
-    # Si viene es_organo_especializado como parametro en el URL como true o false
-    if "es_organo_especializado" in request.args:
-        es_organo_especializado = request.args["es_organo_especializado"] == "true"
-        consulta = consulta.filter_by(es_organo_especializado=es_organo_especializado)
-    # Ordenar
-    consulta = consulta.order_by(Autoridad.descripcion_corta)
-    # Elaborar datos para Select
-    data = []
-    for resultado in consulta.all():
-        data.append(
-            {
-                "id": resultado.id,
-                "descripcion_corta": resultado.descripcion_corta,
-            }
-        )
-    # Entregar JSON
-    return json.dumps(data)
 
 
 @autoridades.route("/autoridades")
@@ -269,3 +236,35 @@ def recover(autoridad_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
     return redirect(url_for("autoridades.detail", autoridad_id=autoridad.id))
+
+
+@autoridades.route("/autoridades/select_json/<int:distrito_id>", methods=["GET", "POST"])
+def query_autoridades_json(distrito_id):
+    """Proporcionar el JSON de autoridades para elegir con un Select"""
+    # Consultar (como hay usuarios en autoridades dadas de baja, no se filtra por estatus)
+    consulta = Autoridad.query.filter_by(estatus="A").filter_by(distrito_id=distrito_id)
+    # Si viene es_jurisdiccional como parametro en el URL como true o false
+    if "es_jurisdiccional" in request.args:
+        es_jurisdiccional = request.args["es_jurisdiccional"] == "true"
+        consulta = consulta.filter_by(es_jurisdiccional=es_jurisdiccional)
+    # Si viene es_notaria como parametro en el URL como true o false
+    if "es_notaria" in request.args:
+        es_notaria = request.args["es_notaria"] == "true"
+        consulta = consulta.filter_by(es_notaria=es_notaria)
+    # Si viene es_organo_especializado como parametro en el URL como true o false
+    if "es_organo_especializado" in request.args:
+        es_organo_especializado = request.args["es_organo_especializado"] == "true"
+        consulta = consulta.filter_by(es_organo_especializado=es_organo_especializado)
+    # Ordenar
+    consulta = consulta.filter_by(estatus="A").order_by(Autoridad.descripcion_corta)
+    # Elaborar datos para Select
+    data = []
+    for resultado in consulta.all():
+        data.append(
+            {
+                "id": resultado.id,
+                "descripcion_corta": resultado.descripcion_corta,
+            }
+        )
+    # Entregar JSON
+    return json.dumps(data)
