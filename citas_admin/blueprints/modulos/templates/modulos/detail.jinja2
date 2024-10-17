@@ -28,6 +28,7 @@
     {% endcall %}
     {% if current_user.can_view('PERMISOS') %}
         {% call detail.card('Permisos') %}
+            <!-- Datatable Permisos -->
             <table id="permisos_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
@@ -48,7 +49,6 @@
         {% if modulo.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + modulo.nombre + '?') }}{% endif %}
         {% if modulo.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + modulo.nombre + '?') }}{% endif %}
     {% endif %}
-    {{ detail.moment_js(moment) }}
     <script src="/static/js/datatables-constructor.js"></script>
     <script src="/static/js/datatables-filtros.js"></script>
     {% if current_user.can_view('PERMISOS') %}

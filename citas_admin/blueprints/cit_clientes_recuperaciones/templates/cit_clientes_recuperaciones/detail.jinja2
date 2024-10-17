@@ -37,5 +37,4 @@
         {% if cit_cliente_recuperacion.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_cliente_recuperacion.id + '?') }}{% endif %}
         {% if cit_cliente_recuperacion.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_cliente_recuperacion.id + '?') }}{% endif %}
     {% endif #}
-    {{ detail.moment_js(moment) }}
 {% endblock %}

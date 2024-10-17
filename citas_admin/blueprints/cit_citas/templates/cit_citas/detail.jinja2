@@ -81,5 +81,4 @@
         {% if cit_cita.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_cita.id + '?') }}{% endif %}
         {% if cit_cita.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_cita.id + '?') }}{% endif %}
     {% endif #}
-    {{ detail.moment_js(moment) }}
 {% endblock %}

@@ -39,6 +39,8 @@ class Usuario(database.Model, UserMixin, UniversalMixin):
     apellido_materno: Mapped[str] = mapped_column(String(256))
     curp: Mapped[str] = mapped_column(String(18))
     puesto: Mapped[str] = mapped_column(String(256))
+
+    # Columnas que NO deben ser expuestas
     api_key: Mapped[Optional[str]] = mapped_column(String(128))
     api_key_expiracion: Mapped[Optional[datetime]]
     contrasena: Mapped[Optional[str]] = mapped_column(String(256))

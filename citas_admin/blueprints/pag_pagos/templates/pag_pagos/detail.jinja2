@@ -119,5 +119,4 @@
         {% if pag_pago.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + pag_pago.id + '?') }}{% endif %}
         {% if pag_pago.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + pag_pago.id + '?') }}{% endif %}
     {% endif #}
-    {{ detail.moment_js(moment) }}
 {% endblock %}

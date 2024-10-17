@@ -46,5 +46,4 @@
         {% if cit_oficina_servicio.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_oficina_servicio.id + '?') }}{% endif %}
         {% if cit_oficina_servicio.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_oficina_servicio.id + '?') }}{% endif %}
     {% endif #}
-    {{ detail.moment_js(moment) }}
 {% endblock %}

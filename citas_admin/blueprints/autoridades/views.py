@@ -38,11 +38,13 @@ def datatable_json():
     consulta = Autoridad.query
     # Primero filtrar por columnas propias
     if "estatus" in request.form:
-        consulta = consulta.filter_by(estatus=request.form["estatus"])
+        consulta = consulta.filter(Autoridad.estatus == request.form["estatus"])
     else:
-        consulta = consulta.filter_by(estatus="A")
+        consulta = consulta.filter(Autoridad.estatus == "A")
     if "distrito_id" in request.form:
-        consulta = consulta.filter_by(distrito_id=request.form["distrito_id"])
+        consulta = consulta.filter(Autoridad.distrito_id == request.form["distrito_id"])
+    if "materia_id" in request.form:
+        consulta = consulta.filter(Autoridad.materia_id == request.form["materia_id"])
     if "clave" in request.form:
         try:
             clave = safe_clave(request.form["clave"])
@@ -241,7 +243,7 @@ def recover(autoridad_id):
 @autoridades.route("/autoridades/select_json/<int:distrito_id>", methods=["GET", "POST"])
 def query_autoridades_json(distrito_id):
     """Proporcionar el JSON de autoridades para elegir con un Select"""
-    # Consultar (como hay usuarios en autoridades dadas de baja, no se filtra por estatus)
+    # Consultar
     consulta = Autoridad.query.filter_by(estatus="A").filter_by(distrito_id=distrito_id)
     # Si viene es_jurisdiccional como parametro en el URL como true o false
     if "es_jurisdiccional" in request.args:

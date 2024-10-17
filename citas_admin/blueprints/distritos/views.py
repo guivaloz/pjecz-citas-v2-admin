@@ -231,7 +231,7 @@ def recover(distrito_id):
 @distritos.route("/distritos/select_json", methods=["GET", "POST"])
 def query_distritos_json():
     """Proporcionar el JSON de distritos para elegir con un Select"""
-    # Consultar (como hay usuarios en distritos dados de baja, no se filtra por estatus)
+    # Consultar
     consulta = Distrito.query.filter_by(estatus="A").order_by(Distrito.nombre)
     # Elaborar datos para Select
     data = []

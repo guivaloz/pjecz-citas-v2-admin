@@ -31,5 +31,4 @@
         {% if cit_dia_inhabil.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_dia_inhabil.fecha + '?') }}{% endif %}
         {% if cit_dia_inhabil.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_dia_inhabil.fecha + '?') }}{% endif %}
     {% endif #}
-    {{ detail.moment_js(moment) }}
 {% endblock %}
