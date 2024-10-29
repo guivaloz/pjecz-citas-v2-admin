@@ -1,0 +1,51 @@
+{% extends 'layouts/email.jinja2' %}
+
+{% block content %}
+    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; padding-top:15px; width: 700px; margin-left:auto; margin-right:auto;">
+        <tr>
+            <td colspan="2" style="text-align: center;">
+                <h1 style='margin: 0px;'>Pago registrado</h1>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h2 style='margin: 0px; margin-top: -20px; font-weight: normal;'>Sistema de Citas</h2>
+                <h3>Correo electrónico: <strong>{{ cit_cliente_registro.email }}</strong></h3>
+            </td>
+            <td colspan="2" style="vertical-align: bottom;"><p
+                    style="font-size: small; margin: 0px; color: #657c96; text-align: right;"><i>Fecha de
+                elaboración: {{ fecha_elaboracion }}</i></p></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <hr style="border: 1px solid #004360;">
+                <h3 style='margin-bottom: 0px;'>Atención {{ cit_clientes_recuperaciones.cit_cliente.nombre }}</h3>
+                <p>Su pago se ha <strong>registrado correctamente.</strong></p>
+                <p style="text-align: center;"><strong>Gracias por servirle.</strong></p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <hr style="border: 1px solid #004360;">
+                <p style='margin-top: 0px;'>Trámite o servicio:</p>
+                <p>
+                    Distrito: <strong>{{ pag_pago.autoridad.distrito.nombre_corto }}</strong><br>
+                    Juzgado u oficina: <strong>{{ pag_pago.autoridad.descripcion }}</strong><br>
+                    Cantidad: <strong>{{ pag_pago.cantidad }}</strong><br>
+                    Servicio: <strong>{{ pag_pago.pag_tramite_servicio.descripcion }}</strong><br>
+                    Total: <strong>$ {{ pag_pago.total }}</strong>
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <hr style="border: 1px solid #004360;">
+                <p style='margin-top: 0px;'>Operación bancaria:</p>
+                <p>
+                    Folio: <strong>{{ pag_pago.folio }}</strong><br>
+                    Fecha de caducidad: <strong>PENDIENTE</strong><br>
+                </p>
+            </td>
+        </tr>
+    </table>
+{% endblock %}

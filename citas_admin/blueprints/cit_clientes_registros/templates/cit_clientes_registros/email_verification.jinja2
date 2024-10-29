@@ -1,0 +1,31 @@
+{% extends 'layouts/email.jinja2' %}
+
+{% block content %}
+    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; padding-top:15px; width: 700px; margin-left:auto; margin-right:auto;">
+        <tr>
+            <td colspan="2" style="text-align: center;">
+                <h1 style='margin: 0px;'>Validar su registro</h1>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h2 style='margin: 0px; margin-top: -20px; font-weight: normal;'>Sistema de Citas</h2>
+                <h3>Correo electrónico: <strong>{{ cit_cliente_registro.email }}</strong></h3>
+            </td>
+            <td colspan="2" style="vertical-align: bottom;"><p
+                    style="font-size: small; margin: 0px; color: #657c96; text-align: right;"><i>Fecha de
+                elaboración: {{ fecha_elaboracion }}</i></p></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <hr style="border: 1px solid #004360;">
+                <h3 style='margin-bottom: 0px;'>Atención {{ cit_clientes_recuperaciones.cit_cliente.nombre }}</h3>
+                <p>
+                    Antes de <strong>{{ expiracion_horas }}</strong> horas,<br>
+                    vaya a {{ recuperacion_url }} para validar su registro y definir su contraseña.
+                </p>
+                <p style="text-align: center;"><strong>Gracias por servirle.</strong></p>
+            </td>
+        </tr>
+    </table>
+{% endblock %}

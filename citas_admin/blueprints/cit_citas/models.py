@@ -45,6 +45,17 @@ class CitCita(database.Model, UniversalMixin):
     codigo_asistencia: Mapped[Optional[str]] = mapped_column(String(4))
     cancelar_antes: Mapped[Optional[datetime]]
 
+    @property
+    def puede_cancelarse(self):
+        """Puede cancelarse esta cita?"""
+        if self.estado != "PENDIENTE":
+            return False
+        ahora = datetime.now(tz=pytz.timezone("America/Mexico_City"))
+        ahora_sin_tz = ahora.replace(tzinfo=None)
+        if self.cancelar_antes is None:
+            return ahora_sin_tz < self.inicio
+        return ahora_sin_tz < self.cancelar_antes
+
     def __repr__(self):
         """Representación"""
         return f"<CitCita {self.id}>"

@@ -1,5 +1,7 @@
 """
 CLI Pag Pagos
+
+- exportar_xlsx: Exportar Pagos PAGADOS y ENTREGADOS a un archivo XLSX
 """
 
 import sys

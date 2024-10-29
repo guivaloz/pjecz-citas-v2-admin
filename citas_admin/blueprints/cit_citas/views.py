@@ -144,3 +144,24 @@ def detail(cit_cita_id):
     """Detalle de un Cit Cita"""
     cit_cita = CitCita.query.get_or_404(cit_cita_id)
     return render_template("cit_citas/detail.jinja2", cit_cita=cit_cita)
+
+
+@cit_citas.route("/cit_citas/pendiente/<int:cit_cita_id>")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def set_pending(cit_cita_id):
+    """Marcar la cita como pendiente"""
+
+
+@cit_citas.route("/cit_citas/asistencia/<int:cit_cita_id>")
+def set_assistance(cit_cita_id):
+    """Marcar la cita como asistencia"""
+
+
+@cit_citas.route("/cit_citas/falta/<int:cit_cita_id>")
+def set_no_assistance(cit_cita_id):
+    """Marcar la cita como falta"""
+
+
+@cit_citas.route("/cit_citas/cancelar/<int:cit_cita_id>")
+def set_cancelled(cit_cita_id):
+    """Marcar la cita como cancelada"""

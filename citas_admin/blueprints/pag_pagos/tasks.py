@@ -28,10 +28,12 @@ from lib.exceptions import (
 from lib.google_cloud_storage import upload_file_to_gcs
 from lib.tasks import set_task_error, set_task_progress
 
+# Constantes
 GCS_BASE_DIRECTORY = "pag_pagos"
 LOCAL_BASE_DIRECTORY = "exports/pag_pagos"
 TIMEZONE = "America/Mexico_City"
 
+# Bitácora logs/pag_pagos.log
 bitacora = logging.getLogger(__name__)
 bitacora.setLevel(logging.INFO)
 formato = logging.Formatter("%(asctime)s:%(levelname)s:%(message)s")
@@ -39,6 +41,7 @@ empunadura = logging.FileHandler("logs/pag_pagos.log")
 empunadura.setFormatter(formato)
 bitacora.addHandler(empunadura)
 
+# Cargar la aplicación para tener acceso a la base de datos
 app = create_app()
 app.app_context().push()
 database.app = app

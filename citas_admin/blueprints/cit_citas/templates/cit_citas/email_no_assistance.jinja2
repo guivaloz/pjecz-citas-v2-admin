@@ -1,0 +1,43 @@
+{% extends 'layouts/email.jinja2' %}
+
+{% block content %}
+    <table style="color: #004360; font-family: Verdana, Geneva, Tahoma, sans-serif; background-color: #efebe8; padding:30px; padding-top:15px; width: 700px; margin-left:auto; margin-right:auto;">
+        <tr>
+            <td colspan="2" style="text-align: center;">
+                <h1 style='margin: 0px;'>Cita marcada como falta ❌</h1>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h2 style='margin: 0px; margin-top: -20px; font-weight: normal;'>Sistema de Citas</h2>
+                <h3>ID: <strong>{{ cit_cita.encode_id() }}</strong></h3>
+            </td>
+            <td colspan="2" style="vertical-align: bottom;"><p
+                    style="font-size: small; margin: 0px; color: #657c96; text-align: right;"><i>Fecha de
+                elaboración: {{ fecha_elaboracion }}</i></p></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <hr style="border: 1px solid #004360;">
+                <h3 style='margin-bottom: 0px;'>Atención {{ cit_cita.cit_cliente.nombre }}</h3>
+                <p>
+                    Se ha marcado esta cita como<br>
+                    <strong>falta</strong> porque no se registró su asistencia.
+                </p>
+                <p style="text-align: center;"><strong>Gracias por servirle.</strong></p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <hr style="border: 1px solid #004360;">
+                <p style="font-size: small; margin: 0px; color: #657c96; text-align: right;">
+                    Oficina: <strong>{{ cit_cita.oficina.descripcion }}</strong><br>
+                    Servicio: <strong>{{ cit_cita.cit_servicio.descripcion }}</strong><br>
+                    Fecha: <strong>{{ cit_cita.inicio.strftime('%d de %B de %Y') }}</strong><br>
+                    Hora: <strong>{{ cit_cita.inicio.strftime('%I:%M %p') }}</strong><br>
+                    Notas: <strong>{{ cit_cita.notas }}</strong>
+                </p>
+            </td>
+        </tr>
+    </table>
+{% endblock %}
