@@ -38,13 +38,13 @@ def datatable_json():
     consulta = Oficina.query
     # Primero filtrar por columnas propias
     if "estatus" in request.form:
-        consulta = consulta.filter_by(estatus=request.form["estatus"])
+        consulta = consulta.filter(Oficina.estatus == request.form["estatus"])
     else:
-        consulta = consulta.filter_by(estatus="A")
+        consulta = consulta.filter(Oficina.estatus == "A")
     if "distrito_id" in request.form:
         consulta = consulta.filter(Oficina.distrito_id == request.form["distrito_id"])
     if "domicilio_id" in request.form:
-        consulta = consulta.filter_by(domicilio_id=request.form["domicilio_id"])
+        consulta = consulta.filter(Oficina.domicilio_id == request.form["domicilio_id"])
     if "clave" in request.form:
         try:
             clave = safe_clave(request.form["clave"])
@@ -56,10 +56,6 @@ def datatable_json():
         descripcion_corta = safe_string(request.form["descripcion_corta"], save_enie=True)
         if descripcion_corta != "":
             consulta = consulta.filter(Oficina.descripcion_corta.contains(descripcion_corta))
-    # Luego filtrar por columnas de otras tablas
-    # if "persona_rfc" in request.form:
-    #     consulta = consulta.join(Persona)
-    #     consulta = consulta.filter(Persona.rfc.contains(safe_rfc(request.form["persona_rfc"], search_fragment=True)))
     # Ordenar y paginar
     registros = consulta.order_by(Oficina.clave).offset(start).limit(rows_per_page).all()
     total = consulta.count()
@@ -73,22 +69,9 @@ def datatable_json():
                     "url": url_for("oficinas.detail", oficina_id=resultado.id),
                 },
                 "descripcion_corta": resultado.descripcion_corta,
-                "domicilio": {
-                    "edificio": resultado.domicilio.edificio,
-                    "url": (
-                        url_for("domicilios.detail", domicilio_id=resultado.domicilio_id)
-                        if current_user.can_view("DOMICILIOS")
-                        else ""
-                    ),
-                },
-                "distrito": {
-                    "nombre_corto": resultado.distrito.nombre_corto,
-                    "url": (
-                        url_for("distritos.detail", distrito_id=resultado.distrito_id)
-                        if current_user.can_view("DISTRITOS")
-                        else ""
-                    ),
-                },
+                "domicilio_edificio": resultado.domicilio.edificio,
+                "distrito_clave": resultado.distrito.clave,
+                "distrito_nombre_corto": resultado.distrito.nombre_corto,
                 "apertura": resultado.apertura.strftime("%H:%M"),
                 "cierre": resultado.cierre.strftime("%H:%M"),
                 "limite_personas": resultado.limite_personas,
@@ -144,16 +127,16 @@ def new():
             return render_template("oficinas/new.jinja2", form=form)
         # Guardar
         oficina = Oficina(
-            distrito_id=form.distrito.data,
-            domicilio_id=form.domicilio.data,
             clave=clave,
             descripcion=safe_string(form.descripcion.data, max_len=512, save_enie=True),
             descripcion_corta=safe_string(form.descripcion_corta.data, max_len=64, save_enie=True),
-            es_jurisdiccional=form.es_jurisdiccional.data,
-            puede_agendar_citas=form.puede_agendar_citas.data,
+            distrito_id=form.distrito.data,
+            domicilio_id=form.domicilio.data,
             apertura=form.apertura.data,
             cierre=form.cierre.data,
             limite_personas=form.limite_personas.data,
+            es_jurisdiccional=form.es_jurisdiccional.data,
+            puede_agendar_citas=form.puede_agendar_citas.data,
             puede_enviar_qr=form.puede_enviar_qr.data,
         )
         oficina.save()
@@ -186,16 +169,16 @@ def edit(oficina_id):
                 flash("La clave ya está en uso. Debe de ser única.", "warning")
         # Si es valido actualizar
         if es_valido:
-            oficina.distrito_id = form.distrito.data
-            oficina.domicilio_id = form.domicilio.data
             oficina.clave = clave
             oficina.descripcion = safe_string(form.descripcion.data, max_len=512, save_enie=True)
             oficina.descripcion_corta = safe_string(form.descripcion_corta.data, max_len=64, save_enie=True)
-            oficina.es_jurisdiccional = form.es_jurisdiccional.data
-            oficina.puede_agendar_citas = form.puede_agendar_citas.data
+            oficina.distrito_id = form.distrito.data
+            oficina.domicilio_id = form.domicilio.data
             oficina.apertura = form.apertura.data
             oficina.cierre = form.cierre.data
             oficina.limite_personas = form.limite_personas.data
+            oficina.es_jurisdiccional = form.es_jurisdiccional.data
+            oficina.puede_agendar_citas = form.puede_agendar_citas.data
             oficina.puede_enviar_qr = form.puede_enviar_qr.data
             oficina.save()
             bitacora = Bitacora(
@@ -207,18 +190,17 @@ def edit(oficina_id):
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
-    form.distrito.data = oficina.distrito_id  # Se manda distrito_id porque es un select
-    form.domicilio.data = oficina.domicilio_id  # Se manda domicilio_id porque es un select
     form.clave.data = oficina.clave
     form.descripcion_corta.data = oficina.descripcion_corta
     form.descripcion.data = oficina.descripcion
-    form.es_jurisdiccional.data = oficina.es_jurisdiccional
-    form.puede_agendar_citas.data = oficina.puede_agendar_citas
+    form.distrito.data = oficina.distrito_id  # Se manda distrito_id porque es un select
+    form.domicilio.data = oficina.domicilio_id  # Se manda domicilio_id porque es un select
     form.apertura.data = oficina.apertura
     form.cierre.data = oficina.cierre
     form.limite_personas.data = oficina.limite_personas
-    form.puede_enviar_qr.data = oficina.puede_enviar_qr
-    form.clave.data = oficina.clave
+    form.es_jurisdiccional.data = oficina.es_jurisdiccional
+    form.puede_agendar_citas = oficina.puede_agendar_citas
+    form.puede_enviar_qr = oficina.puede_enviar_qr
     return render_template("oficinas/edit.jinja2", form=form, oficina=oficina)
 
 
@@ -233,6 +215,24 @@ def delete(oficina_id):
             modulo=Modulo.query.filter_by(nombre=MODULO).first(),
             usuario=current_user,
             descripcion=safe_message(f"Eliminado Oficina {oficina.clave}"),
+            url=url_for("oficinas.detail", oficina_id=oficina.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("oficinas.detail", oficina_id=oficina.id))
+
+
+@oficinas.route("/oficinas/recuperar/<int:oficina_id>")
+@permission_required(MODULO, Permiso.ADMINISTRAR)
+def recover(oficina_id):
+    """Recuperar Oficina"""
+    oficina = Oficina.query.get_or_404(oficina_id)
+    if oficina.estatus == "B":
+        oficina.recover()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Recuperado Oficina {oficina.clave}"),
             url=url_for("oficinas.detail", oficina_id=oficina.id),
         )
         bitacora.save()

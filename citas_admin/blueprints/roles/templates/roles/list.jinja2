@@ -24,7 +24,7 @@
 
 {% block content %}
     {% call list.card() %}
-        <!-- Filtros roles -->
+        <!-- Filtros Roles -->
         <div class="row">
             <div class="col">
                 <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosRoles.buscar(); return false;">
@@ -41,11 +41,11 @@
                 </form>
             </div>
         </div>
-        <!-- Datatable roles -->
+        <!-- Datatable Roles -->
         <table id="roles_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
-                    <th>Rol</th>
+                    <th>Roles</th>
                 </tr>
             </thead>
         </table>
@@ -56,15 +56,15 @@
     <script src="/static/js/datatables-constructor.js"></script>
     <script src="/static/js/datatables-filtros.js"></script>
     <script>
-        // DataTable roles
+        // DataTable Roles
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/roles/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTRoles = constructorDataTable.config();
+        configDTRoles['ajax']['url'] = '/roles/datatable_json';
+        configDTRoles['ajax']['data'] = {{ filtros }};
+        configDTRoles['columns'] = [
             { data: 'detalle' }
         ];
-        configDataTable['columnDefs'] = [
+        configDTRoles['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -73,8 +73,8 @@
                 }
             }
         ];
-        // Filtros roles
-        const filtrosRoles = new FiltrosDataTable('#roles_datatable', configDataTable);
+        // Filtros Roles
+        const filtrosRoles = new FiltrosDataTable('#roles_datatable', configDTRoles);
         filtrosRoles.agregarInput('filtroRolNombre', 'nombre');
         filtrosRoles.precargar();
     </script>

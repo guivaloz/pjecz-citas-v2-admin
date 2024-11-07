@@ -7,15 +7,14 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_string, safe_message
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.materias.forms import MateriaForm
+from citas_admin.blueprints.materias.models import Materia
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.materias.models import Materia
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_message, safe_string
 
 MODULO = "MATERIAS"
 
@@ -57,6 +56,24 @@ def datatable_json():
         )
     # Entregar JSON
     return output_datatable_json(draw, total, data)
+
+
+@materias.route("/materias/select_json", methods=["GET", "POST"])
+def select_json():
+    """Select JSON para materias"""
+    # Consultar
+    consulta = Materia.query.filter_by(estatus="A").order_by(Materia.nombre)
+    # Elaborar datos para Select
+    data = []
+    for resultado in consulta.all():
+        data.append(
+            {
+                "id": resultado.id,
+                "nombre": resultado.nombre,
+            }
+        )
+    # Entregar JSON
+    return json.dumps(data)
 
 
 @materias.route("/materias")
@@ -123,7 +140,7 @@ def edit(materia_id):
     if form.validate_on_submit():
         es_valido = True
         # Si cambia el nombre verificar que no este en uso
-        nombre = safe_string(form.nombre.data)
+        nombre = safe_string(form.nombre.data, save_enie=True)
         if materia.nombre != nombre:
             materia_existente = Materia.query.filter_by(nombre=nombre).first()
             if materia_existente and materia_existente.id != materia.id:

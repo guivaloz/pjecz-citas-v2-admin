@@ -7,14 +7,13 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_message, safe_string
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.forms import ModuloForm
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_message, safe_string
 
 MODULO = "MODULOS"
 
@@ -210,3 +209,17 @@ def recover(modulo_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
     return redirect(url_for("modulos.detail", modulo_id=este_modulo.id))
+
+
+@modulos.route("/modulos/select2_json", methods=["POST"])
+def query_select2_json():
+    """Proporcionar el JSON de modulos para elegir con un Select2"""
+    consulta = Modulo.query.filter(Modulo.estatus == "A")
+    if "searchString" in request.form:
+        nombre = safe_string(request.form["searchString"], save_enie=True)
+        if nombre != "":
+            consulta = consulta.filter(Modulo.nombre.contains(nombre))
+    resultados = []
+    for modulo in consulta.order_by(Modulo.nombre).limit(10).all():
+        resultados.append({"id": modulo.id, "text": modulo.nombre})
+    return {"results": resultados, "pagination": {"more": False}}

@@ -2,9 +2,10 @@
 Tareas, modelos
 """
 
-import redis
-import rq
 from flask import current_app
+from redis.exceptions import RedisError
+from rq.exceptions import NoSuchJobError
+from rq.job import Job
 from sqlalchemy import ForeignKey, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -23,20 +24,20 @@ class Tarea(database.Model, UniversalMixin):
 
     # Clave foránea
     usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"))
-    usuario: Mapped["Usuario"] = relationship("Usuario", back_populates="tareas")
+    usuario: Mapped["Usuario"] = relationship(back_populates="tareas")
 
     # Columnas
-    archivo: Mapped[str] = mapped_column(String(256))
+    archivo: Mapped[str] = mapped_column(String(256), default="")
     comando: Mapped[str] = mapped_column(String(256), index=True)
     ha_terminado: Mapped[bool] = mapped_column(default=False)
-    mensaje: Mapped[str] = mapped_column(String(1024))
-    url: Mapped[str] = mapped_column(String(512))
+    mensaje: Mapped[str] = mapped_column(String(1024), default="")
+    url: Mapped[str] = mapped_column(String(512), default="")
 
     def get_rq_job(self):
         """Helper method that loads the RQ Job instance"""
         try:
-            rq_job = rq.job.Job.fetch(self.id, connection=current_app.redis)
-        except (redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
+            rq_job = Job.fetch(self.id, connection=current_app.redis)
+        except (RedisError, NoSuchJobError):
             return None
         return rq_job
 

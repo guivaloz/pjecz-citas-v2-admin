@@ -25,7 +25,7 @@ class Modulo(database.Model, UniversalMixin):
     nombre_corto: Mapped[str] = mapped_column(String(64))
     icono: Mapped[str] = mapped_column(String(48))
     ruta: Mapped[str] = mapped_column(String(64))
-    en_navegacion: Mapped[bool] = mapped_column(default=True)
+    en_navegacion: Mapped[bool] = mapped_column(default=False)
 
     # Hijos
     bitacoras: Mapped[List["Bitacora"]] = relationship("Bitacora", back_populates="modulo")

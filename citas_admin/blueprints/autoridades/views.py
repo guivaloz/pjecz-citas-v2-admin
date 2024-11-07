@@ -74,14 +74,8 @@ def datatable_json():
                     "url": url_for("autoridades.detail", autoridad_id=resultado.id),
                 },
                 "descripcion_corta": resultado.descripcion_corta,
-                "distrito": {
-                    "nombre_corto": resultado.distrito.nombre_corto,
-                    "url": (
-                        url_for("distritos.detail", distrito_id=resultado.distrito_id)
-                        if current_user.can_view("DISTRITOS")
-                        else ""
-                    ),
-                },
+                "distrito_clave": resultado.distrito.clave,
+                "distrito_nombre_corto": resultado.distrito.nombre_corto,
             }
         )
     # Entregar JSON
@@ -121,7 +115,7 @@ def detail(autoridad_id):
 @autoridades.route("/autoridades/nuevo", methods=["GET", "POST"])
 @permission_required(MODULO, Permiso.CREAR)
 def new():
-    """Nuevo Autoridad"""
+    """Nueva Autoridad"""
     form = AutoridadForm()
     if form.validate_on_submit():
         # Validar que la clave no se repita
@@ -130,16 +124,15 @@ def new():
             flash("La clave ya está en uso. Debe de ser única.", "warning")
             return render_template("autoridades/new.jinja2", form=form)
         # Guardar
-        distrito = Distrito.query.get_or_404(form.distrito.data)
         autoridad = Autoridad(
-            distrito=distrito,
+            distrito_id=form.distrito.data,
+            materia_id=form.materia.data,
             clave=clave,
             descripcion=safe_string(form.descripcion.data, save_enie=True),
-            descripcion_corta=safe_string(form.descripcion_corta.data, save_enie=True, max_len=64),
+            descripcion_corta=safe_string(form.descripcion_corta.data, save_enie=True),
             es_jurisdiccional=form.es_jurisdiccional.data,
             es_notaria=form.es_notaria.data,
             es_organo_especializado=form.es_organo_especializado.data,
-            materia=form.materia.data,
             organo_jurisdiccional=form.organo_jurisdiccional.data,
         )
         autoridad.save()
@@ -172,15 +165,14 @@ def edit(autoridad_id):
                 flash("La clave ya está en uso. Debe de ser única.", "warning")
         # Si es valido actualizar
         if es_valido:
-            distrito = Distrito.query.get_or_404(form.distrito.data)
-            autoridad.distrito = distrito
+            autoridad.distrito_id = form.distrito.data
+            autoridad.materia_id = form.materia.data
             autoridad.clave = clave
             autoridad.descripcion = safe_string(form.descripcion.data, save_enie=True)
-            autoridad.descripcion_corta = safe_string(form.descripcion_corta.data, save_enie=True, max_len=64)
+            autoridad.descripcion_corta = safe_string(form.descripcion_corta.data, save_enie=True)
             autoridad.es_jurisdiccional = form.es_jurisdiccional.data
             autoridad.es_notaria = form.es_notaria.data
             autoridad.es_organo_especializado = form.es_organo_especializado.data
-            autoridad.materia = form.materia.data
             autoridad.organo_jurisdiccional = form.organo_jurisdiccional.data
             autoridad.save()
             bitacora = Bitacora(
@@ -193,13 +185,13 @@ def edit(autoridad_id):
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
     form.distrito.data = autoridad.distrito_id  # Usa id porque es un SelectField
+    form.materia.data = autoridad.materia_id  # Usa id porque es un SelectField
     form.clave.data = autoridad.clave
     form.descripcion.data = autoridad.descripcion
     form.descripcion_corta.data = autoridad.descripcion_corta
     form.es_jurisdiccional.data = autoridad.es_jurisdiccional
     form.es_notaria.data = autoridad.es_notaria
     form.es_organo_especializado.data = autoridad.es_organo_especializado
-    form.materia.data = autoridad.materia_id  # Usa id porque es un SelectField
     form.organo_jurisdiccional.data = autoridad.organo_jurisdiccional
     return render_template("autoridades/edit.jinja2", form=form, autoridad=autoridad)
 
@@ -258,7 +250,7 @@ def query_autoridades_json(distrito_id):
         es_organo_especializado = request.args["es_organo_especializado"] == "true"
         consulta = consulta.filter_by(es_organo_especializado=es_organo_especializado)
     # Ordenar
-    consulta = consulta.filter_by(estatus="A").order_by(Autoridad.descripcion_corta)
+    consulta = consulta.order_by(Autoridad.descripcion_corta)
     # Elaborar datos para Select
     data = []
     for resultado in consulta.all():
@@ -270,3 +262,25 @@ def query_autoridades_json(distrito_id):
         )
     # Entregar JSON
     return json.dumps(data)
+
+
+@autoridades.route("/autoridades/select_json", methods=["GET", "POST"])
+def select_autoridades_json():
+    """Proporcionar el JSON de autoridades para elegir con un Select"""
+    # Consultar
+    consulta = Autoridad.query.filter(Autoridad.estatus == "A")
+    if "es_jurisdiccional" in request.form:
+        consulta = consulta.filter_by(es_jurisdiccional=request.form["es_jurisdiccional"] == "true")
+    if "clave" in request.form:
+        clave = safe_clave(request.form["clave"])
+        if clave != "":
+            consulta = consulta.filter(Autoridad.clave.contains(clave))
+    results = []
+    for autoridad in consulta.order_by(Autoridad.id).limit(15).all():
+        results.append(
+            {
+                "id": autoridad.id,
+                "text": autoridad.clave + "  : " + autoridad.descripcion_corta,
+            }
+        )
+    return {"results": results, "pagination": {"more": False}}

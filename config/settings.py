@@ -1,7 +1,7 @@
 """
 Settings
 
-Para produccion, configure los siguientes secretos en Google Cloud Secret Manager:
+Para producción, configure los siguientes secretos en Google Cloud Secret Manager:
 
 - pjecz_citas_v2_admin_cloud_storage_deposito
 - pjecz_citas_v2_admin_host
@@ -31,8 +31,8 @@ from pydantic_settings import BaseSettings
 
 load_dotenv()
 
-PROJECT_ID = os.getenv("PROJECT_ID", "")  # Por defecto esta vacio, esto significa estamos en modo local
-SERVICE_PREFIX = os.getenv("SERVICE_PREFIX", "pjecz_hercules")
+PROJECT_ID = os.getenv("PROJECT_ID", "")  # Por defecto está vacío, esto significa estamos en modo local
+SERVICE_PREFIX = os.getenv("SERVICE_PREFIX", "pjecz_citas_v2")
 
 
 def get_secret(secret_id: str) -> str:

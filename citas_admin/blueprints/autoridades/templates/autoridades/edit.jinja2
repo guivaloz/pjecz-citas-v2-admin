@@ -5,22 +5,32 @@
 {% block title %}Editar Autoridad {{ autoridad.clave }}{% endblock %}
 
 {% block topbar_actions %}
-    {{ topbar.page('Editar Autoridad' + autoridad.clave) }}
+    {{ topbar.page('Editar Autoridad ' + autoridad.clave) }}
 {% endblock %}
 
 {% block content %}
     {% call f.card() %}
         {% set form_kwargs = {'autoridad_id': autoridad.id} %}
         {% call f.form_tag('autoridades.edit', fid='autoridad_form', **form_kwargs) %}
-            {% call f.form_group(form.clave) %}{% endcall %}
-            {% call f.form_group(form.distrito) %}{% endcall %}
-            {% call f.form_group(form.descripcion) %}{% endcall %}
-            {% call f.form_group(form.descripcion_corta) %}{% endcall %}
-            {% call f.form_group(form.es_jurisdiccional) %}{% endcall %}
-            {% call f.form_group(form.es_notaria) %}{% endcall %}
-            {% call f.form_group(form.es_organo_especializado) %}{% endcall %}
-            {% call f.form_group(form.materia) %}{% endcall %}
-            {% call f.form_group(form.organo_jurisdiccional) %}{% endcall %}
+            <div class="row">
+                <div class="col-md-12">
+                    {% call f.form_group(form.descripcion) %}{% endcall %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    {% call f.form_group(form.descripcion_corta) %}{% endcall %}
+                    {% call f.form_group(form.clave) %}{% endcall %}
+                    {% call f.form_group(form.distrito) %}{% endcall %}
+                    {% call f.form_group(form.materia) %}{% endcall %}
+                    {% call f.form_group(form.organo_jurisdiccional) %}{% endcall %}
+                </div>
+                <div class="col-md-6">
+                    {% call f.form_group(form.es_jurisdiccional) %}{% endcall %}
+                    {% call f.form_group(form.es_notaria) %}{% endcall %}
+                    {% call f.form_group(form.es_organo_especializado) %}{% endcall %}
+                </div>
+            </div>
             {% call f.form_group(form.guardar) %}{% endcall %}
         {% endcall %}
     {% endcall %}

@@ -47,7 +47,7 @@
                 <tr>
                     <th>Nombre</th>
                     <th>Icono</th>
-                    <th>En menú de navegación</th>
+                    <th>En menú</th>
                 </tr>
             </thead>
         </table>
@@ -88,9 +88,9 @@
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data) {
-                        return 'SI';
+                        return '<span class="iconify" data-icon="mdi:checkbox-marked" style="font-size: 1.4em"></span>';
                     }
-                    return '';
+                    return '<span class="iconify text-secondary" data-icon="mdi:checkbox-blank-outline" style="font-size: 1.4em"></span>';
                 }
             }
         ];

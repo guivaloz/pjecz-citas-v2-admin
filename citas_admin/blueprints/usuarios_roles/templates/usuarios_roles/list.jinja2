@@ -22,7 +22,7 @@
     {% call list.card() %}
         <!-- Filtros Usuarios-Roles -->
         <!-- DataTable Usuarios-Roles -->
-        <table id="usuarios_roles_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+        <table id="usuarios_roles_datatable" class="table display nowrap" style="width:100%">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -42,17 +42,17 @@
     <script>
         // DataTable Usuarios-Roles
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/usuarios_roles/datatable_json';
-        configDataTable['ajax']['data'] = {}; // Por defecto no se filtra nada
-        configDataTable['columns'] = [
+        let configDTUsuariosRoles = constructorDataTable.config();
+        configDTUsuariosRoles['ajax']['url'] = '/usuarios_roles/datatable_json';
+        configDTUsuariosRoles['ajax']['data'] = {}; // Por defecto no se filtra nada
+        configDTUsuariosRoles['columns'] = [
             { data: "detalle" },
             { data: "usuario" },
             { data: "usuario_nombre" },
             { data: "rol" },
             { data: "estatus" }
         ];
-        configDataTable['columnDefs'] = [
+        configDTUsuariosRoles['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -66,9 +66,8 @@
                 render: function(data, type, row, meta) {
                     if (data.url === '') {
                         return data.email;
-                    } else {
-                        return '<a href="' + data.url + '">' + data.email + '</a>';
                     }
+                    return '<a href="' + data.url + '">' + data.email + '</a>';
                 }
             },
             {
@@ -82,16 +81,15 @@
                 targets: 3, // rol
                 data: null,
                 render: function(data, type, row, meta) {
-                    if (data.url == '') {
+                    if (data.url === '') {
                         return data.nombre;
-                    } else {
-                        return '<a href="' + data.url + '">' + data.nombre + '</a>';
                     }
+                    return '<a href="' + data.url + '">' + data.nombre + '</a>';
                 }
             }
         ];
         // Filtros Usuarios-Roles
-        const filtrosObjetos = new FiltrosDataTable('#usuarios_roles_datatable', configDataTable);
+        const filtrosObjetos = new FiltrosDataTable('#usuarios_roles_datatable', configDTUsuariosRoles);
         filtrosObjetos.precargar();
     </script>
 {% endblock %}

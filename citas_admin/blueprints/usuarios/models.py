@@ -28,17 +28,15 @@ class Usuario(database.Model, UserMixin, UniversalMixin):
 
     # Claves foráneas
     autoridad_id: Mapped[int] = mapped_column(ForeignKey("autoridades.id"))
-    autoridad: Mapped["Autoridad"] = relationship("Autoridad", back_populates="usuarios")
+    autoridad: Mapped["Autoridad"] = relationship(back_populates="usuarios")
     oficina_id: Mapped[int] = mapped_column(ForeignKey("oficinas.id"))
-    oficina: Mapped["Oficina"] = relationship("Oficina", back_populates="usuarios")
+    oficina: Mapped["Oficina"] = relationship(back_populates="usuarios")
 
     # Columnas
     email: Mapped[str] = mapped_column(String(256), unique=True, index=True)
     nombres: Mapped[str] = mapped_column(String(256))
     apellido_paterno: Mapped[str] = mapped_column(String(256))
     apellido_materno: Mapped[str] = mapped_column(String(256))
-    curp: Mapped[str] = mapped_column(String(18))
-    puesto: Mapped[str] = mapped_column(String(256))
 
     # Columnas que NO deben ser expuestas
     api_key: Mapped[Optional[str]] = mapped_column(String(128))
@@ -74,6 +72,7 @@ class Usuario(database.Model, UserMixin, UniversalMixin):
                     if (
                         permiso.modulo.nombre not in modulos_nombres
                         and permiso.estatus == "A"
+                        and permiso.modulo.estatus == "A"
                         and permiso.nivel > 0
                         and permiso.modulo.en_navegacion
                     ):
@@ -142,7 +141,7 @@ class Usuario(database.Model, UserMixin, UniversalMixin):
 
     def launch_task(self, comando, mensaje, *args, **kwargs):
         """Lanzar tarea en el fondo"""
-        rq_job = current_app.task_queue.enqueue(f"perseo.blueprints.{comando}", *args, **kwargs)
+        rq_job = current_app.task_queue.enqueue(f"citas_admin.blueprints.{comando}", *args, **kwargs)
         tarea = Tarea(id=rq_job.get_id(), comando=comando, mensaje=mensaje, usuario=self)
         tarea.save()
         return tarea
@@ -150,6 +149,10 @@ class Usuario(database.Model, UserMixin, UniversalMixin):
     def get_tasks_in_progress(self):
         """Obtener tareas"""
         return Tarea.query.filter_by(usuario=self, ha_terminado=False).all()
+
+    def get_task_in_progress(self, comando):
+        """Obtener progreso de una tarea"""
+        return Tarea.query.filter_by(comando=comando, usuario=self, ha_terminado=False).first()
 
     def __repr__(self):
         """Representación"""

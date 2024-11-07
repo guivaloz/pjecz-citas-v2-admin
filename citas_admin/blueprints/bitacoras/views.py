@@ -2,17 +2,18 @@
 Bitácoras
 """
 
+import json
+
 from flask import Blueprint, render_template, request, url_for
 from flask_login import current_user, login_required
-
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_email, safe_string
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
-from citas_admin.blueprints.usuarios.models import Usuario
 from citas_admin.blueprints.usuarios.decorators import permission_required
+from citas_admin.blueprints.usuarios.models import Usuario
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_email, safe_string
 
 MODULO = "BITACORAS"
 
@@ -34,21 +35,21 @@ def datatable_json():
     # Consultar
     consulta = Bitacora.query
     # Primero filtrar por columnas propias
+    if "estatus" in request.form:
+        consulta = consulta.filter(Bitacora.estatus == request.form["estatus"])
+    else:
+        consulta = consulta.filter(Bitacora.estatus == "A")
     if "modulo_id" in request.form:
-        consulta = consulta.filter(Bitacora.modulo_id == request.form["modulo_id"])
-    if "usuario_id" in request.form:
-        consulta = consulta.filter(Bitacora.usuario_id == request.form["usuario_id"])
-    # Luego filtrar por columnas de otras tablas
-    if "modulo_nombre" in request.form:
-        modulo_nombre = safe_string(request.form["modulo_nombre"], save_enie=True)
-        if modulo_nombre != "":
-            consulta = consulta.join(Modulo).filter(Modulo.nombre.contains(modulo_nombre))
-    if "usuario_email" in request.form:
         try:
-            usuario_email = safe_email(request.form["usuario_email"], search_fragment=True)
-            if usuario_email != "":
-                consulta = consulta.join(Usuario).filter(Usuario.email.contains(usuario_email))
-        except ValueError:
+            modulo_id = int(request.form["modulo_id"])
+            consulta = consulta.filter(Bitacora.modulo_id == modulo_id)
+        except (TypeError, ValueError):
+            pass
+    if "usuario_id" in request.form:
+        try:
+            usuario_id = int(request.form["usuario_id"])
+            consulta = consulta.filter(Bitacora.usuario_id == usuario_id)
+        except (TypeError, ValueError):
             pass
     # Ordenar y paginar
     registros = consulta.order_by(Bitacora.id.desc()).offset(start).limit(rows_per_page).all()
@@ -58,7 +59,7 @@ def datatable_json():
     for resultado in registros:
         data.append(
             {
-                "creado": resultado.creado.strftime("%Y-%m-%d %H:%M:%S"),
+                "creado": resultado.creado.strftime("%Y-%m-%dT%H:%M:%S"),
                 "usuario": {
                     "email": resultado.usuario.email,
                     "url": (
@@ -82,4 +83,20 @@ def datatable_json():
 @bitacoras.route("/bitacoras")
 def list_active():
     """Listado de Bitácoras activas"""
-    return render_template("bitacoras/list.jinja2")
+    # Valores por defecto
+    filtros = {"estatus": "A"}
+    titulo = "Bitácoras"
+    # Si viene usuario_id en la URL, agregar a los filtros
+    try:
+        usuario_id = int(request.args.get("usuario_id"))
+        usuario = Usuario.query.get_or_404(usuario_id)
+        filtros = {"estatus": "A", "usuario_id": usuario_id}
+        titulo = f"Bitácoras de {usuario.nombre}"
+    except (TypeError, ValueError):
+        pass
+    # Entregar
+    return render_template(
+        "bitacoras/list.jinja2",
+        filtros=json.dumps(filtros),
+        titulo=titulo,
+    )

@@ -4,7 +4,7 @@ Usuarios, vistas
 
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import google.auth.transport.requests
 import google.oauth2.id_token
@@ -12,7 +12,6 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from pytz import timezone
 
-from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.entradas_salidas.models import EntradaSalida
@@ -24,7 +23,7 @@ from citas_admin.blueprints.usuarios.forms import AccesoForm, UsuarioForm
 from citas_admin.blueprints.usuarios.models import Usuario
 from config.firebase import get_firebase_settings
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.pwgen import generar_contrasena
+from lib.pwgen import generar_api_key, generar_contrasena
 from lib.safe_next_url import safe_next_url
 from lib.safe_string import CONTRASENA_REGEXP, EMAIL_REGEXP, TOKEN_REGEXP, safe_email, safe_message, safe_string
 
@@ -143,23 +142,42 @@ def datatable_json():
     consulta = Usuario.query
     # Primero filtrar por columnas propias
     if "estatus" in request.form:
-        consulta = consulta.filter_by(estatus=request.form["estatus"])
+        consulta = consulta.filter(Usuario.estatus == request.form["estatus"])
     else:
-        consulta = consulta.filter_by(estatus="A")
+        consulta = consulta.filter(Usuario.estatus == "A")
+    # Filtrar por autoridad_id u autoridad_id_diferente_a
     if "autoridad_id" in request.form:
-        consulta = consulta.filter_by(autoridad_id=request.form["autoridad_id"])
+        try:
+            autoridad_id = int(request.form["autoridad_id"])
+            consulta = consulta.filter(Usuario.autoridad_id == autoridad_id)
+        except (TypeError, ValueError):
+            pass
+    elif "autoridad_id_diferente_a" in request.form:
+        try:
+            autoridad_id = int(request.form["autoridad_id_diferente_a"])
+            consulta = consulta.filter(Usuario.autoridad_id != autoridad_id)
+        except (TypeError, ValueError):
+            pass
+    # Filtrar por oficina_id u oficina_id_diferente_a
     if "oficina_id" in request.form:
-        consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
+        try:
+            oficina_id = int(request.form["oficina_id"])
+            consulta = consulta.filter(Usuario.oficina_id == oficina_id)
+        except (TypeError, ValueError):
+            pass
+    elif "oficina_id_diferente_a" in request.form:
+        try:
+            oficina_id = int(request.form["oficina_id_diferente_a"])
+            consulta = consulta.filter(Usuario.oficina_id != oficina_id)
+        except (TypeError, ValueError):
+            pass
+    # Filtrar por las columnas de texto de Usuario
     if "nombres" in request.form:
         consulta = consulta.filter(Usuario.nombres.contains(safe_string(request.form["nombres"])))
     if "apellido_paterno" in request.form:
         consulta = consulta.filter(Usuario.apellido_paterno.contains(safe_string(request.form["apellido_paterno"])))
     if "apellido_materno" in request.form:
         consulta = consulta.filter(Usuario.apellido_materno.contains(safe_string(request.form["apellido_materno"])))
-    if "curp" in request.form:
-        consulta = consulta.filter(Usuario.curp.contains(safe_string(request.form["curp"])))
-    if "puesto" in request.form:
-        consulta = consulta.filter(Usuario.puesto.contains(safe_string(request.form["puesto"])))
     if "email" in request.form:
         consulta = consulta.filter(Usuario.email.contains(safe_email(request.form["email"], search_fragment=True)))
     # Ordenar y paginar
@@ -175,7 +193,6 @@ def datatable_json():
                     "url": url_for("usuarios.detail", usuario_id=resultado.id),
                 },
                 "nombre": resultado.nombre,
-                "puesto": resultado.puesto,
                 "autoridad": {
                     "clave": resultado.autoridad.clave,
                     "url": (
@@ -184,16 +201,25 @@ def datatable_json():
                         else ""
                     ),
                 },
-                "oficina": {
-                    "clave": resultado.oficina.clave,
-                    "url": (
-                        url_for("oficinas.detail", oficina_id=resultado.oficina_id) if current_user.can_view("OFICINAS") else ""
-                    ),
-                },
             }
         )
     # Entregar JSON
     return output_datatable_json(draw, total, data)
+
+
+@usuarios.route("/usuarios/select_json", methods=["GET", "POST"])
+def select_json():
+    """Select JSON para Usuarios"""
+    # Consultar
+    consulta = Usuario.query.filter_by(estatus="A")
+    if "searchString" in request.form:
+        usuarios_email = safe_email(request.form["searchString"], search_fragment=True)
+        if usuarios_email != "":
+            consulta = consulta.filter(Usuario.email.contains(usuarios_email))
+    resultados = []
+    for usuario in consulta.order_by(Usuario.email).limit(20).all():
+        resultados.append({"id": usuario.email, "text": usuario.email, "nombre": usuario.nombre})
+    return {"results": resultados, "pagination": {"more": False}}
 
 
 @usuarios.route("/usuarios/api_key_request/<int:usuario_id>", methods=["GET", "POST"])
@@ -406,8 +432,6 @@ def edit(usuario_id):
             usuario.nombres = safe_string(form.nombres.data, save_enie=True)
             usuario.apellido_paterno = safe_string(form.apellido_paterno.data, save_enie=True)
             usuario.apellido_materno = safe_string(form.apellido_materno.data, save_enie=True)
-            usuario.curp = safe_string(form.curp.data)
-            usuario.puesto = safe_string(form.puesto.data)
             usuario.save()
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
@@ -424,8 +448,6 @@ def edit(usuario_id):
     form.nombres.data = usuario.nombres
     form.apellido_paterno.data = usuario.apellido_paterno
     form.apellido_materno.data = usuario.apellido_materno
-    form.curp.data = usuario.curp
-    form.puesto.data = usuario.puesto
     return render_template("usuarios/edit.jinja2", form=form, usuario=usuario)
 
 
@@ -475,3 +497,17 @@ def recover(usuario_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
     return redirect(url_for("usuarios.detail", usuario_id=usuario.id))
+
+
+@usuarios.route("/usuarios/select2_json", methods=["POST"])
+def query_select2_json():
+    """Proporcionar el JSON de usuarios para elegir con un Select2"""
+    consulta = Usuario.query.filter(Usuario.estatus == "A")
+    if "searchString" in request.form:
+        email = safe_email(request.form["searchString"], search_fragment=True)
+        if email != "":
+            consulta = consulta.filter(Usuario.email.contains(email))
+    resultados = []
+    for usuario in consulta.order_by(Usuario.email).limit(10).all():
+        resultados.append({"id": usuario.id, "text": usuario.email})
+    return {"results": resultados, "pagination": {"more": False}}

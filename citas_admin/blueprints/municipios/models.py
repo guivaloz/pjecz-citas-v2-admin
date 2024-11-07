@@ -3,7 +3,7 @@ Municipios, modelos
 """
 
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from citas_admin.extensions import database
 from lib.universal_mixin import UniversalMixin

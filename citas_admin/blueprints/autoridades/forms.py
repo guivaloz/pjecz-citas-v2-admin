@@ -6,23 +6,23 @@ from flask_wtf import FlaskForm
 from wtforms import BooleanField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional, Regexp
 
-from lib.safe_string import CLAVE_REGEXP
 from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.distritos.models import Distrito
 from citas_admin.blueprints.materias.models import Materia
+from lib.safe_string import CLAVE_REGEXP
 
 
 class AutoridadForm(FlaskForm):
     """Formulario Autoridad"""
 
     distrito = SelectField("Distrito", coerce=int, validators=[DataRequired()])
-    clave = StringField("Clave (hasta 16 caracteres)", validators=[DataRequired(), Regexp(CLAVE_REGEXP)])
+    materia = SelectField("Materia", coerce=int, validators=[DataRequired()])
+    clave = StringField("Clave (única de hasta 16 caracteres)", validators=[DataRequired(), Regexp(CLAVE_REGEXP)])
     descripcion = StringField("Descripción", validators=[DataRequired(), Length(max=256)])
     descripcion_corta = StringField("Descripción corta (máximo 64 caracteres)", validators=[DataRequired(), Length(max=64)])
     es_jurisdiccional = BooleanField("Es Jurisdiccional", validators=[Optional()])
     es_notaria = BooleanField("Es Notaría", validators=[Optional()])
     es_organo_especializado = BooleanField("Es Órgano Especializado", validators=[Optional()])
-    materia = SelectField("Materia", coerce=int, validators=[DataRequired()])
     organo_jurisdiccional = SelectField(
         "Órgano Jurisdiccional", choices=Autoridad.ORGANOS_JURISDICCIONALES.items(), validators=[DataRequired()]
     )

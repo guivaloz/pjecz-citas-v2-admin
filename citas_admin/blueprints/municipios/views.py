@@ -3,15 +3,15 @@ Municipios, vistas
 """
 
 import json
+
 from flask import Blueprint, render_template, request, url_for
 from flask_login import login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_string, safe_message
-
+from citas_admin.blueprints.municipios.models import Municipio
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.municipios.models import Municipio
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_string
 
 MODULO = "MUNICIPIOS"
 
@@ -39,7 +39,7 @@ def datatable_json():
         consulta = consulta.filter_by(estatus="A")
     if "nombre" in request.form:
         nombre = safe_string(request.form["nombre"], save_enie=True)
-        if nombre:
+        if nombre != "":
             consulta = consulta.filter(Municipio.nombre.contains(nombre))
     # Ordenar y paginar
     registros = consulta.order_by(Municipio.id).offset(start).limit(rows_per_page).all()
@@ -59,6 +59,24 @@ def datatable_json():
     return output_datatable_json(draw, total, data)
 
 
+@municipios.route("/municipios/select_json/<int:estado_id>", methods=["GET", "POST"])
+def select_json(estado_id=None):
+    """Select JSON para Municipios"""
+    # Consultar
+    consulta = Municipio.query.filter_by(estado_id=estado_id, estatus="A").order_by(Municipio.nombre)
+    # Elaborar datos para Select
+    data = []
+    for resultado in consulta.all():
+        data.append(
+            {
+                "id": resultado.id,
+                "nombre": resultado.nombre,
+            }
+        )
+    # Entregar JSON
+    return json.dumps(data)
+
+
 @municipios.route("/municipios")
 def list_active():
     """Listado de Municipios activos"""
@@ -67,18 +85,6 @@ def list_active():
         filtros=json.dumps({"estatus": "A"}),
         titulo="Municipios",
         estatus="A",
-    )
-
-
-@municipios.route("/municipios/inactivos")
-@permission_required(MODULO, Permiso.ADMINISTRAR)
-def list_inactive():
-    """Listado de Municipios inactivos"""
-    return render_template(
-        "municipios/list.jinja2",
-        filtros=json.dumps({"estatus": "B"}),
-        titulo="Municipios inactivos",
-        estatus="B",
     )
 
 

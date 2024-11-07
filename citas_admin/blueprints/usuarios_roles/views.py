@@ -69,7 +69,7 @@ def datatable_json():
     # Filtrar por los usuarios activos y por los roles activos
     consulta = consulta.filter(Usuario.estatus == "A").filter(Rol.estatus == "A")
     # Paginar
-    registros = consulta.order_by(UsuarioRol.id).offset(start).limit(rows_per_page).all()
+    registros = consulta.offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -87,7 +87,6 @@ def datatable_json():
                     ),
                 },
                 "usuario_nombre": resultado.usuario.nombre,
-                "usuario_puesto": resultado.usuario.puesto,
                 "rol": {
                     "nombre": resultado.rol.nombre,
                     "url": url_for("roles.detail", rol_id=resultado.rol_id) if current_user.can_view("ROLES") else "",

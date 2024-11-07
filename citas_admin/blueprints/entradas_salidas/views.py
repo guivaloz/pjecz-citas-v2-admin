@@ -2,16 +2,17 @@
 Entradas-Salidas
 """
 
+import json
+
 from flask import Blueprint, render_template, request, url_for
 from flask_login import login_required
-
-from lib.safe_string import safe_email
-from lib.datatables import get_datatable_parameters, output_datatable_json
 
 from citas_admin.blueprints.entradas_salidas.models import EntradaSalida
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.usuarios.models import Usuario
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_email
 
 MODULO = "ENTRADAS SALIDAS"
 
@@ -39,14 +40,6 @@ def datatable_json():
         consulta = consulta.filter_by(estatus="A")
     if "usuario_id" in request.form:
         consulta = consulta.filter_by(usuario_id=request.form["usuario_id"])
-    # Luego filtrar por columnas de otras tablas
-    if "usuario_email" in request.form:
-        try:
-            usuario_email = safe_email(request.form["usuario_email"], search_fragment=True)
-            if usuario_email != "":
-                consulta = consulta.join(Usuario).filter(Usuario.email.contains(usuario_email))
-        except ValueError:
-            pass
     # Ordenar y paginar
     registros = consulta.order_by(EntradaSalida.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
@@ -55,7 +48,7 @@ def datatable_json():
     for resultado in registros:
         data.append(
             {
-                "creado": resultado.creado.strftime("%Y-%m-%d %H:%M:%S"),
+                "creado": resultado.creado.strftime("%Y-%m-%dT%H:%M:%S"),
                 "tipo": resultado.tipo,
                 "usuario": {
                     "email": resultado.usuario.email,
@@ -70,4 +63,23 @@ def datatable_json():
 @entradas_salidas.route("/entradas_salidas")
 def list_active():
     """Listado de Entradas-Salidas activos"""
-    return render_template("entradas_salidas/list.jinja2")
+
+    # Definir filtros por defecto
+    filtros = {"estatus": "A"}
+    titulo = "Entradas-Salidas"
+
+    # Si viene usuario_id en la URL, agregar a los filtros
+    try:
+        usuario_id = int(request.args.get("usuario_id"))
+        usuario = Usuario.query.get_or_404(usuario_id)
+        filtros = {"estatus": "A", "usuario_id": usuario_id}
+        titulo = f"Entradas-Salidas de {usuario.nombre}"
+    except (TypeError, ValueError):
+        pass
+
+    # Entregar
+    return render_template(
+        "entradas_salidas/list.jinja2",
+        filtros=json.dumps(filtros),
+        titulo=titulo,
+    )

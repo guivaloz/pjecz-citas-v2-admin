@@ -32,8 +32,6 @@ def respaldar_usuarios_roles():
                 "nombres",
                 "apellido_paterno",
                 "apellido_materno",
-                "curp",
-                "puesto",
                 "roles",
                 "estatus",
             ]
@@ -52,8 +50,6 @@ def respaldar_usuarios_roles():
                     usuario.nombres,
                     usuario.apellido_paterno,
                     usuario.apellido_materno,
-                    usuario.curp,
-                    usuario.puesto,
                     ",".join(roles_list),
                     usuario.estatus,
                 ]

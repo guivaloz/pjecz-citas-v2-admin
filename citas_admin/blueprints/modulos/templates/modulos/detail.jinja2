@@ -24,7 +24,6 @@
         {{ detail.label_value('Icono', modulo.icono) }}
         {{ detail.label_value('Ruta', modulo.ruta) }}
         {{ detail.label_value_boolean('En menú de navegación', modulo.en_navegacion) }}
-        {{ detail.label_value('Creado', moment(modulo.creado, local=True).format('llll')) }}
     {% endcall %}
     {% if current_user.can_view('PERMISOS') %}
         {% call detail.card('Permisos') %}
@@ -55,14 +54,14 @@
         <script>
             // DataTable Permisos
             const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-            let configDataTable = constructorDataTable.config();
-            configDataTable['ajax']['url'] = '/permisos/datatable_json';
-            configDataTable['ajax']['data'] = { 'estatus': "A", 'modulo_id': {{ modulo.id }} };
-            configDataTable['columns'] = [
+            let configDTPermisos = constructorDataTable.config();
+            configDTPermisos['ajax']['url'] = '/permisos/datatable_json';
+            configDTPermisos['ajax']['data'] = { 'estatus': "A", 'modulo_id': {{ modulo.id}} };
+            configDTPermisos['columns'] = [
                 { data: "detalle" },
                 { data: "rol" }
             ];
-            configDataTable['columnDefs'] = [
+            configDTPermisos['columnDefs'] = [
                 {
                     targets: 0, // detalle
                     data: null,
@@ -74,7 +73,7 @@
                     targets: 1, // rol
                     data: null,
                     render: function(data, type, row, meta) {
-                        if (data.url === '') {
+                        if (data.url == '') {
                             return data.nombre;
                         } else {
                             return '<a href="' + data.url + '">' + data.nombre + '</a>';
@@ -83,8 +82,8 @@
                 }
             ];
             // Filtros Permisos
-            const filtrosObjetos = new FiltrosDataTable('#permisos_datatable', configDataTable);
-            filtrosObjetos.precargar();
+            const filtrosDTPermisos = new FiltrosDataTable('#permisos_datatable', configDTPermisos);
+            filtrosDTPermisos.precargar();
         </script>
     {% endif %}
 {% endblock %}
