@@ -43,13 +43,13 @@ def datatable_json():
         try:
             modulo_id = int(request.form["modulo_id"])
             consulta = consulta.filter(Bitacora.modulo_id == modulo_id)
-        except (TypeError, ValueError):
+        except ValueError:
             pass
     if "usuario_id" in request.form:
         try:
             usuario_id = int(request.form["usuario_id"])
             consulta = consulta.filter(Bitacora.usuario_id == usuario_id)
-        except (TypeError, ValueError):
+        except ValueError:
             pass
     # Ordenar y paginar
     registros = consulta.order_by(Bitacora.id.desc()).offset(start).limit(rows_per_page).all()

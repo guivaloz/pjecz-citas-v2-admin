@@ -44,13 +44,13 @@ def datatable_json():
         try:
             modulo_id = int(request.form["modulo_id"])
             consulta = consulta.filter(Permiso.modulo_id == modulo_id)
-        except (TypeError, ValueError):
+        except ValueError:
             pass
     if "rol_id" in request.form:
         try:
             rol_id = int(request.form["rol_id"])
             consulta = consulta.filter(Permiso.rol_id == rol_id)
-        except (TypeError, ValueError):
+        except ValueError:
             pass
     if "nombre" in request.form:
         nombre = safe_string(request.form["nombre"], save_enie=True)
