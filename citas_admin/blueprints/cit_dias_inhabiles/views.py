@@ -52,7 +52,7 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "fecha": resultado.fecha.strftime("%Y-%m-%d"),
+                    "fecha": resultado.fecha.strftime("%Y-%m-%d 00:00:00"),
                     "url": url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=resultado.id),
                 },
                 "descripcion": resultado.descripcion,

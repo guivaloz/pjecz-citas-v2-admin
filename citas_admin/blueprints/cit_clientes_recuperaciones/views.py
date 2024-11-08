@@ -78,7 +78,7 @@ def datatable_json():
                         else ""
                     ),
                 },
-                "expiracion": resultado.expiracion,
+                "expiracion": resultado.expiracion.strftime("%Y-%m-%dT%H:%M:%S"),
                 "ya_recuperado": resultado.ya_recuperado,
             }
         )

@@ -3,17 +3,17 @@ Cit Clientes Registros, vistas
 """
 
 import json
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_email, safe_string, safe_message
-
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_clientes_registros.models import CitClienteRegistro
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
-from citas_admin.blueprints.cit_clientes_registros.models import CitClienteRegistro
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_email, safe_message, safe_string
 
 MODULO = "CIT CLIENTES REGISTROS"
 
@@ -36,9 +36,9 @@ def datatable_json():
     consulta = CitClienteRegistro.query
     # Primero filtrar por columnas propias
     if "estatus" in request.form:
-        consulta = consulta.filter_by(estatus=request.form["estatus"])
+        consulta = consulta.filter(CitClienteRegistro.estatus == request.form["estatus"])
     else:
-        consulta = consulta.filter_by(estatus="A")
+        consulta = consulta.filter(CitClienteRegistro.estatus == "A")
     if "email" in request.form:
         email = safe_email(request.form["email"], search_fragment=True)
         if email != "":
@@ -60,14 +60,11 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "id": resultado.id,
+                    "email": resultado.email,
                     "url": url_for("cit_clientes_registros.detail", cit_cliente_registro_id=resultado.id),
                 },
-                "nombres": resultado.nombres,
-                "apellido_primero": resultado.apellido_primero,
-                "apellido_segundo": resultado.apellido_segundo,
-                "email": resultado.email,
-                "expiracion": resultado.expiracion,
+                "nombre": resultado.nombre,
+                "expiracion": resultado.expiracion.strftime("%Y-%m-%dT%H:%M:%S"),
                 "ya_registrado": resultado.ya_registrado,
             }
         )

@@ -3,19 +3,19 @@ Usuarios-Oficinas, vistas
 """
 
 import json
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-
-from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_message
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.usuarios.models import Usuario
+from citas_admin.blueprints.usuarios_oficinas.forms import UsuarioOficinaWithOficinaForm, UsuarioOficinaWithUsuarioForm
 from citas_admin.blueprints.usuarios_oficinas.models import UsuarioOficina
-from citas_admin.blueprints.usuarios_oficinas.forms import UsuarioOficinaWithUsuarioForm, UsuarioOficinaWithOficinaForm
+from lib.datatables import get_datatable_parameters, output_datatable_json
+from lib.safe_string import safe_message
 
 MODULO = "USUARIOS OFICINAS"
 
@@ -45,10 +45,6 @@ def datatable_json():
         consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
     if "usuario_id" in request.form:
         consulta = consulta.filter_by(usuario_id=request.form["usuario_id"])
-    # Luego filtrar por columnas de otras tablas
-    # if "persona_rfc" in request.form:
-    #     consulta = consulta.join(Persona)
-    #     consulta = consulta.filter(Persona.rfc.contains(safe_rfc(request.form["persona_rfc"], search_fragment=True)))
     # Ordenar y paginar
     registros = consulta.order_by(UsuarioOficina.id).offset(start).limit(rows_per_page).all()
     total = consulta.count()

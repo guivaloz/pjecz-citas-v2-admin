@@ -38,9 +38,9 @@ def datatable_json():
     consulta = CitCliente.query
     # Primero filtrar por columnas propias
     if "estatus" in request.form:
-        consulta = consulta.filter_by(estatus=request.form["estatus"])
+        consulta = consulta.filter(CitCliente.estatus == request.form["estatus"])
     else:
-        consulta = consulta.filter_by(estatus="A")
+        consulta = consulta.filter(CitCliente.estatus == "A")
     if "email" in request.form:
         email = safe_email(request.form["email"], search_fragment=True)
         if email != "":
@@ -66,7 +66,6 @@ def datatable_json():
                     "url": url_for("cit_clientes.detail", cit_cliente_id=resultado.id),
                 },
                 "nombre": resultado.nombre,
-                "curp": resultado.curp,
                 "telefono": resultado.telefono,
             }
         )

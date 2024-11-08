@@ -171,7 +171,7 @@
                     targets: 1, // fecha
                     type: 'date',
                     render: function (data, type, row) {
-                        return moment.utc(data).format('YYYY-MM-DD, ddd');
+                        return moment(data).format('YYYY-MM-DD, ddd');
                     }
                 },
                 {
@@ -208,6 +208,15 @@
                     }
                 }
             ];
+            // DataTable estilos en las filas segun estado
+            configDTCitCitas['createdRow'] = function(row, data, dataIndex) {
+                switch (data.estado) {
+                    case "ASISTIO":      $(row).addClass('table-success'); break;
+                    case "PENDIENTE":    $(row).addClass('table-warning'); break;
+                    case "CANCELO":      $(row).addClass('table-danger'); break;
+                    case "INASISTENCIA": $(row).addClass('table-secondary'); break;
+                }
+            };
             // Filtros CitCitas
             const filtrosCitCitas = new FiltrosDataTable('#cit_citas_datatable', configDTCitCitas);
             filtrosCitCitas.agregarInput('filtroId', 'id');

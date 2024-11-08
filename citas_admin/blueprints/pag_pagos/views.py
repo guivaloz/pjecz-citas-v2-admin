@@ -67,10 +67,6 @@ def datatable_json():
             consulta = consulta.filter(PagPago.fecha >= fecha_desde)
         if fecha_hasta:
             consulta = consulta.filter(PagPago.fecha <= fecha_hasta)
-        # Luego filtrar por columnas de otras tablas
-        # TODO: Filtrar por cit_cliente_email
-        # TODO: Filtrar por cit_cliente_nombres
-        # TODO: Filtrar por cit_cliente_primer_apellido
     # Ordenar y paginar
     registros = consulta.order_by(PagPago.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
@@ -83,7 +79,7 @@ def datatable_json():
                     "id": resultado.id,
                     "url": url_for("pag_pagos.detail", pag_pago_id=resultado.id),
                 },
-                "fecha": resultado.creado,
+                "creado": resultado.creado.strftime("%Y-%m-%dT%H:%M:%S"),
                 "cit_cliente": {
                     "nombre": f"{resultado.cit_cliente.nombre}",
                     "url": (

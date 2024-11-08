@@ -105,8 +105,8 @@ def datatable_json():
                         url_for("oficinas.detail", oficina_id=resultado.oficina.id) if current_user.can_view("OFICINAS") else ""
                     ),
                 },
-                "creado": resultado.creado.strftime("%Y-%m-%d %H:%M"),
-                "fecha": resultado.inicio.strftime("%Y-%m-%d %H:%M"),
+                "creado": resultado.creado.strftime("%Y-%m-%dT%H:%M:%S"),
+                "fecha": resultado.inicio.strftime("%Y-%m-%d 00:00:00"),
                 "inicio": resultado.inicio.strftime("%H:%M"),
                 "termino": resultado.termino.strftime("%H:%M"),
                 "estado": resultado.estado,

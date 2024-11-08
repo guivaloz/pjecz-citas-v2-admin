@@ -197,7 +197,7 @@
                     targets: 1, // fecha
                     type: 'date',
                     render: function (data, type, row) {
-                        return moment.utc(data).format('YYYY-MM-DD, ddd');
+                        return moment(data).format('YYYY-MM-DD, ddd');
                     }
                 },
                 {
@@ -234,6 +234,15 @@
                     }
                 }
             ];
+            // DataTable estilos en las filas segun estado
+            configDTCitCitas['createdRow'] = function(row, data, dataIndex) {
+                switch (data.estado) {
+                    case "ASISTIO":      $(row).addClass('table-success'); break;
+                    case "PENDIENTE":    $(row).addClass('table-warning'); break;
+                    case "CANCELO":      $(row).addClass('table-danger'); break;
+                    case "INASISTENCIA": $(row).addClass('table-secondary'); break;
+                }
+            };
             // Filtros CitCitas
             const filtrosCitCitas = new FiltrosDataTable('#cit_citas_datatable', configDTCitCitas);
             filtrosCitCitas.agregarInput('filtroId', 'id');
@@ -260,7 +269,7 @@
                     targets: 0, // detalle
                     data: null,
                     render: function(data, type, row, meta) {
-                        return '<a href="' + data.url + '">' + moment.utc(data.fecha).format('YYYY-MM-DD, ddd') + '</a>';
+                        return '<a href="' + data.url + '">' + moment(data.fecha).format('YYYY-MM-DD, ddd') + '</a>';
                     }
                 },
                 {
@@ -283,15 +292,15 @@
     {% if current_user.can_view('CIT OFICINAS SERVICIOS') %}
         <script>
             // DataTable CitOficinasServicios
-            let configDataTable = constructorDataTable.config();
-            configDataTable['ajax']['url'] = '/cit_oficinas_servicios/datatable_json';
-            configDataTable['ajax']['data'] = { 'estatus': "A", 'oficina_id': {{ oficina.id }} };
-            configDataTable['columns'] = [
+            let configDTCitOficinasServicios = constructorDataTable.config();
+            configDTCitOficinasServicios['ajax']['url'] = '/cit_oficinas_servicios/datatable_json';
+            configDTCitOficinasServicios['ajax']['data'] = { 'estatus': "A", 'oficina_id': {{ oficina.id }} };
+            configDTCitOficinasServicios['columns'] = [
                 { data: 'detalle' },
                 { data: 'cit_servicio' },
                 { data: 'cit_servicio_descripcion' }
             ];
-            configDataTable['columnDefs'] = [
+            configDTCitOficinasServicios['columnDefs'] = [
                 {
                     targets: 0, // detalle
                     data: null,
@@ -318,7 +327,7 @@
                 }
             ];
             // Filtros CitOficinasServicios
-            const filtrosCitOficinasServicios = new FiltrosDataTable('#cit_oficinas_servicios_datatable', configDataTable);
+            const filtrosCitOficinasServicios = new FiltrosDataTable('#cit_oficinas_servicios_datatable', configDTCitOficinasServicios);
             filtrosCitOficinasServicios.agregarInput('filtroCitServicioClave', 'cit_servicio_clave');
             filtrosCitOficinasServicios.agregarInput('filtroCitServicioDescripcion', 'cit_servicio_descripcion');
             filtrosCitOficinasServicios.precargar();

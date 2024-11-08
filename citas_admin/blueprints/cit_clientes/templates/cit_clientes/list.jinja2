@@ -50,7 +50,6 @@
                 <tr>
                     <th>Correo Electrónico</th>
                     <th>Nombre Completo</th>
-                    <th>CURP</th>
                     <th>Teléfono</th>
                 </tr>
             </thead>
@@ -70,7 +69,6 @@
         configDataTable['columns'] = [
             { data: "detalle" },
             { data: "nombre" },
-            { data: "curp" },
             { data: "telefono" }
         ];
         configDataTable['columnDefs'] = [
@@ -82,7 +80,7 @@
                 }
             },
             {
-                targets: [2, 3], // curp y telefono
+                targets: 2, // telefono
                 data: null,
                 render: function(data, type, row, meta) {
                     return '<span class="font-monospace">' + data + '</span>';

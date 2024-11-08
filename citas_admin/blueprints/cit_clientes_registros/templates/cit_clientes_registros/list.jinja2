@@ -21,8 +21,8 @@
                 <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitClientesRegistros.buscar(); return false;">
                     <div class="col-4">
                         <div class="form-floating">
-                            <input id="filtroEMail" type="text" class="form-control" aria-label="Clave" style="text-transform: uppercase;">
-                            <label for="filtroEMail">e-mail</label>
+                            <input id="filtroEMail" type="text" class="form-control" aria-label="Correo Electrónico">
+                            <label for="filtroEMail">Correo Electrónico</label>
                         </div>
                     </div>
                     <div class="col-3">
@@ -33,7 +33,7 @@
                     </div>
                     <div class="col-3">
                         <div class="form-floating">
-                            <input id="filtroApellidoPrimero" type="text" class="form-control" aria-label="Apellido primero" style="text-transform: uppercase;">
+                            <input id="filtroApellidoPrimero" type="text" class="form-control" aria-label="Primer apellido" style="text-transform: uppercase;">
                             <label for="filtroApellidoPrimero">Primer apellido</label>
                         </div>
                     </div>
@@ -48,11 +48,8 @@
         <table id="cit_clientes_registros_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Nombres</th>
-                    <th>Apellido primero</th>
-                    <th>Apellido segundo</th>
                     <th>Correo electrónico</th>
+                    <th>Nombre completo</th>
                     <th>Expiración</th>
                     <th>Ya registrado</th>
                 </tr>
@@ -72,10 +69,7 @@
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
             { data: 'detalle' },
-            { data: 'nombres' },
-            { data: 'apellido_primero' },
-            { data: 'apellido_segundo' },
-            { data: 'email' },
+            { data: 'nombre' },
             { data: 'expiracion' },
             { data: 'ya_registrado' }
         ];
@@ -84,18 +78,18 @@
                 targets: 0, // detalle
                 data: null,
                 render: function(data, type, row, meta) {
-                    return '<a href="' + data.url + '">' + data.id + '</a>';
+                    return '<a href="' + data.url + '">' + data.email + '</a>';
                 }
             },
             {
-                targets: 5, // expiracion
+                targets: 2, // expiracion
                 type: "date",
                 render: function (data, type, row) {
-                    return moment.utc(data).format('YYYY-MM-DD HH:mm');
+                    return moment.utc(data).local().format('YYYY-MM-DD HH:mm');
                 }
             },
             {
-                targets: 6, // ya_registrado
+                targets: 3, // ya_registrado
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data) {
@@ -105,6 +99,14 @@
                 }
             }
         ];
+        // DataTable estilos en las filas segun ya_registrado
+        configDataTable['createdRow'] = function(row, data, dataIndex) {
+            if (data.ya_registrado) {
+                $(row).addClass('table-success');
+            } else {
+                $(row).addClass('table-warning');
+            }
+        };
         // Filtros Cit Clientes Registros
         const filtrosCitClientesRegistros = new FiltrosDataTable('#cit_clientes_registros_datatable', configDataTable);
         filtrosCitClientesRegistros.agregarInput('filtroEMail', 'email');

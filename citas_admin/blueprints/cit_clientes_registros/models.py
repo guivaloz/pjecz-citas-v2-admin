@@ -32,6 +32,11 @@ class CitClienteRegistro(database.Model, UniversalMixin):
     mensajes_cantidad: Mapped[int] = mapped_column(default=0)
     ya_registrado: Mapped[bool] = mapped_column(default=False)
 
+    @property
+    def nombre(self):
+        """Junta nombres, apellido_primero y apellido segundo"""
+        return self.nombres + " " + self.apellido_primero + " " + self.apellido_segundo
+
     def __repr__(self):
         """Representación"""
         return f"<CitClienteRegistro {self.id}>"

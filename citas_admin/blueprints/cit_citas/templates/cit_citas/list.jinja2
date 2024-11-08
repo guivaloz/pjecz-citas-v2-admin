@@ -74,10 +74,10 @@
     <script>
         // DataTable CitCitas
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/cit_citas/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTCitCitas = constructorDataTable.config();
+        configDTCitCitas['ajax']['url'] = '/cit_citas/datatable_json';
+        configDTCitCitas['ajax']['data'] = {{ filtros }};
+        configDTCitCitas['columns'] = [
             { data: "detalle" },
             { data: "fecha" },
             { data: "inicio" },
@@ -87,7 +87,7 @@
             { data: "cit_servicio" },
             { data: "estado" }
         ];
-        configDataTable['columnDefs'] = [
+        configDTCitCitas['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -99,7 +99,7 @@
                 targets: 1, // fecha
                 type: 'date',
                 render: function (data, type, row) {
-                    return moment.utc(data).format('YYYY-MM-DD, ddd');
+                    return moment(data).format('YYYY-MM-DD, ddd');
                 }
             },
             {
@@ -136,8 +136,17 @@
                 }
             }
         ];
+        // DataTable estilos en las filas segun estado
+        configDTCitCitas['createdRow'] = function(row, data, dataIndex) {
+            switch (data.estado) {
+                case "ASISTIO":      $(row).addClass('table-success'); break;
+                case "PENDIENTE":    $(row).addClass('table-warning'); break;
+                case "CANCELO":      $(row).addClass('table-danger'); break;
+                case "INASISTENCIA": $(row).addClass('table-secondary'); break;
+            }
+        };
         // Filtros CitCitas
-        const filtrosCitCitas = new FiltrosDataTable('#cit_citas_datatable', configDataTable);
+        const filtrosCitCitas = new FiltrosDataTable('#cit_citas_datatable', configDTCitCitas);
         filtrosCitCitas.agregarInput('filtroId', 'id');
         filtrosCitCitas.agregarInput('filtroCitClienteEmail', 'cit_cliente_email');
         filtrosCitCitas.agregarInput('filtroCitClienteNombres', 'cit_cliente_nombres');

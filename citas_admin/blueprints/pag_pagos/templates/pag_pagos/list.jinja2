@@ -117,12 +117,12 @@
     <script>
         // DataTable PagPagos
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/pag_pagos/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTPagPagos = constructorDataTable.config();
+        configDTPagPagos['ajax']['url'] = '/pag_pagos/datatable_json';
+        configDTPagPagos['ajax']['data'] = {{ filtros }};
+        configDTPagPagos['columns'] = [
             { data: 'detalle' },
-            { data: 'fecha' },
+            { data: 'creado' },
             { data: 'cit_cliente' },
             { data: 'email' },
             { data: 'cantidad', className: "text-end" },
@@ -133,7 +133,7 @@
             { data: 'total', className: "text-end" },
             { data: 'estado' }
         ];
-        configDataTable['columnDefs'] = [
+        configDTPagPagos['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -142,10 +142,10 @@
                 }
             },
             {
-                targets: 1, // fecha
+                targets: 1, // creado
                 type: 'date',
                 render: function (data, type, row) {
-                    return moment.utc(data).format("YYYY-MM-DD HH:mm");
+                    return moment.utc(data).local().format('YYYY-MM-DD HH:mm');
                 }
             },
             {
@@ -200,7 +200,7 @@
                 }
             },
             {
-                targets: 10, // Estado
+                targets: 10, // estado
                 data: null,
                 render: function(data, type, row, meta) {
                     let color = "black";
@@ -215,8 +215,18 @@
                 }
             }
         ];
+        // DataTable estilos en las filas segun estado
+        configDTPagPagos['createdRow'] = function(row, data, dataIndex) {
+            switch (data.estado) {
+                case "SOLICITADO": $(row).addClass('table-warning'); break;
+                case "PAGADO":     $(row).addClass('table-success'); break;
+                case "ENTREGADO":  $(row).addClass('table-info'); break;
+                case "CANCELADO":  $(row).addClass('table-secondary'); break;
+                case "FALLIDO":    $(row).addClass('table-danger'); break;
+            }
+        };
         // Filtros PagPagos
-        const filtrosPagPagos = new FiltrosDataTable('#pag_pagos_datatable', configDataTable);
+        const filtrosPagPagos = new FiltrosDataTable('#pag_pagos_datatable', configDTPagPagos);
         filtrosPagPagos.agregarInput('filtroPagPagoId', 'id');
         filtrosPagPagos.agregarInput('filtroPagPagoFechaDesde', 'fecha_desde');
         filtrosPagPagos.agregarInput('filtroPagPagoFechaHasta', 'fecha_hasta');

@@ -95,7 +95,7 @@
                 targets: 2, // expiracion
                 type: 'date',
                 render: function (data, type, row) {
-                    return moment.utc(data).format('YYYY-MM-DD HH:mm');
+                    return moment.utc(data).local().format('YYYY-MM-DD HH:mm');
                 }
             },
             {
@@ -109,6 +109,14 @@
                 }
             }
         ];
+        // DataTable estilos en las filas segun ya_recuperado
+        configDataTable['createdRow'] = function(row, data, dataIndex) {
+            if (data.ya_recuperado) {
+                $(row).addClass('table-success');
+            } else {
+                $(row).addClass('table-warning');
+            }
+        };
         // Filtros Cit Clientes Recuperaciones
         const filtrosCitClientesRecuperaciones = new FiltrosDataTable('#cit_clientes_recuperaciones_datatable', configDataTable);
         filtrosCitClientesRecuperaciones.agregarInput('filtroCitClienteEmail', 'cit_cliente_email');
