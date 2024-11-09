@@ -63,15 +63,15 @@
     <script>
         // DataTable Cit Clientes
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/cit_clientes/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTCitClientes = constructorDataTable.config();
+        configDTCitClientes['ajax']['url'] = '/cit_clientes/datatable_json';
+        configDTCitClientes['ajax']['data'] = {{ filtros }};
+        configDTCitClientes['columns'] = [
             { data: "detalle" },
             { data: "nombre" },
             { data: "telefono" }
         ];
-        configDataTable['columnDefs'] = [
+        configDTCitClientes['columnDefs'] = [
             {
                 targets: 0, // detalle (email)
                 data: null,
@@ -88,7 +88,7 @@
             }
         ];
         // Filtros Cit Clientes
-        const filtrosCitClientes = new FiltrosDataTable('#cit_clientes_datatable', configDataTable);
+        const filtrosCitClientes = new FiltrosDataTable('#cit_clientes_datatable', configDTCitClientes);
         filtrosCitClientes.agregarInput('filtroEmail', 'email');
         filtrosCitClientes.agregarInput('filtroNombres', 'nombres');
         filtrosCitClientes.agregarInput('filtroPrimerApellido', 'apellido_primero');

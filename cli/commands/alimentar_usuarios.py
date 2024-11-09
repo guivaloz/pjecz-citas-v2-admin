@@ -2,19 +2,19 @@
 Alimentar Usuarios
 """
 
-from datetime import datetime
-from pathlib import Path
 import csv
 import sys
+from datetime import datetime
+from pathlib import Path
 
 import click
 
-from lib.pwgen import generar_contrasena
-from lib.safe_string import safe_clave, safe_email, safe_string
 from citas_admin.blueprints.autoridades.models import Autoridad
 from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.usuarios.models import Usuario
 from citas_admin.extensions import pwd_context
+from lib.pwgen import generar_contrasena
+from lib.safe_string import safe_clave, safe_email, safe_string
 
 USUARIOS_CSV = "seed/usuarios_roles.csv"
 
@@ -40,8 +40,6 @@ def alimentar_usuarios():
             nombres = safe_string(row["nombres"], save_enie=True)
             apellido_paterno = safe_string(row["apellido_paterno"], save_enie=True)
             apellido_materno = safe_string(row["apellido_materno"], save_enie=True)
-            curp = safe_string(row["curp"])
-            puesto = safe_string(row["puesto"], save_enie=True)
             estatus = row["estatus"]
             if usuario_id != contador + 1:
                 click.echo(click.style(f"  AVISO: usuario_id {usuario_id} no es consecutivo", fg="red"))
@@ -61,8 +59,6 @@ def alimentar_usuarios():
                 nombres=nombres,
                 apellido_paterno=apellido_paterno,
                 apellido_materno=apellido_materno,
-                curp=curp,
-                puesto=puesto,
                 estatus=estatus,
                 contrasena=pwd_context.hash(generar_contrasena()),
                 api_key="",

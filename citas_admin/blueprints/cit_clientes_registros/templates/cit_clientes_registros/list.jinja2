@@ -64,16 +64,16 @@
     <script>
         // DataTable Cit Clientes Registros
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/cit_clientes_registros/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTCitClientesRegistros = constructorDataTable.config();
+        configDTCitClientesRegistros['ajax']['url'] = '/cit_clientes_registros/datatable_json';
+        configDTCitClientesRegistros['ajax']['data'] = {{ filtros }};
+        configDTCitClientesRegistros['columns'] = [
             { data: 'detalle' },
             { data: 'nombre' },
             { data: 'expiracion' },
             { data: 'ya_registrado' }
         ];
-        configDataTable['columnDefs'] = [
+        configDTCitClientesRegistros['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -100,7 +100,7 @@
             }
         ];
         // DataTable estilos en las filas segun ya_registrado
-        configDataTable['createdRow'] = function(row, data, dataIndex) {
+        configDTCitClientesRegistros['createdRow'] = function(row, data, dataIndex) {
             if (data.ya_registrado) {
                 $(row).addClass('table-success');
             } else {
@@ -108,7 +108,7 @@
             }
         };
         // Filtros Cit Clientes Registros
-        const filtrosCitClientesRegistros = new FiltrosDataTable('#cit_clientes_registros_datatable', configDataTable);
+        const filtrosCitClientesRegistros = new FiltrosDataTable('#cit_clientes_registros_datatable', configDTCitClientesRegistros);
         filtrosCitClientesRegistros.agregarInput('filtroEMail', 'email');
         filtrosCitClientesRegistros.agregarInput('filtroNombres', 'nombres');
         filtrosCitClientesRegistros.agregarInput('filtroApellidoPrimero', 'apellido_paterno');

@@ -55,13 +55,13 @@
     <script>
         // DataTable Cit Categorias
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/cit_categorias/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTCitCategorias = constructorDataTable.config();
+        configDTCitCategorias['ajax']['url'] = '/cit_categorias/datatable_json';
+        configDTCitCategorias['ajax']['data'] = {{ filtros }};
+        configDTCitCategorias['columns'] = [
             { data: 'detalle' }
         ];
-        configDataTable['columnDefs'] = [
+        configDTCitCategorias['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -71,7 +71,7 @@
             }
         ];
         // Filtros Cit Categorias
-        const filtrosCitCategorias = new FiltrosDataTable('#cit_categorias_datatable', configDataTable);
+        const filtrosCitCategorias = new FiltrosDataTable('#cit_categorias_datatable', configDTCitCategorias);
         filtrosCitCategorias.agregarInput('filtroNombre', 'nombre');
         filtrosCitCategorias.precargar();
     </script>

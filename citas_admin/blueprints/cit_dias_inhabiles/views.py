@@ -1,5 +1,5 @@
 """
-Cit Dias Inhabiles, vistas
+Cit Dias Inhábiles, vistas
 """
 
 import json
@@ -8,6 +8,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
+from citas_admin.blueprints.cit_dias_inhabiles.forms import CitDiaInhabilForm
 from citas_admin.blueprints.cit_dias_inhabiles.models import CitDiaInhabil
 from citas_admin.blueprints.modulos.models import Modulo
 from citas_admin.blueprints.permisos.models import Permiso
@@ -29,16 +30,16 @@ def before_request():
 
 @cit_dias_inhabiles.route("/cit_dias_inhabiles/datatable_json", methods=["GET", "POST"])
 def datatable_json():
-    """DataTable JSON para listado de Cit Dias Inhabiles"""
+    """DataTable JSON para listado de Cit Dias Inhábiles"""
     # Tomar parámetros de Datatables
     draw, start, rows_per_page = get_datatable_parameters()
     # Consultar
     consulta = CitDiaInhabil.query
     # Primero filtrar por columnas propias
     if "estatus" in request.form:
-        consulta = consulta.filter_by(estatus=request.form["estatus"])
+        consulta = consulta.filter(CitDiaInhabil.estatus == request.form["estatus"])
     else:
-        consulta = consulta.filter_by(estatus="A")
+        consulta = consulta.filter(CitDiaInhabil.estatus == "A")
     if "descripcion" in request.form:
         descripcion = safe_string(request.form["descripcion"])
         if descripcion != "":
@@ -64,7 +65,7 @@ def datatable_json():
 
 @cit_dias_inhabiles.route("/cit_dias_inhabiles")
 def list_active():
-    """Listado de Cit Dias Inhabiles activos"""
+    """Listado de Cit Dias Inhábiles activos"""
     return render_template(
         "cit_dias_inhabiles/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
@@ -76,7 +77,7 @@ def list_active():
 @cit_dias_inhabiles.route("/cit_dias_inhabiles/inactivos")
 @permission_required(MODULO, Permiso.ADMINISTRAR)
 def list_inactive():
-    """Listado de Cit Dias Inhabiles inactivos"""
+    """Listado de Cit Dias Inhábiles inactivos"""
     return render_template(
         "cit_dias_inhabiles/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
@@ -87,6 +88,89 @@ def list_inactive():
 
 @cit_dias_inhabiles.route("/cit_dias_inhabiles/<int:cit_dia_inhabil_id>")
 def detail(cit_dia_inhabil_id):
-    """Detalle de un Cit Dia Inhabil"""
+    """Detalle de un Cit Dia Inhábil"""
     cit_dia_inhabil = CitDiaInhabil.query.get_or_404(cit_dia_inhabil_id)
     return render_template("cit_dias_inhabiles/detail.jinja2", cit_dia_inhabil=cit_dia_inhabil)
+
+
+@cit_dias_inhabiles.route("/cit_dias_inhabiles/nuevo", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.CREAR)
+def new():
+    """Nuevo Dia Inhábil"""
+    form = CitDiaInhabilForm()
+    if form.validate_on_submit():
+        cit_dia_inhabil = CitDiaInhabil(
+            fecha=form.fecha.data,
+            descripcion=safe_string(form.descripcion.data, save_enie=True),
+        )
+        cit_dia_inhabil.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Nuevo Dia Inhábil {cit_dia_inhabil.fecha}"),
+            url=url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+        return redirect(bitacora.url)
+    return render_template("cit_dias_inhabiles/new.jinja2", form=form)
+
+
+@cit_dias_inhabiles.route("/cit_dias_inhabiles/edicion/<int:cit_dia_inhabil_id>", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.MODIFICAR)
+def edit(cit_dia_inhabil_id):
+    """Editar Dia Inhábil"""
+    cit_dia_inhabil = CitDiaInhabil.query.get_or_404(cit_dia_inhabil_id)
+    form = CitDiaInhabilForm()
+    if form.validate_on_submit():
+        cit_dia_inhabil.fecha = form.fecha.data
+        cit_dia_inhabil.descripcion = safe_string(form.descripcion.data, save_enie=True)
+        cit_dia_inhabil.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Editado Dia Inhábil {cit_dia_inhabil.fecha}"),
+            url=url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+        return redirect(bitacora.url)
+    form.fecha.data = cit_dia_inhabil.fecha
+    form.descripcion.data = cit_dia_inhabil.descripcion
+    return render_template("cit_dias_inhabiles/edit.jinja2", form=form, cit_dia_inhabil=cit_dia_inhabil)
+
+
+@cit_dias_inhabiles.route("/cit_dias_inhabiles/eliminar/<int:cit_dia_inhabil_id>")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def delete(cit_dia_inhabil_id):
+    """Eliminar Dia Inhábil"""
+    cit_dia_inhabil = CitDiaInhabil.query.get_or_404(cit_dia_inhabil_id)
+    if cit_dia_inhabil.estatus == "A":
+        cit_dia_inhabil.delete()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Eliminado Dia Inhábil {cit_dia_inhabil.fecha}"),
+            url=url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id))
+
+
+@cit_dias_inhabiles.route("/cit_dias_inhabiles/recuperar/<int:cit_dia_inhabil_id>")
+@permission_required(MODULO, Permiso.MODIFICAR)
+def recover(cit_dia_inhabil_id):
+    """Recuperar Dia Inhábil"""
+    cit_dia_inhabil = CitDiaInhabil.query.get_or_404(cit_dia_inhabil_id)
+    if cit_dia_inhabil.estatus == "B":
+        cit_dia_inhabil.recover()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Recuperado Dia Inhábil {cit_dia_inhabil.fecha}"),
+            url=url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+    return redirect(url_for("cit_dias_inhabiles.detail", cit_dia_inhabil_id=cit_dia_inhabil.id))

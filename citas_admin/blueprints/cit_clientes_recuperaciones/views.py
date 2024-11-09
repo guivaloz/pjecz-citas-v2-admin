@@ -37,9 +37,9 @@ def datatable_json():
     consulta = CitClienteRecuperacion.query
     # Primero filtrar por columnas propias
     if "estatus" in request.form:
-        consulta = consulta.filter_by(estatus=request.form["estatus"])
+        consulta = consulta.filter(CitClienteRecuperacion.estatus == request.form["estatus"])
     else:
-        consulta = consulta.filter_by(estatus="A")
+        consulta = consulta.filter(CitClienteRecuperacion.estatus == "A")
     # Luego filtrar por columnas de otras tablas
     cit_cliente_email = ""
     if "cit_cliente_email" in request.form:

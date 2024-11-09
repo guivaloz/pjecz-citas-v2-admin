@@ -1,0 +1,26 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/form.jinja2' as f with context %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}Editar Hora Bloqueada {{ cit_hora_bloqueada.fecha }} de {{ cit_hora_bloqueada.inicio }} a {{ cit_hora_bloqueada.termino }}{% endblock %}
+
+{% block topbar_actions %}
+    {{ topbar.page('Editar Hora Bloqueada ' + cit_hora_bloqueada.fecha | string + ' de ' + cit_hora_bloqueada.inicio + ' a ' + cit_hora_bloqueada.termino) }}
+{% endblock %}
+
+{% block content %}
+    {% call f.card() %}
+        {% set form_kwargs = {'cit_hora_bloqueada_id': cit_hora_bloqueada.id} %}
+        {% call f.form_tag('cit_horas_bloqueadas.edit', fid='cit_hora_bloqueada_form', **form_kwargs) %}
+            {% call f.form_group(form.oficina, readonly=true) %}{% endcall %}
+            {% call f.form_group(form.fecha) %}{% endcall %}
+            {% call f.form_group(form.inicio_tiempo) %}{% endcall %}
+            {% call f.form_group(form.termino_tiempo) %}{% endcall %}
+            {% call f.form_group(form.descripcion) %}{% endcall %}
+            {% call f.form_group(form.guardar) %}{% endcall %}
+        {% endcall %}
+    {% endcall %}
+{% endblock %}
+
+{% block custom_javascript %}
+{% endblock %}

@@ -68,10 +68,10 @@
     <script>
         // DataTable CitServicios
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/cit_servicios/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTCitServicios = constructorDataTable.config();
+        configDTCitServicios['ajax']['url'] = '/cit_servicios/datatable_json';
+        configDTCitServicios['ajax']['data'] = {{ filtros }};
+        configDTCitServicios['columns'] = [
             { data: 'detalle' },
             { data: 'descripcion' },
             { data: 'duracion' },
@@ -81,7 +81,7 @@
             { data: 'hasta' },
             { data: 'dias_habilitados' }
         ];
-        configDataTable['columnDefs'] = [
+        configDTCitServicios['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -101,7 +101,7 @@
             }
         ];
         // Filtros CitServicios
-        const filtrosCitServicios = new FiltrosDataTable('#cit_servicios_datatable', configDataTable);
+        const filtrosCitServicios = new FiltrosDataTable('#cit_servicios_datatable', configDTCitServicios);
         filtrosCitServicios.agregarInput('filtroClave', 'clave');
         filtrosCitServicios.agregarInput('filtroDescripcion', 'descripcion');
         filtrosCitServicios.precargar();

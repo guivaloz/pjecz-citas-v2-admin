@@ -39,36 +39,51 @@ def datatable_json():
     consulta = CitCita.query
     # Primero filtrar por columnas propias
     if "estatus" in request.form:
-        consulta = consulta.filter_by(estatus=request.form["estatus"])
+        consulta = consulta.filter(CitCita.estatus == request.form["estatus"])
     else:
-        consulta = consulta.filter_by(estatus="A")
+        consulta = consulta.filter(CitCita.estatus == "A")
     if "id" in request.form:
-        consulta = consulta.filter_by(id=request.form["id"])
-    else:
-        if "cit_cliente_id" in request.form:
-            consulta = consulta.filter_by(cit_cliente_id=request.form["cit_cliente_id"])
-        if "cit_servicio_id" in request.form:
-            consulta = consulta.filter_by(cit_servicio_id=request.form["cit_servicio_id"])
-        if "oficina_id" in request.form:
-            consulta = consulta.filter_by(oficina_id=request.form["oficina_id"])
-        # Luego filtrar por columnas de otras tablas
-        cit_cliente_email = ""
-        if "cit_cliente_email" in request.form:
-            cit_cliente_email = safe_email(request.form["cit_cliente_email"], search_fragment=True)
-        cit_cliente_nombres = ""
-        if "cit_cliente_nombres" in request.form:
-            cit_cliente_nombres = safe_string(request.form["cit_cliente_nombres"], save_enie=True)
-        cit_cliente_primer_apellido = ""
-        if "cit_cliente_primer_apellido" in request.form:
-            cit_cliente_primer_apellido = safe_string(request.form["cit_cliente_primer_apellido"], save_enie=True)
-        if cit_cliente_email != "" or cit_cliente_nombres != "" or cit_cliente_primer_apellido != "":
-            consulta = consulta.join(CitCliente)
-            if cit_cliente_email != "":
-                consulta = consulta.filter(CitCliente.email.contains(cit_cliente_email))
-            if cit_cliente_nombres != "":
-                consulta = consulta.filter(CitCliente.nombres.contains(cit_cliente_nombres))
-            if cit_cliente_primer_apellido != "":
-                consulta = consulta.filter(CitCliente.primer_apellido.contains(cit_cliente_primer_apellido))
+        try:
+            cit_cita_id = int(request.form["id"])
+            consulta = consulta.filter(CitCita.id == cit_cita_id)
+        except ValueError:
+            pass
+    if "cit_cliente_id" in request.form:
+        try:
+            cit_cliente_id = int(request.form["cit_cliente_id"])
+            consulta = consulta.filter(CitCita.cit_cliente_id == cit_cliente_id)
+        except ValueError:
+            pass
+    if "cit_servicio_id" in request.form:
+        try:
+            cit_servicio_id = int(request.form["cit_servicio_id"])
+            consulta = consulta.filter(CitCita.cit_servicio_id == cit_servicio_id)
+        except ValueError:
+            pass
+    if "oficina_id" in request.form:
+        try:
+            oficina_id = int(request.form["oficina_id"])
+            consulta = consulta.filter(CitCita.oficina_id == oficina_id)
+        except ValueError:
+            pass
+    # Luego filtrar por columnas de otras tablas
+    cit_cliente_email = ""
+    if "cit_cliente_email" in request.form:
+        cit_cliente_email = safe_email(request.form["cit_cliente_email"], search_fragment=True)
+    cit_cliente_nombres = ""
+    if "cit_cliente_nombres" in request.form:
+        cit_cliente_nombres = safe_string(request.form["cit_cliente_nombres"], save_enie=True)
+    cit_cliente_primer_apellido = ""
+    if "cit_cliente_primer_apellido" in request.form:
+        cit_cliente_primer_apellido = safe_string(request.form["cit_cliente_primer_apellido"], save_enie=True)
+    if cit_cliente_email != "" or cit_cliente_nombres != "" or cit_cliente_primer_apellido != "":
+        consulta = consulta.join(CitCliente)
+        if cit_cliente_email != "":
+            consulta = consulta.filter(CitCliente.email.contains(cit_cliente_email))
+        if cit_cliente_nombres != "":
+            consulta = consulta.filter(CitCliente.nombres.contains(cit_cliente_nombres))
+        if cit_cliente_primer_apellido != "":
+            consulta = consulta.filter(CitCliente.primer_apellido.contains(cit_cliente_primer_apellido))
     # Ordenar y paginar
     registros = consulta.order_by(CitCita.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()

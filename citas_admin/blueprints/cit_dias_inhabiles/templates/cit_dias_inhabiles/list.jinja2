@@ -10,15 +10,15 @@
             {% if estatus == 'A' %}{{ topbar.button_list_inactive('Inactivos', url_for('cit_dias_inhabiles.list_inactive')) }}{% endif %}
             {% if estatus == 'B' %}{{ topbar.button_list_active('Activos', url_for('cit_dias_inhabiles.list_active')) }}{% endif %}
         {% endif %}
-        {# if current_user.can_insert('CIT DIAS INHABILES') %}
+        {% if current_user.can_insert('CIT DIAS INHABILES') %}
             {{ topbar.button_new('Nuevo Dia Inhabil', url_for('cit_dias_inhabiles.new')) }}
-        {% endif #}
+        {% endif %}
     {% endcall %}
 {% endblock %}
 
 {% block content %}
     {% call list.card() %}
-        <!-- Filtros Cit Dias Inhabiles -->
+        <!-- Filtros Cit Días Inhábiles -->
         <div class="row">
             <div class="col">
                 <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitDiasInhabiles.buscar(); return false;">
@@ -35,7 +35,7 @@
                 </form>
             </div>
         </div>
-        <!-- DataTable Cit Dias Inhabiles -->
+        <!-- DataTable Cit Días Inhábiles -->
         <table id="cit_dias_inhabiles_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -51,16 +51,16 @@
     <script src="/static/js/datatables-constructor.js"></script>
     <script src="/static/js/datatables-filtros.js"></script>
     <script>
-        // DataTable Cit Dias Inhabiles
+        // DataTable Cit Días Inhábiles
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/cit_dias_inhabiles/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTCitDiasInhabiles = constructorDataTable.config();
+        configDTCitDiasInhabiles['ajax']['url'] = '/cit_dias_inhabiles/datatable_json';
+        configDTCitDiasInhabiles['ajax']['data'] = {{ filtros }};
+        configDTCitDiasInhabiles['columns'] = [
             { data: 'detalle' },
             { data: 'descripcion' }
         ];
-        configDataTable['columnDefs'] = [
+        configDTCitDiasInhabiles['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -69,8 +69,8 @@
                 }
             }
         ];
-        // Filtros Cit Dias Inhabiles
-        const filtrosCitDiasInhabiles = new FiltrosDataTable('#cit_dias_inhabiles_datatable', configDataTable);
+        // Filtros Cit Días Inhábiles
+        const filtrosCitDiasInhabiles = new FiltrosDataTable('#cit_dias_inhabiles_datatable', configDTCitDiasInhabiles);
         filtrosCitDiasInhabiles.agregarInput('filtroDescripcion', 'descripcion');
         filtrosCitDiasInhabiles.precargar();
     </script>

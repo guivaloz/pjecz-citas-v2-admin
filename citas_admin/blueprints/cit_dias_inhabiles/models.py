@@ -1,5 +1,5 @@
 """
-Cit Dias Inhabiles, modelos
+Cit Dias Inhábiles, modelos
 """
 
 from datetime import date

@@ -73,10 +73,10 @@
     <script>
         // DataTable CitOficinasServicios
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/cit_oficinas_servicios/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTCitOficinasServicios = constructorDataTable.config();
+        configDTCitOficinasServicios['ajax']['url'] = '/cit_oficinas_servicios/datatable_json';
+        configDTCitOficinasServicios['ajax']['data'] = {{ filtros }};
+        configDTCitOficinasServicios['columns'] = [
             { data: 'detalle' },
             { data: 'oficina' },
             { data: 'oficina_descripcion_corta' },
@@ -85,7 +85,7 @@
             { data: 'cit_servicio' },
             { data: 'cit_servicio_descripcion' }
         ];
-        configDataTable['columnDefs'] = [
+        configDTCitOficinasServicios['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -122,7 +122,7 @@
             }
         ];
         // Filtros CitOficinasServicios
-        const filtrosCitOficinasServicios = new FiltrosDataTable('#cit_oficinas_servicios_datatable', configDataTable);
+        const filtrosCitOficinasServicios = new FiltrosDataTable('#cit_oficinas_servicios_datatable', configDTCitOficinasServicios);
         filtrosCitOficinasServicios.agregarInput('filtroOficinaClave', 'oficina_clave');
         filtrosCitOficinasServicios.agregarInput('filtroOficinaDescripcionCorta', 'oficina_descripcion_corta');
         filtrosCitOficinasServicios.agregarInput('filtroCitServicioClave', 'cit_servicio_clave');

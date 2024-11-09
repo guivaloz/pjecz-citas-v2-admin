@@ -64,16 +64,16 @@
     <script>
         // DataTable Cit Clientes Recuperaciones
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/cit_clientes_recuperaciones/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTCitClientesRecuperaciones = constructorDataTable.config();
+        configDTCitClientesRecuperaciones['ajax']['url'] = '/cit_clientes_recuperaciones/datatable_json';
+        configDTCitClientesRecuperaciones['ajax']['data'] = {{ filtros }};
+        configDTCitClientesRecuperaciones['columns'] = [
             { data: 'detalle' },
             { data: 'cit_cliente' },
             { data: 'expiracion' },
             { data: 'ya_recuperado' }
         ];
-        configDataTable['columnDefs'] = [
+        configDTCitClientesRecuperaciones['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -110,7 +110,7 @@
             }
         ];
         // DataTable estilos en las filas segun ya_recuperado
-        configDataTable['createdRow'] = function(row, data, dataIndex) {
+        configDTCitClientesRecuperaciones['createdRow'] = function(row, data, dataIndex) {
             if (data.ya_recuperado) {
                 $(row).addClass('table-success');
             } else {
@@ -118,7 +118,7 @@
             }
         };
         // Filtros Cit Clientes Recuperaciones
-        const filtrosCitClientesRecuperaciones = new FiltrosDataTable('#cit_clientes_recuperaciones_datatable', configDataTable);
+        const filtrosCitClientesRecuperaciones = new FiltrosDataTable('#cit_clientes_recuperaciones_datatable', configDTCitClientesRecuperaciones);
         filtrosCitClientesRecuperaciones.agregarInput('filtroCitClienteEmail', 'cit_cliente_email');
         filtrosCitClientesRecuperaciones.agregarInput('filtroCitClienteNombres', 'cit_cliente_nombres');
         filtrosCitClientesRecuperaciones.agregarInput('filtroCitClientePrimerApellido', 'cit_cliente_primer_apellido');
