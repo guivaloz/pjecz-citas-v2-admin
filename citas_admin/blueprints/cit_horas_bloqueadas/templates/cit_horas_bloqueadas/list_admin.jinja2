@@ -22,7 +22,13 @@
         <div class="row">
             <div class="col">
                 <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosCitHorasBloqueadas.buscar(); return false;">
-                    <div class="col-6">
+                    <div class="col-2">
+                        <div class="form-floating">
+                            <input id="filtroOficinaClave" type="text" class="form-control" aria-label="Oficina Clave" style="text-transform: uppercase;">
+                            <label for="filtroOficinaClave">Oficina Clave</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
                         <div class="form-floating">
                             <input id="filtroDescripcion" type="text" class="form-control" aria-label="Descripción" style="text-transform: uppercase;">
                             <label for="filtroDescripcion">Descripción</label>
@@ -39,6 +45,8 @@
         <table id="cit_horas_bloqueadas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
+                    <th>ID</th>
+                    <th>Oficina</th>
                     <th>Fecha</th>
                     <th>Inicio</th>
                     <th>Termino</th>
@@ -56,10 +64,12 @@
         // DataTable CitHorasBloqueadas
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
         let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/cit_horas_bloqueadas/datatable_json';
+        configDataTable['ajax']['url'] = '/cit_horas_bloqueadas/admin_datatable_json';
         configDataTable['ajax']['data'] = {{ filtros }};
         configDataTable['columns'] = [
             { data: 'detalle' },
+            { data: 'oficina' },
+            { data: 'fecha' },
             { data: 'inicio' },
             { data: 'termino' },
             { data: 'descripcion' }
@@ -73,7 +83,14 @@
                 }
             },
             {
-                targets: 3, // descripción
+                targets: 1, // oficina
+                data: null,
+                render: function(data, type, row, meta) {
+                    return '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: 5, // descripción
                 data: null,
                 render: function(data, type, row, meta) {
                     if (data.length > 32) {
@@ -85,6 +102,7 @@
         ];
         // Filtros CitHorasBloqueadas
         const filtrosCitHorasBloqueadas = new FiltrosDataTable('#cit_horas_bloqueadas_datatable', configDataTable);
+        filtrosCitHorasBloqueadas.agregarInput('filtroOficinaClave', 'oficina_clave');
         filtrosCitHorasBloqueadas.agregarInput('filtroDescripcion', 'descripcion');
         filtrosCitHorasBloqueadas.precargar();
     </script>

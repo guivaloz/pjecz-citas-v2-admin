@@ -21,7 +21,7 @@ class CitHoraBloqueadaForm(FlaskForm):
 class CitHoraBloqueadaAdminForm(FlaskForm):
     """Formulario CitHoraBloqueada"""
 
-    oficina = SelectField("Oficina", coerce=int, validate_choice=False)  # Select2
+    oficina = SelectField("Oficina", coerce=int, validate_choice=False, validators=[DataRequired()])  # Select2
     fecha = DateField("Fecha", validators=[DataRequired()])
     inicio_tiempo = TimeField("Inicio", validators=[DataRequired()])
     termino_tiempo = TimeField("Término", validators=[DataRequired()])

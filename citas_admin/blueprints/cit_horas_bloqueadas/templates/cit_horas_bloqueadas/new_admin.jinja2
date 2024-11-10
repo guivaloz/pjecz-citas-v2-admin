@@ -50,10 +50,10 @@
                     }
                 }
             });
-            // Agregar el valor (actual del registro) al select
+            // Agregar la oficina 'No Definido', que en la vista se consulta
             let data = {
-                id: {{ usuario.oficina_id }},
-                text: "{{ usuario.oficina.clave }} - {{ usuario.oficina.descripcion_corta }}"
+                id: {{ oficina.id }},
+                text: "{{ oficina.clave }} - {{ oficina.descripcion_corta }}"
             };
             let newOption = new Option(data.text, data.id, true, true);
             $(".js-example-placeholder-single").append(newOption).trigger('change');

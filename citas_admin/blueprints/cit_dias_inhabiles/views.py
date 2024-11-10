@@ -99,8 +99,14 @@ def new():
     """Nuevo Dia Inhábil"""
     form = CitDiaInhabilForm()
     if form.validate_on_submit():
+        # Validar que la fecha no exista
+        fecha = form.fecha.data
+        if CitDiaInhabil.query.filter_by(fecha=fecha).first():
+            flash(f"Ya se tiene {fecha} como un Día Inhábil", "warning")
+            return render_template("cit_dias_inhabiles/new.jinja2", form=form)
+        # Guardar
         cit_dia_inhabil = CitDiaInhabil(
-            fecha=form.fecha.data,
+            fecha=fecha,
             descripcion=safe_string(form.descripcion.data, save_enie=True),
         )
         cit_dia_inhabil.save()
@@ -123,7 +129,14 @@ def edit(cit_dia_inhabil_id):
     cit_dia_inhabil = CitDiaInhabil.query.get_or_404(cit_dia_inhabil_id)
     form = CitDiaInhabilForm()
     if form.validate_on_submit():
-        cit_dia_inhabil.fecha = form.fecha.data
+        # Validar que la fecha no exista
+        fecha = form.fecha.data
+        posible_cit_dia_inhabil = CitDiaInhabil.query.filter_by(fecha=fecha).first()
+        if posible_cit_dia_inhabil and posible_cit_dia_inhabil.id != cit_dia_inhabil.id:
+            flash(f"Ya se tiene {fecha} como un Día Inhábil", "warning")
+            return render_template("cit_dias_inhabiles/edit.jinja2", form=form, cit_dia_inhabil=cit_dia_inhabil)
+        # Guardar
+        cit_dia_inhabil.fecha = fecha
         cit_dia_inhabil.descripcion = safe_string(form.descripcion.data, save_enie=True)
         cit_dia_inhabil.save()
         bitacora = Bitacora(

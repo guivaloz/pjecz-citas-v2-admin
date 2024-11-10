@@ -170,6 +170,9 @@
     {% endif %}
     <script src="/static/js/datatables-constructor.js"></script>
     <script src="/static/js/datatables-filtros.js"></script>
+    <script>
+        const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
+    </script>
     {% if current_user.can_view('CIT CITAS') %}
         <script>
             // DataTable CitCitas
@@ -255,16 +258,16 @@
     {% if current_user.can_view('CIT HORAS BLOQUEADAS') %}
         <script>
             // DataTable CitHorasBloqueadas
-            let configDTCitHorasBloquedas = constructorDataTable.config();
-            configDTCitHorasBloquedas['ajax']['url'] = '/cit_horas_bloqueadas/datatable_json';
-            configDTCitHorasBloquedas['ajax']['data'] = { 'estatus': "A", 'oficina_id': {{ oficina.id }} };
-            configDTCitHorasBloquedas['columns'] = [
+            let configDTCitHorasBloqueadas = constructorDataTable.config();
+            configDTCitHorasBloqueadas['ajax']['url'] = '/cit_horas_bloqueadas/datatable_json';
+            configDTCitHorasBloqueadas['ajax']['data'] = { 'estatus': "A", 'oficina_id': {{ oficina.id }} };
+            configDTCitHorasBloqueadas['columns'] = [
                 { data: 'detalle' },
                 { data: 'inicio' },
                 { data: 'termino' },
                 { data: 'descripcion' }
             ];
-            configDTCitHorasBloquedas['columnDefs'] = [
+            configDTCitHorasBloqueadas['columnDefs'] = [
                 {
                     targets: 0, // detalle
                     data: null,
@@ -284,7 +287,7 @@
                 }
             ];
             // Filtros CitHorasBloqueadas
-            const filtrosCitHorasBloqueadas = new FiltrosDataTable('#cit_horas_bloqueadas_datatable', configDTCitHorasBloquedas);
+            const filtrosCitHorasBloqueadas = new FiltrosDataTable('#cit_horas_bloqueadas_datatable', configDTCitHorasBloqueadas);
             filtrosCitHorasBloqueadas.agregarInput('filtroDescripcion', 'descripcion');
             filtrosCitHorasBloqueadas.precargar();
         </script>

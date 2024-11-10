@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block topbar_actions %}
-    {{ topbar.page('Editar Hora Bloqueada ' + cit_hora_bloqueada.fecha | string + ' de ' + cit_hora_bloqueada.inicio + ' a ' + cit_hora_bloqueada.termino) }}
+    {{ topbar.page('Editar Hora Bloqueada ' + cit_hora_bloqueada.fecha | string + ' de ' + cit_hora_bloqueada.inicio | string + ' a ' + cit_hora_bloqueada.termino | string) }}
 {% endblock %}
 
 {% block content %}
@@ -53,8 +53,8 @@
             });
             // Agregar el valor (actual del registro) al select
             let data = {
-                id: {{ usuario.oficina_id }},
-                text: "{{ usuario.oficina.clave }} - {{ usuario.oficina.descripcion_corta }}"
+                id: {{ cit_hora_bloqueada.oficina_id }},
+                text: "{{ cit_hora_bloqueada.oficina.clave }} - {{ cit_hora_bloqueada.oficina.descripcion_corta }}"
             };
             let newOption = new Option(data.text, data.id, true, true);
             $(".js-example-placeholder-single").append(newOption).trigger('change');

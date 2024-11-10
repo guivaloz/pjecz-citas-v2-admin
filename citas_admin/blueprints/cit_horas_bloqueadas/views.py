@@ -11,10 +11,11 @@ from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.cit_horas_bloqueadas.forms import CitHoraBloqueadaAdminForm, CitHoraBloqueadaForm
 from citas_admin.blueprints.cit_horas_bloqueadas.models import CitHoraBloqueada
 from citas_admin.blueprints.modulos.models import Modulo
+from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_message, safe_string
+from lib.safe_string import safe_clave, safe_message, safe_string
 
 MODULO = "CIT HORAS BLOQUEADAS"
 
@@ -40,12 +41,22 @@ def datatable_json():
         consulta = consulta.filter(CitHoraBloqueada.estatus == request.form["estatus"])
     else:
         consulta = consulta.filter(CitHoraBloqueada.estatus == "A")
+    if "oficina_id" in request.form:
+        try:
+            oficina_id = int(request.form["oficina_id"])
+            consulta = consulta.filter(CitHoraBloqueada.oficina_id == oficina_id)
+        except ValueError:
+            pass
+    elif "oficina_clave" in request.form:
+        oficina_clave = safe_clave(request.form["oficina_clave"])
+        if oficina_clave != "":
+            consulta = consulta.join(Oficina).filter(Oficina.clave.contains(oficina_clave))
     if "descripcion" in request.form:
         descripcion = safe_string(request.form["descripcion"], save_enie=True)
         if descripcion != "":
             consulta = consulta.filter(CitHoraBloqueada.descripcion.contains(descripcion))
     # Ordenar y paginar
-    registros = consulta.order_by(CitHoraBloqueada.id).offset(start).limit(rows_per_page).all()
+    registros = consulta.order_by(CitHoraBloqueada.id.desc()).offset(start).limit(rows_per_page).all()
     total = consulta.count()
     # Elaborar datos para DataTable
     data = []
@@ -56,11 +67,59 @@ def datatable_json():
                     "fecha": resultado.fecha,
                     "url": url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=resultado.id),
                 },
+                "inicio": resultado.inicio.strftime("%H:%M"),
+                "termino": resultado.termino.strftime("%H:%M"),
+                "descripcion": resultado.descripcion,
+            }
+        )
+    # Entregar JSON
+    return output_datatable_json(draw, total, data)
+
+
+@cit_horas_bloqueadas.route("/cit_horas_bloqueadas/admin_datatable_json", methods=["GET", "POST"])
+def admin_datatable_json():
+    """DataTable JSON para listado de Cit Horas Bloqueadas"""
+    # Tomar parámetros de Datatables
+    draw, start, rows_per_page = get_datatable_parameters()
+    # Consultar
+    consulta = CitHoraBloqueada.query
+    # Primero filtrar por columnas propias
+    if "estatus" in request.form:
+        consulta = consulta.filter(CitHoraBloqueada.estatus == request.form["estatus"])
+    else:
+        consulta = consulta.filter(CitHoraBloqueada.estatus == "A")
+    if "oficina_id" in request.form:
+        try:
+            oficina_id = int(request.form["oficina_id"])
+            consulta = consulta.filter(CitHoraBloqueada.oficina_id == oficina_id)
+        except ValueError:
+            pass
+    elif "oficina_clave" in request.form:
+        oficina_clave = safe_clave(request.form["oficina_clave"])
+        if oficina_clave != "":
+            consulta = consulta.join(Oficina).filter(Oficina.clave.contains(oficina_clave))
+    if "descripcion" in request.form:
+        descripcion = safe_string(request.form["descripcion"], save_enie=True)
+        if descripcion != "":
+            consulta = consulta.filter(CitHoraBloqueada.descripcion.contains(descripcion))
+    # Ordenar y paginar
+    registros = consulta.order_by(CitHoraBloqueada.id.desc()).offset(start).limit(rows_per_page).all()
+    total = consulta.count()
+    # Elaborar datos para DataTable
+    data = []
+    for resultado in registros:
+        data.append(
+            {
+                "detalle": {
+                    "id": resultado.id,
+                    "url": url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=resultado.id),
+                },
                 "oficina": {
                     "clave": resultado.oficina.clave,
                     "descripcion": resultado.oficina.descripcion,
-                    "url": url_for("oficinas.detail", oficina_id=resultado.oficina.id),
+                    "url": url_for("oficinas.detail", oficina_id=resultado.oficina_id),
                 },
+                "fecha": resultado.fecha,
                 "inicio": resultado.inicio.strftime("%H:%M"),
                 "termino": resultado.termino.strftime("%H:%M"),
                 "descripcion": resultado.descripcion,
@@ -73,10 +132,17 @@ def datatable_json():
 @cit_horas_bloqueadas.route("/cit_horas_bloqueadas")
 def list_active():
     """Listado de Cit Horas Bloqueadas activas"""
+    if current_user.can_admin(MODULO):
+        return render_template(
+            "cit_horas_bloqueadas/list_admin.jinja2",
+            filtros=json.dumps({"estatus": "A"}),
+            titulo="Todas las Horas Bloqueadas",
+            estatus="A",
+        )
     return render_template(
         "cit_horas_bloqueadas/list.jinja2",
         filtros=json.dumps({"estatus": "A"}),
-        titulo="Horas Bloqueadas",
+        titulo="Todas las Horas Bloqueadas",
         estatus="A",
     )
 
@@ -85,6 +151,13 @@ def list_active():
 @permission_required(MODULO, Permiso.ADMINISTRAR)
 def list_inactive():
     """Listado de Cit Horas Bloqueadas inactivas"""
+    if current_user.can_admin(MODULO):
+        return render_template(
+            "cit_horas_bloqueadas/list_admin.jinja2",
+            filtros=json.dumps({"estatus": "B"}),
+            titulo="Horas Bloqueadas inactivas",
+            estatus="B",
+        )
     return render_template(
         "cit_horas_bloqueadas/list.jinja2",
         filtros=json.dumps({"estatus": "B"}),
@@ -150,9 +223,10 @@ def new():
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
-    # Si es administrador, puede elegir la oficina
+    # Si es administrador, puede elegir la oficina y se manda la oficina 'No Definido' para usar por defecto
     if current_user.can_admin(MODULO):
-        return render_template("cit_horas_bloqueadas/new_admin.jinja2", form=form)
+        oficina_no_definida = Oficina.query.filter_by(clave="ND").first()
+        return render_template("cit_horas_bloqueadas/new_admin.jinja2", form=form, oficina=oficina_no_definida)
     # No es administrador
     form.oficina.data = current_user.oficina.clave + ": " + current_user.oficina.descripcion
     return render_template("cit_horas_bloqueadas/new.jinja2", form=form)

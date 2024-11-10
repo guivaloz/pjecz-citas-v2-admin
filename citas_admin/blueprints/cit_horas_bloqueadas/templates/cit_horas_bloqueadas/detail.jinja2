@@ -25,9 +25,9 @@
         {% else %}
             {{ detail.label_value('Oficina', cit_hora_bloqueada.oficina.clave + " - " + cit_hora_bloqueada.oficina.descripcion_corta) }}
         {% endif %}
-        {{ detail.label_value_big('Fecha', moment(cit_hora_bloqueada.fecha, local=True).format('ll')) }}
-        {{ detail.label_value('Hora Inicio', cit_hora_bloqueada.inicio.strftime("%H:%M")) }}
-        {{ detail.label_value('Hora Termino', cit_hora_bloqueada.termino.strftime("%H:%M")) }}
+        {{ detail.label_value_big('Fecha', cit_hora_bloqueada.fecha) }}
+        {{ detail.label_value_big('Hora Inicio', cit_hora_bloqueada.inicio.strftime("%H:%M")) }}
+        {{ detail.label_value_big('Hora Termino', cit_hora_bloqueada.termino.strftime("%H:%M")) }}
         {{ detail.label_value('Descripción', cit_hora_bloqueada.descripcion) }}
         {{ detail.label_value('Creado', moment(cit_hora_bloqueada.creado, local=True).format('llll')) }}
     {% endcall %}
@@ -35,7 +35,7 @@
 
 {% block custom_javascript %}
     {% if current_user.can_admin('CIT HORAS BLOQUEADAS') %}
-        {% if cit_hora_bloqueada.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_hora_bloqueada.id + '?') }}{% endif %}
-        {% if cit_hora_bloqueada.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_hora_bloqueada.id + '?') }}{% endif %}
+        {% if cit_hora_bloqueada.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar esta hora bloqueada?') }}{% endif %}
+        {% if cit_hora_bloqueada.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar esta hora bloqueada?') }}{% endif %}
     {% endif %}
 {% endblock %}

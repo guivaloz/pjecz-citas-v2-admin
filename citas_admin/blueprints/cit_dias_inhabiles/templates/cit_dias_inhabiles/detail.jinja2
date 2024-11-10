@@ -20,7 +20,7 @@
 
 {% block content %}
     {% call detail.card(estatus=cit_dia_inhabil.estatus) %}
-        {{ detail.label_value_big('Fecha', moment(cit_dia_inhabil.fecha, local=True).format('ll')) }}
+        {{ detail.label_value_big('Fecha', cit_dia_inhabil.fecha) }}
         {{ detail.label_value('Descripción', cit_dia_inhabil.descripcion) }}
         {{ detail.label_value('Creado', moment(cit_dia_inhabil.creado, local=True).format('llll')) }}
     {% endcall %}
@@ -28,7 +28,7 @@
 
 {% block custom_javascript %}
     {% if current_user.can_admin('CIT DIAS INHABILES') %}
-        {% if cit_dia_inhabil.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_dia_inhabil.fecha + '?') }}{% endif %}
-        {% if cit_dia_inhabil.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_dia_inhabil.fecha + '?') }}{% endif %}
+        {% if cit_dia_inhabil.estatus == 'A' %}{{ modals.custom_javascript_delete('Eliminar', '¿Eliminar a ' + cit_dia_inhabil.fecha | string + '?') }}{% endif %}
+        {% if cit_dia_inhabil.estatus == 'B' %}{{ modals.custom_javascript_recover('Recuperar', '¿Recuperar a ' + cit_dia_inhabil.fecha | string + '?') }}{% endif %}
     {% endif %}
 {% endblock %}
