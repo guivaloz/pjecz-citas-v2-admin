@@ -64,7 +64,7 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "fecha": resultado.fecha,
+                    "fecha": resultado.fecha.strftime("%Y-%m-%d 00:00:00"),
                     "url": url_for("cit_horas_bloqueadas.detail", cit_hora_bloqueada_id=resultado.id),
                 },
                 "inicio": resultado.inicio.strftime("%H:%M"),
@@ -119,7 +119,7 @@ def admin_datatable_json():
                     "descripcion": resultado.oficina.descripcion,
                     "url": url_for("oficinas.detail", oficina_id=resultado.oficina_id),
                 },
-                "fecha": resultado.fecha,
+                "fecha": resultado.fecha.strftime("%Y-%m-%d 00:00:00"),
                 "inicio": resultado.inicio.strftime("%H:%M"),
                 "termino": resultado.termino.strftime("%H:%M"),
                 "descripcion": resultado.descripcion,
@@ -223,10 +223,18 @@ def new():
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
-    # Si es administrador, puede elegir la oficina y se manda la oficina 'No Definido' para usar por defecto
+    # Si es administrador, puede elegir la oficina
     if current_user.can_admin(MODULO):
-        oficina_no_definida = Oficina.query.filter_by(clave="ND").first()
-        return render_template("cit_horas_bloqueadas/new_admin.jinja2", form=form, oficina=oficina_no_definida)
+        # Si viene oficina_id en el URL, se va a consultar
+        oficina = None
+        if "oficina_id" in request.args:
+            try:
+                oficina = Oficina.query.get(int(request.args.get("oficina_id")))
+            except ValueError:
+                pass
+        else:
+            oficina = Oficina.query.filter_by(clave="ND").first()  # De lo contrario, se va a tomar la oficina 'ND'
+        return render_template("cit_horas_bloqueadas/new_admin.jinja2", form=form, oficina=oficina)
     # No es administrador
     form.oficina.data = current_user.oficina.clave + ": " + current_user.oficina.descripcion
     return render_template("cit_horas_bloqueadas/new.jinja2", form=form)

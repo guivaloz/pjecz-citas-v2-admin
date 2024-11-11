@@ -122,6 +122,9 @@
                     </tr>
                 </thead>
             </table>
+            {% if current_user.can_insert('CIT HORAS BLOQUEADAS') %}
+            <a href="{{ url_for('cit_horas_bloqueadas.new') + '?oficina_id=' + oficina.id | string }}" class="btn btn-primary">Agregar Hora Bloqueada</a>
+            {% endif %}
         {% endcall %}
     {% endif %}
     {% if current_user.can_view('CIT OFICINAS SERVICIOS') %}

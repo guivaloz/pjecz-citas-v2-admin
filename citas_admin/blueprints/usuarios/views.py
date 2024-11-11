@@ -351,7 +351,7 @@ def new():
         if Usuario.query.filter_by(email=email).first():
             flash("El e-mail ya está en uso. Debe de ser único.", "warning")
             return render_template("usuarios/new.jinja2", form=form)
-        # Guadar
+        # Guardar
         usuario = Usuario(
             autoridad_id=form.autoridad.data,
             oficina_id=form.oficina.data,
@@ -359,8 +359,6 @@ def new():
             nombres=safe_string(form.nombres.data, save_enie=True),
             apellido_paterno=safe_string(form.apellido_paterno.data, save_enie=True),
             apellido_materno=safe_string(form.apellido_materno.data, save_enie=True),
-            curp=safe_string(form.curp.data),
-            puesto=safe_string(form.puesto.data),
             api_key="",
             api_key_expiracion=datetime(year=2000, month=1, day=1, hour=0, minute=0, second=0),
             contrasena=generar_contrasena(),
@@ -380,10 +378,8 @@ def new():
     distrito_por_defecto = Distrito.query.filter_by(clave="ND").first()
     if distrito_por_defecto is not None:
         distrito_por_defecto_id = distrito_por_defecto.id
-    # Consultar la oficina por defecto con clave ND
+    # Se va a tomar la oficina con clave ND como oficina por defecto
     oficina_por_defecto = Oficina.query.filter_by(clave="ND").first()
-    if oficina_por_defecto is None:
-        oficina_por_defecto = None
     # Entregar
     return render_template(
         "usuarios/new.jinja2",

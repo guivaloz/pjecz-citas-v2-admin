@@ -79,7 +79,7 @@
                 targets: 0, // detalle
                 data: null,
                 render: function(data, type, row, meta) {
-                    return '<a href="' + data.url + '">' + moment(data.fecha).format('YYYY-MM-DD, ddd') + '</a>';
+                    return '<a href="' + data.url + '">' + data.id + '</a>';
                 }
             },
             {
@@ -87,6 +87,13 @@
                 data: null,
                 render: function(data, type, row, meta) {
                     return '<a href="' + data.url + '">' + data.clave + '</a>';
+                }
+            },
+            {
+                targets: 2, // fecha
+                type: "date",
+                render: function (data, type, row) {
+                    return moment(data).format('YYYY-MM-DD, ddd');
                 }
             },
             {
