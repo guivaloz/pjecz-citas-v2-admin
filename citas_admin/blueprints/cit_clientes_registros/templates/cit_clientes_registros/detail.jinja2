@@ -29,7 +29,7 @@
         {{ detail.label_value('Cadena validar', cit_cliente_registro.cadena_validar) }}
         {{ detail.label_value('Cantidad de mensajes', cit_cliente_registro.mensajes_cantidad) }}
         {{ detail.label_value_boolean('Ya registrado', cit_cliente_registro.ya_registrado) }}
-        {{ detail.label_value('Creado', moment(cit_cliente_registro.creado, local=True).format('llll')) }}
+        {{ detail.label_value('Creado', moment(cit_cliente_registro.creado, local=False).format('DD MMM YYYY HH:mm')) }}
     {% endcall %}
 {% endblock %}
 

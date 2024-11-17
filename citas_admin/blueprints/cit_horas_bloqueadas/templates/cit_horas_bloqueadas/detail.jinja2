@@ -29,7 +29,7 @@
         {{ detail.label_value_big('Hora Inicio', cit_hora_bloqueada.inicio.strftime("%H:%M")) }}
         {{ detail.label_value_big('Hora Termino', cit_hora_bloqueada.termino.strftime("%H:%M")) }}
         {{ detail.label_value('Descripción', cit_hora_bloqueada.descripcion) }}
-        {{ detail.label_value('Creado', moment(cit_hora_bloqueada.creado, local=True).format('llll')) }}
+        {{ detail.label_value('Creado', moment(cit_hora_bloqueada.creado, local=False).format('DD MMM YYYY HH:mm')) }}
     {% endcall %}
 {% endblock %}
 

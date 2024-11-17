@@ -24,7 +24,6 @@
         {{ detail.label_value('Descripción', pag_tramite_servicio.descripcion) }}
         {{ detail.label_value('Costo', '$ ' + pag_tramite_servicio.costo | string) }}
         {{ detail.label_value('URL', pag_tramite_servicio.url, pag_tramite_servicio.url) }}
-        {{ detail.label_value('Creado', moment(pag_tramite_servicio.creado, local=True).format('llll')) }}
     {% endcall %}
     {% if current_user.can_view('PAG PAGOS') %}
         {% call detail.card('Pagos') %}

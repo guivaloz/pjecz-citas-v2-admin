@@ -32,7 +32,7 @@
         {% endif %}
         {{ detail.label_value_boolean('Autoriza mensajes', cit_cliente.autoriza_mensajes) }}
         {{ detail.label_value_boolean('Recibir boletín', cit_cliente.enviar_boletin) }}
-        {{ detail.label_value('Creado', moment(cit_cliente.creado, local=True).format('llll')) }}
+        {{ detail.label_value('Creado', moment(cit_cliente.creado, local=False).format('DD MMM YYYY HH:mm')) }}
     {% endcall %}
     {% if current_user.can_view('CIT CITAS') %}
         {% call detail.card('Citas') %}

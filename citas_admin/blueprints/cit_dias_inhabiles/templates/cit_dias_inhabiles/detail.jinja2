@@ -22,7 +22,6 @@
     {% call detail.card(estatus=cit_dia_inhabil.estatus) %}
         {{ detail.label_value_big('Fecha', cit_dia_inhabil.fecha) }}
         {{ detail.label_value('Descripción', cit_dia_inhabil.descripcion) }}
-        {{ detail.label_value('Creado', moment(cit_dia_inhabil.creado, local=True).format('llll')) }}
     {% endcall %}
 {% endblock %}
 

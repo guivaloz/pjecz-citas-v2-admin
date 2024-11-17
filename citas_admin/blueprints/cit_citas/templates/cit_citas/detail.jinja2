@@ -73,6 +73,7 @@
                 <span class="badge rounded-pill bg-{{color}}">{{ cit_cita.estado }}</span>
             </div>
         </div>
+        {{ detail.label_value('Creado', moment(cit_cita.creado, local=False).format('DD MMM YYYY HH:mm')) }}
     {% endcall %}
 {% endblock %}
 

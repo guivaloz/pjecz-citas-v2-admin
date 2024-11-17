@@ -5,7 +5,7 @@ Cit Clientes, modelos
 from datetime import date
 from typing import List
 
-from sqlalchemy import Integer, String
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from citas_admin.extensions import database
@@ -31,7 +31,7 @@ class CitCliente(database.Model, UniversalMixin):
     contrasena_md5: Mapped[str] = mapped_column(String(256))
     contrasena_sha256: Mapped[str] = mapped_column(String(256))
     renovacion: Mapped[date]
-    limite_citas_pendientes: Mapped[int] = mapped_column(Integer())
+    limite_citas_pendientes: Mapped[int]
     autoriza_mensajes: Mapped[bool] = mapped_column(default=True)
     enviar_boletin: Mapped[bool] = mapped_column(default=False)
     es_adulto_mayor: Mapped[bool] = mapped_column(default=False)

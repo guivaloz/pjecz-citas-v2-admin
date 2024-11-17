@@ -28,7 +28,7 @@
         {{ detail.label_value('Expiracion', moment(cit_cliente_recuperacion.expiracion, local=True).format('llll')) }}
         {{ detail.label_value('Cantidad de mensajes', cit_cliente_recuperacion.mensajes_cantidad) }}
         {{ detail.label_value_boolean('Ya recuperado', cit_cliente_recuperacion.ya_recuperado) }}
-        {{ detail.label_value('Creado', moment(cit_cliente_recuperacion.creado, local=True).format('llll')) }}
+        {{ detail.label_value('Creado', moment(cit_cliente_recuperacion.creado, local=False).format('DD MMM YYYY HH:mm')) }}
     {% endcall %}
 {% endblock %}
 

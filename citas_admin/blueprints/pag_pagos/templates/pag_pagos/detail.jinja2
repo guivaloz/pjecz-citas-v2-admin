@@ -110,7 +110,8 @@
         </div>
         {# Folio y tiempo #}
         {{ detail.label_value('Folio', pag_pago.folio) }}
-        {{ detail.label_value('Operación hecha el', moment(pag_pago.resultado_tiempo, local=True).format('llll')) }}
+        {{ detail.label_value('Operación hecha el', moment(pag_pago.resultado_tiempo, local=False).format('DD MMM YYYY HH:mm')) }}
+        {{ detail.label_value('Creado', moment(pag_pago.creado, local=False).format('DD MMM YYYY HH:mm')) }}
     {% endcall %}
 {% endblock %}
 

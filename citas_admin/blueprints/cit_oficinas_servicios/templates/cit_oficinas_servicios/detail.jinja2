@@ -37,7 +37,6 @@
             {{ detail.label_value('Servicio', cit_oficina_servicio.cit_servicio.clave + ' - ' + cit_oficina_servicio.cit_servicio.descripcion) }}
         {% endif %}
         {{ detail.label_value('Descripción', cit_oficina_servicio.cit_servicio.descripcion) }}
-        {{ detail.label_value('Creado', moment(cit_oficina_servicio.creado, local=True).format('llll')) }}
     {% endcall %}
 {% endblock %}
 

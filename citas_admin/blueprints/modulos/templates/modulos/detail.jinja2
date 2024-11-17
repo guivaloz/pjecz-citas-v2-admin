@@ -25,7 +25,7 @@
         {{ detail.label_value('Ruta', modulo.ruta) }}
         {{ detail.label_value_boolean('En menú de navegación', modulo.en_navegacion) }}
     {% endcall %}
-    {% if current_user.can_view('PERMISOS') %}
+    {% if current_user.can_view('PERMISOS') and modulo.estatus == 'A' %}
         {% call detail.card('Permisos') %}
             <!-- Datatable Permisos -->
             <table id="permisos_datatable" class="table display nowrap" style="width:100%">
@@ -50,7 +50,7 @@
     {% endif %}
     <script src="/static/js/datatables-constructor.js"></script>
     <script src="/static/js/datatables-filtros.js"></script>
-    {% if current_user.can_view('PERMISOS') %}
+    {% if current_user.can_view('PERMISOS') and modulo.estatus == 'A' %}
         <script>
             // DataTable Permisos
             const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
