@@ -20,24 +20,30 @@
 
 {% block content %}
     {% call detail.card(estatus=oficina.estatus) %}
-        {{ detail.label_value_big('Clave', oficina.clave) }}
-        {{ detail.label_value('Descripción', oficina.descripcion) }}
-        {{ detail.label_value('Descripción Corta', oficina.descripcion_corta) }}
-        {% if current_user.can_view('DISTRITOS') %}
-            {{ detail.label_value('Distrito', oficina.distrito.nombre, url_for('distritos.detail', distrito_id=oficina.distrito_id)) }}
-        {% else %}
-            {{ detail.label_value('Distrito', oficina.distrito.nombre) }}
-        {% endif %}
-        {% if current_user.can_view('DOMICILIOS') %}
-            {{ detail.label_value('Edificio', oficina.domicilio.edificio, url_for('domicilios.detail', domicilio_id=oficina.domicilio_id)) }}
-        {% else %}
-            {{ detail.label_value('Edificio', oficina.domicilio.edificio) }}
-        {% endif %}
-        {{ detail.label_value('Horario', oficina.apertura.strftime("%H:%M") + ' — ' + oficina.cierre.strftime("%H:%M")) }}
-        {{ detail.label_value('Límite de Personas', oficina.limite_personas) }}
-        {{ detail.label_value_boolean('Es Juridiccional', oficina.es_jurisdiccional) }}
-        {{ detail.label_value_boolean('Puede agendar citas', oficina.puede_agendar_citas) }}
-        {{ detail.label_value_boolean('Puede enviar códigos QR', oficina.puede_enviar_qr) }}
+        <div class="row">
+            <div class="col-md-6">
+                {{ detail.label_value_big('Clave', oficina.clave) }}
+                {{ detail.label_value('Descripción', oficina.descripcion) }}
+                {{ detail.label_value('Desc. Corta', oficina.descripcion_corta) }}
+                {% if current_user.can_view('DISTRITOS') %}
+                    {{ detail.label_value('Distrito', oficina.distrito.nombre, url_for('distritos.detail', distrito_id=oficina.distrito_id)) }}
+                {% else %}
+                    {{ detail.label_value('Distrito', oficina.distrito.nombre) }}
+                {% endif %}
+                {% if current_user.can_view('DOMICILIOS') %}
+                    {{ detail.label_value('Edificio', oficina.domicilio.edificio, url_for('domicilios.detail', domicilio_id=oficina.domicilio_id)) }}
+                {% else %}
+                    {{ detail.label_value('Edificio', oficina.domicilio.edificio) }}
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {{ detail.label_value('Horario', oficina.apertura.strftime("%H:%M") + ' — ' + oficina.cierre.strftime("%H:%M")) }}
+                {{ detail.label_value('Límite de Personas', oficina.limite_personas) }}
+                {{ detail.label_value_boolean('Es Juridiccional', oficina.es_jurisdiccional) }}
+                {{ detail.label_value_boolean('Puede agendar citas', oficina.puede_agendar_citas) }}
+                {{ detail.label_value_boolean('Puede enviar códigos QR', oficina.puede_enviar_qr) }}
+            </div>
+        </div>
     {% endcall %}
     {% if current_user.can_view('CIT CITAS') and oficina.estatus == 'A' %}
         {% call detail.card('Citas') %}
