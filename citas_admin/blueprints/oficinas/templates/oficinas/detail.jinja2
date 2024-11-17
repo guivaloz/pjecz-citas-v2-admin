@@ -39,7 +39,7 @@
         {{ detail.label_value_boolean('Puede agendar citas', oficina.puede_agendar_citas) }}
         {{ detail.label_value_boolean('Puede enviar códigos QR', oficina.puede_enviar_qr) }}
     {% endcall %}
-    {% if current_user.can_view('CIT CITAS') %}
+    {% if current_user.can_view('CIT CITAS') and oficina.estatus == 'A' %}
         {% call detail.card('Citas') %}
             <!-- Filtros CitCitas -->
             <div class="row">
@@ -92,7 +92,7 @@
             </table>
         {% endcall %}
     {% endif %}
-    {% if current_user.can_view('CIT HORAS BLOQUEADAS') %}
+    {% if current_user.can_view('CIT HORAS BLOQUEADAS') and oficina.estatus == 'A' %}
         {% call detail.card('Horas Bloqueadas') %}
             <!-- Filtros CitHorasBloqueadas -->
             <div class="row">
@@ -127,7 +127,7 @@
             {% endif %}
         {% endcall %}
     {% endif %}
-    {% if current_user.can_view('CIT OFICINAS SERVICIOS') %}
+    {% if current_user.can_view('CIT OFICINAS SERVICIOS') and oficina.estatus == 'A' %}
         {% call detail.card('Oficinas-Servicios') %}
             <!-- Filtros CitOficinasServicios -->
             <div class="row">
@@ -176,7 +176,7 @@
     <script>
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
     </script>
-    {% if current_user.can_view('CIT CITAS') %}
+    {% if current_user.can_view('CIT CITAS') and oficina.estatus == 'A' %}
         <script>
             // DataTable CitCitas
             let configDTCitCitas = constructorDataTable.config();
@@ -258,7 +258,7 @@
             filtrosCitCitas.precargar();
         </script>
     {% endif %}
-    {% if current_user.can_view('CIT HORAS BLOQUEADAS') %}
+    {% if current_user.can_view('CIT HORAS BLOQUEADAS') and oficina.estatus == 'A' %}
         <script>
             // DataTable CitHorasBloqueadas
             let configDTCitHorasBloqueadas = constructorDataTable.config();
@@ -295,7 +295,7 @@
             filtrosCitHorasBloqueadas.precargar();
         </script>
     {% endif %}
-    {% if current_user.can_view('CIT OFICINAS SERVICIOS') %}
+    {% if current_user.can_view('CIT OFICINAS SERVICIOS') and oficina.estatus == 'A' %}
         <script>
             // DataTable CitOficinasServicios
             let configDTCitOficinasServicios = constructorDataTable.config();
