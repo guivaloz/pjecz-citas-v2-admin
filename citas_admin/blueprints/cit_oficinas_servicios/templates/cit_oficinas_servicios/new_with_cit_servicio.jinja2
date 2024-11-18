@@ -1,0 +1,20 @@
+{% extends 'layouts/app.jinja2' %}
+{% import 'macros/form.jinja2' as f with context %}
+{% import 'macros/topbar.jinja2' as topbar %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block topbar_actions %}
+    {{ topbar.page(titulo) }}
+{% endblock %}
+
+{% block content %}
+    {% call f.card() %}
+        {% set form_kwargs = {'cit_servicio_id': cit_servicio.id} %}
+        {% call f.form_tag('cit_oficinas_servicios.new_with_cit_servicio', fid='cit_oficina_servicio_form', **form_kwargs) %}
+            {% call f.form_group(form.cit_servicio, readonly=true) %}{% endcall %}
+            {% call f.form_group(form.oficina) %}{% endcall %}
+            {% call f.form_group(form.guardar) %}{% endcall %}
+        {% endcall %}
+    {% endcall %}
+{% endblock %}

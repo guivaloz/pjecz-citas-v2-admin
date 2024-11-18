@@ -134,7 +134,7 @@
         {% endcall %}
     {% endif %}
     {% if current_user.can_view('CIT OFICINAS SERVICIOS') and oficina.estatus == 'A' %}
-        {% call detail.card('Oficinas-Servicios') %}
+        {% call detail.card('Servicios') %}
             <!-- Filtros CitOficinasServicios -->
             <div class="row">
                 <div class="col">
@@ -168,6 +168,9 @@
                     </tr>
                 </thead>
             </table>
+            {% if current_user.can_insert('CIT OFICINAS SERVICIOS') %}
+            <a href="{{ url_for('cit_oficinas_servicios.new_with_oficina', oficina_id=oficina.id) }}" class="btn btn-primary">Agregar Servicio</a>
+            {% endif %}
         {% endcall %}
     {% endif %}
 {% endblock %}

@@ -1,5 +1,5 @@
 """
-Cit Oficinas Servicios, modelos
+Cit Oficinas-Servicios, modelos
 """
 
 from sqlalchemy import ForeignKey, String

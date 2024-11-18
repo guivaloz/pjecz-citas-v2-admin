@@ -192,6 +192,15 @@ def new():
             bitacora.save()
             flash(bitacora.descripcion, "success")
             return redirect(bitacora.url)
+    # Si viene cit_categoria_id en el URL, seleccionar esa categoría
+    cit_categoria_id = request.args.get("cit_categoria_id")
+    if cit_categoria_id is not None:
+        try:
+            cit_categoria_id = int(cit_categoria_id)
+            form.cit_categoria.data = cit_categoria_id
+        except ValueError:
+            pass
+    # Entregar formulario
     return render_template("cit_servicios/new.jinja2", form=form)
 
 
