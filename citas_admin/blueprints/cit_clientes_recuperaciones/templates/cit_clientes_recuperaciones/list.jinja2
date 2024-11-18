@@ -85,7 +85,7 @@
                 targets: 1, // cit_cliente
                 data: null,
                 render: function(data, type, row, meta) {
-                    if (data.url != '') {
+                    if (data.url !== '') {
                         return '<a href="' + data.url + '">' + data.nombre + '</a>';
                     }
                     return data.nombre

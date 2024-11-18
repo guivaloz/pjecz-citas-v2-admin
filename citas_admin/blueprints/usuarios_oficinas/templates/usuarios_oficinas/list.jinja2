@@ -21,7 +21,6 @@
 
 {% block content %}
     {% call list.card() %}
-        <!-- Filtros Usuarios-Oficinas -->
         <!-- DataTable Usuarios-Oficinas -->
         <table id="usuarios_oficinas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
@@ -43,17 +42,17 @@
     <script>
         // DataTable Usuarios-Oficinas
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/usuarios_oficinas/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTUsuariosOficinas = constructorDataTable.config();
+        configDTUsuariosOficinas['ajax']['url'] = '/usuarios_oficinas/datatable_json';
+        configDTUsuariosOficinas['ajax']['data'] = {{ filtros }};
+        configDTUsuariosOficinas['columns'] = [
             { data: 'detalle' },
             { data: 'usuario' },
             { data: 'usuario_nombre' },
             { data: 'oficina' },
             { data: 'oficina_descripcion_corta' }
         ];
-        configDataTable['columnDefs'] = [
+        configDTUsuariosOficinas['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -65,7 +64,7 @@
                 targets: 1, // usuario
                 data: null,
                 render: function(data, type, row, meta) {
-                    if (data.url == '') {
+                    if (data.url === '') {
                         return data.email;
                     } else {
                         return '<a href="' + data.url + '">' + data.email + '</a>';
@@ -83,7 +82,7 @@
                 targets: 3, // oficina
                 data: null,
                 render: function(data, type, row, meta) {
-                    if (data.url == '') {
+                    if (data.url === '') {
                         return data.clave;
                     } else {
                         return '<a href="' + data.url + '">' + data.clave + '</a>';
@@ -92,7 +91,7 @@
             }
         ];
         // Filtros Usuarios-Oficinas
-        const filtrosObjetos = new FiltrosDataTable('#usuarios_oficinas_datatable', configDataTable);
+        const filtrosObjetos = new FiltrosDataTable('#usuarios_oficinas_datatable', configDTUsuariosOficinas);
         filtrosObjetos.precargar();
     </script>
 {% endblock %}

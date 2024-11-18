@@ -55,16 +55,16 @@
     <script>
         // DataTable CitHorasBloqueadas
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/cit_horas_bloqueadas/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTCitHorasBloqueadas = constructorDataTable.config();
+        configDTCitHorasBloqueadas['ajax']['url'] = '/cit_horas_bloqueadas/datatable_json';
+        configDTCitHorasBloqueadas['ajax']['data'] = {{ filtros }};
+        configDTCitHorasBloqueadas['columns'] = [
             { data: 'detalle' },
             { data: 'inicio' },
             { data: 'termino' },
             { data: 'descripcion' }
         ];
-        configDataTable['columnDefs'] = [
+        configDTCitHorasBloqueadas['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -84,7 +84,7 @@
             }
         ];
         // Filtros CitHorasBloqueadas
-        const filtrosCitHorasBloqueadas = new FiltrosDataTable('#cit_horas_bloqueadas_datatable', configDataTable);
+        const filtrosCitHorasBloqueadas = new FiltrosDataTable('#cit_horas_bloqueadas_datatable', configDTCitHorasBloqueadas);
         filtrosCitHorasBloqueadas.agregarInput('filtroDescripcion', 'descripcion');
         filtrosCitHorasBloqueadas.precargar();
     </script>

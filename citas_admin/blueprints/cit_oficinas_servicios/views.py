@@ -160,8 +160,7 @@ def new_with_cit_servicio(cit_servicio_id):
             flash(f"Ya existe la combinación de {descripcion}", "warning")
             return redirect(url_for("cit_oficinas_servicios.detail", cit_oficina_servicio_id=puede_existir.id))
         if puede_existir:
-            puede_existir.estatus = "A"
-            puede_existir.save()
+            puede_existir.recover()
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
                 usuario=current_user,
@@ -213,8 +212,7 @@ def new_with_oficina(oficina_id):
             flash(f"Ya existe la combinación de {descripcion}", "warning")
             return redirect(url_for("cit_oficinas_servicios.detail", cit_oficina_servicio_id=puede_existir.id))
         if puede_existir:
-            puede_existir.estatus = "A"
-            puede_existir.save()
+            puede_existir.recover()
             bitacora = Bitacora(
                 modulo=Modulo.query.filter_by(nombre=MODULO).first(),
                 usuario=current_user,

@@ -20,7 +20,7 @@
 
 {% block content %}
     {% call list.card() %}
-        <!-- Filtros bitacoras -->
+        <!-- Filtros Bitácoras -->
         <div class="row">
             <div class="col">
                 <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosBitacoras.buscar(); return false;">
@@ -41,7 +41,7 @@
                 </form>
             </div>
         </div>
-        <!-- Datatable bitacoras -->
+        <!-- Datatable Bitácoras -->
         <table id="bitacoras_datatable" class="table display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -60,18 +60,18 @@
     <script src="/static/js/datatables-constructor.js"></script>
     <script src="/static/js/datatables-filtros.js"></script>
     <script>
-        // DataTable bitacoras
+        // DataTable Bitácoras
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/bitacoras/datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTBitacoras = constructorDataTable.config();
+        configDTBitacoras['ajax']['url'] = '/bitacoras/datatable_json';
+        configDTBitacoras['ajax']['data'] = {{ filtros }};
+        configDTBitacoras['columns'] = [
             { data: "creado" },
             { data: "usuario" },
             { data: "modulo" },
             { data: "vinculo" }
         ];
-        configDataTable['columnDefs'] = [
+        configDTBitacoras['columnDefs'] = [
             {
                 targets: 0, // creado
                 type: "date",
@@ -101,8 +101,8 @@
                 }
             }
         ];
-        // Filtros bitacoras
-        const filtrosBitacoras = new FiltrosDataTable('#bitacoras_datatable', configDataTable);
+        // Filtros Bitácoras
+        const filtrosBitacoras = new FiltrosDataTable('#bitacoras_datatable', configDTBitacoras);
         filtrosBitacoras.agregarInput('filtroBitacoraUsuarioId', 'usuario_id');
         filtrosBitacoras.agregarInput('filtroBitacoraModuloId', 'modulo_id');
         filtrosBitacoras.precargar();

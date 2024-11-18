@@ -83,7 +83,7 @@
                 </div>
             </div>
             <!-- DataTable CitCitas -->
-            <table id="cit_citas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <table id="cit_citas_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -118,7 +118,7 @@
                 </div>
             </div>
             <!-- DataTable CitHorasBloqueadas -->
-            <table id="cit_horas_bloqueadas_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <table id="cit_horas_bloqueadas_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>Fecha</th>
@@ -159,7 +159,7 @@
                 </div>
             </div>
             <!-- DataTable CitOficinasServicios -->
-            <table id="cit_oficinas_servicios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
+            <table id="cit_oficinas_servicios_datatable" class="table display nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -170,6 +170,23 @@
             </table>
             {% if current_user.can_insert('CIT OFICINAS SERVICIOS') %}
             <a href="{{ url_for('cit_oficinas_servicios.new_with_oficina', oficina_id=oficina.id) }}" class="btn btn-primary">Agregar Servicio</a>
+            {% endif %}
+        {% endcall %}
+    {% endif %}
+    {% if current_user.can_view('USUARIOS OFICINAS') and oficina.estatus == 'A' %}
+        {% call detail.card('Usuarios-Oficinas') %}
+            <!-- DataTable UsuariosOficinas -->
+            <table id="usuarios_oficinas_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario e-mail</th>
+                        <th>Usuario nombre</th>
+                    </tr>
+                </thead>
+            </table>
+            {% if current_user.can_insert('USUARIOS OFICINAS') %}
+            <a href="{{ url_for('usuarios_oficinas.new_with_oficina', oficina_id=oficina.id) }}" class="btn btn-primary">Agregar Usuario</a>
             {% endif %}
         {% endcall %}
     {% endif %}
@@ -346,6 +363,49 @@
             filtrosCitOficinasServicios.agregarInput('filtroCitServicioClave', 'cit_servicio_clave');
             filtrosCitOficinasServicios.agregarInput('filtroCitServicioDescripcion', 'cit_servicio_descripcion');
             filtrosCitOficinasServicios.precargar();
+        </script>
+    {% endif %}
+    {% if current_user.can_view('USUARIOS OFICINAS') and oficina.estatus == 'A' %}
+        <script>
+            // DataTable Usuarios-Oficinas
+            let configDTUsuariosOficinas = constructorDataTable.config();
+            configDTUsuariosOficinas['ajax']['url'] = '/usuarios_oficinas/datatable_json';
+            configDTUsuariosOficinas['ajax']['data'] = { 'estatus': "A", 'oficina_id': {{ oficina.id }} };
+            configDTUsuariosOficinas['columns'] = [
+                { data: 'detalle' },
+                { data: 'usuario' },
+                { data: 'usuario_nombre' },
+            ];
+            configDTUsuariosOficinas['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.id + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // usuario
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url === '') {
+                            return data.email;
+                        } else {
+                            return '<a href="' + data.url + '">' + data.email + '</a>';
+                        }
+                    }
+                },
+                {
+                    targets: 2, // usuario_nombre
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return (data.length > 48 ? data.substring(0, 48) + '…' : data);
+                    }
+                }
+            ];
+            // Filtros Usuarios-Oficinas
+            const filtrosObjetos = new FiltrosDataTable('#usuarios_oficinas_datatable', configDTUsuariosOficinas);
+            filtrosObjetos.precargar();
         </script>
     {% endif %}
 {% endblock %}

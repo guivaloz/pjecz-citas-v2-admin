@@ -54,6 +54,23 @@
             </div>
         </div>
     {% endcall %}
+    {% if current_user.can_view('USUARIOS OFICINAS') and usuario.estatus == 'A' %}
+        {% call detail.card('Usuarios-Oficinas') %}
+            <!-- DataTable UsuariosOficinas -->
+            <table id="usuarios_oficinas_datatable" class="table display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Oficina clave</th>
+                        <th>Oficina descripción corta</th>
+                    </tr>
+                </thead>
+            </table>
+            {% if current_user.can_insert('USUARIOS OFICINAS') %}
+            <a href="{{ url_for('usuarios_oficinas.new_with_usuario', usuario_id=usuario.id) }}" class="btn btn-primary">Agregar Oficina</a>
+            {% endif %}
+        {% endcall %}
+    {% endif %}
     {% if current_user.can_view('USUARIOS ROLES') and usuario.estatus == 'A' %}
         {% call detail.card('Roles') %}
             <!-- DataTable UsuariosRoles -->
@@ -67,7 +84,7 @@
                 </thead>
             </table>
             {% if current_user.can_insert('USUARIOS ROLES') %}
-            <a href="{{ url_for('usuarios_roles.new_with_usuario', usuario_id=usuario.id) }}" class="btn btn-primary">Agregar rol</a>
+            <a href="{{ url_for('usuarios_roles.new_with_usuario', usuario_id=usuario.id) }}" class="btn btn-primary">Agregar Rol</a>
             {% endif %}
         {% endcall %}
     {% endif %}
@@ -84,6 +101,42 @@
     <script>
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
     </script>
+    {% if current_user.can_view('USUARIOS OFICINAS') and usuario.estatus == 'A' %}
+        <script>
+            // DataTable Usuarios-Oficinas
+            let configDTUsuariosOficinas = constructorDataTable.config();
+            configDTUsuariosOficinas['ajax']['url'] = '/usuarios_oficinas/datatable_json';
+            configDTUsuariosOficinas['ajax']['data'] = { 'estatus': "A", 'usuario_id': {{ usuario.id}} };
+            configDTUsuariosOficinas['columns'] = [
+                { data: 'detalle' },
+                { data: 'oficina' },
+                { data: 'oficina_descripcion_corta' }
+            ];
+            configDTUsuariosOficinas['columnDefs'] = [
+                {
+                    targets: 0, // detalle
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        return '<a href="' + data.url + '">' + data.id + '</a>';
+                    }
+                },
+                {
+                    targets: 1, // oficina
+                    data: null,
+                    render: function(data, type, row, meta) {
+                        if (data.url === '') {
+                            return data.clave;
+                        } else {
+                            return '<a href="' + data.url + '">' + data.clave + '</a>';
+                        }
+                    }
+                }
+            ];
+            // Filtros Usuarios-Oficinas
+            const filtrosObjetos = new FiltrosDataTable('#usuarios_oficinas_datatable', configDTUsuariosOficinas);
+            filtrosObjetos.precargar();
+        </script>
+    {% endif %}
     {% if current_user.can_view('USUARIOS ROLES') and usuario.estatus == 'A' %}
         <script>
             // DataTable UsuariosRoles

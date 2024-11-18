@@ -9,13 +9,14 @@ from flask_login import current_user, login_required
 
 from citas_admin.blueprints.bitacoras.models import Bitacora
 from citas_admin.blueprints.modulos.models import Modulo
+from citas_admin.blueprints.oficinas.models import Oficina
 from citas_admin.blueprints.permisos.models import Permiso
 from citas_admin.blueprints.usuarios.decorators import permission_required
 from citas_admin.blueprints.usuarios.models import Usuario
 from citas_admin.blueprints.usuarios_oficinas.forms import UsuarioOficinaWithOficinaForm, UsuarioOficinaWithUsuarioForm
 from citas_admin.blueprints.usuarios_oficinas.models import UsuarioOficina
 from lib.datatables import get_datatable_parameters, output_datatable_json
-from lib.safe_string import safe_message
+from lib.safe_string import safe_message, safe_string
 
 MODULO = "USUARIOS OFICINAS"
 
@@ -54,7 +55,7 @@ def datatable_json():
         data.append(
             {
                 "detalle": {
-                    "nombre": resultado.nombre,
+                    "id": resultado.id,
                     "url": url_for("usuarios_oficinas.detail", usuario_oficina_id=resultado.id),
                 },
                 "usuario": {
@@ -107,6 +108,58 @@ def detail(usuario_oficina_id):
     return render_template("usuarios_oficinas/detail.jinja2", usuario_oficina=usuario_oficina)
 
 
+@usuarios_oficinas.route("/usuarios_oficinas/nuevo_con_oficina/<int:oficina_id>", methods=["GET", "POST"])
+@permission_required(MODULO, Permiso.CREAR)
+def new_with_oficina(oficina_id):
+    """Nuevo Usuario-Oficina con Oficina"""
+    oficina = Oficina.query.get_or_404(oficina_id)
+    form = UsuarioOficinaWithOficinaForm()
+    if form.validate_on_submit():
+        usuario = Usuario.query.get_or_404(form.usuario.data)
+        descripcion = safe_string(f"usuario {usuario.email} en oficina {oficina.clave}", save_enie=True)
+        puede_existir = (
+            UsuarioOficina.query.filter(UsuarioOficina.oficina_id == oficina.id)
+            .filter(UsuarioOficina.usuario_id == usuario.id)
+            .first()
+        )
+        if puede_existir and puede_existir.estatus == "A":
+            flash(f"Ya existe la combinación de {descripcion}", "warning")
+            return redirect(url_for("usuarios_oficinas.detail", usuario_oficina_id=puede_existir.id))
+        if puede_existir:
+            puede_existir.recover()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Recuperado Usuario-Oficina con {descripcion}"),
+                url=url_for("usuarios_oficinas.detail", usuario_oficina_id=puede_existir.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
+            return redirect(url_for("usuarios_oficinas.detail", usuario_oficina_id=puede_existir.id))
+        usuario_oficina = UsuarioOficina(
+            oficina_id=oficina.id,
+            usuario_id=usuario.id,
+            descripcion=descripcion,
+        )
+        usuario_oficina.save()
+        bitacora = Bitacora(
+            modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+            usuario=current_user,
+            descripcion=safe_message(f"Nuevo Usuario-Oficina {descripcion}"),
+            url=url_for("usuarios_oficinas.detail", usuario_oficina_id=usuario_oficina.id),
+        )
+        bitacora.save()
+        flash(bitacora.descripcion, "success")
+        return redirect(url_for("oficinas.detail", oficina_id=oficina.id))
+    form.oficina.data = f"{oficina.clave} - {oficina.descripcion_corta}"  # Read only string field
+    return render_template(
+        "usuarios_oficinas/new_with_oficina.jinja2",
+        form=form,
+        titulo=f"Agregar un usuario a la oficina {oficina.clave}",
+        oficina=oficina,
+    )
+
+
 @usuarios_oficinas.route("/usuarios_oficinas/nuevo_con_usuario/<int:usuario_id>", methods=["GET", "POST"])
 @permission_required(MODULO, Permiso.CREAR)
 def new_with_usuario(usuario_id):
@@ -114,17 +167,30 @@ def new_with_usuario(usuario_id):
     usuario = Usuario.query.get_or_404(usuario_id)
     form = UsuarioOficinaWithUsuarioForm()
     if form.validate_on_submit():
-        oficina = form.oficina.data
-        descripcion = f"{usuario.email} en {oficina.descripcion_corta}"
+        oficina = Oficina.query.get_or_404(form.oficina.data)
+        descripcion = safe_string(f"usuario {usuario.email} en oficina {oficina.clave}", save_enie=True)
         puede_existir = (
-            UsuarioOficina.query.filter(UsuarioOficina.oficina == oficina).filter(UsuarioOficina.usuario == usuario).first()
+            UsuarioOficina.query.filter(UsuarioOficina.oficina_id == oficina.id)
+            .filter(UsuarioOficina.usuario_id == usuario.id)
+            .first()
         )
-        if puede_existir is not None:
-            flash(f"CONFLICTO: Ya existe {descripcion}. Si aparece eliminado (oscuro), recupérelo.", "warning")
+        if puede_existir and puede_existir.estatus == "A":
+            flash(f"Ya existe la combinación de {descripcion}", "warning")
+            return redirect(url_for("usuarios_oficinas.detail", usuario_oficina_id=puede_existir.id))
+        if puede_existir:
+            puede_existir.recover()
+            bitacora = Bitacora(
+                modulo=Modulo.query.filter_by(nombre=MODULO).first(),
+                usuario=current_user,
+                descripcion=safe_message(f"Recuperado Usuario-Oficina con {descripcion}"),
+                url=url_for("usuarios_oficinas.detail", usuario_oficina_id=puede_existir.id),
+            )
+            bitacora.save()
+            flash(bitacora.descripcion, "success")
             return redirect(url_for("usuarios_oficinas.detail", usuario_oficina_id=puede_existir.id))
         usuario_oficina = UsuarioOficina(
-            oficina=oficina,
-            usuario=usuario,
+            oficina_id=oficina.id,
+            usuario_id=usuario.id,
             descripcion=descripcion,
         )
         usuario_oficina.save()
@@ -137,13 +203,13 @@ def new_with_usuario(usuario_id):
         bitacora.save()
         flash(bitacora.descripcion, "success")
         return redirect(url_for("usuarios.detail", usuario_id=usuario.id))
-    form.usuario_email.data = usuario.email  # Solo lectura
-    form.usuario_nombre.data = usuario.nombre  # Solo lectura
+    form.usuario_email.data = usuario.email  # Read only string field
+    form.usuario_nombre.data = usuario.nombre  # Read only string field
     return render_template(
         "usuarios_oficinas/new_with_usuario.jinja2",
         form=form,
+        titulo=f"Agregar {usuario.email} a una oficina",
         usuario=usuario,
-        titulo=f"Agregar oficina al usuario {usuario.email} para citas inmediatas",
     )
 
 

@@ -8,9 +8,6 @@
 {% block topbar_actions %}
     {% call topbar.page_buttons('Usuario-Oficina ' + usuario_oficina.descripcion) %}
         {{ topbar.button_previous('Usuarios-Oficinas', url_for('usuarios_oficinas.list_active')) }}
-        {% if current_user.can_edit('USUARIOS OFICINAS') %}
-            {{ topbar.button_edit('Editar', url_for('usuarios_oficinas.edit', usuario_oficina_id=usuario_oficina.id)) }}
-        {% endif %}
         {% if current_user.can_admin('USUARIOS OFICINAS') %}
             {% if usuario_oficina.estatus == 'A' %}{{ topbar.button_delete('Eliminar', url_for('usuarios_oficinas.delete', usuario_oficina_id=usuario_oficina.id)) }}{% endif %}
             {% if usuario_oficina.estatus == 'B' %}{{ topbar.button_recover('Recuperar', url_for('usuarios_oficinas.recover', usuario_oficina_id=usuario_oficina.id)) }}{% endif %}
@@ -20,8 +17,9 @@
 
 {% block content %}
     {% call detail.card(estatus=usuario_oficina.estatus) %}
+        {# detail.label_value('Descripción', usuario_oficina.descripcion) #}
         {% if current_user.can_view("OFICINAS") %}
-            {{ detail.label_value('Oficina', usuario_oficina.oficina.descripcion_corta, url_for('roles.detail', rol_id=usuario_oficina.oficina_id)) }}
+            {{ detail.label_value('Oficina', usuario_oficina.oficina.descripcion_corta, url_for('oficinas.detail', oficina_id=usuario_oficina.oficina_id)) }}
         {% else %}
             {{ detail.label_value('Oficina', usuario_oficina.oficina.descripcion_corta) }}
         {% endif %}

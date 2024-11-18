@@ -63,10 +63,10 @@
     <script>
         // DataTable CitHorasBloqueadas
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
-        let configDataTable = constructorDataTable.config();
-        configDataTable['ajax']['url'] = '/cit_horas_bloqueadas/admin_datatable_json';
-        configDataTable['ajax']['data'] = {{ filtros }};
-        configDataTable['columns'] = [
+        let configDTCitHorasBloqueadas = constructorDataTable.config();
+        configDTCitHorasBloqueadas['ajax']['url'] = '/cit_horas_bloqueadas/admin_datatable_json';
+        configDTCitHorasBloqueadas['ajax']['data'] = {{ filtros }};
+        configDTCitHorasBloqueadas['columns'] = [
             { data: 'detalle' },
             { data: 'oficina' },
             { data: 'fecha' },
@@ -74,7 +74,7 @@
             { data: 'termino' },
             { data: 'descripcion' }
         ];
-        configDataTable['columnDefs'] = [
+        configDTCitHorasBloqueadas['columnDefs'] = [
             {
                 targets: 0, // detalle
                 data: null,
@@ -108,7 +108,7 @@
             }
         ];
         // Filtros CitHorasBloqueadas
-        const filtrosCitHorasBloqueadas = new FiltrosDataTable('#cit_horas_bloqueadas_datatable', configDataTable);
+        const filtrosCitHorasBloqueadas = new FiltrosDataTable('#cit_horas_bloqueadas_datatable', configDTCitHorasBloqueadas);
         filtrosCitHorasBloqueadas.agregarInput('filtroOficinaClave', 'oficina_clave');
         filtrosCitHorasBloqueadas.agregarInput('filtroDescripcion', 'descripcion');
         filtrosCitHorasBloqueadas.precargar();

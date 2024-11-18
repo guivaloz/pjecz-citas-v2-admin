@@ -19,7 +19,7 @@
 
 {% block content %}
     {% call list.card() %}
-        <!-- Filtros Pag Tramites Servicios -->
+        <!-- Filtros PagTramitesServicios -->
         <div class="row">
             <div class="col">
                 <form class="row g-1 mb-3" id="filtradorForm" onsubmit="filtrosPagTramitesServicios.buscar(); return false;">
@@ -42,7 +42,7 @@
                 </form>
             </div>
         </div>
-        <!-- DataTable Pag Tramites Servicios -->
+        <!-- DataTable PagTramitesServicios -->
         <table id="pag_tramites_servicios_datatable" class="table {% if estatus == 'B'%}table-dark{% endif %} display nowrap" style="width:100%">
             <thead>
                 <tr>
@@ -60,7 +60,7 @@
     <script src="/static/js/datatables-constructor.js"></script>
     <script src="/static/js/datatables-filtros.js"></script>
     <script>
-        // DataTable Pag Tramites Servicios
+        // DataTable PagTramitesServicios
         const constructorDataTable = new ConfigDataTable( '{{ csrf_token() }}' );
         let configDataTable = constructorDataTable.config();
         configDataTable['ajax']['url'] = '/pag_tramites_servicios/datatable_json';
@@ -97,15 +97,15 @@
                 targets: 3, // URL
                 data: null,
                 render: function(data, type, row, meta) {
-                    if (data != '') {
+                    if (data !== '') {
                         texto = data.length > 48 ? '…' + data.slice(-48) : data;
-                        return data == '' ? '' : '<a href="' + data + '" target="_blank">' + texto + '<span class="iconify" data-icon="mdi:open-in-new"></span></a>';
+                        return data === '' ? '' : '<a href="' + data + '" target="_blank">' + texto + '<span class="iconify" data-icon="mdi:open-in-new"></span></a>';
                     }
                     return '';
                 }
             }
         ];
-        // Filtros Pag Tramites Servicios
+        // Filtros PagTramitesServicios
         const filtrosPagTramitesServicios = new FiltrosDataTable('#pag_tramites_servicios_datatable', configDataTable);
         filtrosPagTramitesServicios.agregarInput('filtroClave', 'clave');
         filtrosPagTramitesServicios.agregarInput('filtroDescripcion', 'descripcion');

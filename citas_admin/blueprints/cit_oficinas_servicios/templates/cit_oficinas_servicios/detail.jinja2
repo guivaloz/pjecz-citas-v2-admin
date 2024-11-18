@@ -17,7 +17,7 @@
 
 {% block content %}
     {% call detail.card(estatus=cit_oficina_servicio.estatus) %}
-        {{ detail.label_value('Descripción', cit_oficina_servicio.descripcion) }}
+        {# detail.label_value('Descripción', cit_oficina_servicio.descripcion) #}
         {% if current_user.can_view('OFICINAS') %}
             {{ detail.label_value('Oficina', cit_oficina_servicio.oficina.clave + ' - ' + cit_oficina_servicio.oficina.descripcion_corta, url_for('oficinas.detail', oficina_id=cit_oficina_servicio.oficina_id)) }}
         {% else %}
